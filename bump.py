@@ -14,7 +14,7 @@ VERSION_FILE_TEMPLATE = '''
 
 # Follow PEP-0396 rationale
 version_info = ({major}, {minor}, {commits}, '{commit_hash}')
-__version__ = '{major}.{minor}.{commits}+{commit_hash}'
+__version__ = '{major}.{minor}.{commits}'
 '''
 
 
