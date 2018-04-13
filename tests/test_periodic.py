@@ -19,8 +19,7 @@ async def test_periodic(event_loop):
     periodic.stop()
 
     assert 4 < counter < 7
-    c = counter
 
     await asyncio.sleep(0.5, loop=event_loop)
 
-    assert counter == c
+    assert 4 < counter < 7
