@@ -7,7 +7,7 @@ from typing import Iterable, Any, List, Tuple
 
 import uvloop
 
-from .thread_pool import ThreadPoolExecutor
+from aiomisc.thread_pool import ThreadPoolExecutor
 
 
 log = logging.getLogger(__name__)

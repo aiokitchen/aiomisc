@@ -33,7 +33,7 @@ def git_version():
     try:
         output = check_output(['git', 'describe', '--long'], env=env).decode()
     except OSError:
-        output = 'v0.0.0-g'
+        output = 'v0.0'
 
     version, commits, commit_hash = output.lstrip('v').strip().rsplit('-', 2)
 

@@ -6,11 +6,12 @@ import traceback
 import ujson
 from enum import IntEnum
 from types import MappingProxyType
+from typing import Union
 
 from colorlog import ColoredFormatter
 
-from .thread_pool import threaded
-from .periodic import PeriodicCallback
+from aiomisc.thread_pool import threaded
+from aiomisc.periodic import PeriodicCallback
 
 
 class AsyncMemoryHandler(logging.handlers.MemoryHandler):
@@ -19,7 +20,13 @@ class AsyncMemoryHandler(logging.handlers.MemoryHandler):
 
 class LogFormat(IntEnum):
     stream = 0
-    json = 1
+    color = 1
+    json = 2
+    syslog = 3
+
+    @classmethod
+    def choices(cls):
+        return tuple(cls._member_names_)
 
 
 class JSONLogFormatter(logging.Formatter):
@@ -61,14 +68,18 @@ class JSONLogFormatter(logging.Formatter):
 
             data[mapping] = v
 
-        data.update(
-            dict(filter(
-                lambda i: (
-                    not (i[0].startswith("_") or i[1] is None or i[0] in data)
-                ),
-                record_dict.items()
-            ))
-        )
+        for key in record_dict:
+            if key in data:
+                continue
+            elif key[0] == "_":
+                continue
+
+            value = record_dict[key]
+
+            if value is None:
+                continue
+
+            data[key] = value
 
         for idx, item in enumerate(data.pop('args', [])):
             data['argument_%d' % idx] = str(item)
@@ -128,11 +139,15 @@ def color_formatter(stream=None):
     return handler
 
 
-def create_logging_handler(log_format: LogFormat=LogFormat.stream):
-    if log_format == LogFormat.json:
+def create_logging_handler(log_format: LogFormat=LogFormat.color):
+    if log_format == LogFormat.stream:
+        return logging.StreamHandler()
+    elif log_format == LogFormat.json:
         return json_formatter()
-    elif log_format == LogFormat.stream:
+    elif log_format == LogFormat.color:
         return color_formatter()
+    elif log_format == LogFormat.syslog:
+        return logging.handlers.SysLogHandler(address='/dev/log')
 
     raise NotImplementedError
 
@@ -151,7 +166,8 @@ def wrap_logging_handler(handler: logging.Handler,
     return buffered_handler
 
 
-def basic_config(level: int=logging.INFO, log_format=LogFormat.stream,
+def basic_config(level: int=logging.INFO,
+                 log_format: Union[str, LogFormat]=LogFormat.color,
                  buffered=True, buffer_size: int=1024,
                  flush_interval: float=0.2):
 
