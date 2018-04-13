@@ -1,0 +1,8 @@
+aiodns<2
+async-timeout<3
+chardet<4
+colorlog
+fast-json
+pycares<3
+ujson<1.40
+uvloop<1

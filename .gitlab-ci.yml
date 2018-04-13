@@ -1,0 +1,18 @@
+---
+
+stages:
+  - test
+  - upload
+
+test:
+  stage: test
+  script:
+    - make test
+
+upload:
+  stage: upload
+  only:
+    - master
+    - tags
+  script:
+    - make upload
