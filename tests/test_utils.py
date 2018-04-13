@@ -52,7 +52,6 @@ def test_configure_logging_stderr(capsys):
 @pytest.mark.parametrize("address,family", [
     ("127.0.0.1", socket.AF_INET),
     ("0.0.0.0", socket.AF_INET),
-    ("::1", socket.AF_INET6),
     ("::", socket.AF_INET6),
 ])
 def test_bind_address(address, family, unused_tcp_port):
