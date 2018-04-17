@@ -1,8 +1,8 @@
 import base64
+import json
 from datetime import datetime
 
 import pytest
-import fast_json as json
 from tempfile import TemporaryFile
 
 
