@@ -1,6 +1,5 @@
 import os
 
-from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
 
@@ -16,7 +15,10 @@ module = SourceFileLoader(
 
 
 def load_requirements(fname):
-    return [str(r.req) for r in parse_requirements(fname, session='')]
+    """ load requirements from a pip requirements file """
+    with open(fname) as f:
+        line_iter = (line.strip() for line in f.readlines())
+        return [line for line in line_iter if line and not line[0] != '#']
 
 
 setup(
