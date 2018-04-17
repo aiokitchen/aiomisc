@@ -18,7 +18,7 @@ def load_requirements(fname):
     """ load requirements from a pip requirements file """
     with open(fname) as f:
         line_iter = (line.strip() for line in f.readlines())
-        return [line for line in line_iter if line and not line[0] != '#']
+        return [line for line in line_iter if line and line[0] != '#']
 
 
 setup(
