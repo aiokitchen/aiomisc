@@ -1,5 +1,5 @@
 aiodns<2
-async-timeout<3
+async-timeout
 chardet<4
 colorlog
 prettylog
