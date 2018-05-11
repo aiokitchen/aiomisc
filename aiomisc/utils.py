@@ -25,12 +25,14 @@ def chunk_list(iterable: Iterable[Any], size: int):
 OptionsType = List[Tuple[int, int, int]]
 
 
-def bind_socket(*, address: str, port: int, options=()):
-    if ':' in address:
-        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-    else:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def bind_socket(*args, address: str, port: int, options=()):
+    if not args:
+        if ':' in address:
+            args = (socket.AF_INET6, socket.SOCK_STREAM)
+        else:
+            args = (socket.AF_INET, socket.SOCK_STREAM)
 
+    sock = socket.socket(*args)
     sock.setblocking(0)
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
