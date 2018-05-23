@@ -62,7 +62,10 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
 
     pool_size = pool_size or cpu_count()
 
-    asyncio.get_event_loop().close()
+    try:
+        asyncio.get_event_loop().close()
+    except RuntimeError:
+        pass  # event loop is not created yet
 
     loop = asyncio.new_event_loop()
     thread_pool = ThreadPoolExecutor(pool_size, loop=loop)
