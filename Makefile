@@ -1,5 +1,4 @@
-all:
-	@echo "make release			- Upload to pypi"
+all: bump clean sdist test upload
 
 NAME:=$(shell python3 setup.py --name)
 VERSION:=$(shell python3 setup.py --version | sed 's/+/-/g')

@@ -1,12 +1,25 @@
 import asyncio
+import logging
 from functools import partial
 from typing import Union
 
 
+log = logging.getLogger(__name__)
+
+
 class PeriodicCallback:
-    __slots__ = '_cb', '_closed', '_task', '_loop', '_handle'
+    """
+    .. note::
+
+        When the periodic function executes longer then execution interval a
+        next call will be skipping and warning will be logged.
+
+    """
+
+    __slots__ = '_cb', '_closed', '_task', '_loop', '_handle', '__name'
 
     def __init__(self, coroutine_func, *args, **kwargs):
+        self.__name = repr(coroutine_func)
         self._cb = partial(asyncio.coroutine(coroutine_func), *args, **kwargs)
         self._closed = False
         self._task = None
@@ -20,6 +33,10 @@ class PeriodicCallback:
         self._loop = loop or asyncio.get_event_loop()
 
         def periodic():
+            if self._task and not self._task.done():
+                log.warning('Task %r still running skipping', self)
+                return
+
             self._task = self._loop.create_task(self._cb())
 
             if self._closed:
@@ -40,3 +57,6 @@ class PeriodicCallback:
 
         if self._handle:
             self._handle.cancel()
+
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__, self.__name)
