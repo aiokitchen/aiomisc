@@ -25,7 +25,9 @@ def chunk_list(iterable: Iterable[Any], size: int):
 OptionsType = List[Tuple[int, int, int]]
 
 
-def bind_socket(*args, address: str, port: int, options=()):
+def bind_socket(*args, address: str, port: int, options=(),
+                reuse_addr=True, reuse_port=False):
+
     if not args:
         if ':' in address:
             args = (socket.AF_INET6, socket.SOCK_STREAM)
@@ -35,8 +37,11 @@ def bind_socket(*args, address: str, port: int, options=()):
     sock = socket.socket(*args)
     sock.setblocking(0)
 
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
+
+    for level, option, value in options:
+        sock.setsockopt(level, option, value)
 
     sock_addr = address, port
 
@@ -45,14 +50,7 @@ def bind_socket(*args, address: str, port: int, options=()):
     else:
         log.info('Listening tcp://%s:%s' % sock_addr)
 
-    try:
-        sock.bind(sock_addr)
-    finally:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 0)
-
-    for level, option, value in options:
-        sock.setsockopt(level, option, value)
+    sock.bind(sock_addr)
 
     return sock
 
