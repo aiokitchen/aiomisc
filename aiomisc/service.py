@@ -1,7 +1,7 @@
 import asyncio
 import socket
 
-from .utils import bind_socket
+from .utils import bind_socket, OptionsType
 
 
 class ServiceMeta(type):
@@ -53,14 +53,13 @@ class SimpleServer(Service):
 
     async def stop(self, exc: Exception=None):
         self.server.close()
-        await self.server.wait_closed()
 
 
 class TCPServer(SimpleServer):
     PROTO_NAME = 'tcp'
 
     def __init__(self, address: str=None, port: int=None,
-                 options=(), sock=None):
+                 options: OptionsType = (), sock=None):
         if not sock:
             if not all((address, port)):
                 raise RuntimeError(
@@ -89,6 +88,10 @@ class TCPServer(SimpleServer):
             loop=self.loop,
         )
 
+    async def stop(self, exc: Exception=None):
+        await super().stop(exc)
+        await self.server.wait_closed()
+
 
 class UDPServer(SimpleServer):
     class UDPSimpleProtocol(asyncio.DatagramProtocol):
@@ -107,7 +110,7 @@ class UDPServer(SimpleServer):
             self.loop.create_task(self.handler(data, addr))
 
     def __init__(self, address: str=None, port: int=None,
-                 options=(), sock=None):
+                 options: OptionsType =(), sock=None):
         if not sock:
             if not all((address, port)):
                 raise RuntimeError(
@@ -118,7 +121,7 @@ class UDPServer(SimpleServer):
             self.socket = bind_socket(
                 socket.AF_INET6 if ':' in address else socket.AF_INET,
                 socket.SOCK_DGRAM,
-                address=address, port=port, options=options
+                address=address, port=port, options=options,
             )
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
@@ -126,13 +129,14 @@ class UDPServer(SimpleServer):
             self.socket = sock
 
         self.server = None
+        self._protocol = None
         super().__init__()
 
     def handle_datagram(self, data: bytes, addr):
         raise NotImplementedError
 
     async def start(self):
-        self.server = await self.loop.create_datagram_endpoint(
+        self.server, self._protocol = await self.loop.create_datagram_endpoint(
             lambda: UDPServer.UDPSimpleProtocol(self.handle_datagram),
             sock=self.socket,
         )
