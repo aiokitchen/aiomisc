@@ -44,14 +44,13 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     for level, option, value in options:
         sock.setsockopt(level, option, value)
 
-    sock_addr = address, port
+    sock.bind((address, port))
+    sock_addr = sock.getsockname()[:2]
 
     if sock.family == socket.AF_INET6:
         log.info('Listening %s://[%s]:%s', proto_name, *sock_addr)
     else:
         log.info('Listening %s://%s:%s', proto_name, *sock_addr)
-
-    sock.bind(sock_addr)
 
     return sock
 
