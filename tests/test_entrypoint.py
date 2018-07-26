@@ -117,7 +117,7 @@ def test_udp_server(unused_tcp_port):
 
     @threaded
     def writer():
-        sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         with sock:
             sock.sendto(b'hello server\n', ('127.0.0.1', unused_tcp_port))

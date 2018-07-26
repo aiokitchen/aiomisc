@@ -12,7 +12,7 @@ async def graceful_shutdown(services: Tuple[Service, ...],
                             loop: asyncio.AbstractEventLoop,
                             exception: Optional[Exception]):
     await asyncio.wait([
-        loop.create_task(asyncio.shield(svc.stop(exception), loop=loop))
+        asyncio.shield(loop.create_task(svc.stop(exception)), loop=loop)
         for svc in services
     ], loop=loop)
 
