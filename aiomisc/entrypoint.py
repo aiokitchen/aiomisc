@@ -1,9 +1,9 @@
 import asyncio
 import logging
 from contextlib import contextmanager
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
-from .log import basic_config
+from .log import basic_config, LogFormat
 from .service import Service
 from .utils import new_event_loop
 
@@ -11,23 +11,20 @@ from .utils import new_event_loop
 async def graceful_shutdown(services: Tuple[Service, ...],
                             loop: asyncio.AbstractEventLoop,
                             exception: Optional[Exception]):
-    tasks = []
-    for service in services:
-        tasks.append(
-            loop.create_task(asyncio.coroutine(service.stop)(exception))
-        )
-
-    await asyncio.wait(tasks, loop=loop)
+    await asyncio.wait([
+        loop.create_task(asyncio.shield(svc.stop(exception), loop=loop))
+        for svc in services
+    ], loop=loop)
 
 
 @contextmanager
 def entrypoint(*services: Service,
-               loop: asyncio.AbstractEventLoop=None,
-               pool_size=None,
-               log_level=logging.INFO,
-               log_format='color',
-               log_buffer_size=1024,
-               log_flush_interval=0.2):
+               loop: asyncio.AbstractEventLoop = None,
+               pool_size: int = None,
+               log_level: Union[int, str] = logging.INFO,
+               log_format: Union[str, LogFormat] = 'color',
+               log_buffer_size: int = 1024,
+               log_flush_interval: float = 0.2):
 
     loop = loop or new_event_loop(pool_size)
 
@@ -59,9 +56,7 @@ def entrypoint(*services: Service,
         for svc in services:
             svc.set_loop(loop)
 
-            starting.append(
-                loop.create_task(asyncio.coroutine(svc.start)())
-            )
+            starting.append(loop.create_task(svc.start()))
 
         await asyncio.gather(*starting, loop=loop)
 

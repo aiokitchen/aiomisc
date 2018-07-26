@@ -22,7 +22,7 @@ def chunk_list(iterable: Iterable[Any], size: int):
         item = list(itertools.islice(iterable, size))
 
 
-OptionsType = Tuple[Tuple[int, int, int], ...]
+OptionsType = Iterable[Tuple[int, int, int]]
 
 
 def bind_socket(*args, address: str, port: int, options: OptionsType = (),
