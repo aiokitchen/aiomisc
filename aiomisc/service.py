@@ -75,6 +75,8 @@ class TCPServer(SimpleServer):
         else:
             self.socket = sock
 
+        assert self.socket.type == socket.SOCK_STREAM
+
         super().__init__()
 
     async def handle_client(self, reader: asyncio.StreamReader,
@@ -127,6 +129,8 @@ class UDPServer(SimpleServer):
             raise ValueError('sock must be socket instance')
         else:
             self.socket = sock
+
+        assert self.socket.type == socket.SOCK_DGRAM
 
         self.server = None
         self._protocol = None
