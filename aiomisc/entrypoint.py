@@ -11,10 +11,15 @@ from .utils import new_event_loop
 async def graceful_shutdown(services: Tuple[Service, ...],
                             loop: asyncio.AbstractEventLoop,
                             exception: Optional[Exception]):
-    await asyncio.wait([
+    tasks = [
         asyncio.shield(loop.create_task(svc.stop(exception)), loop=loop)
         for svc in services
-    ], loop=loop)
+    ]
+
+    if not tasks:
+        return
+
+    await asyncio.wait(tasks, loop=loop, return_when=asyncio.ALL_COMPLETED)
 
 
 @contextmanager
