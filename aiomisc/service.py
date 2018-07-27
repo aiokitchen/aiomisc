@@ -106,7 +106,7 @@ class UDPServer(SimpleServer):
             self.transport = transport
             self.loop = asyncio.get_event_loop()
 
-        def datagram_received(self, data: bytes, addr):
+        def datagram_received(self, data: bytes, addr: tuple):
             self.loop.create_task(self.handler(data, addr))
 
     def __init__(self, address: str=None, port: int=None,
