@@ -3,7 +3,7 @@ import itertools
 import logging.handlers
 import socket
 from multiprocessing import cpu_count
-from typing import Iterable, Any, List, Tuple
+from typing import Iterable, Any, Tuple
 
 import uvloop
 
@@ -22,11 +22,12 @@ def chunk_list(iterable: Iterable[Any], size: int):
         item = list(itertools.islice(iterable, size))
 
 
-OptionsType = List[Tuple[int, int, int]]
+OptionsType = Iterable[Tuple[int, int, int]]
 
 
-def bind_socket(*args, address: str, port: int, options=(),
-                reuse_addr=True, reuse_port=False):
+def bind_socket(*args, address: str, port: int, options: OptionsType = (),
+                reuse_addr: bool = True, reuse_port: bool = False,
+                proto_name: str = 'tcp'):
 
     if not args:
         if ':' in address:
@@ -43,14 +44,13 @@ def bind_socket(*args, address: str, port: int, options=(),
     for level, option, value in options:
         sock.setsockopt(level, option, value)
 
-    sock_addr = address, port
+    sock.bind((address, port))
+    sock_addr = sock.getsockname()[:2]
 
     if sock.family == socket.AF_INET6:
-        log.info('Listening tcp://[%s]:%s' % sock_addr)
+        log.info('Listening %s://[%s]:%s', proto_name, *sock_addr)
     else:
-        log.info('Listening tcp://%s:%s' % sock_addr)
-
-    sock.bind(sock_addr)
+        log.info('Listening %s://%s:%s', proto_name, *sock_addr)
 
     return sock
 
