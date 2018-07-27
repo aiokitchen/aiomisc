@@ -1,10 +1,48 @@
 import asyncio
+import os
 import socket
+from tempfile import mktemp
 
 import pytest
 from aiomisc.entrypoint import entrypoint
 from aiomisc.service import Service, TCPServer, UDPServer
 from aiomisc.thread_pool import threaded
+
+
+@pytest.fixture()
+def unix_socket_udp():
+    socket_path = mktemp(dir='/tmp', suffix='.sock')
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    sock.setblocking(False)
+
+    try:
+        sock.bind(socket_path)
+        yield sock
+    except:
+        pass
+    else:
+        sock.close()
+    finally:
+        if os.path.exists(socket_path):
+            os.remove(socket_path)
+
+
+@pytest.fixture()
+def unix_socket_tcp():
+    socket_path = mktemp(dir='/tmp', suffix='.sock')
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.setblocking(False)
+
+    try:
+        sock.bind(socket_path)
+        yield sock
+    except:
+        pass
+    else:
+        sock.close()
+    finally:
+        if os.path.exists(socket_path):
+            os.remove(socket_path)
 
 
 def test_service_class():
@@ -110,7 +148,7 @@ def test_udp_server(unused_tcp_port):
     class TestService(UDPServer):
         DATA = []
 
-        async def handle_datagram(self, data: bytes, addr):
+        async def handle_datagram(self, data: bytes, addr: tuple):
             self.DATA.append(data)
 
     service = TestService('127.0.0.1', unused_tcp_port)
@@ -121,6 +159,53 @@ def test_udp_server(unused_tcp_port):
 
         with sock:
             sock.sendto(b'hello server\n', ('127.0.0.1', unused_tcp_port))
+
+    with entrypoint(service) as loop:
+        loop.run_until_complete(writer())
+
+    assert TestService.DATA
+    assert TestService.DATA == [b'hello server\n']
+
+
+def test_udp_socket_server(unix_socket_udp):
+    class TestService(UDPServer):
+        DATA = []
+
+        async def handle_datagram(self, data: bytes, addr: tuple):
+            self.DATA.append(data)
+
+    service = TestService(sock=unix_socket_udp)
+
+    @threaded
+    def writer():
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+
+        with sock:
+            sock.sendto(b'hello server\n', unix_socket_udp.getsockname())
+
+    with entrypoint(service) as loop:
+        loop.run_until_complete(writer())
+
+    assert TestService.DATA
+    assert TestService.DATA == [b'hello server\n']
+
+
+def test_tcp_server_unix(unix_socket_tcp):
+    class TestService(TCPServer):
+        DATA = []
+
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            self.DATA.append(await reader.readline())
+            writer.close()
+
+    service = TestService(sock=unix_socket_tcp)
+
+    @threaded
+    def writer():
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.connect(unix_socket_tcp.getsockname())
+            sock.send(b'hello server\n')
 
     with entrypoint(service) as loop:
         loop.run_until_complete(writer())
