@@ -85,6 +85,49 @@ Close current event loop and install the new one:
         loop.run_until_complete(main())
 
 
+entrypoint
+----------
+
+Running and graceful shutdown multiple services in one process.
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc.entrypoint import entrypoint
+    from aiomisc.service import Service, TCPServer, UDPServer
+
+
+    class LoggingService(Service):
+        async def start(self):
+            while True:
+                print('Hello from service', self.name)
+                await asyncio.sleep(1)
+
+
+    class EchoServer(TCPServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while True:
+                writer.write(await reader.readline())
+
+
+    class UDPPrinter(UDPServer):
+        async def handle_datagram(self, data: bytes, addr):
+            print(addr, '->', data)
+
+
+    services = (
+        LoggingService(name='#1'),
+        EchoServer(address='::1', port=8901),
+        UDPPrinter(address='::1', port=3000),
+    )
+
+
+    with entrypoint(*services) as loop:
+        loop.run_forever()
+
+
+
 threaded decorator
 ------------------
 
