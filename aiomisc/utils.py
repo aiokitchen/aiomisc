@@ -84,7 +84,7 @@ def wait_for(*coros, raise_first: bool = True,
     result = loop.create_future()
     waiting = len(coros)
 
-    def cancelling():
+    def cancel_undone():
         nonlocal result
         nonlocal tasks
 
@@ -151,6 +151,6 @@ def wait_for(*coros, raise_first: bool = True,
         try:
             return await result
         finally:
-            cancelling()
+            cancel_undone()
 
     return run()
