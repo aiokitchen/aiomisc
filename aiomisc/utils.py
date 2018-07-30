@@ -75,7 +75,7 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
     return loop
 
 
-def wait_for(*coros, raise_first: bool = True,
+def wait_for(*coros, raise_first: bool = True, cancel: bool = True,
              loop: asyncio.AbstractEventLoop = None):
 
     tasks = list()
@@ -151,6 +151,7 @@ def wait_for(*coros, raise_first: bool = True,
         try:
             return await result
         finally:
-            cancel_undone()
+            if cancel:
+                cancel_undone()
 
     return run()
