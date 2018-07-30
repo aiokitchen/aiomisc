@@ -4,8 +4,10 @@ import socket
 from tempfile import mktemp
 
 import pytest
+import aiohttp.web
 from aiomisc.entrypoint import entrypoint
-from aiomisc.service import Service, TCPServer, UDPServer
+from aiomisc.service import Service, UDPServer, TCPServer
+from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.thread_pool import threaded
 
 
@@ -14,6 +16,10 @@ def unix_socket_udp():
     socket_path = mktemp(dir='/tmp', suffix='.sock')
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     sock.setblocking(False)
+
+    # Behaviour like in the bind_socket
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 0)
 
     try:
         sock.bind(socket_path)
@@ -214,3 +220,53 @@ def test_tcp_server_unix(unix_socket_tcp):
 
     assert TestService.DATA
     assert TestService.DATA == [b'hello server\n']
+
+
+def test_aiohttp_service_create_app():
+    with pytest.raises(TypeError):
+        class _(AIOHTTPService):
+            def create_application(self):
+                return None
+
+    class _(AIOHTTPService):
+        async def create_application(self):
+            return aiohttp.web.Application()
+
+
+class AIOHTTPTestApp(AIOHTTPService):
+    async def create_application(self):
+        return aiohttp.web.Application()
+
+
+def test_aiohttp_service(unused_tcp_port):
+    @threaded
+    def http_client():
+        import requests
+
+        url = 'http://127.0.0.1:%s/' % unused_tcp_port
+        return requests.get(url, timeout=1).status_code
+
+    service = AIOHTTPTestApp(address='127.0.0.1', port=unused_tcp_port)
+
+    with entrypoint(service) as loop:
+        response = loop.run_until_complete(http_client())
+
+    assert response == 404
+
+
+def test_aiohttp_service_sock(unix_socket_tcp):
+    @threaded
+    def http_client():
+        import requests_unixsocket
+        from urllib.parse import quote
+
+        url = 'http+unix://%s/' % quote(unix_socket_tcp.getsockname(), safe='')
+
+        return requests_unixsocket.get(url).status_code
+
+    service = AIOHTTPTestApp(sock=unix_socket_tcp)
+
+    with entrypoint(service) as loop:
+        response = loop.run_until_complete(http_client())
+
+    assert response == 404
