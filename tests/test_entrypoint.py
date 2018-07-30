@@ -82,8 +82,9 @@ def test_simple():
         DummyService(running=False, stopped=False),
     )
 
-    with entrypoint(*services):
-        raise RuntimeError
+    with pytest.raises(RuntimeError):
+        with entrypoint(*services):
+            raise RuntimeError
 
     for svc in services:
         assert svc.running
@@ -94,8 +95,9 @@ def test_simple():
         StartingService(running=False),
     )
 
-    with entrypoint(*services):
-        raise RuntimeError
+    with pytest.raises(RuntimeError):
+        with entrypoint(*services):
+            raise RuntimeError
 
     for svc in services:
         assert svc.running
