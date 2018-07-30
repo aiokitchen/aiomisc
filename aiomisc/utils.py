@@ -3,7 +3,7 @@ import itertools
 import logging.handlers
 import socket
 from multiprocessing import cpu_count
-from typing import Iterable, Any, Tuple, Coroutine, List
+from typing import Any, Coroutine, Iterable, List, Tuple
 
 import uvloop
 
