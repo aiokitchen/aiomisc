@@ -75,6 +75,7 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
     return loop
 
 
+# Type hint should be here for pylama's checks
 _TASKS_LIST = List[asyncio.Task]
 
 
