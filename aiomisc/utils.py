@@ -3,7 +3,7 @@ import itertools
 import logging.handlers
 import socket
 from multiprocessing import cpu_count
-from typing import Iterable, Any, Tuple
+from typing import Iterable, Any, Tuple, Coroutine, List
 
 import uvloop
 
@@ -75,39 +75,43 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
     return loop
 
 
-def wait_for(*coros, raise_first: bool = True, cancel: bool = True,
+_TASKS_LIST = List[asyncio.Task]
+
+
+def wait_for(*coros: Tuple[Coroutine, ...],
+             raise_first: bool = True,
+             cancel: bool = True,
              loop: asyncio.AbstractEventLoop = None):
 
-    tasks = list()
-    loop = loop or asyncio.get_event_loop()
-
-    result = loop.create_future()
+    tasks = list()                           # type: _TASKS_LIST
+    loop = loop or asyncio.get_event_loop()  # type: asyncio.AbstractEventLoop
+    result_future = loop.create_future()     # type: asyncio.Future
     waiting = len(coros)
 
-    def cancel_undone():
-        nonlocal result
+    def cancel_pending():
+        nonlocal result_future
         nonlocal tasks
 
-        for task in tasks:      # type: asyncio.Task
-            if task.done():
+        for t in tasks:
+            if t.done():
                 continue
 
-            task.cancel()
+            t.cancel()
 
     def raise_first_exception(exc: Exception):
-        nonlocal result
+        nonlocal result_future
         nonlocal tasks
 
-        if result.done():
+        if result_future.done():
             return
 
-        result.set_exception(exc)
+        result_future.set_exception(exc)
 
     def return_result():
-        nonlocal result
+        nonlocal result_future
         nonlocal tasks
 
-        if result.done():
+        if result_future.done():
             return
 
         results = []
@@ -117,18 +121,18 @@ def wait_for(*coros, raise_first: bool = True, cancel: bool = True,
 
             results.append(task.result() if exc is None else exc)
 
-        result.set_result(results)
+        result_future.set_result(results)
 
-    def done_callback(task: asyncio.Future):
+    def done_callback(t: asyncio.Future):
         nonlocal tasks
-        nonlocal result
+        nonlocal result_future
         nonlocal waiting
 
         waiting -= 1
 
-        exc = task.exception()
+        exc = t.exception()
 
-        if task.cancelled() or exc is None:
+        if t.cancelled() or exc is None:
             if waiting == 0:
                 return_result()
 
@@ -146,12 +150,12 @@ def wait_for(*coros, raise_first: bool = True, cancel: bool = True,
         tasks.append(task)
 
     async def run():
-        nonlocal result
+        nonlocal result_future
 
         try:
-            return await result
+            return await result_future
         finally:
             if cancel:
-                cancel_undone()
+                cancel_pending()
 
     return run()
