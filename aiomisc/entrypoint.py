@@ -70,6 +70,7 @@ def entrypoint(*services: Service,
         yield loop
     except Exception as e:
         loop.run_until_complete(graceful_shutdown(services, loop, e))
+        raise
     else:
         loop.run_until_complete(graceful_shutdown(services, loop, None))
     finally:

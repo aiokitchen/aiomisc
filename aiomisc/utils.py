@@ -73,3 +73,84 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
     asyncio.set_event_loop(loop)
 
     return loop
+
+
+def wait_for(*coros, raise_first: bool = True,
+             loop: asyncio.AbstractEventLoop = None):
+
+    tasks = list()
+    loop = loop or asyncio.get_event_loop()
+
+    result = loop.create_future()
+    waiting = len(coros)
+
+    def cancelling():
+        nonlocal result
+        nonlocal tasks
+
+        for task in tasks:      # type: asyncio.Task
+            if task.done():
+                continue
+
+            task.cancel()
+
+    def raise_first_exception(exc: Exception):
+        nonlocal result
+        nonlocal tasks
+
+        if result.done():
+            return
+
+        result.set_exception(exc)
+
+    def return_result():
+        nonlocal result
+        nonlocal tasks
+
+        if result.done():
+            return
+
+        results = []
+
+        for task in tasks:
+            exc = task.exception()
+
+            results.append(task.result() if exc is None else exc)
+
+        result.set_result(results)
+
+    def done_callback(task: asyncio.Future):
+        nonlocal tasks
+        nonlocal result
+        nonlocal waiting
+
+        waiting -= 1
+
+        exc = task.exception()
+
+        if task.cancelled() or exc is None:
+            if waiting == 0:
+                return_result()
+
+            return
+
+        if raise_first:
+            raise_first_exception(exc)
+
+        if waiting == 0:
+            return_result()
+
+    for coro in coros:
+        task = loop.create_task(coro)
+        task.add_done_callback(done_callback)
+        tasks.append(task)
+
+    async def run():
+        nonlocal result
+
+        try:
+            return await result
+        finally:
+            cancelling()
+
+    return run()
