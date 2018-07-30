@@ -78,7 +78,7 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
 _TASKS_LIST = List[asyncio.Task]
 
 
-def wait_for(*coros: Tuple[Coroutine, ...],
+def wait_for(*coroutines: Tuple[Coroutine, ...],
              raise_first: bool = True,
              cancel: bool = True,
              loop: asyncio.AbstractEventLoop = None):
@@ -86,7 +86,7 @@ def wait_for(*coros: Tuple[Coroutine, ...],
     tasks = list()                           # type: _TASKS_LIST
     loop = loop or asyncio.get_event_loop()  # type: asyncio.AbstractEventLoop
     result_future = loop.create_future()     # type: asyncio.Future
-    waiting = len(coros)
+    waiting = len(coroutines)
 
     def cancel_pending():
         nonlocal result_future
@@ -144,8 +144,8 @@ def wait_for(*coros: Tuple[Coroutine, ...],
         if waiting == 0:
             return_result()
 
-    for coro in coros:
-        task = loop.create_task(coro)
+    for coroutine in coroutines:
+        task = loop.create_task(coroutine)
         task.add_done_callback(done_callback)
         tasks.append(task)
 
