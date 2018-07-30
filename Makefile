@@ -17,7 +17,7 @@ test:
 	tox
 
 clean:
-	rm -fr env *.egg-info .tox dist
+	rm -fr *.egg-info .tox dist
 
 develop: clean
 	virtualenv -p python3.6 env
