@@ -8,8 +8,8 @@ import uuid
 import pytest
 
 from aiomisc.entrypoint import entrypoint
-from aiomisc.utils import chunk_list, bind_socket, wait_for
 from aiomisc.log import basic_config
+from aiomisc.utils import bind_socket, chunk_list, wait_for
 
 
 def test_chunk_list(event_loop):
