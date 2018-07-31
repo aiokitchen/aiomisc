@@ -13,21 +13,23 @@ class AIOHTTPService(Service):
     def __init__(self, address: str = None, port: int = None,
                  sock=None, shutdown_timeout: int = 5):
 
-        if sock is not None:
-            self.socket = sock
-        elif address and port:
+        if not sock:
+            if not (address and port):
+                raise RuntimeError(
+                    'You should pass socket instance or '
+                    '"address" and "port" couple'
+                )
+
             self.socket = bind_socket(
                 address=address,
                 port=port,
                 proto_name='http',
             )
+
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
         else:
-            raise RuntimeError(
-                'You should pass socket instance or '
-                '"address" and "port" couple'
-            )
+            self.socket = sock
 
         self.runner = None
         self.shutdown_timeout = shutdown_timeout

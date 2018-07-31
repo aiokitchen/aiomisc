@@ -21,10 +21,10 @@ class UDPServer(SimpleServer):
         def datagram_received(self, data: bytes, addr: tuple):
             self.loop.create_task(self.handler(data, addr))
 
-    def __init__(self, address: str=None, port: int=None,
-                 options: OptionsType =(), sock=None):
+    def __init__(self, address: str = None, port: int = None,
+                 options: OptionsType = (), sock=None):
         if not sock:
-            if not all((address, port)):
+            if not (address and port):
                 raise RuntimeError(
                     'You should pass socket instance or '
                     '"address" and "port" couple'
