@@ -127,6 +127,43 @@ Running and graceful shutdown multiple services in one process.
         loop.run_forever()
 
 
+Service for aiohttp
+-------------------
+
+Installed aiohttp required.
+
+.. code-block:: python
+
+    import aiohttp.web
+    from aiomisc.entrypoint import entrypoint
+    from aiomisc.service.aiohttp import AIOHTTPService
+
+
+    async def handle(request):
+        name = request.match_info.get('name', "Anonymous")
+        text = "Hello, " + name
+        return aiohttp.web.Response(text=text)
+
+
+    class REST(AIOHTTPService):
+        async def create_application(self):
+            app = aiohttp.web.Application()
+
+            app.add_routes([
+                aiohttp.web.get('/', handle),
+                aiohttp.web.get('/{name}', handle)
+            ])
+
+            return app
+
+
+    service = REST(address='127.0.0.1', port=8080)
+
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
 
 threaded decorator
 ------------------
