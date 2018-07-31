@@ -2,11 +2,15 @@ import asyncio
 import os
 import socket
 from tempfile import mktemp
+from urllib.parse import quote
 
-import pytest
 import aiohttp.web
+import pytest
+import requests
+import requests_unixsocket
+
 from aiomisc.entrypoint import entrypoint
-from aiomisc.service import Service, UDPServer, TCPServer
+from aiomisc.service import Service, TCPServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.thread_pool import threaded
 
@@ -262,8 +266,6 @@ def test_aiohttp_service_without_port_or_sock(unused_tcp_port):
 def test_aiohttp_service(unused_tcp_port):
     @threaded
     def http_client():
-        import requests
-
         url = 'http://127.0.0.1:%s/' % unused_tcp_port
         return requests.get(url, timeout=1).status_code
 
@@ -278,9 +280,6 @@ def test_aiohttp_service(unused_tcp_port):
 def test_aiohttp_service_sock(unix_socket_tcp):
     @threaded
     def http_client():
-        import requests_unixsocket
-        from urllib.parse import quote
-
         url = 'http+unix://%s/' % quote(unix_socket_tcp.getsockname(), safe='')
 
         return requests_unixsocket.get(url).status_code

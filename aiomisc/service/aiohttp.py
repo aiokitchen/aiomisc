@@ -3,8 +3,8 @@ import socket
 from aiohttp.web import Application, AppRunner, SockSite
 from aiohttp.helpers import AccessLogger
 
-from aiomisc.utils import bind_socket
 from .base import Service
+from ..utils import bind_socket
 
 
 class AIOHTTPService(Service):
