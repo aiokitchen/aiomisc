@@ -8,17 +8,19 @@ from ..utils import OptionsType, bind_socket
 class TCPServer(SimpleServer):
     PROTO_NAME = 'tcp'
 
-    def __init__(self, address: str=None, port: int=None,
+    def __init__(self, address: str = None, port: int = None,
                  options: OptionsType = (), sock=None):
         if not sock:
-            if not all((address, port)):
+            if not (address and port):
                 raise RuntimeError(
                     'You should pass socket instance or '
                     '"address" and "port" couple'
                 )
 
             self.socket = bind_socket(
-                address=address, port=port, options=options
+                address=address,
+                port=port,
+                options=options,
             )
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
@@ -38,6 +40,6 @@ class TCPServer(SimpleServer):
             loop=self.loop,
         )
 
-    async def stop(self, exc: Exception=None):
+    async def stop(self, exc: Exception = None):
         await super().stop(exc)
         await self.server.wait_closed()

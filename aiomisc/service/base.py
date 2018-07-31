@@ -12,10 +12,8 @@ class ServiceMeta(type):
 
         if not check_instance:
             raise TypeError(
-                (
-                    'The method of "%s.start" and "%s.stop" should '
-                    'be coroutine functions'
-                ) % (name, name)
+                'Following methods must be coroutine functions',
+                tuple('%s.%s' % (name, m) for m in instance.__async_required__)
             )
 
         return instance
@@ -38,7 +36,7 @@ class Service(metaclass=ServiceMeta):
     async def start(self):
         raise NotImplementedError
 
-    async def stop(self, exception: Exception=None):
+    async def stop(self, exception: Exception = None):
         pass
 
 
@@ -50,5 +48,5 @@ class SimpleServer(Service):
     async def start(self):
         raise NotImplementedError
 
-    async def stop(self, exc: Exception=None):
+    async def stop(self, exc: Exception = None):
         self.server.close()

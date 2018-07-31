@@ -175,6 +175,22 @@ def test_udp_server(unused_tcp_port):
     assert TestService.DATA == [b'hello server\n']
 
 
+def test_udp_without_port_or_socket():
+    class TestService(UDPServer):
+        pass
+
+    with pytest.raises(RuntimeError):
+        TestService()
+
+
+def test_tcp_without_port_or_socket():
+    class TestService(TCPServer):
+        pass
+
+    with pytest.raises(RuntimeError):
+        TestService()
+
+
 def test_udp_socket_server(unix_socket_udp):
     class TestService(UDPServer):
         DATA = []
@@ -236,6 +252,11 @@ def test_aiohttp_service_create_app():
 class AIOHTTPTestApp(AIOHTTPService):
     async def create_application(self):
         return aiohttp.web.Application()
+
+
+def test_aiohttp_service_without_port_or_sock(unused_tcp_port):
+    with pytest.raises(RuntimeError):
+        AIOHTTPService()
 
 
 def test_aiohttp_service(unused_tcp_port):

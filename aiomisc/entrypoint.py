@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Tuple, Optional, Union
 
 from .log import basic_config, LogFormat
-from aiomisc.service import Service
+from .service import Service
 from .utils import new_event_loop
 
 
