@@ -11,7 +11,7 @@ class AIOHTTPService(Service):
     __async_required__ = frozenset({'start', 'create_application'})
 
     def __init__(self, address: str = None, port: int = None,
-                 sock=None, shutdown_timeout: int = 5):
+                 sock: socket.socket = None, shutdown_timeout: int = 5):
 
         if not sock:
             if not (address and port):
