@@ -21,7 +21,7 @@ class AsyncMemoryHandler(logging.handlers.MemoryHandler):
 
 
 def wrap_logging_handler(handler: logging.Handler,
-                         loop: asyncio.AbstractEventLoop=None,
+                         loop: asyncio.AbstractEventLoop = None,
                          buffer_size: int = 1024,
                          flush_interval: float = 0.1):
     loop = loop or asyncio.get_event_loop()
@@ -37,10 +37,10 @@ def wrap_logging_handler(handler: logging.Handler,
     return buffered_handler
 
 
-def basic_config(level: int=logging.INFO,
-                 log_format: Union[str, LogFormat]=LogFormat.color,
-                 buffered=True, buffer_size: int=1024,
-                 flush_interval: float=0.2, loop=None):
+def basic_config(level: int = logging.INFO,
+                 log_format: Union[str, LogFormat] = LogFormat.color,
+                 buffered: bool = True, buffer_size: int = 1024,
+                 flush_interval: float = 0.2, loop=None):
 
     if isinstance(level, str):
         level = getattr(logging, level.upper())
