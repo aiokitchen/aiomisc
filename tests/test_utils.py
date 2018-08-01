@@ -129,8 +129,8 @@ def test_wait_for_cancelling():
 
 
 def blocking_bad_func(item):
-    assert item != 8
     time.sleep(0.5)
+    assert item != 8
     return item
 
 
@@ -177,4 +177,7 @@ def test_wait_for_in_executor(executor_class):
     results.sort()
 
     assert results
-    assert results == list(range(10))
+
+    expected = list(range(10)) + list(range(8)) + [9]
+    expected.sort()
+    assert results == expected
