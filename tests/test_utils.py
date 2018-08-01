@@ -163,12 +163,16 @@ def test_wait_for_in_executor(executor_class):
             with pytest.raises(AssertionError):
                 loop.run_until_complete(
                     wait_for(*[
-                        coro(blocking_bad_func, loop, i, exec) for i in range(10)
+                        coro(blocking_bad_func, loop, i, exec)
+                        for i in range(10)
                     ])
                 )
 
             loop.run_until_complete(
-                wait_for(*[coro(blocking_func, loop, i, exec) for i in range(10)])
+                wait_for(*[
+                    coro(blocking_func, loop, i, exec)
+                    for i in range(10)
+                ])
             )
 
             loop.run_until_complete(asyncio.sleep(1))
