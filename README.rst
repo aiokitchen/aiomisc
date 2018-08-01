@@ -45,6 +45,65 @@ Installing from github.com:
 Quick Start
 -----------
 
+Async entrypoint with logging and useful arguments.
+
+.. code-block:: python
+
+    import argparse
+    import asyncio
+    import os
+    import logging
+
+    from aiomisc.entrypoint import entrypoint, LogFormat
+
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-L", "--log-level", help="Log level",
+        default=os.getenv('LOG_LEVEL', 'info'),
+        choices=(
+            'critical', 'fatal', 'error', 'warning',
+            'warn', 'info', 'debug', 'notset'
+        ),
+    )
+
+    parser.add_argument(
+        "--log-format", help="Log format",
+        default=os.getenv('LOG_FORMAT', 'color'),
+        choices=LogFormat.choices(),
+        metavar='LOG_FORMAT',
+    )
+
+    parser.add_argument(
+        "-D", "--debug", action='store_true',
+        help="Run loop and application in debug mode"
+    )
+
+
+    parser.add_argument(
+        "--pool-size", help="Thread pool size",
+        default=os.getenv('THREAD_POOL'), type=int,
+    )
+
+
+    log = logging.getLogger(__name__)
+
+
+    async def main():
+        log.info('Starting')
+        await asyncio.sleep(3)
+        log.info('Exiting')
+
+
+    if __name__ == '__main__':
+        arg = parser.parse_args()
+
+        with entrypoint(log_level=arg.log_level,
+                        log_format=arg.log_format) as loop:
+            loop.run_until_complete(main())
+
+
 Install event loop on the program starts.
 
 .. code-block:: python
