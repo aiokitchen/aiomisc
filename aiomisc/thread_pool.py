@@ -10,7 +10,9 @@ from functools import partial, wraps
 class ThreadPoolExecutor(Executor):
     __slots__ = '__loop', '__futures', '__running', '__pool', '__tasks'
 
-    def __init__(self, processes=None, loop: asyncio.AbstractEventLoop = None):
+    def __init__(self, max_workers=None,
+                 loop: asyncio.AbstractEventLoop = None):
+
         self.__loop = loop or asyncio.get_event_loop()
         self.__futures = set()
         self.__running = True
@@ -18,7 +20,7 @@ class ThreadPoolExecutor(Executor):
         self.__pool = set()
         self.__tasks = Queue(0)
 
-        for idx in range(processes):
+        for idx in range(max_workers):
             thread = Thread(
                 target=self._in_thread,
                 name="[%d] Thread Pool" % idx,
