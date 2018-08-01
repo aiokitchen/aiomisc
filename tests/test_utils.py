@@ -4,12 +4,14 @@ import logging
 import socket
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 import pytest
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.log import basic_config
 from aiomisc.utils import bind_socket, chunk_list, wait_for
+from aiomisc.thread_pool import ThreadPoolExecutor as AIOMiscThreadPoolExecutor
 
 
 def test_chunk_list(event_loop):
@@ -124,3 +126,57 @@ def test_wait_for_cancelling():
     assert len(results) == 15
     assert len(set(results)) == 15
     assert frozenset(results) == frozenset(range(15))
+
+
+def blocking_bad_func(item):
+    time.sleep(0.5)
+    assert item != 8
+    return item
+
+
+def blocking_func(item):
+    time.sleep(0.5)
+    return item
+
+
+executors = (
+    lambda *_: ThreadPoolExecutor(10),
+    lambda *_: ProcessPoolExecutor(10),
+    lambda loop: AIOMiscThreadPoolExecutor(10, loop=loop),
+)
+
+executors[0].__name__ = 'ThreadPoolExecutor(10)'
+executors[1].__name__ = 'ProcessPoolExecutor(10)'
+executors[2].__name__ = 'AIOMiscThreadPoolExecutor(10)'
+
+
+@pytest.mark.parametrize("executor_class", executors)
+def test_wait_for_in_executor(executor_class):
+    results = []
+
+    async def coro(func, loop, item, executor):
+        nonlocal results
+        results.append(await loop.run_in_executor(executor, func, item))
+
+    with entrypoint() as loop:
+        with executor_class(loop) as exec:
+            with pytest.raises(AssertionError):
+                loop.run_until_complete(
+                    wait_for(*[
+                        coro(blocking_bad_func, loop, i, exec)
+                        for i in range(10)
+                    ])
+                )
+
+            loop.run_until_complete(
+                wait_for(*[
+                    coro(blocking_func, loop, i, exec)
+                    for i in range(10)
+                ])
+            )
+
+            loop.run_until_complete(asyncio.sleep(1))
+
+    results.sort()
+
+    assert results
