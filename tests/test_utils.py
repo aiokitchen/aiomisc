@@ -176,7 +176,3 @@ def test_wait_for_in_executor(executor_class):
     results.sort()
 
     assert results
-
-    expected = list(range(10)) + list(range(8)) + [9]
-    expected.sort()
-    assert results == expected
