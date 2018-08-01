@@ -11,7 +11,7 @@ class AIOHTTPService(Service):
     __async_required__ = frozenset({'start', 'create_application'})
 
     def __init__(self, address: str = None, port: int = None,
-                 sock: socket.socket = None, shutdown_timeout: int = 5):
+                 sock: socket.socket = None, shutdown_timeout: int = 5, **kwds):
 
         if not sock:
             if not (address and port):
@@ -34,7 +34,7 @@ class AIOHTTPService(Service):
         self.runner = None
         self.shutdown_timeout = shutdown_timeout
 
-        super().__init__()
+        super().__init__(**kwds)
 
     async def create_application(self) -> Application:
         raise NotImplementedError('You should implement '
