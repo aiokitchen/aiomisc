@@ -131,9 +131,13 @@ def wait_for(*coroutines: Tuple[Coroutine, ...],
 
         waiting -= 1
 
-        exc = t.exception()
+        cancelled = t.cancelled()
 
-        if t.cancelled() or exc is None:
+        exc = None
+        if not cancelled:
+            exc = t.exception()
+
+        if cancelled or exc is None:
             if waiting == 0:
                 return_result()
 
