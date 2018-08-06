@@ -32,6 +32,7 @@ class AIOHTTPService(Service):
             self.socket = sock
 
         self.runner = None
+        self.site = None
         self.shutdown_timeout = shutdown_timeout
 
         super().__init__(**kwds)
@@ -49,12 +50,15 @@ class AIOHTTPService(Service):
 
         await self.runner.setup()
 
-        site = SockSite(
+        self.site = SockSite(
             self.runner, self.socket,
             shutdown_timeout=self.shutdown_timeout
         )
 
-        await site.start()
+        await self.site.start()
 
     async def stop(self, exception: Exception):
-        await self.runner.cleanup()
+        try:
+            await self.site.stop()
+        finally:
+            await self.runner.cleanup()
