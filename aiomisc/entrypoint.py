@@ -8,9 +8,9 @@ from .service import Service
 from .utils import new_event_loop
 
 
-async def graceful_shutdown(services: Tuple[Service, ...],
-                            loop: asyncio.AbstractEventLoop,
-                            exception: Optional[Exception]):
+def graceful_shutdown(services: Tuple[Service, ...],
+                      loop: asyncio.AbstractEventLoop,
+                      exception: Optional[Exception]):
     tasks = [
         asyncio.shield(loop.create_task(svc.stop(exception)), loop=loop)
         for svc in services
@@ -19,7 +19,11 @@ async def graceful_shutdown(services: Tuple[Service, ...],
     if not tasks:
         return
 
-    await asyncio.wait(tasks, loop=loop, return_when=asyncio.ALL_COMPLETED)
+    loop.run_until_complete(
+        asyncio.wait(
+            tasks, loop=loop, return_when=asyncio.ALL_COMPLETED
+        )
+    )
 
 
 @contextmanager
@@ -66,12 +70,17 @@ def entrypoint(*services: Service,
         await asyncio.gather(*starting, loop=loop)
 
     loop.run_until_complete(start())
+
+    shutting_down = False
+
     try:
         yield loop
     except Exception as e:
-        loop.run_until_complete(graceful_shutdown(services, loop, e))
+        graceful_shutdown(services, loop, e)
+        shutting_down = True
         raise
-    else:
-        loop.run_until_complete(graceful_shutdown(services, loop, None))
     finally:
+        if not shutting_down:
+            graceful_shutdown(services, loop, None)
+
         loop.run_until_complete(loop.shutdown_asyncgens())
