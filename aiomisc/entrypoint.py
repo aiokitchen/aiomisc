@@ -33,7 +33,19 @@ def entrypoint(*services: Service,
                log_level: Union[int, str] = logging.INFO,
                log_format: Union[str, LogFormat] = 'color',
                log_buffer_size: int = 1024,
-               log_flush_interval: float = 0.2):
+               log_flush_interval: float = 0.2,
+               log_config: bool = True):
+    """
+
+    :param loop: loop
+    :param services: Service instances which will be starting.
+    :param pool_size: thread pool size
+    :param log_level: Logging level which will be configured
+    :param log_format: Logging format which will be configures
+    :param log_buffer_size: Buffer size for logging
+    :param log_flush_interval: interval in seconds for flushing logs
+    :param log_config: if False do not configure logging
+    """
 
     loop = loop or new_event_loop(pool_size)
 
@@ -51,14 +63,15 @@ def entrypoint(*services: Service,
         nonlocal log_buffer_size
         nonlocal log_flush_interval
 
-        basic_config(
-            level=log_level,
-            log_format=log_format,
-            buffered=True,
-            loop=loop,
-            buffer_size=log_buffer_size,
-            flush_interval=log_flush_interval,
-        )
+        if log_config:
+            basic_config(
+                level=log_level,
+                log_format=log_format,
+                buffered=True,
+                loop=loop,
+                buffer_size=log_buffer_size,
+                flush_interval=log_flush_interval,
+            )
 
         starting = []
 
