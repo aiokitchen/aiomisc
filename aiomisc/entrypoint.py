@@ -11,6 +11,13 @@ from .utils import new_event_loop
 def graceful_shutdown(services: Tuple[Service, ...],
                       loop: asyncio.AbstractEventLoop,
                       exception: Optional[Exception]):
+
+    if hasattr(loop, '_default_executor'):
+        try:
+            loop._default_executor.shutdown()
+        except Exception:
+            logging.exception("Failed to stop default executor")
+
     tasks = [
         asyncio.shield(loop.create_task(svc.stop(exception)), loop=loop)
         for svc in services
