@@ -56,11 +56,12 @@ def entrypoint(*services: Service,
 
     loop = loop or new_event_loop(pool_size)
 
-    basic_config(
-        level=log_level,
-        log_format=log_format,
-        buffered=False,
-    )
+    if log_config:
+        basic_config(
+            level=log_level,
+            log_format=log_format,
+            buffered=False,
+        )
 
     async def start():
         nonlocal loop
