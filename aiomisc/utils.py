@@ -53,7 +53,7 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
             args = (socket.AF_INET, socket.SOCK_STREAM)
 
     sock = socket.socket(*args)
-    sock.setblocking(0)
+    sock.setblocking(False)
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
