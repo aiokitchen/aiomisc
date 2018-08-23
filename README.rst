@@ -377,6 +377,12 @@ Parameter `buffered=True` enables memory buffer which flushing logs in thread.
         loop.run_forever()
 
 
+Versioning
+==========
+
+This software follows `Semantic Versioning`_
+
+
 How to develop?
 ---------------
 
@@ -392,3 +398,4 @@ For setting up developer environment just type::
     make develop
 
 
+.. _Semantic Versioning: http://semver.org/
