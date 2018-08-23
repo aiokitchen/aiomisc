@@ -35,7 +35,7 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
                 proto_name: str = 'tcp'):
     """
 
-    :param args: arguments which will be used on socket initialization
+    :param args: which will be passed to stdlib's socket constructor (optional)
     :param address: bind address
     :param port:  bind port
     :param options: socket options (will be set)
@@ -95,7 +95,7 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
 _TASKS_LIST = List[asyncio.Task]
 
 
-def wait_for(*coroutines: Tuple[Coroutine, ...],
+def wait_for(*coroutines: Coroutine,
              raise_first: bool = True,
              cancel: bool = True,
              loop: asyncio.AbstractEventLoop = None):
@@ -107,10 +107,10 @@ def wait_for(*coroutines: Tuple[Coroutine, ...],
     after the first coroutine will fail and if the `cancel=True`
     all pending coroutines will be cancelled.
 
-    :param coroutines: List of coroutines
+    :param *coroutines: List of coroutines
     :param raise_first: If True after the first
-    :param cancel: If True after cancellation all panding coroutines
-                   will be canelled
+    :param cancel: If True after cancellation all pending coroutines
+                   will be cancelled
     :param loop: running event loop
     :return: Coroutine results. Order will not be preserved.
     """
@@ -201,11 +201,13 @@ def shield(func):
     """
     Simple and useful decorator for wrap the coroutine to `asyncio.shield`.
     """
+
+    async def awaiter(future):
+        return await future
+
     @wraps(func)
     def wrap(*args, **kwargs):
-        return asyncio.shield(
-            func(*args, **kwargs),
-            loop=asyncio.get_event_loop()
-        )
+        loop = asyncio.get_event_loop()
+        return awaiter(asyncio.shield(func(*args, **kwargs), loop=loop))
 
     return wrap

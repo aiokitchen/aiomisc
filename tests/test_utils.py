@@ -14,6 +14,31 @@ from aiomisc.utils import bind_socket, chunk_list, wait_for, shield
 from aiomisc.thread_pool import ThreadPoolExecutor as AIOMiscThreadPoolExecutor
 
 
+def test_shield():
+    results = []
+
+    @shield
+    async def coro():
+        nonlocal results
+        await asyncio.sleep(0.5)
+        results.append(True)
+
+    async def main(loop):
+        task = loop.create_task(coro())
+        task.cancel()
+        try:
+            await task
+        except:
+            pass
+        finally:
+            await asyncio.sleep(1)
+
+    with entrypoint() as loop:
+        loop.run_until_complete(main(loop))
+
+    assert results == [True]
+
+
 def test_chunk_list(event_loop):
     data = tuple(map(tuple, chunk_list(range(10), 3)))
 
@@ -157,38 +182,6 @@ def test_wait_for_in_executor(executor_class):
     async def coro(func, loop, item, executor):
         nonlocal results
         results.append(await loop.run_in_executor(executor, func, item))
-
-    with entrypoint() as loop:
-        with executor_class(loop) as exec:
-            with pytest.raises(AssertionError):
-                loop.run_until_complete(
-                    wait_for(*[
-                        coro(blocking_bad_func, loop, i, exec)
-                        for i in range(10)
-                    ])
-                )
-
-            loop.run_until_complete(
-                wait_for(*[
-                    coro(blocking_func, loop, i, exec)
-                    for i in range(10)
-                ])
-            )
-
-            loop.run_until_complete(asyncio.sleep(1))
-
-    results.sort()
-
-    assert results
-
-
-def test_shield(executor_class):
-    results = []
-
-    @shield
-    async def coro(func, loop, item, executor):
-        nonlocal results
-        asyncio.sleep(1)
 
     with entrypoint() as loop:
         with executor_class(loop) as exec:
