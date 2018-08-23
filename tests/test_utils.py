@@ -10,7 +10,7 @@ import pytest
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.log import basic_config
-from aiomisc.utils import bind_socket, chunk_list, wait_for, shield
+from aiomisc.utils import bind_socket, chunk_list, shield, wait_for
 from aiomisc.thread_pool import ThreadPoolExecutor as AIOMiscThreadPoolExecutor
 
 
