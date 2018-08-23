@@ -2,6 +2,7 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
+from functools import wraps
 from multiprocessing import cpu_count
 from typing import Any, Coroutine, Iterable, List, Tuple
 
@@ -14,6 +15,10 @@ log = logging.getLogger(__name__)
 
 
 def chunk_list(iterable: Iterable[Any], size: int):
+    """
+    Split list or generator by chunks with fixed maximum size.
+    """
+
     iterable = iter(iterable)
 
     item = list(itertools.islice(iterable, size))
@@ -28,6 +33,18 @@ OptionsType = Iterable[Tuple[int, int, int]]
 def bind_socket(*args, address: str, port: int, options: OptionsType = (),
                 reuse_addr: bool = True, reuse_port: bool = False,
                 proto_name: str = 'tcp'):
+    """
+
+    :param args: which will be passed to stdlib's socket constructor (optional)
+    :param address: bind address
+    :param port: bind port
+    :param options: Tuple of pairs which contain socket option
+                    to set and the option value.
+    :param reuse_addr: set socket.SO_REUSEADDR
+    :param reuse_port: set socket.SO_REUSEPORT
+    :param proto_name: protocol name which will be logged after binding
+    :return: socket.socket
+    """
 
     if not args:
         if ':' in address:
@@ -79,10 +96,25 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
 _TASKS_LIST = List[asyncio.Task]
 
 
-def wait_for(*coroutines: Tuple[Coroutine, ...],
+def wait_for(*coroutines: Coroutine,
              raise_first: bool = True,
              cancel: bool = True,
              loop: asyncio.AbstractEventLoop = None):
+    """
+    Simultaneously executes passed coroutines.
+    Results order will not be preserved.
+
+    In case `raise_first=True` the result will be returned
+    after the first coroutine will fail and if the `cancel=True`
+    all pending coroutines will be cancelled.
+
+    :param *coroutines: List of coroutines
+    :param raise_first: If True after the first
+    :param cancel: If True after cancellation all pending coroutines
+                   will be cancelled
+    :param loop: running event loop
+    :return: Coroutine results. Order will not be preserved.
+    """
 
     tasks = list()                           # type: _TASKS_LIST
     loop = loop or asyncio.get_event_loop()  # type: asyncio.AbstractEventLoop
@@ -164,3 +196,19 @@ def wait_for(*coroutines: Tuple[Coroutine, ...],
                 cancel_pending()
 
     return run()
+
+
+def shield(func):
+    """
+    Simple and useful decorator for wrap the coroutine to `asyncio.shield`.
+    """
+
+    async def awaiter(future):
+        return await future
+
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        return awaiter(asyncio.shield(func(*args, **kwargs), loop=loop))
+
+    return wrap
