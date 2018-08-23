@@ -10,8 +10,33 @@ import pytest
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.log import basic_config
-from aiomisc.utils import bind_socket, chunk_list, wait_for
+from aiomisc.utils import bind_socket, chunk_list, shield, wait_for
 from aiomisc.thread_pool import ThreadPoolExecutor as AIOMiscThreadPoolExecutor
+
+
+def test_shield():
+    results = []
+
+    @shield
+    async def coro():
+        nonlocal results
+        await asyncio.sleep(0.5)
+        results.append(True)
+
+    async def main(loop):
+        task = loop.create_task(coro())
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await asyncio.sleep(1)
+
+    with entrypoint() as loop:
+        loop.run_until_complete(main(loop))
+
+    assert results == [True]
 
 
 def test_chunk_list(event_loop):
