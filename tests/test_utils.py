@@ -28,7 +28,7 @@ def test_shield():
         task.cancel()
         try:
             await task
-        except:
+        except asyncio.CancelledError:
             pass
         finally:
             await asyncio.sleep(1)
