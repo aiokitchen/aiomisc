@@ -37,10 +37,11 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
 
     :param args: which will be passed to stdlib's socket constructor (optional)
     :param address: bind address
-    :param port:  bind port
-    :param options: socket options (will be set)
+    :param port: bind port
+    :param options: Tuple of pairs which contain socket option
+                    to set and the option value.
     :param reuse_addr: set socket.SO_REUSEADDR
-    :param reuse_port: set socket.SO_REUSEADDR
+    :param reuse_port: set socket.SO_REUSEPORT
     :param proto_name: protocol name which will be logged after binding
     :return: socket.socket
     """
