@@ -377,6 +377,57 @@ Parameter `buffered=True` enables memory buffer which flushing logs in thread.
         loop.run_forever()
 
 
+Useful services
+===============
+
+Memory Tracer
+-------------
+
+Simple and useful service for logging the largest
+python objects allocated in memory.
+
+
+.. code-block:: python
+
+    import asyncio
+    import os
+    from aiomisc.entrypoint import entrypoint
+    from aiomisc.service import MemoryTracer
+
+
+    async def main():
+        leaking = []
+
+        while True:
+            leaking.append(os.urandom(128))
+            await asyncio.sleep(0)
+
+
+    with entrypoint(MemoryTracer(interval=1, top_results=5)) as loop:
+        loop.run_until_complete(main())
+
+
+This example will be log something like this each second.
+
+.. code-block::
+
+    [T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
+     Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
+          12 |       12 |   1.9KiB |   1.9KiB | aiomisc/periodic.py:40
+          12 |       12 |   1.8KiB |   1.8KiB | aiomisc/entrypoint.py:93
+           6 |        6 |   1.1KiB |   1.1KiB | aiomisc/thread_pool.py:71
+           2 |        2 |   976.0B |   976.0B | aiomisc/thread_pool.py:44
+           5 |        5 |   712.0B |   712.0B | aiomisc/thread_pool.py:52
+
+    [T:[6] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
+     Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
+       43999 |    43999 |   7.1MiB |   7.1MiB | scratches/scratch_8.py:11
+          47 |       47 |   4.7KiB |   4.7KiB | env/bin/../lib/python3.7/abc.py:143
+          33 |       33 |   2.8KiB |   2.8KiB | 3.7/lib/python3.7/tracemalloc.py:113
+          44 |       44 |   2.4KiB |   2.4KiB | 3.7/lib/python3.7/tracemalloc.py:185
+          14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40
+
+
 Versioning
 ==========
 
