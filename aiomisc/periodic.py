@@ -34,7 +34,7 @@ class PeriodicCallback:
             log.exception("Periodic task error:")
 
     def start(self, interval: Union[int, float],
-              loop=None, *, shield: bool=False):
+              loop=None, *, shield: bool = False):
 
         self._task = asyncio.Future(loop=self._loop)
         self._task.set_exception(RuntimeError("Callback not started"))
