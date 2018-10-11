@@ -36,9 +36,6 @@ class PeriodicCallback:
     def start(self, interval: Union[int, float],
               loop=None, *, shield: bool = False):
 
-        self._task = asyncio.Future(loop=self._loop)
-        self._task.set_exception(RuntimeError("Callback not started"))
-
         if self._closed:
             raise asyncio.InvalidStateError
 
@@ -66,7 +63,10 @@ class PeriodicCallback:
     def stop(self):
         self._closed = True
 
-        if not self._task.done():
+        if self._task is None:
+            self._task = asyncio.Future(loop=self._loop)
+            self._task.set_exception(RuntimeError("Callback not started"))
+        elif not self._task.done():
             self._task.cancel()
 
         if self._handle:
