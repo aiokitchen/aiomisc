@@ -22,11 +22,22 @@ class PeriodicCallback:
         self.__name = repr(coroutine_func)
         self._cb = partial(asyncio.coroutine(coroutine_func), *args, **kwargs)
         self._closed = False
-        self._task = None
         self._loop = None
         self._handle = None
+        self._task = None
 
-    def start(self, interval: Union[int, float], loop=None):
+    async def _run(self):
+        try:
+            await self._cb()
+        except:
+            log.exception("Periodic task error:")
+
+    def start(self, interval: Union[int, float],
+              loop=None, *, shield: bool=False):
+
+        self._task = asyncio.Future(loop=self._loop)
+        self._task.set_exception(RuntimeError("Callback not started"))
+
         if self._closed:
             raise asyncio.InvalidStateError
 
@@ -37,7 +48,9 @@ class PeriodicCallback:
                 log.warning('Task %r still running skipping', self)
                 return
 
-            self._task = self._loop.create_task(self._cb())
+            self._task = self._loop.create_task(
+                (utils.shield(self._run) if shield else self._run)()
+            )
 
             if self._closed:
                 return
@@ -57,6 +70,8 @@ class PeriodicCallback:
 
         if self._handle:
             self._handle.cancel()
+
+        return self._task
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self.__name)
