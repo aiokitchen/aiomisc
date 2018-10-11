@@ -2,6 +2,7 @@ import asyncio
 import logging
 from functools import partial
 from typing import Union
+from . import utils
 
 
 log = logging.getLogger(__name__)
