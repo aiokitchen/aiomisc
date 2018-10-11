@@ -33,6 +33,17 @@ class ThreadPoolExecutor(Executor):
 
         self.__pool = frozenset(self.__pool)
 
+    @staticmethod
+    def _set_result(future, result, exception):
+        if future.done():
+            return
+
+        if exception:
+            future.set_exception(exception)
+            return
+
+        future.set_result(result)
+
     def _in_thread(self):
         while self.__running:
             try:
@@ -40,10 +51,19 @@ class ThreadPoolExecutor(Executor):
             except Empty:
                 continue
 
+            result, exception = None, None
+
             try:
-                self.__loop.call_soon_threadsafe(future.set_result, func())
+                result = func()
             except Exception as e:
-                self.__loop.call_soon_threadsafe(future.set_exception, e)
+                exception = e
+
+            self.__loop.call_soon_threadsafe(
+                self._set_result,
+                future,
+                result,
+                exception,
+            )
 
     def submit(self, fn, *args, **kwargs):
         future = self.__loop.create_future()     # type: asyncio.Future
