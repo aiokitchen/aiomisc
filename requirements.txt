@@ -1,4 +1,3 @@
-aiodns<2
 async-timeout
 chardet<4
 colorlog
