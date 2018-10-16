@@ -1,10 +1,11 @@
 import asyncio
 from contextlib import suppress
+from functools import partial
 
 import pytest
 import time
 
-from aiomisc.thread_pool import ThreadPoolExecutor, threaded
+from aiomisc.thread_pool import ThreadPoolExecutor, run_in_executor, threaded
 
 
 @pytest.fixture
@@ -25,6 +26,22 @@ async def test_threaded(executor: ThreadPoolExecutor, timer):
     assert executor
 
     sleep = threaded(time.sleep)
+
+    with timer(1):
+        await asyncio.gather(
+            sleep(1),
+            sleep(1),
+            sleep(1),
+            sleep(1),
+            sleep(1),
+        )
+
+
+@pytest.mark.asyncio
+async def test_run_in_executor(executor: ThreadPoolExecutor, timer):
+    assert executor
+
+    sleep = partial(run_in_executor, time.sleep)
 
     with timer(1):
         await asyncio.gather(
