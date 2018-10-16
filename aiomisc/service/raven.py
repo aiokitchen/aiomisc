@@ -1,5 +1,5 @@
 import logging
-from typing import Mapping
+from typing import Mapping  # NOQA
 
 import yarl
 from raven import Client
