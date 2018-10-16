@@ -1,4 +1,5 @@
 import logging
+from types import MappingProxyType
 from typing import Mapping  # NOQA
 
 import yarl
@@ -19,17 +20,17 @@ class DummyTransport(Transport):
 
 
 class RavenSender(Service):
-    sentry_dsn = None               # type: yarl.URL
-    client_options = None           # type: Mapping
-    min_level = logging.WARNING     # type: int
+    sentry_dsn = None  # type: yarl.URL
+    min_level = logging.WARNING  # type: int
+    client_options = MappingProxyType({})  # type: Mapping
 
-    client = None                   # type: Client
+    client = None  # type: Client
 
     async def start(self):
         self.client = Client(
             str(self.sentry_dsn),
             transport=AioHttpTransport,
-            **(self.client_options or {})
+            **self.client_options
         )
 
         self.sentry_dsn = yarl.URL(
