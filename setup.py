@@ -45,5 +45,8 @@ setup(
     install_requires=load_requirements('requirements.txt'),
     extras_require={
         'develop': load_requirements('requirements.dev.txt'),
+        'aiohttp': ['aiohttp'],
+        'raven': ['raven-aiohttp'],
+        'carbon': ['aiocarbon'],
     },
 )
