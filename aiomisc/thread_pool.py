@@ -5,6 +5,7 @@ from queue import Queue, Empty
 
 from concurrent.futures._base import Executor
 from functools import partial, wraps
+from types import MappingProxyType
 
 
 class ThreadPoolExecutor(Executor):
@@ -51,6 +52,9 @@ class ThreadPoolExecutor(Executor):
             except Empty:
                 continue
 
+            if future.done():
+                continue
+
             result, exception = None, None
 
             try:
@@ -82,13 +86,17 @@ class ThreadPoolExecutor(Executor):
         self.shutdown()
 
 
+def run_in_executor(func, executor=None, args=(), kwargs=MappingProxyType({})):
+    loop = asyncio.get_event_loop()
+
+    return loop.run_in_executor(
+        executor, partial(func, *args, **kwargs)
+    )
+
+
 def threaded(func):
     @wraps(func)
     async def wrap(*args, **kwargs):
-        loop = asyncio.get_event_loop()
-
-        return await loop.run_in_executor(
-            None, partial(func, *args, **kwargs)
-        )
+        return await run_in_executor(func=func, args=args, kwargs=kwargs)
 
     return wrap
