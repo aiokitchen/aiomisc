@@ -1,4 +1,6 @@
 import logging
+import socket
+from functools import partial
 from types import MappingProxyType
 from typing import Mapping  # NOQA
 
@@ -6,7 +8,7 @@ import yarl
 from raven import Client
 from raven.handlers.logging import SentryHandler
 from raven.transport import Transport
-from raven_aiohttp import AioHttpTransport
+from raven_aiohttp import QueuedAioHttpTransport
 
 from aiomisc.service import Service
 
@@ -29,7 +31,10 @@ class RavenSender(Service):
     async def start(self):
         self.client = Client(
             str(self.sentry_dsn),
-            transport=AioHttpTransport,
+            transport=partial(
+                QueuedAioHttpTransport,
+                family=socket.AF_UNSPEC
+            ),
             **self.client_options
         )
 
