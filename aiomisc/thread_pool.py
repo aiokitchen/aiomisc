@@ -51,6 +51,9 @@ class ThreadPoolExecutor(Executor):
             except Empty:
                 continue
 
+            if future.done():
+                continue
+
             result, exception = None, None
 
             try:
