@@ -36,14 +36,15 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
                  connection_limit_host: int = TCP_CONNECTION_LIMIT_HOST,
                  workers: int = WORKERS, qsize: int = QUEUE_SISE, **kwargs):
 
-        super().__init__(
-            *args, family=family, loop=loop, keepalive=True, **kwargs
-        )
-
         self.connection_limit = connection_limit
         self.connection_limit_host = connection_limit_host
         self.dns_cache = dns_cache
         self.dns_cache_ttl = dns_cache_ttl
+
+        super().__init__(
+            *args, family=family, loop=loop, keepalive=True,
+            workers=workers, qsize=qsize, **kwargs
+        )
 
     def _client_session_factory(self):
         self.connector = TCPConnector(
