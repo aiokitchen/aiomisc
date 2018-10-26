@@ -64,7 +64,7 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
 
     def close(self, *, timeout=None):
         self.connector.close()
-        super().close(timeout=timeout)
+        return super().close(timeout=timeout)
 
 
 class RavenSender(Service):
