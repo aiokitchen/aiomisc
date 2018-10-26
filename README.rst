@@ -24,6 +24,7 @@ aiomisc - miscellaneous utils for asyncio
 
 Miscellaneous utils for asyncio.
 
+.. contents:: Table of contents
 
 Installation
 ------------
@@ -143,9 +144,11 @@ Close current event loop and install the new one:
         loop = new_event_loop()
         loop.run_until_complete(main())
 
+Overview:
+---------
 
 entrypoint
-----------
+++++++++++
 
 Running and graceful shutdown multiple services in one process.
 
@@ -187,7 +190,7 @@ Running and graceful shutdown multiple services in one process.
 
 
 Service for aiohttp
--------------------
++++++++++++++++++++
 
 Installed aiohttp required.
 
@@ -224,8 +227,8 @@ Installed aiohttp required.
 
 
 
-threaded decorator
-------------------
+Threaded decorator
+++++++++++++++++++
 
 Wraps blocking function and run it on the thread pool.
 
@@ -257,7 +260,7 @@ Wraps blocking function and run it on the thread pool.
 
 
 Fast ThreadPoolExecutor
------------------------
++++++++++++++++++++++++
 
 This is the simple thread pool implementation.
 
@@ -274,7 +277,7 @@ Installation as a default thread pool:
 
 
 Bind socket
------------
++++++++++++
 
 .. code-block:: python
 
@@ -288,7 +291,7 @@ Bind socket
 
 
 Periodic callback
------------------
++++++++++++++++++
 
 Runs coroutine function periodically
 
@@ -316,7 +319,7 @@ Runs coroutine function periodically
 
 
 Logging configuration
----------------------
++++++++++++++++++++++
 
 Setting up colorized logs:
 
@@ -342,7 +345,7 @@ Setting up json logs:
 
 
 Buffered log handler
-++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~
 
 Parameter `buffered=True` enables memory buffer which flushing logs in thread.
 
@@ -378,10 +381,10 @@ Parameter `buffered=True` enables memory buffer which flushing logs in thread.
 
 
 Useful services
-===============
+---------------
 
 Memory Tracer
--------------
++++++++++++++
 
 Simple and useful service for logging the largest
 python objects allocated in memory.
@@ -429,7 +432,7 @@ This example will be log something like this each second.
 
 
 Versioning
-==========
+----------
 
 This software follows `Semantic Versioning`_
 

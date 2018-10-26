@@ -39,6 +39,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
     packages=find_packages(exclude=['tests']),
@@ -49,4 +50,5 @@ setup(
         'raven': ['raven-aiohttp'],
         'carbon': ['aiocarbon'],
     },
+    url='https://github.com/mosquito/aiomisc'
 )
