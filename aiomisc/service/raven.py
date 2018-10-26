@@ -12,7 +12,6 @@ from raven_aiohttp import QueuedAioHttpTransport
 
 from aiomisc.service import Service
 
-
 log = logging.getLogger(__name__)
 
 
@@ -27,15 +26,14 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
     TCP_CONNECTION_LIMIT = 32
     TCP_CONNECTION_LIMIT_HOST = 8
     WORKERS = 1
-    QUEUE_SISE = 1000
+    QUEUE_SIZE = 1000
 
     def __init__(self, *args, family=socket.AF_UNSPEC, loop=None,
                  dns_cache: bool = DNS_CACHE,
                  dns_cache_ttl: int = DNS_CACHE_TTL,
                  connection_limit: int = TCP_CONNECTION_LIMIT,
                  connection_limit_host: int = TCP_CONNECTION_LIMIT_HOST,
-                 workers: int = WORKERS, qsize: int = QUEUE_SISE, **kwargs):
-
+                 workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs):
         self.connection_limit = connection_limit
         self.connection_limit_host = connection_limit_host
         self.dns_cache = dns_cache
@@ -62,9 +60,10 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
             connector_owner=False
         )
 
-    def close(self, *, timeout=None):
+    async def _close(self):
+        transport = await super()._close()
         self.connector.close()
-        return super().close(timeout=timeout)
+        return transport
 
 
 class RavenSender(Service):
