@@ -4,7 +4,14 @@ import logging.handlers
 import socket
 from functools import wraps
 from multiprocessing import cpu_count
-from typing import Any, Coroutine, Iterable, List, Tuple
+from types import CoroutineType
+from typing import Any, Iterable, List, Tuple
+
+try:
+    from typing import Coroutine
+except ImportError:
+    Coroutine = CoroutineType
+
 
 import uvloop
 
