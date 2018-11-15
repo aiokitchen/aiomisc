@@ -150,7 +150,21 @@ Overview:
 entrypoint
 ++++++++++
 
-Running and graceful shutdown multiple services in one process.
+In generic case the entrypoint helper creates event loop and cancelling already running coroutines when exit.
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc.entrypoint import entrypoint
+
+    async def main():
+        await asyncio.sleep(1)
+
+    with entrypoint() as loop:
+        loop.run_until_complete(main())
+
+You might pass service instances to the entrypoint for running them, after exit service instances
+will be graceful shutting down.
 
 .. code-block:: python
 
