@@ -13,6 +13,8 @@ class MemoryTracer(Service):
     _log = None         # type: logging.Logger
     _snapshot_on_start = None
 
+    logger = log.info
+
     interval = 5  # type: int
     top_results = 20
 
@@ -63,7 +65,7 @@ class MemoryTracer(Service):
                 "traceback": stat.traceback
             }
 
-        log.info("Top memory usage:\n%s", results)
+        self.logger("Top memory usage:\n%s", results)
 
     async def stop(self, exception: Exception = None):
         tracemalloc.stop()
