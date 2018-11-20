@@ -208,6 +208,11 @@ def wait_for(*coroutines: Coroutine,
 def shield(func):
     """
     Simple and useful decorator for wrap the coroutine to `asyncio.shield`.
+
+    >>> @shield
+    ... async def non_cancelable_func():
+    ...     await asyncio.sleep(1)
+
     """
 
     async def awaiter(future):
@@ -215,7 +220,6 @@ def shield(func):
 
     @wraps(func)
     def wrap(*args, **kwargs):
-        loop = asyncio.get_event_loop()
-        return awaiter(asyncio.shield(func(*args, **kwargs), loop=loop))
+        return wraps(func)(awaiter)(asyncio.shield(func(*args, **kwargs)))
 
     return wrap
