@@ -150,7 +150,8 @@ Overview:
 entrypoint
 ++++++++++
 
-In generic case the entrypoint helper creates event loop and cancelling already running coroutines when exit.
+In generic case the entrypoint helper creates event loop and cancelling
+already running coroutines when exit.
 
 .. code-block:: python
 
@@ -163,8 +164,8 @@ In generic case the entrypoint helper creates event loop and cancelling already 
     with entrypoint() as loop:
         loop.run_until_complete(main())
 
-You might pass service instances to the entrypoint for running them, after exit service instances
-will be graceful shutting down.
+You might pass service instances to the entrypoint for running them,
+after exit service instances will be graceful shutting down.
 
 .. code-block:: python
 
@@ -201,6 +202,32 @@ will be graceful shutting down.
 
     with entrypoint(*services) as loop:
         loop.run_forever()
+
+
+Async Backoff
++++++++++++++
+
+Decorator that ensures that the decorated function will be successfully
+completed in ``waterline`` time at best case,  or will be retried
+until ``deadline`` time expires.
+
+
+.. code-block:: python
+
+    from aiomisc.backoff import asyncbackoff
+
+    waterline = 0.1
+    deadline = 1
+    pause = 0.1
+
+    @asyncbackoff(waterline, deadline, pause)
+    async def db_fetch():
+        ...
+
+
+    @asyncbackoff(0.1, 1, 0.1)
+    async def db_save(data: dict):
+        ...
 
 
 Service for aiohttp
@@ -244,7 +271,7 @@ Installed aiohttp required.
 Threaded decorator
 ++++++++++++++++++
 
-Wraps blocking function and run it on the thread pool.
+Wraps blocking function and run it in the thread pool.
 
 
 .. code-block:: python
@@ -276,7 +303,7 @@ Wraps blocking function and run it on the thread pool.
 Fast ThreadPoolExecutor
 +++++++++++++++++++++++
 
-This is the simple thread pool implementation.
+This is a simple thread pool implementation.
 
 Installation as a default thread pool:
 
@@ -361,7 +388,8 @@ Setting up json logs:
 Buffered log handler
 ~~~~~~~~~~~~~~~~~~~~
 
-Parameter `buffered=True` enables memory buffer which flushing logs in thread.
+Parameter `buffered=True` enables memory buffer that flushes
+logs into a thread.
 
 .. code-block:: python
 
@@ -400,8 +428,8 @@ Useful services
 Memory Tracer
 +++++++++++++
 
-Simple and useful service for logging the largest
-python objects allocated in memory.
+Simple and useful service for logging largest python
+objects allocated in memory.
 
 
 .. code-block:: python
@@ -424,7 +452,7 @@ python objects allocated in memory.
         loop.run_until_complete(main())
 
 
-This example will be log something like this each second.
+This example will log something like this each second.
 
 .. code-block::
 
