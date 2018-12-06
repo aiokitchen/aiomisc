@@ -66,7 +66,7 @@ async def test_too_long(event_loop):
 async def test_too_long_multiple_times(event_loop):
     mana = 0
     deadline = 0.5
-    waterline = 0.05
+    waterline = 0.06
 
     @asyncbackoff(waterline, deadline)
     async def test():
@@ -107,7 +107,7 @@ async def test_exit(event_loop):
 async def test_pause(event_loop):
     mana = 0
 
-    @asyncbackoff(0.05, 0.5, 0.2)
+    @asyncbackoff(0.05, 0.5, 0.35)
     async def test():
         nonlocal mana
 
