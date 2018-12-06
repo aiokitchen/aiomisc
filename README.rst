@@ -46,7 +46,7 @@ Installing from github.com:
 Quick Start
 -----------
 
-Async entrypoint with logging and useful arguments.
+Async entrypoint with logging and useful arguments:
 
 .. code-block:: python
 
@@ -105,7 +105,7 @@ Async entrypoint with logging and useful arguments.
             loop.run_until_complete(main())
 
 
-Install event loop on the program starts.
+Install event loop on program start:
 
 .. code-block:: python
 
@@ -128,7 +128,7 @@ Install event loop on the program starts.
         loop.run_until_complete(main())
 
 
-Close current event loop and install the new one:
+Close current event loop and install a new one:
 
 .. code-block:: python
 
@@ -150,8 +150,8 @@ Overview:
 entrypoint
 ++++++++++
 
-In generic case the entrypoint helper creates event loop and cancelling
-already running coroutines when exit.
+In generic case the entrypoint helper creates event loop and cancels already
+running coroutines on exit.
 
 .. code-block:: python
 
@@ -164,8 +164,8 @@ already running coroutines when exit.
     with entrypoint() as loop:
         loop.run_until_complete(main())
 
-You might pass service instances to the entrypoint for running them,
-after exit service instances will be graceful shutting down.
+You can pass service instances to entrypoint for running them, after exiting
+context manager service instances will be gracefully shut down.
 
 .. code-block:: python
 
