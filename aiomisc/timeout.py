@@ -19,7 +19,7 @@ class timeout:
         async def awaiter(task):
             await task
 
-        def cancel(loop, task: asyncio.Task, expired: asyncio.Event=None):
+        def cancel(loop, task: asyncio.Task, expired: asyncio.Event = None):
             if task.done():
                 return
 
