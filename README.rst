@@ -204,7 +204,21 @@ context manager service instances will be gracefully shut down.
         loop.run_forever()
 
 
-Async Backoff
+timeout decorator
++++++++++++++++++
+
+Decorator that guarantee maximum execution time for decorated function.
+
+.. code-block:: python
+
+    from aiomisc.timeout import timeout
+
+    @timeout(1)
+    async def bad_func():
+        await asyncio.sleep(2)
+
+
+Async backoff
 +++++++++++++
 
 Decorator that ensures that the decorated function will be successfully
