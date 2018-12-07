@@ -2,8 +2,8 @@ import asyncio
 from functools import wraps
 from time import monotonic
 from typing import Union, TypeVar, Type
+from .timeout import timeout
 
-from async_timeout import timeout
 
 Number = Union[int, float]
 T = TypeVar('T')
@@ -31,8 +31,7 @@ class asyncbackoff:
         self.countdown = deadline
 
     def __call__(self, func: T) -> T:
-        if not asyncio.iscoroutinefunction(func):
-            raise ValueError("Function is not a coroutine function")
+        func = timeout(self.waterline)(func)
 
         @wraps(func)
         async def wrap(*args, **kwargs):
@@ -40,9 +39,8 @@ class asyncbackoff:
                 started_at = monotonic()
 
                 try:
-                    async with timeout(self.waterline):
-                        # noinspection PyCallingNonCallable
-                        return await func(*args, **kwargs)
+                    # noinspection PyCallingNonCallable
+                    return await func(*args, **kwargs)
                 except self.exceptions:
                     self.countdown -= monotonic() - started_at + self.pause
 

@@ -132,5 +132,5 @@ def test_values(event_loop):
     with pytest.raises(ValueError):
         asyncbackoff(0, 0, -0.1)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         asyncbackoff(0, 0)(lambda x: None)
