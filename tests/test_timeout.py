@@ -24,7 +24,7 @@ async def test_already_done(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_already_done(event_loop):
+async def test_already_done_2(event_loop):
     @timeout(0.5)
     async def test(sec):
         await asyncio.sleep(sec)
