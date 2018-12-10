@@ -44,7 +44,7 @@ class asyncbackoff:
                 try:
                     # noinspection PyCallingNonCallable
                     return await func(*args, **kwargs)
-                except self.exceptions as e:
+                except self.exceptions:
                     if self.countdown is not None:
                         self.countdown -= monotonic() - started_at + self.pause
 
