@@ -122,6 +122,42 @@ async def test_pause(event_loop):
     assert mana == 2
 
 
+@pytest.mark.asyncio
+async def test_no_waterline(event_loop):
+    mana = 0
+
+    @asyncbackoff(None, 1, 0)
+    async def test():
+        nonlocal mana
+
+        mana += 1
+        await asyncio.sleep(0.2)
+
+        raise ValueError("RETRY")
+
+    with pytest.raises(ValueError, match="^RETRY$"):
+        await test()
+
+    assert mana == 5
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('max_sleep', (0.5, 1))
+async def test_no_deadline(event_loop, max_sleep):
+    mana = 0
+
+    @asyncbackoff(0.15, None, 0)
+    async def test():
+        nonlocal mana
+
+        mana += 1
+        await asyncio.sleep(max_sleep - (mana - 1) * 0.1)
+
+    await test()
+
+    assert mana == max_sleep * 10
+
+
 def test_values(event_loop):
     with pytest.raises(ValueError):
         asyncbackoff(-1, 1)
