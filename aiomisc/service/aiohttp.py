@@ -1,7 +1,7 @@
 import socket
 
 from aiohttp.web import Application, AppRunner, SockSite
-from aiohttp.helpers import AccessLogger
+from aiohttp.web_log import AccessLogger
 
 from .base import Service
 from ..utils import bind_socket
