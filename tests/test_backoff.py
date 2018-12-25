@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 from async_timeout import timeout
@@ -170,3 +171,31 @@ def test_values(event_loop):
 
     with pytest.raises(TypeError):
         asyncbackoff(0, 0)(lambda x: None)
+
+
+@pytest.mark.asyncio
+async def test_too_long_multiple(event_loop):
+    mana = 0
+
+    @asyncbackoff(0.5, 0.5)
+    async def test():
+        nonlocal mana
+
+        if mana < 500:
+            mana += 1
+            await asyncio.sleep(5)
+            raise ValueError("Not enough mana")
+
+    t = time.monotonic()
+    with pytest.raises(asyncio.TimeoutError):
+        await test()
+
+    t2 = time.monotonic() - t
+    assert t2 > 0.5
+    with pytest.raises(asyncio.TimeoutError):
+        await test()
+
+    t3 = time.monotonic() - t
+    assert t3 > 1
+
+    assert mana < 4
