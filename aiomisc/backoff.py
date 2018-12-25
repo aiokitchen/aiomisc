@@ -40,6 +40,7 @@ class asyncbackoff:
         @wraps(func)
         async def wrap(*args, **kwargs):
             countdown = self.countdown
+            pause = self.pause
 
             while countdown is None or countdown > 0:
                 started_at = monotonic()
@@ -49,13 +50,13 @@ class asyncbackoff:
                     return await func(*args, **kwargs)
                 except self.exceptions:
                     if countdown is not None:
-                        countdown -= monotonic() - started_at + self.pause
+                        countdown -= monotonic() - started_at + pause
 
-                        if self.countdown <= 0:
+                        if countdown <= 0:
                             raise
 
-                    if self.pause > 0:
-                        await asyncio.sleep(self.pause)
+                    if pause > 0:
+                        await asyncio.sleep(pause)
 
                     continue
 
