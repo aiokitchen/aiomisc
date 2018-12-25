@@ -10,6 +10,7 @@ Number = Union[int, float]
 T = TypeVar('T')
 
 
+# noinspection PyPep8Naming,SpellCheckingInspection
 class asyncbackoff:
     __slots__ = ('countdown', 'exceptions', 'pause', 'waterline')
 
@@ -26,7 +27,7 @@ class asyncbackoff:
         if deadline is not None and deadline < 0:
             raise ValueError("'deadline' must be positive or None")
 
-        self.exceptions = tuple(exceptions) or (Exception,)
+        self.exceptions = tuple(exceptions) or tuple()
         self.exceptions += asyncio.TimeoutError,
         self.pause = pause
         self.waterline = waterline
@@ -36,8 +37,12 @@ class asyncbackoff:
         if self.waterline is not None:
             func = timeout(self.waterline)(func)
 
+        countdown = self.countdown
+
         @wraps(func)
         async def wrap(*args, **kwargs):
+            nonlocal countdown
+
             while self.countdown is None or self.countdown > 0:
                 started_at = monotonic()
 
@@ -45,8 +50,8 @@ class asyncbackoff:
                     # noinspection PyCallingNonCallable
                     return await func(*args, **kwargs)
                 except self.exceptions:
-                    if self.countdown is not None:
-                        self.countdown -= monotonic() - started_at + self.pause
+                    if countdown is not None:
+                        countdown -= monotonic() - started_at + self.pause
 
                         if self.countdown <= 0:
                             raise
