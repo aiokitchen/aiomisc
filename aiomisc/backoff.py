@@ -27,7 +27,7 @@ class asyncbackoff:
         if deadline is not None and deadline < 0:
             raise ValueError("'deadline' must be positive or None")
 
-        self.exceptions = tuple(exceptions) or tuple()
+        self.exceptions = tuple(exceptions) or (Exception,)
         self.exceptions += asyncio.TimeoutError,
         self.pause = pause
         self.waterline = waterline
@@ -37,13 +37,11 @@ class asyncbackoff:
         if self.waterline is not None:
             func = timeout(self.waterline)(func)
 
-        countdown = self.countdown
-
         @wraps(func)
         async def wrap(*args, **kwargs):
-            nonlocal countdown
+            countdown = self.countdown
 
-            while self.countdown is None or self.countdown > 0:
+            while countdown is None or countdown > 0:
                 started_at = monotonic()
 
                 try:
