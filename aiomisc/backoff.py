@@ -10,6 +10,7 @@ Number = Union[int, float]
 T = TypeVar('T')
 
 
+# noinspection PyPep8Naming,SpellCheckingInspection
 class asyncbackoff:
     __slots__ = ('countdown', 'exceptions', 'pause', 'waterline')
 
@@ -38,21 +39,24 @@ class asyncbackoff:
 
         @wraps(func)
         async def wrap(*args, **kwargs):
-            while self.countdown is None or self.countdown > 0:
+            countdown = self.countdown
+            pause = self.pause
+
+            while countdown is None or countdown > 0:
                 started_at = monotonic()
 
                 try:
                     # noinspection PyCallingNonCallable
                     return await func(*args, **kwargs)
                 except self.exceptions:
-                    if self.countdown is not None:
-                        self.countdown -= monotonic() - started_at + self.pause
+                    if countdown is not None:
+                        countdown -= monotonic() - started_at + pause
 
-                        if self.countdown <= 0:
+                        if countdown <= 0:
                             raise
 
-                    if self.pause > 0:
-                        await asyncio.sleep(self.pause)
+                    if pause > 0:
+                        await asyncio.sleep(pause)
 
                     continue
 
