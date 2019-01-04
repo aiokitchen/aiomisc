@@ -244,6 +244,26 @@ until ``deadline`` time expires.
         ...
 
 
+asynchronous file operations
+++++++++++++++++++++++++++++
+
+Asynchronous files operations. Based on thread-pool under the hood.
+
+.. code-block:: python
+
+    from aiomisc.io import async_open
+
+
+    async def db_fetch():
+        async with async_open('/tmp/test.txt', 'w+') as afp:
+            await afp.write("Hello")
+            await afp.write(" ")
+            await afp.write("world")
+
+            await afp.seek(0)
+            print(await afp.read())
+
+
 Service for aiohttp
 +++++++++++++++++++
 
