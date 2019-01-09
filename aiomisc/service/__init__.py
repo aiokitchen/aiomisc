@@ -1,7 +1,8 @@
 from .base import Service, ServiceMeta, SimpleServer
 from .tcp import TCPServer
-from .udp import UDPServer
+from .tls import TLSServer
 from .tracer import MemoryTracer
+from .udp import UDPServer
 
 
 __all__ = (
@@ -10,5 +11,6 @@ __all__ = (
     'ServiceMeta',
     'SimpleServer',
     'TCPServer',
+    'TLSServer',
     'UDPServer',
 )

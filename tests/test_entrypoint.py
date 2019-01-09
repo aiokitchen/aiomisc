@@ -1,6 +1,7 @@
 import asyncio
 import os
 import socket
+from contextlib import ExitStack
 from tempfile import mktemp
 from urllib.parse import quote
 
@@ -10,7 +11,8 @@ import requests
 import requests_unixsocket
 
 from aiomisc.entrypoint import entrypoint
-from aiomisc.service import Service, TCPServer, UDPServer
+from aiomisc.context import get_context
+from aiomisc.service import Service, TCPServer, UDPServer, TLSServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.thread_pool import threaded
 
@@ -133,6 +135,19 @@ def test_wrong_sublclass():
             return True
 
 
+def test_required_kwargs():
+    class Svc(Service):
+        __required__ = 'foo',
+
+        async def start(self):
+            pass
+
+    with pytest.raises(AttributeError):
+        Svc()
+
+    assert Svc(foo='bar').foo == 'bar'
+
+
 def test_tcp_server(unused_tcp_port):
     class TestService(TCPServer):
         DATA = []
@@ -148,6 +163,43 @@ def test_tcp_server(unused_tcp_port):
     def writer():
         with socket.create_connection(('127.0.0.1', unused_tcp_port)) as sock:
             sock.send(b'hello server\n')
+
+    with entrypoint(service) as loop:
+        loop.run_until_complete(writer())
+
+    assert TestService.DATA
+    assert TestService.DATA == [b'hello server\n']
+
+
+def test_tls_server(certs, ssl_client_context, unused_tcp_port):
+    class TestService(TLSServer):
+        DATA = []
+
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            self.DATA.append(await reader.readline())
+            writer.close()
+
+    service = TestService(
+        address='127.0.0.1', port=unused_tcp_port,
+        ca=certs / 'ca.pem',
+        key=certs / 'server.key',
+        cert=certs / 'server.pem',
+    )
+
+    @threaded
+    def writer():
+        with ExitStack() as stack:
+            sock = stack.enter_context(
+                socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+            )
+
+            ssock = stack.enter_context(ssl_client_context.wrap_socket(
+                sock, server_hostname='localhost'
+            ))
+
+            ssock.connect(('127.0.0.1', unused_tcp_port))
+            ssock.send(b'hello server\n')
 
     with entrypoint(service) as loop:
         loop.run_until_complete(writer())
@@ -290,3 +342,56 @@ def test_aiohttp_service_sock(unix_socket_tcp):
         response = loop.run_until_complete(http_client())
 
     assert response == 404
+
+
+def test_service_events():
+    class Initialization(Service):
+        async def start(self):
+            events = get_context()
+            await asyncio.sleep(0.1)
+            events['test'] = True
+
+    class Awaiter(Service):
+        result = None
+
+        async def start(self):
+            events = get_context()
+            Awaiter.result = await events['test']
+
+    services = (
+        Awaiter(),
+        Initialization(),
+    )
+
+    with entrypoint(*services):
+        pass
+
+    assert Awaiter.result
+
+
+def test_service_events_2():
+    class Initialization(Service):
+        async def start(self):
+            events = get_context()
+            events['test'] = True
+
+    class Awaiter(Service):
+        result = None
+
+        async def start(self):
+            events = get_context()
+
+            await asyncio.sleep(0.1)
+
+            Awaiter.result = await events['test']
+            Awaiter.result = await events['test']
+
+    services = (
+        Initialization(),
+        Awaiter(),
+    )
+
+    with entrypoint(*services):
+        pass
+
+    assert Awaiter.result

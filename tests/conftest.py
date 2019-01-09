@@ -1,6 +1,9 @@
 import asyncio
 import concurrent.futures
+import os
+import ssl
 from contextlib import contextmanager, suppress
+from pathlib import Path
 
 import pytest
 import time
@@ -76,3 +79,28 @@ def event_loop(request, thread_pool_executor):
     finally:
         pool.shutdown(wait=True)
         loop.close()
+
+
+@pytest.fixture()
+def certs():
+    return Path(os.path.dirname(os.path.abspath(__file__))) / 'certs'
+
+
+@pytest.fixture(params=(ssl.Purpose.SERVER_AUTH, ssl.Purpose.CLIENT_AUTH))
+def ssl_client_context(request, certs):
+    ca = str(certs / 'ca.pem')
+    key = str(certs / 'client.key')
+    cert = str(certs / 'client.pem')
+
+    context = ssl.create_default_context(request.param, capath=ca)
+
+    if key:
+        context.load_cert_chain(
+            cert,
+            key,
+        )
+
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    return context

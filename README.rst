@@ -165,8 +165,106 @@ running coroutines on exit.
     with entrypoint() as loop:
         loop.run_until_complete(main())
 
-You can pass service instances to entrypoint for running them, after exiting
-context manager service instances will be gracefully shut down.
+
+Services
+++++++++
+
+Services is an abstractions helping organize many tasks on one process. Each service must implement ``start()`` method and ``stop()`` method (optional).
+
+Service should be passed to the entrypoint, and will be started after an event loop creates.
+
+.. warning ::
+
+   Never use ``asyncio.get_event_loop()`` in ``start()`` method.
+   Running event loop will be set before ``start()`` calls.
+
+   Use ``self.loop`` instead:
+
+   .. code-block:: python
+
+      from aiomisc.service import Service
+      from aiomisc.entrypoint import entrypoint
+
+
+      class MyService(Service):
+        async def start(self):
+            await asyncio.sleep(3600, loop=self.loop)
+
+
+      with entrypoint(MyService()) as loop:
+          loop.run_forever()
+
+
+This package contains some useful base classes for simple service writing.
+
+TCPServer
+*********
+
+``TCPServer`` - it's a base class for writing TCP servers.
+Just implement ``handle_client(reader, writer)`` for use it.
+
+.. code-block:: python
+
+    class EchoServer(TCPServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while True:
+                writer.write(await reader.readline())
+
+
+    with entrypoint(EchoServer(address='::1', port=8901)) as loop:
+        loop.run_forever()
+
+
+UDPServer
+*********
+
+``UDPServer`` - it's a base class for writing UDP servers.
+Just implement ``handle_datagram(data, addr)`` for use it.
+
+.. code-block:: python
+
+    class UDPPrinter(UDPServer):
+        async def handle_datagram(self, data: bytes, addr):
+            print(addr, '->', data)
+
+
+    with entrypoint(UDPPrinter(address='::1', port=3000)) as loop:
+        loop.run_forever()
+
+
+TLSServer
+*********
+
+it's a base class for writing TCP servers with TLS.
+Just implement ``handle_client(reader, writer)`` for use it.
+
+.. code-block:: python
+
+    class SecureEchoServer(TLSServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while True:
+                writer.write(await reader.readline())
+
+    service = SecureEchoServer(
+        address='::1',
+        port=8900,
+        ca='ca.pem',
+        cert='cert.pem',
+        key='key.pem',
+        verify=False,
+    )
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
+Multiple services
+*****************
+
+You can pass service instances to the entrypoint for running them,
+after exiting context manager service instances will be gracefully shut down.
 
 .. code-block:: python
 
@@ -203,6 +301,107 @@ context manager service instances will be gracefully shut down.
 
     with entrypoint(*services) as loop:
         loop.run_forever()
+
+
+Configuration
+*************
+
+``Service`` metaclass accepts all kwargs and will set it to the
+``self`` as an attributes.
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc.entrypoint import entrypoint
+    from aiomisc.service import Service, TCPServer, UDPServer
+
+
+    class LoggingService(Service):
+        # required kwargs
+        __required__ = frozenset({'name'})
+
+        # default value
+        delay: int = 1
+
+        async def start(self):
+            while True:
+                # attribute ``name`` from kwargs
+                # must be defined when instance initializes
+                print('Hello from service', self.name)
+
+                # attribute ``delay`` from kwargs
+                await asyncio.sleep(self.delay)
+
+    services = (
+        LoggingService(name='#1'),
+        LoggingService(name='#2', delay=3),
+    )
+
+
+    with entrypoint(*services) as loop:
+        loop.run_forever()
+
+
+Context
+*******
+
+Services might be required data for each other.
+In this case you should use ``Context``.
+
+.. note ::
+
+    Do not use this too often. In base case service might be configured
+    using passing kwargs to the service instance.
+
+
+``Context``-object will be creating in entrypoint and links
+to the running event loop.
+
+Cross dependent services might wait data or might set data for each other
+via the context.
+
+
+.. code-block:: python
+
+    import asyncio
+    from random import random, randint
+
+    from aiomisc.entrypoint import entrypoint, get_context
+    from aiomisc.service import Service
+
+
+    class LoggingService(Service):
+        async def start(self):
+            context = get_context()
+
+            wait_time = await context['wait_time']
+
+            print('Wait time is', wait_time)
+            while True:
+                print('Hello from service', self.name)
+                await asyncio.sleep(wait_time)
+
+
+    class RemoteConfiguration(Service):
+        async def start(self):
+            context = get_context()
+
+            # querying from remote server
+            await asyncio.sleep(random())
+
+            context['wait_time'] = randint(1, 5)
+
+
+    services = (
+        LoggingService(name='#1'),
+        LoggingService(name='#2'),
+        LoggingService(name='#3'),
+        RemoteConfiguration()
+    )
+
+    with entrypoint(*services) as loop:
+        loop.run_forever()
+
 
 
 timeout decorator
@@ -421,7 +620,7 @@ Setting up json logs:
 
 
 Buffered log handler
-~~~~~~~~~~~~~~~~~~~~
+********************
 
 Parameter `buffered=True` enables memory buffer that flushes
 logs into a thread.
@@ -489,7 +688,7 @@ objects allocated in memory.
 
 This example will log something like this each second.
 
-.. code-block::
+.. code-block:: plain
 
     [T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
      Objects | Obj.Diff |   Memory | Mem.Diff | Traceback

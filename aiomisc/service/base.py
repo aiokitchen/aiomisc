@@ -5,6 +5,9 @@ class ServiceMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         instance = type.__new__(cls, name, bases, dict(namespace))
 
+        for key in ('__async_required__', '__required__'):
+            setattr(instance, key, frozenset(getattr(instance, key, ())))
+
         check_instance = all(
             asyncio.iscoroutinefunction(getattr(instance, method))
             for method in instance.__async_required__
@@ -20,9 +23,14 @@ class ServiceMeta(type):
 
 
 class Service(metaclass=ServiceMeta):
-    __async_required__ = frozenset({'start', 'stop'})
+    __async_required__ = 'start', 'stop'
+    __required__ = ()
 
     def __init__(self, **kwargs):
+        lost_kw = self.__required__ - kwargs.keys()
+        if lost_kw:
+            raise AttributeError('Absent attributes', lost_kw)
+
         self.loop = None
         self._set_params(**kwargs)
 

@@ -3,6 +3,7 @@ import logging
 from contextlib import contextmanager
 from typing import Tuple, Optional, Union
 
+from .context import Context, get_context
 from .log import basic_config, LogFormat
 from .service import Service
 from .utils import new_event_loop
@@ -55,6 +56,7 @@ def entrypoint(*services: Service,
     """
 
     loop = loop or new_event_loop(pool_size)
+    ctx = Context(loop=loop)
 
     if log_config:
         basic_config(
@@ -105,3 +107,7 @@ def entrypoint(*services: Service,
             graceful_shutdown(services, loop, None)
 
         loop.run_until_complete(loop.shutdown_asyncgens())
+        ctx.close()
+
+
+__all__ = ('entrypoint', 'get_context')
