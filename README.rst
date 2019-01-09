@@ -22,9 +22,6 @@ aiomisc - miscellaneous utils for asyncio
 .. image:: https://img.shields.io/pypi/l/aiomisc.svg
    :target: https://pypi.python.org/pypi/aiomisc/
 
-.. image:: https://coveralls.io/repos/github/mosquito/aiomisc/badge.svg
-   :target: https://coveralls.io/github/mosquito/aiomisc
-
 
 Miscellaneous utils for asyncio.
 
