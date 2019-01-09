@@ -9,11 +9,15 @@ steps:
     pull: always
     commands:
       - tox
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
     environment:
       TOXENV: lint
 
   - name: python 3.5
     image: snakepacker/python:all
+    group: tests
     pull: always
     commands:
       - tox
@@ -21,12 +25,13 @@ steps:
       TOXENV: py35
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    when:
-      branch:
-        - master
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
 
   - name: python 3.6
     image: snakepacker/python:all
+    group: tests
     pull: always
     commands:
       - tox
@@ -34,12 +39,13 @@ steps:
       TOXENV: py36
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    when:
-      branch:
-        - master
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
 
   - name: python 3.7
     image: snakepacker/python:all
+    group: tests
     pull: always
     commands:
       - tox
@@ -47,9 +53,28 @@ steps:
       TOXENV: py37
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
+  - name: release
+    image: snakepacker/python:all
+    pull: always
+    environment:
+      TWINE_USERNAME:
+        from_secret: TWINE_USERNAME
+      TWINE_PASSWORD:
+        from_secret: TWINE_PASSWORD
+    commands:
+      - python3 bump.py $(python3 setup.py --name)/version.py
+      - python3 setup.py sdist bdist_wheel
+      - twine upload dist/*
     when:
-      branch:
-        - master
+      include:
+        repo:
+          - mosquito/*
+        branch:
+          - master
 
   - name: notify
     image: drillster/drone-email
@@ -66,8 +91,13 @@ steps:
         status:
           - changed
           - failure
+
+volumes:
+  - name: cache
+    temp: {}
+
 ---
 kind: signature
-hmac: 197fbb115e082ed42a8a73c0fcd994c64f1a2cd34782c4fad8342f99b5dd5749
+hmac: c330d6215798ade3de3d80991a5cf72e6697fb3b5952595b9585a16e094383d5
 
 ...

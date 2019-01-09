@@ -29,7 +29,9 @@ def git_version():
     env = {k: v for k, v in env.items() if v is not None}
 
     try:
-        output = check_output(['git', 'describe', '--long'], env=env).decode()
+        output = check_output([
+            'git', 'describe', '--long', '--always', 'HEAD'
+        ], env=env).decode()
     except OSError:
         output = 'v0.0'
 

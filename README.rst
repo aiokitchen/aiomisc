@@ -2,25 +2,29 @@ aiomisc - miscellaneous utils for asyncio
 =========================================
 
 .. image:: https://coveralls.io/repos/github/mosquito/aiomisc/badge.svg?branch=master
-    :target: https://coveralls.io/github/mosquito/aiomisc
-    :alt: Coveralls
+   :target: https://coveralls.io/github/mosquito/aiomisc
+   :alt: Coveralls
 
-.. image:: https://travis-ci.org/mosquito/aiomisc.svg
-    :target: https://travis-ci.org/mosquito/aiomisc
-    :alt: Travis CI
+.. image:: https://cloud.drone.io/api/badges/mosquito/aiomisc/status.svg
+   :target: https://cloud.drone.io/mosquito/aiomisc
+   :alt: Drone CI
 
 .. image:: https://img.shields.io/pypi/v/aiomisc.svg
-    :target: https://pypi.python.org/pypi/aiomisc/
-    :alt: Latest Version
+   :target: https://pypi.python.org/pypi/aiomisc/
+   :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/wheel/aiomisc.svg
-    :target: https://pypi.python.org/pypi/aiomisc/
+   :target: https://pypi.python.org/pypi/aiomisc/
 
 .. image:: https://img.shields.io/pypi/pyversions/aiomisc.svg
-    :target: https://pypi.python.org/pypi/aiomisc/
+   :target: https://pypi.python.org/pypi/aiomisc/
 
 .. image:: https://img.shields.io/pypi/l/aiomisc.svg
-    :target: https://pypi.python.org/pypi/aiomisc/
+   :target: https://pypi.python.org/pypi/aiomisc/
+
+.. image:: https://coveralls.io/repos/github/mosquito/aiomisc/badge.svg
+   :target: https://coveralls.io/github/mosquito/aiomisc
+
 
 Miscellaneous utils for asyncio.
 

@@ -1,6 +1,7 @@
 aiohttp<4
 async-timeout
 coverage!=4.3
+coveralls
 pylava
 pytest
 pytest-asyncio
