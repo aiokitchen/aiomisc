@@ -66,3 +66,8 @@ steps:
         status:
           - changed
           - failure
+---
+kind: signature
+hmac: 197fbb115e082ed42a8a73c0fcd994c64f1a2cd34782c4fad8342f99b5dd5749
+
+...
