@@ -1,5 +1,6 @@
 import asyncio
-from contextlib import contextmanager
+import concurrent.futures
+from contextlib import contextmanager, suppress
 
 import pytest
 import time
@@ -30,21 +31,48 @@ def timer():
     return timer
 
 
-@pytest.fixture()
-def event_loop():
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+thread_pool_implementation = (
+    lambda loop: ThreadPoolExecutor(4, loop=loop),
+    lambda loop: concurrent.futures.ThreadPoolExecutor(4)
+)
 
-    asyncio.get_event_loop().close()
+
+thread_pool_ids = (
+    'aiomisc pool',
+    'default pool',
+)
+
+
+@pytest.fixture(params=thread_pool_implementation, ids=thread_pool_ids)
+def thread_pool_executor(request):
+    yield request.param
+
+
+policies = (
+    uvloop.EventLoopPolicy(),
+    asyncio.DefaultEventLoopPolicy(),
+)
+
+policy_ids = (
+    'uvloop',
+    'asyncio',
+)
+
+
+@pytest.fixture(params=policies, ids=policy_ids, autouse=True)
+def event_loop(request, thread_pool_executor):
+    with suppress(Exception):
+        asyncio.get_event_loop().close()
+
+    asyncio.set_event_loop_policy(request.param)
 
     loop = asyncio.new_event_loop()
-    thread_pool = ThreadPoolExecutor(4, loop=loop)
-
-    loop.set_default_executor(thread_pool)
-
+    pool = thread_pool_executor(loop)
+    loop.set_default_executor(pool)
     asyncio.set_event_loop(loop)
 
     try:
         yield loop
     finally:
-        thread_pool.shutdown()
+        pool.shutdown(wait=True)
         loop.close()

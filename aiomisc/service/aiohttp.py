@@ -4,7 +4,7 @@ from aiohttp.web import Application, AppRunner, SockSite
 
 try:
     from aiohttp.web_log import AccessLogger
-except ImportError:
+except ImportError:         # pragma: nocover
     from aiohttp.helpers import AccessLogger
 
 from .base import Service
