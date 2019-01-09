@@ -30,7 +30,7 @@ def git_version():
 
     try:
         output = check_output([
-            'git', 'describe', '--long', '--always', 'HEAD'
+            'git', 'describe', '--always', '--long', 'HEAD'
         ], env=env).decode()
     except OSError:
         output = 'v0.0'

@@ -5,15 +5,10 @@ name: default
 
 steps:
   - name: linter
-    image: snakepacker/python:all
+    image: snakepacker/python:pylava
     pull: always
     commands:
-      - tox
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
-    environment:
-      TOXENV: lint
+      - pylava -o pylava.ini .
 
   - name: python 3.5
     image: snakepacker/python:all
@@ -66,8 +61,10 @@ steps:
       TWINE_PASSWORD:
         from_secret: TWINE_PASSWORD
     commands:
+      - git fetch --tags
       - python3 bump.py $(python3 setup.py --name)/version.py
       - python3 setup.py sdist bdist_wheel
+      - pip3 install twine
       - twine upload dist/*
     when:
       include:
@@ -98,6 +95,6 @@ volumes:
 
 ---
 kind: signature
-hmac: c330d6215798ade3de3d80991a5cf72e6697fb3b5952595b9585a16e094383d5
+hmac: f5603209e4b8694c534c4c8f47a3f0e75136c5e8866e6985aa731e0f1a90a9db
 
 ...
