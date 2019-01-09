@@ -28,7 +28,7 @@ def unix_socket_udp():
     try:
         sock.bind(socket_path)
         yield sock
-    except:
+    except Exception:
         pass
     else:
         sock.close()
@@ -46,7 +46,7 @@ def unix_socket_tcp():
     try:
         sock.bind(socket_path)
         yield sock
-    except:
+    except Exception:
         pass
     else:
         sock.close()

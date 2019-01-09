@@ -30,7 +30,7 @@ class PeriodicCallback:
     async def _run(self):
         try:
             await self._cb()
-        except:
+        except Exception:
             log.exception("Periodic task error:")
 
     def start(self, interval: Union[int, float],
