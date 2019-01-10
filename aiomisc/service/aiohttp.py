@@ -1,8 +1,6 @@
 import socket
-from abc import ABC
 
 from aiohttp.web import Application, AppRunner, SockSite
-
 from aiomisc.service.tls import get_ssl_context, PathOrStr
 
 try:
