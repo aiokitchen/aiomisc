@@ -41,8 +41,8 @@ class TLSServer(SimpleServer):
 
     def __init__(self, *, address: str = None, port: int = None,
                  cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
-                 require_client_cert: bool = False,
-                 verify: bool = True, options: OptionsType = (), sock=None):
+                 require_client_cert: bool = False, verify: bool = True,
+                 options: OptionsType = (), sock=None, **kwargs):
 
         self.__ssl_options = cert, key, ca, verify, require_client_cert
 
@@ -63,7 +63,7 @@ class TLSServer(SimpleServer):
         else:
             self.socket = sock
 
-        super().__init__()
+        super().__init__(**kwargs)
 
     async def handle_client(self, reader: asyncio.StreamReader,
                             writer: asyncio.StreamWriter):

@@ -9,7 +9,7 @@ class TCPServer(SimpleServer):
     PROTO_NAME = 'tcp'
 
     def __init__(self, address: str = None, port: int = None,
-                 options: OptionsType = (), sock=None):
+                 options: OptionsType = (), sock=None, **kwargs):
         if not sock:
             if not (address and port):
                 raise RuntimeError(
@@ -27,7 +27,7 @@ class TCPServer(SimpleServer):
         else:
             self.socket = sock
 
-        super().__init__()
+        super().__init__(**kwargs)
 
     async def handle_client(self, reader: asyncio.StreamReader,
                             writer: asyncio.StreamWriter):

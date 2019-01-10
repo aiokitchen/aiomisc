@@ -22,7 +22,7 @@ class UDPServer(SimpleServer):
             self.loop.create_task(self.handler(data, addr))
 
     def __init__(self, address: str = None, port: int = None,
-                 options: OptionsType = (), sock=None):
+                 options: OptionsType = (), sock=None, **kwargs):
         if not sock:
             if not (address and port):
                 raise RuntimeError(
@@ -42,7 +42,7 @@ class UDPServer(SimpleServer):
 
         self.server = None
         self._protocol = None
-        super().__init__()
+        super().__init__(**kwargs)
 
     def handle_datagram(self, data: bytes, addr):
         raise NotImplementedError

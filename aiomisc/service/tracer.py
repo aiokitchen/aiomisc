@@ -15,8 +15,8 @@ class MemoryTracer(Service):
 
     logger = log.info
 
-    interval = 5  # type: int
-    top_results = 20
+    interval = 5        # type: int
+    top_results = 20    # type: int
 
     STAT_FORMAT = (
         "%(count)8s | "
@@ -37,7 +37,7 @@ class MemoryTracer(Service):
 
     @staticmethod
     def humanize(num, suffix='B'):
-        for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        for unit in ('', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi'):
             if abs(num) < 1024.0:
                 return "%3.1f%s%s" % (num, unit, suffix)
             num /= 1024.0

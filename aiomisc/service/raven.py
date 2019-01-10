@@ -67,6 +67,8 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
 
 
 class RavenSender(Service):
+    __required__ = 'sentry_dsn',
+
     sentry_dsn = None  # type: yarl.URL
     min_level = logging.WARNING  # type: int
     client_options = MappingProxyType({})  # type: Mapping

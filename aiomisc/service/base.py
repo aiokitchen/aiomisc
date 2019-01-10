@@ -58,9 +58,9 @@ class Service(metaclass=ServiceMeta):
 
 
 class SimpleServer(Service):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.server = None
-        super().__init__()
+        super().__init__(**kwargs)
 
     async def start(self):
         raise NotImplementedError
