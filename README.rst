@@ -462,6 +462,11 @@ aiohttp application might be started as a serivce
         loop.run_forever()
 
 
+Class ``AIOHTTPSSLService`` is the same then ``AIOHTTPService`` but
+creates HTTPS server. You must pass ssl required options
+(see ``TLSServer`` class).
+
+
 timeout decorator
 +++++++++++++++++
 
