@@ -411,11 +411,15 @@ aiohttp service
 
 .. warning ::
 
-   requires installed aiohttp ::
+   requires installed aiohttp:
+
+   .. code-block:: plain
 
        pip install aiohttp
 
-   or using extras ::
+   or using extras:
+
+   .. code-block:: plain
 
        pip install aiomisc[aiohttp]
 
@@ -748,9 +752,11 @@ Should be installed:
 * Python 3.5+ as `python3`
 
 
-For setting up developer environment just type::
+For setting up developer environment just type
 
-    make develop
+    .. code-block:: plain
+
+        make develop
 
 
 .. _Semantic Versioning: http://semver.org/
