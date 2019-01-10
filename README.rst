@@ -348,17 +348,16 @@ Context
 Services might be required data for each other.
 In this case you should use ``Context``.
 
-.. note ::
-
-    Do not use this too often. In base case service might be configured
-    using passing kwargs to the service instance.
-
+``Context`` is the repository associated with the running entrypoint.
 
 ``Context``-object will be creating in entrypoint and links
 to the running event loop.
 
 Cross dependent services might wait data or might set data for each other
 via the context.
+
+For service instances ``self.context`` available since entrypoint starts.
+For other cases ``get_context()`` function returns current context.
 
 
 .. code-block:: python
@@ -384,12 +383,10 @@ via the context.
 
     class RemoteConfiguration(Service):
         async def start(self):
-            context = get_context()
-
             # querying from remote server
             await asyncio.sleep(random())
 
-            context['wait_time'] = randint(1, 5)
+            self.context['wait_time'] = randint(1, 5)
 
 
     services = (
@@ -402,6 +399,11 @@ via the context.
     with entrypoint(*services) as loop:
         loop.run_forever()
 
+
+.. note ::
+
+    Do not use this too often. In base case service might be configured
+    using passing kwargs to the service instance.
 
 
 timeout decorator

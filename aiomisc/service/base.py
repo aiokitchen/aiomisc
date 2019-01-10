@@ -1,5 +1,7 @@
 import asyncio
 
+from aiomisc.context import Context, get_context
+
 
 class ServiceMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
@@ -33,6 +35,13 @@ class Service(metaclass=ServiceMeta):
 
         self.loop = None
         self._set_params(**kwargs)
+        self.__context = None
+
+    @property
+    def context(self) -> Context:
+        if self.__context is None:
+            self.__context = get_context()
+        return self.__context
 
     def set_loop(self, loop: asyncio.AbstractEventLoop):
         self.loop = loop

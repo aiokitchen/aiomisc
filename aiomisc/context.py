@@ -36,4 +36,4 @@ def get_context(loop: asyncio.AbstractEventLoop = None) -> Context:
     return Context._EVENT_OBJECTS[loop]
 
 
-__all__ = ('get_context',)
+__all__ = ('get_context', 'Context')

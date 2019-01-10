@@ -347,16 +347,15 @@ def test_aiohttp_service_sock(unix_socket_tcp):
 def test_service_events():
     class Initialization(Service):
         async def start(self):
-            events = get_context()
+            context = get_context()
             await asyncio.sleep(0.1)
-            events['test'] = True
+            context['test'] = True
 
     class Awaiter(Service):
         result = None
 
         async def start(self):
-            events = get_context()
-            Awaiter.result = await events['test']
+            Awaiter.result = await self.context['test']
 
     services = (
         Awaiter(),
@@ -372,19 +371,18 @@ def test_service_events():
 def test_service_events_2():
     class Initialization(Service):
         async def start(self):
-            events = get_context()
-            events['test'] = True
+            self.context['test'] = True
 
     class Awaiter(Service):
         result = None
 
         async def start(self):
-            events = get_context()
+            context = get_context()
 
             await asyncio.sleep(0.1)
 
-            Awaiter.result = await events['test']
-            Awaiter.result = await events['test']
+            await context['test']
+            Awaiter.result = await context['test']
 
     services = (
         Initialization(),
