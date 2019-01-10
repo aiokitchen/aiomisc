@@ -70,8 +70,9 @@ def basic_config(level: int = logging.INFO,
 
 __all__ = (
     'basic_config',
-    'wrap_logging_handler',
-    'JSONLogFormatter',
-    'json_formatter',
     'color_formatter',
+    'json_formatter',
+    'JSONLogFormatter',
+    'LogFormat',
+    'wrap_logging_handler',
 )

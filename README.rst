@@ -169,16 +169,20 @@ running coroutines on exit.
 Services
 ++++++++
 
-Services is an abstractions helping organize many tasks on one process. Each service must implement ``start()`` method and ``stop()`` method (optional).
+``Services`` are abstractions to help organize lots of different
+tasks in one process. Each service must implement ``start()`` method and can
+implement ``stop()`` method.
 
-Service should be passed to the entrypoint, and will be started after an event loop creates.
+Service instance should be passed to the ``entrypoint``, and will be started
+after event loop has been created.
 
-.. warning ::
+.. note::
 
-   Never use ``asyncio.get_event_loop()`` in ``start()`` method.
-   Running event loop will be set before ``start()`` calls.
+   Current event-loop will be set before ``start()`` method called.
+   The event loop will be set as current for this thread.
 
-   Use ``self.loop`` instead:
+   Please avoid using ``asyncio.get_event_loop()`` explicitly inside
+   ``start()`` method. Use ``self.loop`` instead:
 
    .. code-block:: python
 
@@ -195,13 +199,18 @@ Service should be passed to the entrypoint, and will be started after an event l
           loop.run_forever()
 
 
-This package contains some useful base classes for simple service writing.
+Method ``start()`` creates as a separate task that can run forever.
+Anyway, during graceful shutdown method ``stop()`` will be called first, and
+after that all running tasks will be cancelled (including ``start()``).
+
+
+This package contains some useful base classes for simple services writing.
 
 TCPServer
 *********
 
 ``TCPServer`` - it's a base class for writing TCP servers.
-Just implement ``handle_client(reader, writer)`` for use it.
+Just implement ``handle_client(reader, writer)`` to use it.
 
 .. code-block:: python
 
@@ -220,7 +229,7 @@ UDPServer
 *********
 
 ``UDPServer`` - it's a base class for writing UDP servers.
-Just implement ``handle_datagram(data, addr)`` for use it.
+Just implement ``handle_datagram(data, addr)`` to use it.
 
 .. code-block:: python
 
@@ -236,8 +245,8 @@ Just implement ``handle_datagram(data, addr)`` for use it.
 TLSServer
 *********
 
-it's a base class for writing TCP servers with TLS.
-Just implement ``handle_client(reader, writer)`` for use it.
+TLSServer - it's a base class for writing TCP servers with TLS.
+Just implement ``handle_client(reader, writer)`` to use it.
 
 .. code-block:: python
 
@@ -263,8 +272,8 @@ Just implement ``handle_client(reader, writer)`` for use it.
 Multiple services
 *****************
 
-You can pass service instances to the entrypoint for running them,
-after exiting context manager service instances will be gracefully shut down.
+Pass several service instances to the ``entrypoint`` to run all of them.
+After exiting the entrypoint service instances will be gracefully shut down.
 
 .. code-block:: python
 
@@ -306,8 +315,8 @@ after exiting context manager service instances will be gracefully shut down.
 Configuration
 *************
 
-``Service`` metaclass accepts all kwargs and will set it to the
-``self`` as an attributes.
+``Service`` metaclass accepts all kwargs and will set it
+to ``self`` as attributes.
 
 .. code-block:: python
 
@@ -345,19 +354,17 @@ Configuration
 Context
 *******
 
-Services might be required data for each other.
-In this case you should use ``Context``.
+Services can require each others data. In this case you should use ``Context``.
 
-``Context`` is the repository associated with the running entrypoint.
+``Context`` is a repository associated with the running ``entrypoint``.
 
-``Context``-object will be creating in entrypoint and links
+``Context``-object will be created when ``entrypoint`` starts and linked
 to the running event loop.
 
-Cross dependent services might wait data or might set data for each other
-via the context.
+Cross dependent services might await or set each others data via the context.
 
-For service instances ``self.context`` available since entrypoint starts.
-For other cases ``get_context()`` function returns current context.
+For service instances ``self.context`` is available since ``entrypoint``
+started. In other cases ``get_context()`` function returns current context.
 
 
 .. code-block:: python
@@ -400,16 +407,16 @@ For other cases ``get_context()`` function returns current context.
         loop.run_forever()
 
 
-.. note ::
+.. note::
 
-    Do not use this too often. In base case service might be configured
-    using passing kwargs to the service instance.
+    It's not a silver bullet. In base case services can be configured by
+    passing kwargs to the service ``__init__`` method.
 
 
 aiohttp service
 ***************
 
-.. warning ::
+.. warning::
 
    requires installed aiohttp:
 
@@ -424,7 +431,7 @@ aiohttp service
        pip install aiomisc[aiohttp]
 
 
-aiohttp application might be started as a serivce
+aiohttp application can be started as a service:
 
 .. code-block:: python
 
@@ -466,15 +473,61 @@ aiohttp application might be started as a serivce
         loop.run_forever()
 
 
-Class ``AIOHTTPSSLService`` is the same then ``AIOHTTPService`` but
-creates HTTPS server. You must pass ssl required options
-(see ``TLSServer`` class).
+Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates HTTPS
+server. You must pass SSL-required options (see ``TLSServer`` class).
+
+Memory Tracer
+*************
+
+Simple and useful service for logging large python
+objects allocated in memory.
+
+
+.. code-block:: python
+
+    import asyncio
+    import os
+    from aiomisc.entrypoint import entrypoint
+    from aiomisc.service import MemoryTracer
+
+
+    async def main():
+        leaking = []
+
+        while True:
+            leaking.append(os.urandom(128))
+            await asyncio.sleep(0)
+
+
+    with entrypoint(MemoryTracer(interval=1, top_results=5)) as loop:
+        loop.run_until_complete(main())
+
+
+Output example:
+
+.. code-block::
+
+    [T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
+     Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
+          12 |       12 |   1.9KiB |   1.9KiB | aiomisc/periodic.py:40
+          12 |       12 |   1.8KiB |   1.8KiB | aiomisc/entrypoint.py:93
+           6 |        6 |   1.1KiB |   1.1KiB | aiomisc/thread_pool.py:71
+           2 |        2 |   976.0B |   976.0B | aiomisc/thread_pool.py:44
+           5 |        5 |   712.0B |   712.0B | aiomisc/thread_pool.py:52
+
+    [T:[6] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
+     Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
+       43999 |    43999 |   7.1MiB |   7.1MiB | scratches/scratch_8.py:11
+          47 |       47 |   4.7KiB |   4.7KiB | env/bin/../lib/python3.7/abc.py:143
+          33 |       33 |   2.8KiB |   2.8KiB | 3.7/lib/python3.7/tracemalloc.py:113
+          44 |       44 |   2.4KiB |   2.4KiB | 3.7/lib/python3.7/tracemalloc.py:185
+          14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40
 
 
 timeout decorator
 +++++++++++++++++
 
-Decorator that guarantee maximum execution time for decorated function.
+Decorator that ensures the execution time limit for decorated function is met.
 
 .. code-block:: python
 
@@ -488,20 +541,27 @@ Decorator that guarantee maximum execution time for decorated function.
 Async backoff
 +++++++++++++
 
-Decorator that ensures that the decorated function will be successfully
-completed in ``waterline`` time at best case,  or will be retried
-until ``deadline`` time expires.
+Abstraction:
 
+* ``attempt_timeout`` is maximum execution time for one execution attempt.
+* ``deadline`` is maximum execution time for all execution attempts.
+* ``pause`` is time gap between execution attempts.
+
+Decorator that ensures that ``attempt_timeout`` and ``deadline`` time
+limits are met by decorated function.
+
+In case of exception function will be called again with similar arguments after
+``pause`` seconds.
 
 .. code-block:: python
 
     from aiomisc.backoff import asyncbackoff
 
-    waterline = 0.1
+    attempt_timeout = 0.1
     deadline = 1
     pause = 0.1
 
-    @asyncbackoff(waterline, deadline, pause)
+    @asyncbackoff(attempt_timeout, deadline, pause)
     async def db_fetch():
         ...
 
@@ -534,7 +594,7 @@ Asynchronous files operations. Based on thread-pool under the hood.
 Threaded decorator
 ++++++++++++++++++
 
-Wraps blocking function and run it in the thread pool.
+Wraps blocking function and runs it in the current thread pool.
 
 
 .. code-block:: python
@@ -568,7 +628,7 @@ Fast ThreadPoolExecutor
 
 This is a simple thread pool implementation.
 
-Installation as a default thread pool:
+Setting as a default thread pool:
 
 .. code-block:: python
 
@@ -580,8 +640,18 @@ Installation as a default thread pool:
     loop.set_default_executor(thread_pool)
 
 
+.. note::
+
+    ``entrypoint`` context manager will set it by default.
+
+    ``entrypoint``'s argument ``pool_size`` limits thread pool size.
+
+
 Bind socket
 +++++++++++
+
+Bind socket and set ``setblocking(False)`` for just created socket.
+This detects ``address`` format and select socket family automatically.
 
 .. code-block:: python
 
@@ -597,7 +667,7 @@ Bind socket
 Periodic callback
 +++++++++++++++++
 
-Runs coroutine function periodically
+Runs coroutine function periodically.
 
 .. code-block:: python
 
@@ -625,6 +695,9 @@ Runs coroutine function periodically
 Logging configuration
 +++++++++++++++++++++
 
+Color
+*****
+
 Setting up colorized logs:
 
 .. code-block:: python
@@ -635,6 +708,9 @@ Setting up colorized logs:
 
     # Configure logging
     basic_config(level=logging.INFO, buffered=False, log_format='color')
+
+JSON
+****
 
 Setting up json logs:
 
@@ -651,8 +727,7 @@ Setting up json logs:
 Buffered log handler
 ********************
 
-Parameter `buffered=True` enables memory buffer that flushes
-logs into a thread.
+Parameter `buffered=True` enables memory buffer that flushes logs in a thread.
 
 .. code-block:: python
 
@@ -685,56 +760,12 @@ logs into a thread.
         loop.run_forever()
 
 
-Useful services
----------------
+.. note::
 
-Memory Tracer
-+++++++++++++
+    ``entrypoint`` accepts ``log_format`` parameter for configure it.
 
-Simple and useful service for logging largest python
-objects allocated in memory.
-
-
-.. code-block:: python
-
-    import asyncio
-    import os
-    from aiomisc.entrypoint import entrypoint
-    from aiomisc.service import MemoryTracer
-
-
-    async def main():
-        leaking = []
-
-        while True:
-            leaking.append(os.urandom(128))
-            await asyncio.sleep(0)
-
-
-    with entrypoint(MemoryTracer(interval=1, top_results=5)) as loop:
-        loop.run_until_complete(main())
-
-
-This example will log something like this each second.
-
-.. code-block::
-
-    [T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
-     Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
-          12 |       12 |   1.9KiB |   1.9KiB | aiomisc/periodic.py:40
-          12 |       12 |   1.8KiB |   1.8KiB | aiomisc/entrypoint.py:93
-           6 |        6 |   1.1KiB |   1.1KiB | aiomisc/thread_pool.py:71
-           2 |        2 |   976.0B |   976.0B | aiomisc/thread_pool.py:44
-           5 |        5 |   712.0B |   712.0B | aiomisc/thread_pool.py:52
-
-    [T:[6] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
-     Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
-       43999 |    43999 |   7.1MiB |   7.1MiB | scratches/scratch_8.py:11
-          47 |       47 |   4.7KiB |   4.7KiB | env/bin/../lib/python3.7/abc.py:143
-          33 |       33 |   2.8KiB |   2.8KiB | 3.7/lib/python3.7/tracemalloc.py:113
-          44 |       44 |   2.4KiB |   2.4KiB | 3.7/lib/python3.7/tracemalloc.py:185
-          14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40
-
+    List of all supported log formats is available from
+    ``aiomisc.log.LogFormat.choices()``
 
 Versioning
 ----------
