@@ -413,13 +413,13 @@ aiohttp service
 
    requires installed aiohttp:
 
-   .. code-block:: plain
+   .. code-block::
 
        pip install aiohttp
 
    or using extras:
 
-   .. code-block:: plain
+   .. code-block::
 
        pip install aiomisc[aiohttp]
 
@@ -717,7 +717,7 @@ objects allocated in memory.
 
 This example will log something like this each second.
 
-.. code-block:: plain
+.. code-block::
 
     [T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:
      Objects | Obj.Diff |   Memory | Mem.Diff | Traceback
@@ -754,7 +754,7 @@ Should be installed:
 
 For setting up developer environment just type
 
-    .. code-block:: plain
+    .. code-block::
 
         make develop
 
