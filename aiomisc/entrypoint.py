@@ -42,9 +42,11 @@ def entrypoint(*services: Service,
                log_format: Union[str, LogFormat] = 'color',
                log_buffer_size: int = 1024,
                log_flush_interval: float = 0.2,
-               log_config: bool = True):
+               log_config: bool = True,
+               debug: bool = False):
     """
 
+    :param debug: set debug to event loop
     :param loop: loop
     :param services: Service instances which will be starting.
     :param pool_size: thread pool size
@@ -56,6 +58,8 @@ def entrypoint(*services: Service,
     """
 
     loop = loop or new_event_loop(pool_size)
+    loop.set_debug(debug)
+
     ctx = Context(loop=loop)
 
     if log_config:
