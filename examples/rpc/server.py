@@ -57,7 +57,7 @@ class RPCServer(TCPServer):
                     payload = f.getvalue()
 
                 writer.write(payload)
-        except Exception as e:
+        except Exception:
             writer.close()
             raise
 
