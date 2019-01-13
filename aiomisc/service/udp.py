@@ -1,5 +1,6 @@
 import asyncio
 import socket
+from functools import partial
 
 from .base import SimpleServer
 from ..utils import OptionsType, bind_socket
@@ -30,7 +31,8 @@ class UDPServer(SimpleServer):
                     '"address" and "port" couple'
                 )
 
-            self.socket = bind_socket(
+            self.make_socket = partial(
+                bind_socket,
                 socket.AF_INET6 if ':' in address else socket.AF_INET,
                 socket.SOCK_DGRAM,
                 address=address, port=port, options=options,
@@ -38,7 +40,7 @@ class UDPServer(SimpleServer):
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
         else:
-            self.socket = sock
+            self.make_socket = sock
 
         self.server = None
         self._protocol = None
@@ -50,5 +52,5 @@ class UDPServer(SimpleServer):
     async def start(self):
         self.server, self._protocol = await self.loop.create_datagram_endpoint(
             lambda: UDPServer.UDPSimpleProtocol(self.handle_datagram),
-            sock=self.socket,
+            sock=self.make_socket(),
         )

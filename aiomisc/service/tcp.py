@@ -1,5 +1,6 @@
 import asyncio
 import socket
+from functools import partial
 
 from .base import SimpleServer
 from ..utils import OptionsType, bind_socket
@@ -17,7 +18,8 @@ class TCPServer(SimpleServer):
                     '"address" and "port" couple'
                 )
 
-            self.socket = bind_socket(
+            self.make_socket = partial(
+                bind_socket,
                 address=address,
                 port=port,
                 options=options,
@@ -25,7 +27,7 @@ class TCPServer(SimpleServer):
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
         else:
-            self.socket = sock
+            self.make_socket = lambda: sock
 
         super().__init__(**kwargs)
 
@@ -36,7 +38,7 @@ class TCPServer(SimpleServer):
     async def start(self):
         self.server = await asyncio.start_server(
             self.handle_client,
-            sock=self.socket,
+            sock=self.make_socket(),
             loop=self.loop,
         )
 

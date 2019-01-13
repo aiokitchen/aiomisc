@@ -1,6 +1,7 @@
 import asyncio
 import socket
 import ssl
+from functools import partial
 from pathlib import Path
 from typing import Union
 
@@ -53,7 +54,8 @@ class TLSServer(SimpleServer):
                     '"address" and "port" couple'
                 )
 
-            self.socket = bind_socket(
+            self.make_socket = partial(
+                bind_socket,
                 address=address,
                 port=port,
                 options=options,
@@ -61,7 +63,7 @@ class TLSServer(SimpleServer):
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
         else:
-            self.socket = sock
+            self.make_socket = sock
 
         super().__init__(**kwargs)
 
@@ -76,7 +78,7 @@ class TLSServer(SimpleServer):
 
         self.server = await asyncio.start_server(
             self.handle_client,
-            sock=self.socket,
+            sock=self.make_socket,
             loop=self.loop,
             ssl=ssl_context
         )
