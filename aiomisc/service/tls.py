@@ -63,7 +63,7 @@ class TLSServer(SimpleServer):
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
         else:
-            self.make_socket = sock
+            self.make_socket = lambda: sock
 
         super().__init__(**kwargs)
 

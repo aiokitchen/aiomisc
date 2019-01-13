@@ -40,7 +40,7 @@ class UDPServer(SimpleServer):
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
         else:
-            self.make_socket = sock
+            self.make_socket = lambda: sock
 
         self.server = None
         self._protocol = None
