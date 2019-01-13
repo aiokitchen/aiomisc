@@ -29,6 +29,8 @@ class TCPServer(SimpleServer):
         else:
             self.make_socket = lambda: sock
 
+        self.socket = None
+
         super().__init__(**kwargs)
 
     async def handle_client(self, reader: asyncio.StreamReader,
@@ -36,9 +38,10 @@ class TCPServer(SimpleServer):
         raise NotImplementedError
 
     async def start(self):
+        self.socket = self.make_socket()
         self.server = await asyncio.start_server(
             self.handle_client,
-            sock=self.make_socket(),
+            sock=self.socket,
             loop=self.loop,
         )
 

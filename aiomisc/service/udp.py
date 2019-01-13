@@ -44,13 +44,16 @@ class UDPServer(SimpleServer):
 
         self.server = None
         self._protocol = None
+        self.socket = None
         super().__init__(**kwargs)
 
     def handle_datagram(self, data: bytes, addr):
         raise NotImplementedError
 
     async def start(self):
+        self.socket = self.make_socket()
+
         self.server, self._protocol = await self.loop.create_datagram_endpoint(
             lambda: UDPServer.UDPSimpleProtocol(self.handle_datagram),
-            sock=self.make_socket(),
+            sock=self.socket,
         )

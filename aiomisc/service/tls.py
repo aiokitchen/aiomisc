@@ -65,6 +65,8 @@ class TLSServer(SimpleServer):
         else:
             self.make_socket = lambda: sock
 
+        self.socket = None
+
         super().__init__(**kwargs)
 
     async def handle_client(self, reader: asyncio.StreamReader,
@@ -76,9 +78,11 @@ class TLSServer(SimpleServer):
             None, get_ssl_context, *self.__ssl_options
         )
 
+        self.socket = self.make_socket()
+
         self.server = await asyncio.start_server(
             self.handle_client,
-            sock=self.make_socket,
+            sock=self.socket,
             loop=self.loop,
             ssl=ssl_context
         )
