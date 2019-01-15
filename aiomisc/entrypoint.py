@@ -89,10 +89,26 @@ def entrypoint(*services: Service,
 
         starting = []
 
+        async def start_service(svc: Service):
+            task = svc.loop.create_task(svc.start())
+
+            done, _ = await asyncio.wait([
+                task, svc.start_event.wait()
+            ], return_when=asyncio.FIRST_COMPLETED)
+
+            if not svc.start_event.is_set():
+                svc.start_event.set()
+
+            if not done:
+                return
+
+            ret = done.pop()
+            if isinstance(ret, asyncio.Task):
+                ret.result()
+
         for svc in services:
             svc.set_loop(loop)
-
-            starting.append(loop.create_task(svc.start()))
+            starting.append(loop.create_task(start_service(svc)))
 
         await asyncio.gather(*starting, loop=loop)
 

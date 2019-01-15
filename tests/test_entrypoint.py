@@ -393,3 +393,33 @@ def test_service_events_2():
         pass
 
     assert Awaiter.result
+
+
+def test_service_start_event():
+    class Sleeper(Service):
+        result = False
+
+        async def start(self):
+            self.start_event.set()
+
+            await asyncio.sleep(86400)
+            Sleeper.result = True
+
+    with entrypoint(Sleeper()):
+        pass
+
+    assert not Sleeper.result
+
+
+def test_service_no_start_event():
+    class Sleeper(Service):
+        result = False
+
+        async def start(self):
+            await asyncio.sleep(1)
+            Sleeper.result = True
+
+    with entrypoint(Sleeper()):
+        pass
+
+    assert Sleeper.result

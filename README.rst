@@ -169,7 +169,7 @@ running coroutines on exit.
 Services
 ++++++++
 
-``Services`` are abstractions to help organize lots of different
+``Services`` is abstraction to help organize lots of different
 tasks in one process. Each service must implement ``start()`` method and can
 implement ``stop()`` method.
 
@@ -192,6 +192,10 @@ after event loop has been created.
 
       class MyService(Service):
         async def start(self):
+            # Send signal to entrypoint for continue running
+            self.start_event.set()
+
+            # Start service task
             await asyncio.sleep(3600, loop=self.loop)
 
 
@@ -199,9 +203,12 @@ after event loop has been created.
           loop.run_forever()
 
 
-Method ``start()`` creates as a separate task that can run forever.
-Anyway, during graceful shutdown method ``stop()`` will be called first, and
-after that all running tasks will be cancelled (including ``start()``).
+Method ``start()`` creates as a separate task that can run forever. But in
+this case ``self.start_event.set()`` should be called for notifying
+``entrypoint``.
+
+During graceful shutdown method ``stop()`` will be called first,
+and after that all running tasks will be cancelled (including ``start()``).
 
 
 This package contains some useful base classes for simple services writing.
