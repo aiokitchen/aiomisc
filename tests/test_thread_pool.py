@@ -1,10 +1,11 @@
 import asyncio
+import os
 from contextlib import suppress
 
 import pytest
 import time
 
-from aiomisc.thread_pool import ThreadPoolExecutor, threaded
+from aiomisc.thread_pool import ThreadPoolExecutor, threaded, threaded_iterable
 
 
 @pytest.fixture
@@ -127,3 +128,89 @@ async def test_simple(event_loop, timer):
             sleep(1),
             sleep(1),
         )
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator(event_loop, timer):
+    @threaded
+    def arange(*args):
+        return (yield from range(*args))
+
+    count = 10
+
+    result = []
+    agen = arange(count)
+    async for item in agen:
+        result.append(item)
+
+    assert result == list(range(count))
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator_max_size(event_loop, timer):
+    @threaded_iterable(max_size=1)
+    def arange(*args):
+        return (yield from range(*args))
+
+    arange2 = threaded_iterable(max_size=1)(range)
+
+    count = 10
+
+    result = []
+    agen = arange(count)
+    async for item in agen:
+        result.append(item)
+
+    assert result == list(range(count))
+
+    result = []
+    agen = arange2(count)
+    async for item in agen:
+        result.append(item)
+
+    assert result == list(range(count))
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator_exception(event_loop, timer):
+    @threaded_iterable
+    def arange(*args):
+        yield from range(*args)
+        raise ZeroDivisionError
+
+    count = 10
+
+    result = []
+    agen = arange(count)
+
+    with pytest.raises(ZeroDivisionError):
+        async for item in agen:
+            result.append(item)
+
+    assert result == list(range(count))
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator_close(event_loop, timer):
+    stopped = False
+
+    @threaded_iterable(max_size=2)
+    def noise():
+        nonlocal stopped
+
+        try:
+            while True:
+                yield os.urandom(32)
+        finally:
+            stopped = True
+
+    gen = noise()
+    counter = 0
+
+    async for _ in gen:     # NOQA
+        counter += 1
+        if counter > 9:
+            break
+
+    await gen.close()
+    assert stopped

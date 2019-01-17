@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 
 from threading import Thread
 from queue import Queue, Empty
@@ -6,6 +7,8 @@ from queue import Queue, Empty
 from concurrent.futures._base import Executor
 from functools import partial, wraps
 from types import MappingProxyType
+
+from .iterator_wrapper import IteratorWrapper
 
 
 class ThreadPoolExecutor(Executor):
@@ -98,5 +101,24 @@ def threaded(func):
     @wraps(func)
     async def wrap(*args, **kwargs):
         return await run_in_executor(func=func, args=args, kwargs=kwargs)
+
+    if inspect.isgeneratorfunction(func):
+        return threaded_iterable(func)
+
+    return wrap
+
+
+def threaded_iterable(func=None, max_size: int = 0):
+    if isinstance(func, int):
+        return partial(threaded_iterable, max_size=func)
+    if func is None:
+        return partial(threaded_iterable, max_size=max_size)
+
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        return IteratorWrapper(
+            partial(func, *args, **kwargs),
+            max_size=max_size
+        )
 
     return wrap

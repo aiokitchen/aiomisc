@@ -1,5 +1,6 @@
 chardet<4
 colorlog
+janus~=0.4.0
 prettylog
 pycares<3
 uvloop<1

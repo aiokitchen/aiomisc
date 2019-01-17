@@ -629,6 +629,62 @@ Wraps blocking function and runs it in the current thread pool.
         loop = new_event_loop()
         loop.run_until_complete(main())
 
+In case function is a generator function ``@threaded`` decorator will return
+``IteratorWrapper`` (see Threaded generator decorator).
+
+
+Threaded generator decorator
+++++++++++++++++++++++++++++
+
+Wraps blocking generator function and runs it in the current thread pool.
+
+
+.. code-block:: python
+
+    import asyncio
+    import time
+    from aiomisc.utils import new_event_loop
+    from aiomisc.thread_pool import threaded
+
+
+    # Set 2 chunk buffer
+    @threaded_iterable(max_size=2)
+    def urandom_reader():
+        with open('/dev/urandom', "ab") as fp:
+            while True:
+                yield fp.read(1024)
+
+
+    # Infinity buffer
+    @threaded_iterable
+    def blocking_reader(fname):
+        with open(fname, "a") as fp:
+            yield from fp
+
+
+    async def main():
+        reader, writer = await asyncio.open_connection("127.0.0.1", 21)
+        async for line in blocking_reader("employee.csv"):
+            await writer.write(line.encode())
+
+        # Feed white noise
+        gen = urandom_reader()
+        counter = 0
+        async for line in gen:
+            await writer.write(line)
+            counter += 1
+
+            if counter == 10:
+                break
+
+        # Stop running generator
+        await gen.close()
+
+
+    if __name__ == '__main__':
+        loop = new_event_loop()
+        loop.run_until_complete(main())
+
 
 Fast ThreadPoolExecutor
 +++++++++++++++++++++++
