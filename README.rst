@@ -680,6 +680,16 @@ Wraps blocking generator function and runs it in the current thread pool.
         # Stop running generator
         await gen.close()
 
+        # Using context manager
+        async with urandom_reader() as gen:
+            counter = 0
+            async for line in gen:
+                await writer.write(line)
+                counter += 1
+
+                if counter == 10:
+                    break
+
 
     if __name__ == '__main__':
         loop = new_event_loop()

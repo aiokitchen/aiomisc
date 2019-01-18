@@ -78,3 +78,12 @@ class IteratorWrapper(AsyncIterator):
             raise item from item
 
         return item
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.closed:
+            return
+
+        await self.close()

@@ -214,3 +214,27 @@ async def test_threaded_generator_close(event_loop, timer):
 
     await gen.close()
     assert stopped
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator_close_cm(event_loop, timer):
+    stopped = False
+
+    @threaded_iterable(max_size=1)
+    def noise():
+        nonlocal stopped
+
+        try:
+            while True:
+                yield os.urandom(32)
+        finally:
+            stopped = True
+
+    async with noise() as gen:
+        counter = 0
+        async for _ in gen:     # NOQA
+            counter += 1
+            if counter > 9:
+                break
+
+    assert stopped
