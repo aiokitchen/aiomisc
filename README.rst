@@ -644,7 +644,7 @@ Wraps blocking generator function and runs it in the current thread pool.
     import asyncio
     import time
     from aiomisc.utils import new_event_loop
-    from aiomisc.thread_pool import threaded
+    from aiomisc.thread_pool import threaded_iterable
 
 
     # Set 2 chunk buffer
