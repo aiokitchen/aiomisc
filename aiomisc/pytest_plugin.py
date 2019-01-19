@@ -36,6 +36,9 @@ def pytest_addoption(parser):
     group.addoption('--aiomisc-pool-size', type=int, default=4,
                     help='Default thread pool size')
 
+    group.addoption('--aiomisc-test-timeout', type=float, default=None,
+                    help='Test timeout')
+
 
 def pytest_fixture_setup(fixturedef):  # type: ignore
     func = fixturedef.func
@@ -83,6 +86,11 @@ def loop_debug(request):
     return request.config.getoption('--aiomisc-debug')
 
 
+@pytest.fixture(autouse=True)
+def aiomisc_test_timeout(request):
+    return request.config.getoption('--aiomisc-test-timeout')
+
+
 def pytest_pycollect_makeitem(collector, name, obj):  # type: ignore
     if collector.funcnamefilter(name) and asyncio.iscoroutinefunction(obj):
         return list(collector._genfunctions(name, obj))
@@ -93,13 +101,22 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
         return
 
     event_loop = pyfuncitem.funcargs.get('loop', None)
+    aiomisc_test_timeout = pyfuncitem.funcargs.get(
+        'aiomisc_test_timeout', None
+    )
 
     kwargs = {
         arg: pyfuncitem.funcargs[arg]
         for arg in pyfuncitem._fixtureinfo.argnames
     }
 
-    event_loop.run_until_complete(pyfuncitem.obj(**kwargs))
+    event_loop.run_until_complete(
+        asyncio.wait_for(
+            pyfuncitem.obj(**kwargs),
+            timeout=aiomisc_test_timeout,
+            loop=event_loop
+        )
+    )
 
     return True
 

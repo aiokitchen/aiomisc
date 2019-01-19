@@ -1,6 +1,5 @@
 import asyncio
 from functools import wraps
-from time import monotonic
 from typing import Optional, Type, TypeVar, Union
 
 from .timeout import timeout
@@ -14,7 +13,9 @@ T = TypeVar('T')
 def asyncbackoff(attempt_timeout: Optional[Number],
                  deadline: Optional[Number],
                  pause: Number = 0, *exceptions: Type[Exception]):
-    if pause < 0:
+    if not pause:
+        pause = 0
+    elif pause < 0:
         raise ValueError("'pause' must be positive")
 
     if attempt_timeout is not None and attempt_timeout < 0:
@@ -23,35 +24,40 @@ def asyncbackoff(attempt_timeout: Optional[Number],
     if deadline is not None and deadline < 0:
         raise ValueError("'deadline' must be positive or None")
 
-    exceptions = tuple(exceptions) or (Exception,)
+    exceptions = tuple(exceptions) or ()
     exceptions += asyncio.TimeoutError,
 
     def decorator(func):
         if attempt_timeout is not None:
-            func = timeout(attempt_timeout, False)(func)
+            func = timeout(attempt_timeout)(func)
 
         @wraps(func)
         async def wrap(*args, **kwargs):
-            countdown = deadline
+            loop = asyncio.get_event_loop()
+            last_exc = None
 
-            while countdown is None or countdown > 0:
-                started_at = monotonic()
+            async def run():
+                nonlocal last_exc
 
-                try:
-                    # noinspection PyCallingNonCallable
-                    return await func(*args, **kwargs)
-                except exceptions:
-                    if countdown is not None:
-                        countdown -= monotonic() - started_at + pause
+                while True:
+                    try:
+                        return await asyncio.wait_for(
+                            func(*args, **kwargs),
+                            loop=loop,
+                            timeout=attempt_timeout
+                        )
+                    except asyncio.CancelledError:
+                        raise
+                    except exceptions as e:
+                        last_exc = e
+                        await asyncio.sleep(pause, loop=loop)
 
-                        if countdown <= 0:
-                            raise
+            try:
+                return await asyncio.wait_for(run(), timeout=deadline, loop=loop)
+            except Exception:
+                if last_exc:
+                    raise last_exc
+                raise
 
-                    if pause > 0:
-                        await asyncio.sleep(pause)
-
-                    continue
-
-            raise asyncio.TimeoutError('Is over now')
         return wrap
     return decorator

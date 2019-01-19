@@ -124,64 +124,83 @@ def shield(func):
     return wrap
 
 
-class SelectResult(list):
-    def __init__(self, *args, **kwargs):
+class SelectResult:
+    def __init__(self, length):
+        self.length = length
         self.result_idx = None
         self.is_exception = None
-        super().__init__(*args, **kwargs)
+        self.value = None
 
     def set_result(self, idx, value, is_exception):
         if self.result_idx is not None:
-            raise RuntimeError("Result already set")
+            return
 
-        self[idx] = value
+        self.value = value
         self.result_idx = idx
         self.is_exception = is_exception
 
     def result(self):
-        res = self[self.result_idx]
-
         if self.is_exception:
-            raise res
+            raise self.value
+        return self.value
 
-        return res
+    def done(self):
+        return self.result_idx is not None
+
+    def __iter__(self):
+        for i in range(self.length - 1):
+            if i == self.result_idx:
+                yield self.value
+            yield None
 
 
-@shield
 async def cancel_tasks(tasks, loop=None):
-    loop = loop or asyncio.get_event_loop()
-
     if not tasks:
         return
 
-    for coro in tasks:
-        coro.cancel()
-
-    await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED, loop=loop)
-
-
-async def select(*awaitables, cancel=True, loop=None) -> SelectResult:
     loop = loop or asyncio.get_event_loop()
-    result = SelectResult([None] * len(awaitables))
+
+    for task in tasks:
+        task.cancel()
+
+    return await loop.create_task(
+        asyncio.wait(tasks, loop=loop, return_when=asyncio.ALL_COMPLETED)
+    )
+
+
+async def select(*awaitables, return_exceptions=False, cancel=True,
+                 timeout=None, wait=True, loop=None) -> SelectResult:
+
+    loop = loop or asyncio.get_event_loop()
+    result = SelectResult(len(awaitables))
 
     async def waiter(idx, awaitable):
         nonlocal result
         try:
             ret = await awaitable
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             result.set_result(idx, e, True)
         else:
             result.set_result(idx, ret, False)
 
     _, pending = await asyncio.wait(
-        [waiter(i, c) for i, c in enumerate(awaitables)],
+        [asyncio.ensure_future(waiter(i, c)) for i, c in enumerate(awaitables)],
         loop=loop, return_when=asyncio.FIRST_COMPLETED,
+        timeout=timeout,
     )
 
-    if cancel:
-        await cancel_tasks(pending, loop=loop)
+    try:
+        if cancel:
+            cancelling = cancel_tasks(pending, loop=loop)
 
-    if result.is_exception:
+            if wait:
+                await cancelling
+    except:
+        raise
+
+    if result.is_exception and not return_exceptions:
         result.result()
 
     return result

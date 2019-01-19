@@ -7,11 +7,10 @@ from async_timeout import timeout
 import aiomisc
 
 
-@pytest.mark.asyncio
 async def test_simple(loop):
     mana = 0
 
-    @aiomisc.asyncbackoff(0.10, 1)
+    @aiomisc.asyncbackoff(0.10, 1, None, Exception)
     async def test():
         nonlocal mana
 
@@ -25,7 +24,6 @@ async def test_simple(loop):
     assert mana == 5
 
 
-@pytest.mark.asyncio
 async def test_simple_fail(loop):
     mana = 0
 
@@ -44,11 +42,10 @@ async def test_simple_fail(loop):
     assert mana
 
 
-@pytest.mark.asyncio
 async def test_too_long(loop):
     mana = 0
 
-    @aiomisc.asyncbackoff(0.5, 0.5)
+    @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception)
     async def test():
         nonlocal mana
 
@@ -63,13 +60,12 @@ async def test_too_long(loop):
     assert mana < 2
 
 
-@pytest.mark.asyncio
 async def test_too_long_multiple_times(loop):
     mana = 0
     deadline = 0.5
-    waterline = 0.06
+    attempt_time = 0.06
 
-    @aiomisc.asyncbackoff(waterline, deadline)
+    @aiomisc.asyncbackoff(attempt_time, deadline, 0, Exception)
     async def test():
         nonlocal mana
 
@@ -85,7 +81,6 @@ async def test_too_long_multiple_times(loop):
     assert mana < 11
 
 
-@pytest.mark.asyncio
 async def test_exit(loop):
     mana = 0
 
@@ -104,7 +99,6 @@ async def test_exit(loop):
     assert mana < 11
 
 
-@pytest.mark.asyncio
 async def test_pause(loop):
     mana = 0
 
@@ -123,11 +117,10 @@ async def test_pause(loop):
     assert mana == 2
 
 
-@pytest.mark.asyncio
 async def test_no_waterline(loop):
     mana = 0
 
-    @aiomisc.asyncbackoff(None, 1, 0)
+    @aiomisc.asyncbackoff(None, 1, 0, Exception)
     async def test():
         nonlocal mana
 
@@ -142,12 +135,11 @@ async def test_no_waterline(loop):
     assert mana == 5
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize('max_sleep', (0.5, 1))
 async def test_no_deadline(loop, max_sleep):
     mana = 0
 
-    @aiomisc.asyncbackoff(0.15, None, 0)
+    @aiomisc.asyncbackoff(0.15, None, 0, Exception)
     async def test():
         nonlocal mana
 
@@ -173,11 +165,10 @@ def test_values(loop):
         aiomisc.asyncbackoff(0, 0)(lambda x: None)
 
 
-@pytest.mark.asyncio
 async def test_too_long_multiple(loop):
     mana = 0
 
-    @aiomisc.asyncbackoff(0.5, 0.5)
+    @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception)
     async def test():
         nonlocal mana
 
