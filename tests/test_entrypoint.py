@@ -161,7 +161,8 @@ def test_tcp_server(aiomisc_unused_port):
 
     @threaded
     def writer():
-        with socket.create_connection(('127.0.0.1', aiomisc_unused_port)) as sock:
+        port = aiomisc_unused_port
+        with socket.create_connection(('127.0.0.1', port)) as sock:
             sock.send(b'hello server\n')
 
     with entrypoint(service) as loop:
