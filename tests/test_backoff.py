@@ -182,7 +182,7 @@ async def test_too_long_multiple(loop):
         await test()
 
     t2 = time.monotonic() - t
-    assert t2 > 0.5
+    assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
