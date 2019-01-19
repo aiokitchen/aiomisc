@@ -147,18 +147,22 @@ class SelectResult(list):
         return res
 
 
+@shield
+async def cancel_tasks(tasks, loop=None):
+    loop = loop or asyncio.get_event_loop()
+
+    if not tasks:
+        return
+
+    for coro in tasks:
+        coro.cancel()
+
+    await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED, loop=loop)
+
+
 async def select(*awaitables, cancel=True, loop=None) -> SelectResult:
     loop = loop or asyncio.get_event_loop()
     result = SelectResult([None] * len(awaitables))
-
-    async def cancel_others(pending):
-        if not pending:
-            return
-
-        for coro in pending:
-            coro.cancel()
-
-        await asyncio.gather(*pending, return_exceptions=True, loop=loop)
 
     async def waiter(idx, awaitable):
         nonlocal result
@@ -175,7 +179,7 @@ async def select(*awaitables, cancel=True, loop=None) -> SelectResult:
     )
 
     if cancel:
-        await loop.create_task(cancel_others(pending))
+        await cancel_tasks(pending, loop=loop)
 
     if result.is_exception:
         result.result()
