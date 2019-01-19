@@ -904,11 +904,31 @@ Event loop policy overriding
 
 .. code-block:: python
 
-    policies = (uvloop.EventLoopPolicy(), asyncio.DefaultEventLoopPolicy())
-    policy_ids = ('uvloop', 'asyncio')
+    import uvloop
+    import tokio
+
+    policy_ids = ('uvloop', 'asyncio', 'tokio')
+    policies = (uvloop.EventLoopPolicy(),
+                asyncio.DefaultEventLoopPolicy(),
+                tokio.EventLoopPolicy())
 
     @pytest.fixture(params=policies, ids=policy_ids)
     def event_loop_policy(request):
+        return request.param
+
+
+Thread pool overriding
+**********************
+
+.. code-block:: python
+
+    thread_pool_ids = ('aiomisc pool', 'default pool')
+    thread_pool_implementation = (ThreadPoolExecutor,
+                                  concurrent.futures.ThreadPoolExecutor)
+
+
+    @pytest.fixture(params=thread_pool_implementation, ids=thread_pool_ids)
+    def thread_pool_executor(request):
         return request.param
 
 
