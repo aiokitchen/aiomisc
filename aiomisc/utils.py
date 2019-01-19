@@ -197,7 +197,7 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
 
             if wait:
                 await cancelling
-    except:
+    except Exception:
         raise
 
     if result.is_exception and not return_exceptions:

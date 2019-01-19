@@ -53,7 +53,9 @@ def asyncbackoff(attempt_timeout: Optional[Number],
                         await asyncio.sleep(pause, loop=loop)
 
             try:
-                return await asyncio.wait_for(run(), timeout=deadline, loop=loop)
+                return await asyncio.wait_for(
+                    run(), timeout=deadline, loop=loop
+                )
             except Exception:
                 if last_exc:
                     raise last_exc

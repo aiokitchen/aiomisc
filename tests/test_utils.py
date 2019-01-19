@@ -176,4 +176,3 @@ def test_bind_address(address, family, aiomisc_unused_port):
 
     assert isinstance(sock, socket.socket)
     assert sock.family == family
-
