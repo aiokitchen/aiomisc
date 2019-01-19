@@ -36,12 +36,29 @@ Installing from pypi:
 
     pip3 install aiomisc
 
+With uvloop_:
+
+.. code-block:: bash
+
+    pip3 install "aiomisc[uvloop]"
+
+
+With aiohttp_:
+
+.. code-block:: bash
+
+    pip3 install "aiomisc[aiohttp]"
+
 
 Installing from github.com:
 
 .. code-block:: bash
 
     pip3 install git+https://github.com/mosquito/aiomisc.git
+
+
+.. _uvloop: https://pypi.org/project/uvloop
+.. _aiohttp: https://pypi.org/project/aiohttp
 
 
 Quick Start
