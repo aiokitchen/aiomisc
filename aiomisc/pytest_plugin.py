@@ -1,5 +1,7 @@
 import asyncio
 import os
+from contextlib import suppress
+
 import uvloop
 from socket import socket
 
@@ -152,7 +154,8 @@ def loop(services, loop_debug, default_context,
 
             yield event_loop
     finally:
-        pool.shutdown(True)
+        with suppress(Exception):
+            pool.shutdown(True)
 
 
 def get_unused_port():

@@ -3,7 +3,7 @@ import concurrent.futures
 import os
 import ssl
 import uvloop
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
