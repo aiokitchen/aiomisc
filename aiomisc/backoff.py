@@ -10,37 +10,29 @@ Number = Union[int, float]
 T = TypeVar('T')
 
 
-# noinspection PyPep8Naming,SpellCheckingInspection
-class asyncbackoff:
-    __slots__ = ('attempt_timeout', 'countdown', 'exceptions', 'pause')
-
-    def __init__(self, attempt_timeout: Optional[Number],
+# noinspection SpellCheckingInspection
+def asyncbackoff(attempt_timeout: Optional[Number],
                  deadline: Optional[Number],
                  pause: Number = 0, *exceptions: Type[Exception]):
+    if pause < 0:
+        raise ValueError("'pause' must be positive")
 
-        if pause < 0:
-            raise ValueError("'pause' must be positive")
+    if attempt_timeout is not None and attempt_timeout < 0:
+        raise ValueError("'attempt_timeout' must be positive or None")
 
-        if attempt_timeout is not None and attempt_timeout < 0:
-            raise ValueError("'attempt_timeout' must be positive or None")
+    if deadline is not None and deadline < 0:
+        raise ValueError("'deadline' must be positive or None")
 
-        if deadline is not None and deadline < 0:
-            raise ValueError("'deadline' must be positive or None")
+    exceptions = tuple(exceptions) or (Exception,)
+    exceptions += asyncio.TimeoutError,
 
-        self.exceptions = tuple(exceptions) or (Exception,)
-        self.exceptions += asyncio.TimeoutError,
-        self.pause = pause
-        self.attempt_timeout = attempt_timeout
-        self.countdown = deadline
-
-    def __call__(self, func: T) -> T:
-        if self.attempt_timeout is not None:
-            func = timeout(self.attempt_timeout)(func)
+    def decorator(func):
+        if attempt_timeout is not None:
+            func = timeout(attempt_timeout)(func)
 
         @wraps(func)
         async def wrap(*args, **kwargs):
-            countdown = self.countdown
-            pause = self.pause
+            countdown = deadline
 
             while countdown is None or countdown > 0:
                 started_at = monotonic()
@@ -48,7 +40,7 @@ class asyncbackoff:
                 try:
                     # noinspection PyCallingNonCallable
                     return await func(*args, **kwargs)
-                except self.exceptions:
+                except exceptions:
                     if countdown is not None:
                         countdown -= monotonic() - started_at + pause
 
@@ -61,5 +53,5 @@ class asyncbackoff:
                     continue
 
             raise asyncio.TimeoutError('Is over now')
-
         return wrap
+    return decorator

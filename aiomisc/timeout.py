@@ -7,11 +7,8 @@ Number = Union[int, float]
 T = TypeVar('T')
 
 
-class timeout:
-    def __init__(self, timeout):
-        self.timeout = timeout
-
-    def __call__(self, func: T) -> T:
+def timeout(value):
+    def decorator(func):
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function is not a coroutine function")
 
@@ -21,9 +18,8 @@ class timeout:
 
             # noinspection PyCallingNonCallable
             return await asyncio.wait_for(
-                func(*args, **kwargs),
-                self.timeout,
-                loop=loop
+                func(*args, **kwargs), value, loop=loop
             )   # type: asyncio.Task
 
         return wrap
+    return decorator
