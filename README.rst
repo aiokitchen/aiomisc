@@ -881,6 +881,22 @@ asynchronous fuxture example:
         yield
 
 
+Passing default context
+***********************
+
+.. code-block:: python
+
+    import pytest
+
+
+    @pytest.fixture
+    def default_context():
+        return {
+            'foo': 'bar',
+            'bar': 'foo',
+        }
+
+
 Testing services
 ****************
 
