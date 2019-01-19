@@ -56,7 +56,7 @@ Async entrypoint with logging and useful arguments:
     import os
     import logging
 
-    from aiomisc.entrypoint import entrypoint, LogFormat
+    from aiomisc import entrypoint
 
 
     parser = argparse.ArgumentParser()
@@ -73,7 +73,7 @@ Async entrypoint with logging and useful arguments:
     parser.add_argument(
         "--log-format", help="Log format",
         default=os.getenv('LOG_FORMAT', 'color'),
-        choices=LogFormat.choices(),
+        choices=aiomisc.log.LogFormat.choices(),
         metavar='LOG_FORMAT',
     )
 
@@ -111,13 +111,13 @@ Install event loop on program start:
 .. code-block:: python
 
     import asyncio
-    from aiomisc.utils import new_event_loop
+    import aiomisc
 
 
     # Installing uvloop event loop
     # and set `aiomisc.thread_pool.ThreadPoolExecutor`
     # as default executor
-    new_event_loop()
+    aiomisc.new_event_loop()
 
 
     async def main():
@@ -134,7 +134,7 @@ Close current event loop and install a new one:
 .. code-block:: python
 
     import asyncio
-    from aiomisc.utils import new_event_loop
+    import aiomisc
 
 
     async def main():
@@ -142,7 +142,7 @@ Close current event loop and install a new one:
 
 
     if __name__ == '__main__':
-        loop = new_event_loop()
+        loop = aiomisc.new_event_loop()
         loop.run_until_complete(main())
 
 Overview:
@@ -157,12 +157,12 @@ running coroutines on exit.
 .. code-block:: python
 
     import asyncio
-    from aiomisc.entrypoint import entrypoint
+    import aiomisc
 
     async def main():
         await asyncio.sleep(1)
 
-    with entrypoint() as loop:
+    with aiomisc.entrypoint() as loop:
         loop.run_until_complete(main())
 
 
@@ -186,8 +186,7 @@ after event loop has been created.
 
    .. code-block:: python
 
-      from aiomisc.service import Service
-      from aiomisc.entrypoint import entrypoint
+      from aiomisc import entrypoint, Service
 
 
       class MyService(Service):
@@ -285,7 +284,7 @@ After exiting the entrypoint service instances will be gracefully shut down.
 .. code-block:: python
 
     import asyncio
-    from aiomisc.entrypoint import entrypoint
+    from aiomisc import entrypoint
     from aiomisc.service import Service, TCPServer, UDPServer
 
 
@@ -328,7 +327,7 @@ to ``self`` as attributes.
 .. code-block:: python
 
     import asyncio
-    from aiomisc.entrypoint import entrypoint
+    from aiomisc import entrypoint
     from aiomisc.service import Service, TCPServer, UDPServer
 
 
@@ -379,8 +378,7 @@ started. In other cases ``get_context()`` function returns current context.
     import asyncio
     from random import random, randint
 
-    from aiomisc.entrypoint import entrypoint, get_context
-    from aiomisc.service import Service
+    from aiomisc import entrypoint, get_context, Service
 
 
     class LoggingService(Service):
@@ -444,7 +442,7 @@ aiohttp application can be started as a service:
 
     import aiohttp.web
     import argparse
-    from aiomisc.entrypoint import entrypoint
+    from aiomisc import entrypoint
     from aiomisc.service.aiohttp import AIOHTTPService
 
     parser = argparse.ArgumentParser()
@@ -494,7 +492,7 @@ objects allocated in memory.
 
     import asyncio
     import os
-    from aiomisc.entrypoint import entrypoint
+    from aiomisc import entrypoint
     from aiomisc.service import MemoryTracer
 
 
@@ -538,7 +536,7 @@ Decorator that ensures the execution time limit for decorated function is met.
 
 .. code-block:: python
 
-    from aiomisc.timeout import timeout
+    from aiomisc import timeout
 
     @timeout(1)
     async def bad_func():
@@ -562,7 +560,7 @@ In case of exception function will be called again with similar arguments after
 
 .. code-block:: python
 
-    from aiomisc.backoff import asyncbackoff
+    from aiomisc import asyncbackoff
 
     attempt_timeout = 0.1
     deadline = 1
@@ -585,11 +583,11 @@ Asynchronous files operations. Based on thread-pool under the hood.
 
 .. code-block:: python
 
-    from aiomisc.io import async_open
+    import aiomisc
 
 
     async def db_fetch():
-        async with async_open('/tmp/test.txt', 'w+') as afp:
+        async with aiomisc.io.async_open('/tmp/test.txt', 'w+') as afp:
             await afp.write("Hello")
             await afp.write(" ")
             await afp.write("world")
@@ -608,8 +606,7 @@ Wraps blocking function and runs it in the current thread pool.
 
     import asyncio
     import time
-    from aiomisc.utils import new_event_loop
-    from aiomisc.thread_pool import threaded
+    from aiomisc import new_event_loop, threaded
 
 
     @threaded
@@ -643,8 +640,7 @@ Wraps blocking generator function and runs it in the current thread pool.
 
     import asyncio
     import time
-    from aiomisc.utils import new_event_loop
-    from aiomisc.thread_pool import threaded_iterable
+    from aiomisc import new_event_loop, threaded_iterable
 
 
     # Set 2 chunk buffer
@@ -706,7 +702,7 @@ Setting as a default thread pool:
 .. code-block:: python
 
     import asyncio
-    from aiomisc.thread_pool import ThreadPoolExecutor
+    from aiomisc import ThreadPoolExecutor
 
     loop = asyncio.get_event_loop()
     thread_pool = ThreadPoolExecutor(4, loop=loop)
@@ -720,6 +716,48 @@ Setting as a default thread pool:
     ``entrypoint``'s argument ``pool_size`` limits thread pool size.
 
 
+Select
+++++++
+
+In some cases you should wait only one of multiple tasks. ``select``
+waits first passed awaitable object and returns list of results.
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+
+
+    async def main():
+        loop = asyncio.get_event_loop()
+        event = asyncio.Event()
+        future = asyncio.Future()
+
+        loop.call_soon(event.set)
+
+        await aiomisc.select(event.wait(), future)
+        print(event.is_set())       # True
+
+        event = asyncio.Event()
+        future = asyncio.Future()
+
+        loop.call_soon(future.set_result, True)
+
+        results = await aiomisc.select(future, event.wait())
+        future_result, event_result = results
+
+        print(results.result())             # True
+        print(results.result_idx)           # 0
+        print(event_result, future_result)  # None, True
+
+
+    with aiomisc.entrypoint() as loop:
+        loop.run_until_complete(main())
+
+When you don't want to cancel pending tasks pass ``cancel=False`` argument.
+
+
+
 Bind socket
 +++++++++++
 
@@ -728,7 +766,7 @@ This detects ``address`` format and select socket family automatically.
 
 .. code-block:: python
 
-    from aiomisc.utils import bind_socket
+    from aiomisc import bind_socket
 
     # IPv4 socket
     sock = bind_socket(address="127.0.0.1", port=1234)
@@ -746,8 +784,7 @@ Runs coroutine function periodically.
 
     import asyncio
     import time
-    from aiomisc.utils import new_event_loop
-    from aiomisc.periodic import PeriodicCallback
+    from aiomisc import new_event_loop, PeriodicCallback
 
 
     async def periodic_function():

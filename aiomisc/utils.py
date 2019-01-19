@@ -5,7 +5,7 @@ import socket
 from functools import wraps
 from multiprocessing import cpu_count
 from types import CoroutineType
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable, Tuple
 
 try:
     from typing import Coroutine
@@ -104,112 +104,6 @@ def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
     return loop
 
 
-# Type hint should be here for pylama's checks
-_TASKS_LIST = List[asyncio.Task]
-
-
-def wait_for(*coroutines: Coroutine,
-             raise_first: bool = True,
-             cancel: bool = True,
-             loop: asyncio.AbstractEventLoop = None):
-    """
-    Simultaneously executes passed coroutines.
-    Results order will not be preserved.
-
-    In case `raise_first=True` the result will be returned
-    after the first coroutine will fail and if the `cancel=True`
-    all pending coroutines will be cancelled.
-
-    :param *coroutines: List of coroutines
-    :param raise_first: If True after the first
-    :param cancel: If True after cancellation all pending coroutines
-                   will be cancelled
-    :param loop: running event loop
-    :return: Coroutine results. Order will not be preserved.
-    """
-
-    tasks = list()                           # type: _TASKS_LIST
-    loop = loop or asyncio.get_event_loop()  # type: asyncio.AbstractEventLoop
-    result_future = loop.create_future()     # type: asyncio.Future
-    waiting = len(coroutines)
-
-    def cancel_pending():
-        nonlocal result_future
-        nonlocal tasks
-
-        for t in tasks:
-            if t.done():
-                continue
-
-            t.cancel()
-
-    def raise_first_exception(exc: Exception):
-        nonlocal result_future
-        nonlocal tasks
-
-        if result_future.done():
-            return
-
-        result_future.set_exception(exc)
-
-    def return_result():
-        nonlocal result_future
-        nonlocal tasks
-
-        if result_future.done():
-            return
-
-        results = []
-
-        for task in tasks:
-            exc = task.exception()
-
-            results.append(task.result() if exc is None else exc)
-
-        result_future.set_result(results)
-
-    def done_callback(t: asyncio.Future):
-        nonlocal tasks
-        nonlocal result_future
-        nonlocal waiting
-
-        waiting -= 1
-
-        cancelled = t.cancelled()
-
-        exc = None
-        if not cancelled:
-            exc = t.exception()
-
-        if cancelled or exc is None:
-            if waiting == 0:
-                return_result()
-
-            return
-
-        if raise_first:
-            raise_first_exception(exc)
-
-        if waiting == 0:
-            return_result()
-
-    for coroutine in coroutines:
-        task = loop.create_task(coroutine)
-        task.add_done_callback(done_callback)
-        tasks.append(task)
-
-    async def run():
-        nonlocal result_future
-
-        try:
-            return await result_future
-        finally:
-            if cancel:
-                cancel_pending()
-
-    return run()
-
-
 def shield(func):
     """
     Simple and useful decorator for wrap the coroutine to `asyncio.shield`.
@@ -228,3 +122,62 @@ def shield(func):
         return wraps(func)(awaiter)(asyncio.shield(func(*args, **kwargs)))
 
     return wrap
+
+
+class SelectResult(list):
+    def __init__(self, *args, **kwargs):
+        self.result_idx = None
+        self.is_exception = None
+        super().__init__(*args, **kwargs)
+
+    def set_result(self, idx, value, is_exception):
+        if self.result_idx is not None:
+            raise RuntimeError("Result already set")
+
+        self[idx] = value
+        self.result_idx = idx
+        self.is_exception = is_exception
+
+    def result(self):
+        res = self[self.result_idx]
+
+        if self.is_exception:
+            raise res
+
+        return res
+
+
+async def select(*awaitables, cancel=True, loop=None) -> SelectResult:
+    loop = loop or asyncio.get_event_loop()
+    result = SelectResult([None] * len(awaitables))
+
+    async def cancel_others(pending):
+        if not pending:
+            return
+
+        for coro in pending:
+            coro.cancel()
+
+        await asyncio.gather(*pending, return_exceptions=True, loop=loop)
+
+    async def waiter(idx, awaitable):
+        nonlocal result
+        try:
+            ret = await awaitable
+        except Exception as e:
+            result.set_result(idx, e, True)
+        else:
+            result.set_result(idx, ret, False)
+
+    _, pending = await asyncio.wait(
+        [waiter(i, c) for i, c in enumerate(awaitables)],
+        loop=loop, return_when=asyncio.FIRST_COMPLETED,
+    )
+
+    if cancel:
+        await loop.create_task(cancel_others(pending))
+
+    if result.is_exception:
+        result.result()
+
+    return result

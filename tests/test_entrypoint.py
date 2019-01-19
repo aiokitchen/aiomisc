@@ -10,11 +10,9 @@ import pytest
 import requests
 import requests_unixsocket
 
-from aiomisc.entrypoint import entrypoint
-from aiomisc.context import get_context
-from aiomisc.service import Service, TCPServer, UDPServer, TLSServer
+import aiomisc
+from aiomisc.service import TCPServer, UDPServer, TLSServer
 from aiomisc.service.aiohttp import AIOHTTPService
-from aiomisc.thread_pool import threaded
 
 
 @pytest.fixture()
@@ -60,16 +58,16 @@ def unix_socket_tcp():
 def test_service_class():
     with pytest.raises(NotImplementedError):
         services = (
-            Service(running=False, stopped=False),
-            Service(running=False, stopped=False),
+            aiomisc.Service(running=False, stopped=False),
+            aiomisc.Service(running=False, stopped=False),
         )
 
-        with entrypoint(*services):
+        with aiomisc.entrypoint(*services):
             pass
 
 
 def test_simple():
-    class StartingService(Service):
+    class StartingService(aiomisc.Service):
         async def start(self):
             self.running = True
 
@@ -82,7 +80,7 @@ def test_simple():
         DummyService(running=False, stopped=False),
     )
 
-    with entrypoint(*services):
+    with aiomisc.entrypoint(*services):
         pass
 
     for svc in services:
@@ -95,7 +93,7 @@ def test_simple():
     )
 
     with pytest.raises(RuntimeError):
-        with entrypoint(*services):
+        with aiomisc.entrypoint(*services):
             raise RuntimeError
 
     for svc in services:
@@ -108,7 +106,7 @@ def test_simple():
     )
 
     with pytest.raises(RuntimeError):
-        with entrypoint(*services):
+        with aiomisc.entrypoint(*services):
             raise RuntimeError
 
     for svc in services:
@@ -117,11 +115,11 @@ def test_simple():
 
 def test_wrong_sublclass():
     with pytest.raises(TypeError):
-        class _(Service):
+        class _(aiomisc.Service):
             def start(self):
                 return True
 
-    class MyService(Service):
+    class MyService(aiomisc.Service):
         async def start(self):
             return
 
@@ -136,7 +134,7 @@ def test_wrong_sublclass():
 
 
 def test_required_kwargs():
-    class Svc(Service):
+    class Svc(aiomisc.Service):
         __required__ = 'foo',
 
         async def start(self):
@@ -159,13 +157,13 @@ def test_tcp_server(aiomisc_unused_port):
 
     service = TestService('127.0.0.1', aiomisc_unused_port)
 
-    @threaded
+    @aiomisc.threaded
     def writer():
         port = aiomisc_unused_port
         with socket.create_connection(('127.0.0.1', port)) as sock:
             sock.send(b'hello server\n')
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(writer())
 
     assert TestService.DATA
@@ -188,7 +186,7 @@ def test_tls_server(certs, ssl_client_context, aiomisc_unused_port):
         cert=certs / 'server.pem',
     )
 
-    @threaded
+    @aiomisc.threaded
     def writer():
         with ExitStack() as stack:
             sock = stack.enter_context(
@@ -202,7 +200,7 @@ def test_tls_server(certs, ssl_client_context, aiomisc_unused_port):
             ssock.connect(('127.0.0.1', aiomisc_unused_port))
             ssock.send(b'hello server\n')
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(writer())
 
     assert TestService.DATA
@@ -218,14 +216,14 @@ def test_udp_server(aiomisc_unused_port):
 
     service = TestService('127.0.0.1', aiomisc_unused_port)
 
-    @threaded
+    @aiomisc.threaded
     def writer():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         with sock:
             sock.sendto(b'hello server\n', ('127.0.0.1', aiomisc_unused_port))
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(writer())
 
     assert TestService.DATA
@@ -257,14 +255,14 @@ def test_udp_socket_server(unix_socket_udp):
 
     service = TestService(sock=unix_socket_udp)
 
-    @threaded
+    @aiomisc.threaded
     def writer():
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
         with sock:
             sock.sendto(b'hello server\n', unix_socket_udp.getsockname())
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(writer())
 
     assert TestService.DATA
@@ -282,13 +280,13 @@ def test_tcp_server_unix(unix_socket_tcp):
 
     service = TestService(sock=unix_socket_tcp)
 
-    @threaded
+    @aiomisc.threaded
     def writer():
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
             sock.connect(unix_socket_tcp.getsockname())
             sock.send(b'hello server\n')
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(writer())
 
     assert TestService.DATA
@@ -317,21 +315,21 @@ def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
 
 
 def test_aiohttp_service(aiomisc_unused_port):
-    @threaded
+    @aiomisc.threaded
     def http_client():
         url = 'http://127.0.0.1:%s/' % aiomisc_unused_port
         return requests.get(url, timeout=1).status_code
 
     service = AIOHTTPTestApp(address='127.0.0.1', port=aiomisc_unused_port)
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         response = loop.run_until_complete(http_client())
 
     assert response == 404
 
 
 def test_aiohttp_service_sock(unix_socket_tcp):
-    @threaded
+    @aiomisc.threaded
     def http_client():
         url = 'http+unix://%s/' % quote(unix_socket_tcp.getsockname(), safe='')
 
@@ -339,20 +337,20 @@ def test_aiohttp_service_sock(unix_socket_tcp):
 
     service = AIOHTTPTestApp(sock=unix_socket_tcp)
 
-    with entrypoint(service) as loop:
+    with aiomisc.entrypoint(service) as loop:
         response = loop.run_until_complete(http_client())
 
     assert response == 404
 
 
 def test_service_events():
-    class Initialization(Service):
+    class Initialization(aiomisc.Service):
         async def start(self):
-            context = get_context()
+            context = aiomisc.get_context()
             await asyncio.sleep(0.1)
             context['test'] = True
 
-    class Awaiter(Service):
+    class Awaiter(aiomisc.Service):
         result = None
 
         async def start(self):
@@ -363,22 +361,22 @@ def test_service_events():
         Initialization(),
     )
 
-    with entrypoint(*services):
+    with aiomisc.entrypoint(*services):
         pass
 
     assert Awaiter.result
 
 
 def test_service_events_2():
-    class Initialization(Service):
+    class Initialization(aiomisc.Service):
         async def start(self):
             self.context['test'] = True
 
-    class Awaiter(Service):
+    class Awaiter(aiomisc.Service):
         result = None
 
         async def start(self):
-            context = get_context()
+            context = aiomisc.get_context()
 
             await asyncio.sleep(0.1)
 
@@ -390,14 +388,14 @@ def test_service_events_2():
         Awaiter(),
     )
 
-    with entrypoint(*services):
+    with aiomisc.entrypoint(*services):
         pass
 
     assert Awaiter.result
 
 
 def test_service_start_event():
-    class Sleeper(Service):
+    class Sleeper(aiomisc.Service):
         result = False
 
         async def start(self):
@@ -406,21 +404,21 @@ def test_service_start_event():
             await asyncio.sleep(86400)
             Sleeper.result = True
 
-    with entrypoint(Sleeper()):
+    with aiomisc.entrypoint(Sleeper()):
         pass
 
     assert not Sleeper.result
 
 
 def test_service_no_start_event():
-    class Sleeper(Service):
+    class Sleeper(aiomisc.Service):
         result = False
 
         async def start(self):
             await asyncio.sleep(1)
             Sleeper.result = True
 
-    with entrypoint(Sleeper()):
+    with aiomisc.entrypoint(Sleeper()):
         pass
 
     assert Sleeper.result

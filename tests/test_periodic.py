@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from aiomisc.periodic import PeriodicCallback
+import aiomisc
 
 
 @pytest.mark.asyncio
@@ -12,7 +12,7 @@ async def test_periodic(loop):
         nonlocal counter
         counter += 1
 
-    periodic = PeriodicCallback(task)
+    periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop)
 
     await asyncio.sleep(0.5, loop=loop)
@@ -34,7 +34,7 @@ async def test_long_func(loop):
         counter += 1
         await asyncio.sleep(0.5)
 
-    periodic = PeriodicCallback(task)
+    periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop)
 
     await asyncio.sleep(1, loop=loop)
@@ -52,7 +52,7 @@ async def test_shield(loop):
         counter += 1
         await asyncio.sleep(2)
 
-    periodic = PeriodicCallback(task)
+    periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop, shield=True)
 
     await asyncio.sleep(0)
@@ -64,7 +64,7 @@ async def test_shield(loop):
 
     # No shield
     counter = 0
-    periodic = PeriodicCallback(task)
+    periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop, shield=False)
 
     await asyncio.sleep(0)

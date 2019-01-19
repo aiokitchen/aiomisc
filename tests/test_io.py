@@ -1,13 +1,13 @@
 import pytest
 from tempfile import NamedTemporaryFile
-from aiomisc.io import async_open
+import aiomisc
 
 
 @pytest.mark.asyncio
 async def test_simple(loop):
     tmp_file = NamedTemporaryFile(prefix='test_io')
 
-    async with async_open(tmp_file.name, 'w+', loop=loop) as afp:
+    async with aiomisc.io.async_open(tmp_file.name, 'w+', loop=loop) as afp:
         await afp.open()
 
         assert await afp.writable()

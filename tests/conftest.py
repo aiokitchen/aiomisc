@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import time
 
-from aiomisc.thread_pool import ThreadPoolExecutor
+import aiomisc
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ def timer():
 
 
 thread_pool_implementation = (
-    ThreadPoolExecutor,
+    aiomisc.ThreadPoolExecutor,
     concurrent.futures.ThreadPoolExecutor,
 )
 

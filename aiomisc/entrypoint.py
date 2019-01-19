@@ -6,7 +6,7 @@ from typing import Tuple, Optional, Union
 from .context import Context, get_context
 from .log import basic_config, LogFormat
 from .service import Service
-from .utils import new_event_loop
+from .utils import new_event_loop, select
 
 
 def graceful_shutdown(services: Tuple[Service, ...],
@@ -90,21 +90,13 @@ def entrypoint(*services: Service,
         starting = []
 
         async def start_service(svc: Service):
-            task = svc.loop.create_task(svc.start())
-
-            done, _ = await asyncio.wait([
-                task, svc.start_event.wait()
-            ], return_when=asyncio.FIRST_COMPLETED)
+            await select(
+                svc.start(), svc.start_event.wait(),
+                cancel=False
+            )
 
             if not svc.start_event.is_set():
                 svc.start_event.set()
-
-            if not done:
-                return
-
-            ret = done.pop()
-            if isinstance(ret, asyncio.Task):
-                ret.result()
 
         for svc in services:
             svc.set_loop(loop)

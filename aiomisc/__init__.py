@@ -1,30 +1,24 @@
-try:
-    from .version import __version__, version_info
-except ImportError:
-    version_info = (0, 0, 0)
-    __version__ = '{}.{}.{}'.format(*version_info)
+from . import io
+from . import log
 
+from .backoff import asyncbackoff
+from .context import Context, get_context
+from .entrypoint import entrypoint
+from .iterator_wrapper import IteratorWrapper
+from .periodic import PeriodicCallback
+from .service import Service
+from .thread_pool import threaded, threaded_iterable, ThreadPoolExecutor
+from .timeout import timeout
 
-authors = (
-    ('Dmitry Orlov', 'me@mosquito.su'),
+from .utils import (
+    bind_socket, chunk_list, new_event_loop, select, SelectResult, shield
 )
 
-authors_email = ", ".join(
-    '{}'.format(email) for _, email in authors
-)
-
-__license__ = 'MIT',
-__author__ = ", ".join(
-    '{} <{}>'.format(name, email) for name, email in authors
-)
-
-package_info = 'aiomisc - miscellaneous utils for asyncio'
-
-# It's same persons right now
-__maintainer__ = __author__
 
 __all__ = (
-    '__author__', '__author__', '__license__',
-    '__maintainer__', '__version__',
-    'version_info',
+    'asyncbackoff', 'Context', 'get_context',
+    'entrypoint', 'io', 'IteratorWrapper', 'log', 'PeriodicCallback',
+    'Service', 'threaded', 'threaded_iterable', 'ThreadPoolExecutor',
+    'timeout', 'bind_socket', 'chunk_list', 'new_event_loop', 'select',
+    'SelectResult', 'shield',
 )

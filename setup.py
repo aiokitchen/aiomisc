@@ -8,10 +8,18 @@ from importlib.machinery import SourceFileLoader
 
 module_name = 'aiomisc'
 
-module = SourceFileLoader(
-    module_name,
-    os.path.join(module_name, '__init__.py')
-).load_module()
+try:
+    version = SourceFileLoader(
+        module_name,
+        os.path.join(module_name, 'version.py')
+    ).load_module()
+
+    version_info = version.version_info
+except FileNotFoundError:
+    version_info = (0, 0, 0)
+
+
+__version__ = '{}.{}.{}'.format(*version_info)
 
 
 def load_requirements(fname):
@@ -22,12 +30,12 @@ def load_requirements(fname):
 
 
 setup(
-    name=module_name.replace('_', '-'),
-    version=module.__version__,
-    author=module.__author__,
-    author_email=module.authors_email,
-    license=module.__license__,
-    description=module.package_info,
+    name=module_name,
+    version=__version__,
+    author='Dmitry Orlov',
+    author_email='me@mosquito.su',
+    license='MIT',
+    description='aiomisc - miscellaneous utils for asyncio',
     long_description=open("README.rst").read(),
     platforms="all",
     classifiers=[
