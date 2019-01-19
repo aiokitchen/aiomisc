@@ -74,6 +74,20 @@ steps:
       - name: cache
         path: /drone/src/.tox
 
+  - name: RPC example
+    image: snakepacker/python:all
+    group: tests
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: rpc
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
   - name: release
     image: snakepacker/python:all
     pull: always
