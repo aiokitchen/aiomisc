@@ -187,6 +187,6 @@ async def test_too_long_multiple(loop):
         await test()
 
     t3 = time.monotonic() - t
-    assert t3 > 1
+    assert t3 > 0.8
 
-    assert mana < 4
+    assert mana < 3.8
