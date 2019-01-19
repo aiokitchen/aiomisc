@@ -34,13 +34,14 @@ def services(server_port, handlers):
 
 
 @pytest.fixture
-async def rpc_client(request, server_port) -> RPCClient:
+async def rpc_client(server_port) -> RPCClient:
     reader, writer = await asyncio.open_connection(
         'localhost', server_port
     )
 
+    client = RPCClient(reader, writer)
+
     try:
-        client = RPCClient(reader, writer)
         yield client
     finally:
         await client.close()

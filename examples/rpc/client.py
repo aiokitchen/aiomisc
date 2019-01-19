@@ -68,7 +68,7 @@ class RPCClient:
 
     async def close(self):
         self.writer.write(struct.pack(self.HEADER, 0))
-        self.writer.close()
+        self.loop.call_soon(self.writer.close)
         await self.writer.wait_closed()
 
     def __call__(self, method, **kwargs):
