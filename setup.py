@@ -46,10 +46,11 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=load_requirements('requirements.txt'),
     extras_require={
-        'develop': load_requirements('requirements.dev.txt'),
         'aiohttp': ['aiohttp'],
-        'raven': ['raven-aiohttp'],
         'carbon': ['aiocarbon'],
+        'develop': load_requirements('requirements.dev.txt'),
+        'raven': ['raven-aiohttp'],
+        'uvloop': ['uvloop<1'],
     },
     entry_points={
         "pytest11": ["aiomisc = aiomisc.pytest_plugin"]

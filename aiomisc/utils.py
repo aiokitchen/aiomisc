@@ -13,9 +13,13 @@ except ImportError:
     Coroutine = CoroutineType
 
 
-import uvloop
+try:
+    import uvloop
+except ImportError:
+    uvloop = None
 
-from aiomisc.thread_pool import ThreadPoolExecutor
+
+from .thread_pool import ThreadPoolExecutor
 
 
 log = logging.getLogger(__name__)
@@ -80,7 +84,8 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
 
 
 def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    if uvloop:
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     pool_size = pool_size or cpu_count()
 
