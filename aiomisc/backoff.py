@@ -28,7 +28,7 @@ def asyncbackoff(attempt_timeout: Optional[Number],
 
     def decorator(func):
         if attempt_timeout is not None:
-            func = timeout(attempt_timeout)(func)
+            func = timeout(attempt_timeout, False)(func)
 
         @wraps(func)
         async def wrap(*args, **kwargs):

@@ -8,7 +8,7 @@ Number = Union[int, float]
 T = TypeVar('T')
 
 
-def timeout(value):
+def timeout(value, wait=True):
     def decorator(func):
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function is not a coroutine function")
@@ -28,7 +28,11 @@ def timeout(value):
             if done:
                 return done.pop().result()
 
-            await cancel_tasks(pending, loop=loop)
+            cancelling = loop.create_task(cancel_tasks(pending, loop=loop))
+
+            if wait:
+                await cancelling
+
             raise asyncio.TimeoutError
 
         return wrap
