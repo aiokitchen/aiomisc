@@ -4,7 +4,6 @@ coverage!=4.3
 coveralls
 pylava
 pytest
-pytest-asyncio
 pytest-cov
 requests
 requests_unixsocket

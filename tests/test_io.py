@@ -4,10 +4,10 @@ from aiomisc.io import async_open
 
 
 @pytest.mark.asyncio
-async def test_simple(event_loop):
+async def test_simple(loop):
     tmp_file = NamedTemporaryFile(prefix='test_io')
 
-    async with async_open(tmp_file.name, 'w+', loop=event_loop) as afp:
+    async with async_open(tmp_file.name, 'w+', loop=loop) as afp:
         await afp.open()
 
         assert await afp.writable()

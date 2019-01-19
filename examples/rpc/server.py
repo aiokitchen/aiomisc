@@ -18,7 +18,7 @@ class RPCServer(TCPServer):
     async def handle_client(self, reader: asyncio.StreamReader,
                             writer: asyncio.StreamWriter):
 
-        unpacker = msgpack.Unpacker(encoding='utf-8')
+        unpacker = msgpack.Unpacker(raw=False)
         packer = msgpack.Packer(use_bin_type=True)
 
         try:

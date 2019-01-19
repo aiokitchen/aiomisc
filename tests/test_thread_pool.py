@@ -9,16 +9,16 @@ from aiomisc.thread_pool import ThreadPoolExecutor, threaded, threaded_iterable
 
 
 @pytest.fixture
-def executor(event_loop: asyncio.AbstractEventLoop):
-    thread_pool = ThreadPoolExecutor(8, loop=event_loop)
-    event_loop.set_default_executor(thread_pool)
+def executor(loop: asyncio.AbstractEventLoop):
+    thread_pool = ThreadPoolExecutor(8, loop=loop)
+    loop.set_default_executor(thread_pool)
     try:
         yield thread_pool
     finally:
         with suppress(Exception):
             thread_pool.shutdown(wait=True)
 
-        event_loop.set_default_executor(None)
+        loop.set_default_executor(None)
 
 
 @pytest.mark.asyncio
@@ -101,13 +101,13 @@ async def test_failed_future_already_done(executor: ThreadPoolExecutor):
 
 
 @pytest.mark.asyncio
-async def test_cancel(executor: ThreadPoolExecutor, event_loop, timer):
+async def test_cancel(executor: ThreadPoolExecutor, loop, timer):
     assert executor
 
     sleep = threaded(time.sleep)
 
     with timer(1, dispersion=2):
-        tasks = [event_loop.create_task(sleep(1)) for _ in range(1000)]
+        tasks = [loop.create_task(sleep(1)) for _ in range(1000)]
 
         await asyncio.sleep(1)
 
@@ -118,7 +118,7 @@ async def test_cancel(executor: ThreadPoolExecutor, event_loop, timer):
 
 
 @pytest.mark.asyncio
-async def test_simple(event_loop, timer):
+async def test_simple(loop, timer):
     sleep = threaded(time.sleep)
 
     with timer(1):
@@ -131,7 +131,7 @@ async def test_simple(event_loop, timer):
 
 
 @pytest.mark.asyncio
-async def test_threaded_generator(event_loop, timer):
+async def test_threaded_generator(loop, timer):
     @threaded
     def arange(*args):
         return (yield from range(*args))
@@ -147,7 +147,7 @@ async def test_threaded_generator(event_loop, timer):
 
 
 @pytest.mark.asyncio
-async def test_threaded_generator_max_size(event_loop, timer):
+async def test_threaded_generator_max_size(loop, timer):
     @threaded_iterable(max_size=1)
     def arange(*args):
         return (yield from range(*args))
@@ -172,7 +172,7 @@ async def test_threaded_generator_max_size(event_loop, timer):
 
 
 @pytest.mark.asyncio
-async def test_threaded_generator_exception(event_loop, timer):
+async def test_threaded_generator_exception(loop, timer):
     @threaded_iterable
     def arange(*args):
         yield from range(*args)
@@ -191,7 +191,7 @@ async def test_threaded_generator_exception(event_loop, timer):
 
 
 @pytest.mark.asyncio
-async def test_threaded_generator_close(event_loop, timer):
+async def test_threaded_generator_close(loop, timer):
     stopped = False
 
     @threaded_iterable(max_size=2)
@@ -217,7 +217,7 @@ async def test_threaded_generator_close(event_loop, timer):
 
 
 @pytest.mark.asyncio
-async def test_threaded_generator_close_cm(event_loop, timer):
+async def test_threaded_generator_close_cm(loop, timer):
     stopped = False
 
     @threaded_iterable(max_size=1)

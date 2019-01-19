@@ -840,6 +840,78 @@ Parameter `buffered=True` enables memory buffer that flushes logs in a thread.
     List of all supported log formats is available from
     ``aiomisc.log.LogFormat.choices()``
 
+
+Pytest plugin
++++++++++++++
+
+This package contains plugin for pytest.
+
+Basic usage
+***********
+
+Simple usage example:
+
+.. code-block:: python
+
+    import asyncio
+    import pytest
+
+
+    async def test_sample(loop):
+        f = loop.crete_future()
+        loop.call_soon(f.set_result, True)
+
+        assert await f
+
+
+asynchronous fuxture example:
+
+
+.. code-block:: python
+
+    import asyncio
+    import pytest
+
+
+    @pytest.fixture
+    async def my_fixture(loop):
+        await asyncio.sleep(0)
+
+        # Requires python 3.6+
+        yield
+
+
+Testing services
+****************
+
+Redefine ``services`` fixture in your test module:
+
+.. code-block:: python
+
+    @pytest.fixture
+    def services(aiomisc_unused_port, handlers):
+        return [
+            RPCServer(
+                handlers={'foo': lambda: 'bar'},
+                address='localhost',
+                port=aiomisc_unused_port
+            )
+        ]
+
+
+Event loop policy overriding
+****************************
+
+.. code-block:: python
+
+    policies = (uvloop.EventLoopPolicy(), asyncio.DefaultEventLoopPolicy())
+    policy_ids = ('uvloop', 'asyncio')
+
+    @pytest.fixture(params=policies, ids=policy_ids)
+    def event_loop_policy(request):
+        return request.param
+
+
 Versioning
 ----------
 

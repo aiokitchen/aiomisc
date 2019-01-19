@@ -23,7 +23,7 @@ class RPCClient:
         self.reader = reader
         self.writer = writer
         self.packer = msgpack.Packer(use_bin_type=True)
-        self.unpacker = msgpack.Unpacker(encoding='utf-8')
+        self.unpacker = msgpack.Unpacker(raw=False)
         self.serial = 0
         self.futures = {}
         self.loop = loop or asyncio.get_event_loop()
@@ -66,8 +66,10 @@ class RPCClient:
 
                 future.set_exception(ConnectionAbortedError)
 
-    def close(self):
+    async def close(self):
         self.writer.write(struct.pack(self.HEADER, 0))
+        self.writer.close()
+        await self.writer.wait_closed()
 
     def __call__(self, method, **kwargs):
         self.serial += 1

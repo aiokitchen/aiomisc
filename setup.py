@@ -31,6 +31,7 @@ setup(
     long_description=open("README.rst").read(),
     platforms="all",
     classifiers=[
+        "Framework :: Pytest",
         'Intended Audience :: Developers',
         'Natural Language :: Russian',
         'Operating System :: MacOS',
@@ -49,6 +50,9 @@ setup(
         'aiohttp': ['aiohttp'],
         'raven': ['raven-aiohttp'],
         'carbon': ['aiocarbon'],
+    },
+    entry_points={
+        "pytest11": ["aiomisc = aiomisc.pytest_plugin"]
     },
     url='https://github.com/mosquito/aiomisc'
 )

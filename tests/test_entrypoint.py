@@ -148,7 +148,7 @@ def test_required_kwargs():
     assert Svc(foo='bar').foo == 'bar'
 
 
-def test_tcp_server(unused_tcp_port):
+def test_tcp_server(aiomisc_unused_port):
     class TestService(TCPServer):
         DATA = []
 
@@ -157,11 +157,11 @@ def test_tcp_server(unused_tcp_port):
             self.DATA.append(await reader.readline())
             writer.close()
 
-    service = TestService('127.0.0.1', unused_tcp_port)
+    service = TestService('127.0.0.1', aiomisc_unused_port)
 
     @threaded
     def writer():
-        with socket.create_connection(('127.0.0.1', unused_tcp_port)) as sock:
+        with socket.create_connection(('127.0.0.1', aiomisc_unused_port)) as sock:
             sock.send(b'hello server\n')
 
     with entrypoint(service) as loop:
@@ -171,7 +171,7 @@ def test_tcp_server(unused_tcp_port):
     assert TestService.DATA == [b'hello server\n']
 
 
-def test_tls_server(certs, ssl_client_context, unused_tcp_port):
+def test_tls_server(certs, ssl_client_context, aiomisc_unused_port):
     class TestService(TLSServer):
         DATA = []
 
@@ -181,7 +181,7 @@ def test_tls_server(certs, ssl_client_context, unused_tcp_port):
             writer.close()
 
     service = TestService(
-        address='127.0.0.1', port=unused_tcp_port,
+        address='127.0.0.1', port=aiomisc_unused_port,
         ca=certs / 'ca.pem',
         key=certs / 'server.key',
         cert=certs / 'server.pem',
@@ -198,7 +198,7 @@ def test_tls_server(certs, ssl_client_context, unused_tcp_port):
                 sock, server_hostname='localhost'
             ))
 
-            ssock.connect(('127.0.0.1', unused_tcp_port))
+            ssock.connect(('127.0.0.1', aiomisc_unused_port))
             ssock.send(b'hello server\n')
 
     with entrypoint(service) as loop:
@@ -208,21 +208,21 @@ def test_tls_server(certs, ssl_client_context, unused_tcp_port):
     assert TestService.DATA == [b'hello server\n']
 
 
-def test_udp_server(unused_tcp_port):
+def test_udp_server(aiomisc_unused_port):
     class TestService(UDPServer):
         DATA = []
 
         async def handle_datagram(self, data: bytes, addr: tuple):
             self.DATA.append(data)
 
-    service = TestService('127.0.0.1', unused_tcp_port)
+    service = TestService('127.0.0.1', aiomisc_unused_port)
 
     @threaded
     def writer():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         with sock:
-            sock.sendto(b'hello server\n', ('127.0.0.1', unused_tcp_port))
+            sock.sendto(b'hello server\n', ('127.0.0.1', aiomisc_unused_port))
 
     with entrypoint(service) as loop:
         loop.run_until_complete(writer())
@@ -310,18 +310,18 @@ class AIOHTTPTestApp(AIOHTTPService):
         return aiohttp.web.Application()
 
 
-def test_aiohttp_service_without_port_or_sock(unused_tcp_port):
+def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
     with pytest.raises(RuntimeError):
         AIOHTTPService()
 
 
-def test_aiohttp_service(unused_tcp_port):
+def test_aiohttp_service(aiomisc_unused_port):
     @threaded
     def http_client():
-        url = 'http://127.0.0.1:%s/' % unused_tcp_port
+        url = 'http://127.0.0.1:%s/' % aiomisc_unused_port
         return requests.get(url, timeout=1).status_code
 
-    service = AIOHTTPTestApp(address='127.0.0.1', port=unused_tcp_port)
+    service = AIOHTTPTestApp(address='127.0.0.1', port=aiomisc_unused_port)
 
     with entrypoint(service) as loop:
         response = loop.run_until_complete(http_client())

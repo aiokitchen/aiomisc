@@ -2,13 +2,12 @@ import asyncio
 import concurrent.futures
 import os
 import ssl
+import uvloop
 from contextlib import contextmanager, suppress
 from pathlib import Path
 
 import pytest
 import time
-
-import uvloop
 
 from aiomisc.thread_pool import ThreadPoolExecutor
 
@@ -35,8 +34,8 @@ def timer():
 
 
 thread_pool_implementation = (
-    lambda loop: ThreadPoolExecutor(4, loop=loop),
-    lambda loop: concurrent.futures.ThreadPoolExecutor(4)
+    ThreadPoolExecutor,
+    concurrent.futures.ThreadPoolExecutor,
 )
 
 
@@ -48,7 +47,7 @@ thread_pool_ids = (
 
 @pytest.fixture(params=thread_pool_implementation, ids=thread_pool_ids)
 def thread_pool_executor(request):
-    yield request.param
+    return request.param
 
 
 policies = (
@@ -62,23 +61,9 @@ policy_ids = (
 )
 
 
-@pytest.fixture(params=policies, ids=policy_ids, autouse=True)
-def event_loop(request, thread_pool_executor):
-    with suppress(Exception):
-        asyncio.get_event_loop().close()
-
-    asyncio.set_event_loop_policy(request.param)
-
-    loop = asyncio.new_event_loop()
-    pool = thread_pool_executor(loop)
-    loop.set_default_executor(pool)
-    asyncio.set_event_loop(loop)
-
-    try:
-        yield loop
-    finally:
-        pool.shutdown(wait=True)
-        loop.close()
+@pytest.fixture(params=policies, ids=policy_ids)
+def event_loop_policy(request):
+    return request.param
 
 
 @pytest.fixture()

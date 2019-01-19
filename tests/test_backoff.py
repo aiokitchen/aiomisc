@@ -8,7 +8,7 @@ from aiomisc.backoff import asyncbackoff
 
 
 @pytest.mark.asyncio
-async def test_simple(event_loop):
+async def test_simple(loop):
     mana = 0
 
     @asyncbackoff(0.10, 1)
@@ -26,7 +26,7 @@ async def test_simple(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_simple_fail(event_loop):
+async def test_simple_fail(loop):
     mana = 0
 
     @asyncbackoff(0.10, 0.5)
@@ -45,7 +45,7 @@ async def test_simple_fail(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_too_long(event_loop):
+async def test_too_long(loop):
     mana = 0
 
     @asyncbackoff(0.5, 0.5)
@@ -64,7 +64,7 @@ async def test_too_long(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_too_long_multiple_times(event_loop):
+async def test_too_long_multiple_times(loop):
     mana = 0
     deadline = 0.5
     waterline = 0.06
@@ -78,7 +78,7 @@ async def test_too_long_multiple_times(event_loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    async with timeout(deadline + waterline):
+    async with timeout(2):
         with pytest.raises(asyncio.TimeoutError):
             await test()
 
@@ -86,7 +86,7 @@ async def test_too_long_multiple_times(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_exit(event_loop):
+async def test_exit(loop):
     mana = 0
 
     @asyncbackoff(0.05, 0)
@@ -105,7 +105,7 @@ async def test_exit(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_pause(event_loop):
+async def test_pause(loop):
     mana = 0
 
     @asyncbackoff(0.05, 0.5, 0.35)
@@ -124,7 +124,7 @@ async def test_pause(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_no_waterline(event_loop):
+async def test_no_waterline(loop):
     mana = 0
 
     @asyncbackoff(None, 1, 0)
@@ -144,7 +144,7 @@ async def test_no_waterline(event_loop):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('max_sleep', (0.5, 1))
-async def test_no_deadline(event_loop, max_sleep):
+async def test_no_deadline(loop, max_sleep):
     mana = 0
 
     @asyncbackoff(0.15, None, 0)
@@ -159,7 +159,7 @@ async def test_no_deadline(event_loop, max_sleep):
     assert mana == max_sleep * 10
 
 
-def test_values(event_loop):
+def test_values(loop):
     with pytest.raises(ValueError):
         asyncbackoff(-1, 1)
 
@@ -174,7 +174,7 @@ def test_values(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_too_long_multiple(event_loop):
+async def test_too_long_multiple(loop):
     mana = 0
 
     @asyncbackoff(0.5, 0.5)

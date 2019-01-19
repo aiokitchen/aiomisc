@@ -5,7 +5,7 @@ from aiomisc.timeout import timeout
 
 
 @pytest.mark.asyncio
-async def test_simple(event_loop):
+async def test_simple(loop):
     @timeout(0)
     async def test():
         await asyncio.sleep(0.05)
@@ -15,7 +15,7 @@ async def test_simple(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_already_done(event_loop):
+async def test_already_done(loop):
     @timeout(0)
     async def test():
         return
@@ -24,12 +24,12 @@ async def test_already_done(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_already_done_2(event_loop):
+async def test_already_done_2(loop):
     @timeout(0.5)
     async def test(sec):
         await asyncio.sleep(sec)
 
-    task = event_loop.create_task(test(10))
+    task = loop.create_task(test(10))
     task.cancel()
 
     with pytest.raises(asyncio.CancelledError):
@@ -37,7 +37,7 @@ async def test_already_done_2(event_loop):
 
 
 @pytest.mark.asyncio
-async def test_non_coroutine(event_loop):
+async def test_non_coroutine(loop):
     with pytest.raises(TypeError):
         @timeout(0)
         def test():
