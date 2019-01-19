@@ -89,29 +89,29 @@ def test_bind_address(address, family, aiomisc_unused_port):
 
 
 async def test_select(loop: asyncio.AbstractEventLoop):
-    f_one = loop.create_future()
-    f_two = loop.create_future()
+    f_one = asyncio.Event()
+    f_two = asyncio.Event()
 
-    loop.call_soon(f_one.set_result, True)
-    loop.call_later(1, f_two.set_result, True)
+    loop.call_soon(f_one.set)
+    loop.call_later(1, f_two.set)
 
-    one, two = await aiomisc.select(f_one, f_two)
+    one, two = await aiomisc.select(f_one.wait(), f_two.wait())
 
     assert one
     assert two is None
 
-    one, two = await aiomisc.select(f_one, f_two)
+    one, two = await aiomisc.select(f_one.wait(), f_two.wait())
     assert one
 
 
 async def test_select_cancelling(loop: asyncio.AbstractEventLoop):
     results = []
 
-    async def good_coro():
+    async def good_coro(wait):
         nonlocal results
 
         try:
-            if results:
+            if wait:
                 await asyncio.sleep(10)
             else:
                 await asyncio.sleep(0)
@@ -120,7 +120,7 @@ async def test_select_cancelling(loop: asyncio.AbstractEventLoop):
         finally:
             results.append(None)
 
-    one, two = await aiomisc.select(good_coro(), good_coro())
+    one, two = await aiomisc.select(good_coro(False), good_coro(True))
     assert one
     assert results[0]
     assert results[1] is None

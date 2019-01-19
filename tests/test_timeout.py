@@ -15,16 +15,6 @@ async def test_simple(loop):
 
 
 @pytest.mark.asyncio
-async def test_already_done(loop):
-    @aiomisc.timeout(0)
-    async def test():
-        return
-
-    with pytest.raises(asyncio.TimeoutError):
-        await test()
-
-
-@pytest.mark.asyncio
 async def test_already_done_2(loop):
     @aiomisc.timeout(0.5)
     async def test(sec):
