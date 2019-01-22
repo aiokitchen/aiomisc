@@ -1,6 +1,7 @@
 import asyncio
 import os
 from contextlib import suppress
+from functools import wraps
 
 try:
     import uvloop
@@ -90,7 +91,7 @@ def loop_debug(request):
     return request.config.getoption('--aiomisc-debug')
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def aiomisc_test_timeout(request):
     return request.config.getoption('--aiomisc-test-timeout')
 
@@ -100,6 +101,7 @@ def pytest_pycollect_makeitem(collector, name, obj):  # type: ignore
         return list(collector._genfunctions(name, obj))
 
 
+@pytest.mark.tryfirst
 def pytest_pyfunc_call(pyfuncitem):  # type: ignore
     if not asyncio.iscoroutinefunction(pyfuncitem.function):
         return
@@ -114,13 +116,15 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
         for arg in pyfuncitem._fixtureinfo.argnames
     }
 
-    event_loop.run_until_complete(
-        asyncio.wait_for(
+    @wraps(pyfuncitem.obj)
+    async def func():
+        return await asyncio.wait_for(
             pyfuncitem.obj(**kwargs),
             timeout=aiomisc_test_timeout,
             loop=event_loop
         )
-    )
+
+    event_loop.run_until_complete(func())
 
     return True
 

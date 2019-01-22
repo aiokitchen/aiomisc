@@ -1,10 +1,10 @@
 aiohttp<4
 async-timeout
-coverage!=4.3,<4.5
+coverage==4.5.1
 coveralls
 pylava
 pytest
-pytest-cov
+pytest-cov~=2.5.1
 requests
 requests_unixsocket
 timeout-decorator
