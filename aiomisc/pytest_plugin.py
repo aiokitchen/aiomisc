@@ -2,7 +2,11 @@ import asyncio
 import os
 from contextlib import suppress
 
-import uvloop
+try:
+    import uvloop
+except ImportError:
+    uvloop = None
+
 from socket import socket
 
 import pytest
@@ -136,7 +140,7 @@ def default_context():
     return {}
 
 
-autouse = os.getenv('AIOMISC_LOOP_AUTOUSE', '1') == '1'
+loop_autouse = os.getenv('AIOMISC_LOOP_AUTOUSE', '1') == '1'
 
 
 @pytest.fixture
@@ -146,10 +150,12 @@ def thread_pool_executor():
 
 @pytest.fixture
 def event_loop_policy():
-    return uvloop.EventLoopPolicy()
+    if uvloop:
+        return uvloop.EventLoopPolicy()
+    return asyncio.DefaultEventLoopPolicy()
 
 
-@pytest.fixture(autouse=autouse)
+@pytest.fixture(autouse=loop_autouse)
 def loop(services, loop_debug, default_context,
          thread_pool_size, thread_pool_executor, event_loop_policy):
 

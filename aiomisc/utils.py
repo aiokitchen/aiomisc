@@ -15,8 +15,9 @@ except ImportError:
 
 try:
     import uvloop
+    event_loop_policy = uvloop.EventLoopPolicy()
 except ImportError:
-    uvloop = None
+    event_loop_policy = asyncio.DefaultEventLoopPolicy()
 
 
 from .thread_pool import ThreadPoolExecutor
@@ -83,9 +84,10 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     return sock
 
 
-def new_event_loop(pool_size=None) -> asyncio.AbstractEventLoop:
-    if uvloop:
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+def new_event_loop(pool_size=None,
+                   policy=event_loop_policy) -> asyncio.AbstractEventLoop:
+
+    asyncio.set_event_loop_policy(policy)
 
     pool_size = pool_size or cpu_count()
 

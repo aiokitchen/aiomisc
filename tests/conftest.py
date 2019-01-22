@@ -2,7 +2,6 @@ import asyncio
 import concurrent.futures
 import os
 import ssl
-import uvloop
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -10,6 +9,12 @@ import pytest
 import time
 
 import aiomisc
+
+
+try:
+    import uvloop
+except ImportError:
+    uvloop = None
 
 
 @pytest.fixture
@@ -50,15 +55,12 @@ def thread_pool_executor(request):
     return request.param
 
 
-policies = (
-    uvloop.EventLoopPolicy(),
-    asyncio.DefaultEventLoopPolicy(),
-)
+policies = (asyncio.DefaultEventLoopPolicy(),)
+policy_ids = ('asyncio',)
 
-policy_ids = (
-    'uvloop',
-    'asyncio',
-)
+if uvloop:
+    policies += (uvloop.EventLoopPolicy(),)
+    policy_ids += ('uvloop',)
 
 
 @pytest.fixture(params=policies, ids=policy_ids)
