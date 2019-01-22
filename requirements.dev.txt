@@ -1,6 +1,6 @@
 aiohttp<4
 async-timeout
-coverage!=4.3
+coverage!=4.3,<4.5
 coveralls
 pylava
 pytest
