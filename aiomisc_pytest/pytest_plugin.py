@@ -12,9 +12,6 @@ from socket import socket
 
 import pytest
 
-from aiomisc.context import get_context
-from aiomisc.thread_pool import ThreadPoolExecutor
-from .entrypoint import entrypoint
 
 try:
     from inspect import isasyncgenfunction
@@ -149,6 +146,7 @@ loop_autouse = os.getenv('AIOMISC_LOOP_AUTOUSE', '1') == '1'
 
 @pytest.fixture
 def thread_pool_executor():
+    from aiomisc.thread_pool import ThreadPoolExecutor
     return ThreadPoolExecutor
 
 
@@ -162,6 +160,8 @@ def event_loop_policy():
 @pytest.fixture(autouse=loop_autouse)
 def loop(services, loop_debug, default_context,
          thread_pool_size, thread_pool_executor, event_loop_policy):
+    from aiomisc.context import get_context
+    from aiomisc.entrypoint import entrypoint
 
     asyncio.set_event_loop_policy(event_loop_policy)
 

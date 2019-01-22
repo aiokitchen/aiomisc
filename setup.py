@@ -61,7 +61,7 @@ setup(
         'uvloop': ['uvloop<1'],
     },
     entry_points={
-        "pytest11": ["aiomisc = aiomisc.pytest_plugin"]
+        "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
     },
     url='https://github.com/mosquito/aiomisc'
 )

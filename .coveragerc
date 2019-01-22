@@ -1,7 +1,5 @@
 [run]
 branch = True
-include =
-    */aiomisc/*
 omit =
     */env*/*
     */tests/*
