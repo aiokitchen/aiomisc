@@ -1,5 +1,6 @@
 import asyncio
 import os
+import typing
 from contextlib import suppress
 from functools import wraps
 
@@ -185,7 +186,7 @@ def loop(services, loop_debug, default_context,
             pool.shutdown(True)
 
 
-def get_unused_port():
+def get_unused_port() -> int:
     sock = socket()
     sock.bind(('', 0))
     port = sock.getsockname()[-1]
@@ -194,5 +195,10 @@ def get_unused_port():
 
 
 @pytest.fixture
-def aiomisc_unused_port():
+def aiomisc_unused_port_factory() -> typing.Callable[[], int]:
+    return get_unused_port
+
+
+@pytest.fixture
+def aiomisc_unused_port() -> int:
     return get_unused_port()
