@@ -1002,6 +1002,18 @@ Thread pool overriding
         return request.param
 
 
+entrypoint arguments
+********************
+
+.. code-block:: python
+
+    import pytest
+
+    @pytest.fixture
+    def entrypoint_kwargs() -> dict:
+        return dict(log_config=False)
+
+
 Versioning
 ----------
 

@@ -158,8 +158,13 @@ def event_loop_policy():
     return asyncio.DefaultEventLoopPolicy()
 
 
+@pytest.fixture
+def entrypoint_kwargs() -> dict:
+    return {}
+
+
 @pytest.fixture(autouse=loop_autouse)
-def loop(services, loop_debug, default_context,
+def loop(services, loop_debug, default_context, entrypoint_kwargs,
          thread_pool_size, thread_pool_executor, event_loop_policy):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
@@ -174,7 +179,9 @@ def loop(services, loop_debug, default_context,
 
     try:
         with entrypoint(*services, pool_size=thread_pool_size,
-                        debug=loop_debug, loop=event_loop) as event_loop:
+                        debug=loop_debug, loop=event_loop,
+                        **entrypoint_kwargs) as event_loop:
+
             ctx = get_context(event_loop)
 
             for key, value in default_context.items():
