@@ -36,6 +36,7 @@ class UDPServer(SimpleServer):
                 socket.AF_INET6 if ':' in address else socket.AF_INET,
                 socket.SOCK_DGRAM,
                 address=address, port=port, options=options,
+                proto_name='udp',
             )
         elif not isinstance(sock, socket.socket):
             raise ValueError('sock must be socket instance')
