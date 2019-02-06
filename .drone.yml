@@ -118,8 +118,11 @@ steps:
       - twine upload dist/*
     when:
       include:
+        event:
+          exclude:
+            - pull_request
         repo:
-          - mosquito/*
+          - mosquito/
         branch:
           - master
 
