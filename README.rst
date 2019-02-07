@@ -1014,6 +1014,42 @@ entrypoint arguments
         return dict(log_config=False)
 
 
+aiohttp test client
+*******************
+
+.. code-block:: python
+
+    import pytest
+    from myapp.services.rest import REST
+
+
+    @pytest.fixture
+    def rest_port(aiomisc_unused_port_factory):
+        return aiomisc_unused_port_factory()
+
+
+    @pytest.fixture
+    def rest_service(rest_port):
+        return REST(port=rest_port)
+
+
+    @pytest.fixture
+    def services(rest_service):
+        return [rest_service]
+
+
+    @pytest.fixture
+    def api_client(api_service):
+        test_srv = TestServer(
+            app=rest_service.app,
+            port=arguments.port,
+        )
+
+        return TestClient(test_srv)
+
+    ...
+
+
 Versioning
 ----------
 

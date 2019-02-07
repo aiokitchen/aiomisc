@@ -15,7 +15,7 @@ from ..utils import bind_socket
 class AIOHTTPService(Service):
     __async_required__ = 'start', 'create_application'
 
-    def __init__(self, address: str = None, port: int = None,
+    def __init__(self, address: str = 'localhost', port: int = None,
                  sock: socket.socket = None, shutdown_timeout: int = 5, **kwds):
 
         if not sock:
