@@ -102,30 +102,6 @@ steps:
       - name: cache
         path: /drone/src/.tox
 
-  - name: release
-    image: snakepacker/python:all
-    pull: always
-    environment:
-      TWINE_USERNAME:
-        from_secret: TWINE_USERNAME
-      TWINE_PASSWORD:
-        from_secret: TWINE_PASSWORD
-    commands:
-      - git fetch --tags
-      - python3 bump.py $(python3 setup.py --name)/version.py
-      - python3 setup.py sdist bdist_wheel
-      - pip3 install twine
-      - twine upload dist/*
-    when:
-      include:
-        event:
-          exclude:
-            - pull_request
-        repo:
-          - mosquito/
-        branch:
-          - master
-
   - name: notify
     image: drillster/drone-email
     settings:
@@ -148,6 +124,6 @@ volumes:
 
 ---
 kind: signature
-hmac: 591195af9187a40f4b5e7dfe309b415779060957d0442af911b8bcdd67aea34b
+hmac: f9b578c08894ed6e0a5b59b0890bcdd2890c165688e8ece5f587ce0ffd302d8e
 
 ...
