@@ -238,3 +238,28 @@ async def test_threaded_generator_close_cm(loop, timer):
                 break
 
     assert stopped
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator_non_generator_raises(loop, timer):
+    @aiomisc.threaded_iterable()
+    def errored():
+        raise RuntimeError("Aaaaaaaa")
+
+    with pytest.raises(RuntimeError):
+        async for _ in errored():
+            pass
+
+
+@pytest.mark.asyncio
+async def test_threaded_generator_func_raises(loop, timer):
+    @aiomisc.threaded
+    def errored(val):
+        if val:
+            raise RuntimeError("Aaaaaaaa")
+
+        yield
+
+    with pytest.raises(RuntimeError):
+        async for _ in errored(True):
+            pass
