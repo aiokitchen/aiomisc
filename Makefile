@@ -10,14 +10,14 @@ sdist: bump
 	rm -fr dist
 	python3 setup.py sdist bdist_wheel
 
-upload: sdist
+upload: clean sdist
 	twine upload dist/*
 
 test:
 	tox
 
 clean:
-	rm -fr *.egg-info .tox dist
+	rm -fr *.egg-info .tox dist build
 
 develop: clean
 	virtualenv -p python3 env
