@@ -247,7 +247,7 @@ async def test_threaded_generator_non_generator_raises(loop, timer):
         raise RuntimeError("Aaaaaaaa")
 
     with pytest.raises(RuntimeError):
-        async for _ in errored():
+        async for _ in errored():       # NOQA
             pass
 
 
@@ -261,5 +261,5 @@ async def test_threaded_generator_func_raises(loop, timer):
         yield
 
     with pytest.raises(RuntimeError):
-        async for _ in errored(True):
+        async for _ in errored(True):    # NOQA
             pass
