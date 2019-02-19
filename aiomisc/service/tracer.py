@@ -32,7 +32,7 @@ class MemoryTracer(Service):
         self._tracer = PeriodicCallback(self.show_stats)
         self._log = log.getChild(str(id(self)))
 
-        self._snapshot_on_start = tracemalloc.take_snapshot()
+        self._snapshot_on_start = self.take_snapshot()
         self._tracer.start(self.interval)
 
     @staticmethod
@@ -43,11 +43,21 @@ class MemoryTracer(Service):
             num /= 1024.0
         return "%.1f%s%s" % (num, 'Yi', suffix)
 
+    @staticmethod
+    def take_snapshot() -> tracemalloc.Snapshot:
+        return tracemalloc.take_snapshot()
+
+    @staticmethod
+    def compare_snapshot(snapshot_from: tracemalloc.Snapshot,
+                         snapshot_to: tracemalloc.Snapshot):
+        return snapshot_to.compare_to(snapshot_from, 'lineno')
+
     @threaded
     def show_stats(self):
-        snapshot = tracemalloc.take_snapshot()
-
-        differences = snapshot.compare_to(self._snapshot_on_start, 'lineno')
+        differences = self.compare_snapshot(
+            self._snapshot_on_start,
+            self.take_snapshot()
+        )
 
         results = self.STAT_FORMAT % {
             "count": "Objects",

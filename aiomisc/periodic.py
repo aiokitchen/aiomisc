@@ -46,6 +46,8 @@ class PeriodicCallback:
                 log.warning('Task %r still running skipping', self)
                 return
 
+            del self._task
+
             self._task = self._loop.create_task(
                 (utils.shield(self._run) if shield else self._run)()
             )
@@ -56,6 +58,10 @@ class PeriodicCallback:
             self._task.add_done_callback(call)
 
         def call(*_):
+            if self._handle is not None:
+                self._handle.cancel()
+                del self._handle
+
             self._handle = self._loop.call_later(interval, periodic)
 
         self._loop.call_soon_threadsafe(periodic)
