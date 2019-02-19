@@ -61,13 +61,7 @@ class MemoryTracer(Service):
                          snapshot_to: tracemalloc.Snapshot):
         return snapshot_to.compare_to(snapshot_from, self.group_by.value)
 
-    @threaded
-    def show_stats(self):
-        differences = self.compare_snapshot(
-            self._snapshot_on_start,
-            self.take_snapshot()
-        )
-
+    def log_diff(self, diff):
         results = self.STAT_FORMAT % {
             "count": "Objects",
             "count_diff": "Obj.Diff",
@@ -75,7 +69,7 @@ class MemoryTracer(Service):
             "size_diff": "Mem.Diff",
             "traceback": "Traceback"
         }
-        for stat in differences[:self.top_results]:
+        for stat in diff[:self.top_results]:
             results += self.STAT_FORMAT % {
                 "count": stat.count,
                 "count_diff": stat.count_diff,
@@ -85,6 +79,15 @@ class MemoryTracer(Service):
             }
 
         self.logger("Top memory usage:\n%s", results)
+
+    @threaded
+    def show_stats(self):
+        differences = self.compare_snapshot(
+            self._snapshot_on_start,
+            self.take_snapshot()
+        )
+
+        return self.log_diff(differences)
 
     async def stop(self, exception: Exception = None):
         tracemalloc.stop()
