@@ -1,11 +1,19 @@
 import tracemalloc
 import logging
+from enum import Enum
+
 from ..periodic import PeriodicCallback
 from ..service import Service
 from ..thread_pool import threaded
 
 
 log = logging.getLogger(__name__)
+
+
+class GroupBy(Enum):
+    lineno = 'lineno'
+    filename = 'filename'
+    traceback = 'traceback'
 
 
 class MemoryTracer(Service):
@@ -17,6 +25,8 @@ class MemoryTracer(Service):
 
     interval = 5        # type: int
     top_results = 20    # type: int
+
+    group_by = GroupBy.lineno   # type: GroupBy
 
     STAT_FORMAT = (
         "%(count)8s | "
@@ -47,10 +57,9 @@ class MemoryTracer(Service):
     def take_snapshot() -> tracemalloc.Snapshot:
         return tracemalloc.take_snapshot()
 
-    @staticmethod
-    def compare_snapshot(snapshot_from: tracemalloc.Snapshot,
+    def compare_snapshot(self, snapshot_from: tracemalloc.Snapshot,
                          snapshot_to: tracemalloc.Snapshot):
-        return snapshot_to.compare_to(snapshot_from, 'lineno')
+        return snapshot_to.compare_to(snapshot_from, self.group_by.value)
 
     @threaded
     def show_stats(self):
