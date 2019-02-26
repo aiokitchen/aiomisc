@@ -153,8 +153,11 @@ def thread_pool_executor():
 @pytest.fixture
 def event_loop_policy():
     if uvloop:
-        return uvloop.EventLoopPolicy()
-    return asyncio.DefaultEventLoopPolicy()
+        policy = uvloop.EventLoopPolicy()
+    else:
+        policy = asyncio.DefaultEventLoopPolicy()
+    asyncio.set_event_loop_policy(policy)
+    return policy
 
 
 @pytest.fixture
@@ -163,27 +166,24 @@ def entrypoint_kwargs() -> dict:
 
 
 @pytest.fixture
-def pre_event_loop() -> asyncio.AbstractEventLoop:
+def loop_factory(event_loop_policy) -> asyncio.AbstractEventLoop:
     return asyncio.new_event_loop()
 
 
 @pytest.fixture(autouse=loop_autouse)
 def loop(services, loop_debug, default_context, entrypoint_kwargs,
-         thread_pool_size, thread_pool_executor, event_loop_policy,
-         pre_event_loop):
+         thread_pool_size, thread_pool_executor, loop_factory):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
 
-    asyncio.set_event_loop_policy(event_loop_policy)
-
-    asyncio.set_event_loop(pre_event_loop)
+    asyncio.set_event_loop(loop_factory)
 
     pool = thread_pool_executor(thread_pool_size)
-    pre_event_loop.set_default_executor(pool)
+    loop_factory.set_default_executor(pool)
 
     try:
         with entrypoint(*services, pool_size=thread_pool_size,
-                        debug=loop_debug, loop=pre_event_loop,
+                        debug=loop_debug, loop=loop_factory,
                         **entrypoint_kwargs) as event_loop:
 
             ctx = get_context(event_loop)
