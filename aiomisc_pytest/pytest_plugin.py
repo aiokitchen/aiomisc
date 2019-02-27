@@ -163,15 +163,20 @@ def entrypoint_kwargs() -> dict:
     return {}
 
 
+@pytest.fixture
+def loop_factory(event_loop_policy):
+    return event_loop_policy.new_event_loop
+
+
 @pytest.fixture(autouse=loop_autouse)
 def loop(services, loop_debug, default_context, entrypoint_kwargs,
-         thread_pool_size, thread_pool_executor, event_loop_policy):
+         thread_pool_size, thread_pool_executor, loop_factory):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
 
     asyncio.set_event_loop_policy(event_loop_policy)
 
-    event_loop = asyncio.new_event_loop()
+    event_loop = loop_factory()
     asyncio.set_event_loop(event_loop)
 
     pool = thread_pool_executor(thread_pool_size)
