@@ -151,7 +151,7 @@ def thread_pool_executor():
     return ThreadPoolExecutor
 
 
-@pytest.fixture
+@pytest.fixture(autouse=loop_autouse)
 def event_loop_policy():
     if uvloop:
         return uvloop.EventLoopPolicy()
@@ -163,7 +163,7 @@ def entrypoint_kwargs() -> dict:
     return {}
 
 
-@pytest.fixture(name='loop')
+@pytest.fixture(name='loop', autouse=loop_autouse)
 def _loop(event_loop_policy):
     asyncio.set_event_loop_policy(event_loop_policy)
     try:
