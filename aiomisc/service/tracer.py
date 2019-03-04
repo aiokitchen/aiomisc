@@ -37,6 +37,7 @@ class MemoryTracer(Service):
     )
 
     async def start(self):
+        log.warning("Start memory tracer")
         tracemalloc.start()
 
         self._tracer = PeriodicCallback(self.show_stats)
