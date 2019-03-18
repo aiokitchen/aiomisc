@@ -172,11 +172,6 @@ def _loop(event_loop_policy):
         asyncio.set_event_loop_policy(None)
 
 
-@pytest.fixture
-def loop_instance(loop):
-    return loop
-
-
 @pytest.fixture(autouse=loop_autouse)
 def loop(services, loop_debug, default_context, entrypoint_kwargs,
          thread_pool_size, thread_pool_executor, loop):
