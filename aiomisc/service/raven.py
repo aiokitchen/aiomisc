@@ -1,5 +1,6 @@
 import logging
 import socket
+import inspect
 from types import MappingProxyType
 from typing import Mapping  # NOQA
 
@@ -62,7 +63,10 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
 
     async def _close(self):
         transport = await super()._close()
-        self.connector.close()
+        if inspect.iscoroutinefunction(self.connector.close()):
+            await self.connection.close()
+        else:
+            self.connector.close()
         return transport
 
 
@@ -81,6 +85,9 @@ class RavenSender(Service):
             transport=QueuedKeepaliveAioHttpTransport,
             **self.client_options
         )
+
+        # Initialize Transport object
+        self.client.remote.get_transport()
 
         self.sentry_dsn = yarl.URL(
             self.sentry_dsn
