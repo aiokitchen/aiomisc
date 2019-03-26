@@ -68,7 +68,10 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     sock.setblocking(False)
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
+    if hasattr(socket, 'SO_REUSEPORT'):
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
+    else:
+        log.warning('SO_REUSEPORT is not implemented by underlying library.')
 
     for level, option, value in options:
         sock.setsockopt(level, option, value)
