@@ -54,8 +54,9 @@ class CarbonSender(Service):
         self._handle = PeriodicCallback(client.send)
         self._handle.start(self.send_interval, loop=self.loop)
         log.info(
-            'Periodic carbon metrics sender started. Send to %s:%d with '
-            'interval %rs', self.host, self.port, self.send_interval)
+            'Periodic carbon metrics sender started. Send to %s://%s:%d with '
+            'interval %rs', self.protocol, self.host, self.port,
+            self.send_interval)
 
     async def stop(self, *_):
         self._handle.stop()
