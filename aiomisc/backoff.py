@@ -11,8 +11,11 @@ T = TypeVar('T')
 
 # noinspection SpellCheckingInspection
 def asyncbackoff(attempt_timeout: Optional[Number],
-                 deadline: Optional[Number],
-                 pause: Number = 0, *exceptions: Type[Exception]):
+                 deadline: Optional[Number], pause: Number = 0,
+                 *exc: Type[Exception], exceptions=()):
+
+    exceptions = exc + tuple(exceptions)
+
     if not pause:
         pause = 0
     elif pause < 0:
