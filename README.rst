@@ -568,12 +568,16 @@ Abstraction:
 * ``attempt_timeout`` is maximum execution time for one execution attempt.
 * ``deadline`` is maximum execution time for all execution attempts.
 * ``pause`` is time gap between execution attempts.
+* ``exceptions`` retrying when this exceptions was raised.
 
 Decorator that ensures that ``attempt_timeout`` and ``deadline`` time
 limits are met by decorated function.
 
 In case of exception function will be called again with similar arguments after
 ``pause`` seconds.
+
+
+Position arguments notation:
 
 .. code-block:: python
 
@@ -591,6 +595,41 @@ In case of exception function will be called again with similar arguments after
     @asyncbackoff(0.1, 1, 0.1)
     async def db_save(data: dict):
         ...
+
+
+    # Passing exceptions for handling
+    @asyncbackoff(0.1, 1, 0.1, TypeError, RuntimeError, ValueError)
+    async def db_fetch(data: dict):
+        ...
+
+
+Keyword arguments notation:
+
+.. code-block:: python
+
+    from aiomisc import asyncbackoff
+
+    attempt_timeout = 0.1
+    deadline = 1
+    pause = 0.1
+
+    @asyncbackoff(attempt_timeout=attempt_timeout,
+                  deadline=deadline, pause=pause)
+    async def db_fetch():
+        ...
+
+
+    @asyncbackoff(attempt_timeout=0.1, deadline=1, pause=0.1)
+    async def db_save(data: dict):
+        ...
+
+
+    # Passing exceptions for handling
+    @asyncbackoff(attempt_timeout=0.1, deadline=1, pause=0.1,
+                  exceptions=[TypeError, RuntimeError, ValueError])
+    async def db_fetch(data: dict):
+        ...
+
 
 
 asynchronous file operations

@@ -7,6 +7,38 @@ from async_timeout import timeout
 import aiomisc
 
 
+async def test_kwargs(loop):
+    mana = 0
+
+    @aiomisc.asyncbackoff(
+        attempt_timeout=0.5,
+        deadline=0.5,
+        pause=0,
+        exceptions=(Exception,)
+    )
+    async def test():
+        nonlocal mana
+
+        if mana < 500:
+            mana += 1
+            await asyncio.sleep(5)
+            raise ValueError("Not enough mana")
+
+    t = time.monotonic()
+    with pytest.raises(asyncio.TimeoutError):
+        await test()
+
+    t2 = time.monotonic() - t
+    assert t2 > 0.4
+    with pytest.raises(asyncio.TimeoutError):
+        await test()
+
+    t3 = time.monotonic() - t
+    assert t3 > 0.8
+
+    assert mana < 3.8
+
+
 async def test_simple(loop):
     mana = 0
 
