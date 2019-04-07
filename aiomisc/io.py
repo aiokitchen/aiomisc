@@ -66,6 +66,13 @@ class async_open:
             None, self.fp.__exit__, exc_type, exc_val, exc_tb
         )
 
+    def __del__(self):
+        if self.fp.closed:
+            return
+
+        self.fp.close()
+        del self.fp
+
     close = async_method('close')
     detach = async_method('detach')
     flush = async_method('flush')
