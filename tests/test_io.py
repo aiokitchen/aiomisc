@@ -60,3 +60,25 @@ async def test_ordering(loop):
 
             assert (await afp.read(4)) == struct.pack("!I", 65535)
             assert await afp.tell() == 8
+
+
+@pytest.mark.asyncio
+async def test_async_for(loop):
+    tmp = NamedTemporaryFile(prefix='test_io')
+
+    with tmp:
+        async with aiomisc.io.async_open(tmp.name, 'w+', loop=loop) as afp:
+            await afp.write("foo\nbar\nbaz\n")
+
+        with open(tmp.name, 'w+') as fp:
+            expected = []
+
+            for line in fp:
+                expected.append(line)
+
+        async with aiomisc.io.async_open(tmp.name, 'rb+', loop=loop) as afp:
+            result = []
+            async for line in afp:
+                result.append(line)
+
+    assert result == expected

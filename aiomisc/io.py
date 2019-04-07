@@ -1,5 +1,5 @@
 import asyncio
-from functools import partial
+from functools import partial, total_ordering
 
 from .thread_pool import threaded
 
@@ -20,31 +20,55 @@ def async_method(name, in_thread=True):
         loop.call_soon(_inner)
         return future
 
-    def wrap_to_thread(loop, func, *args, **kwargs):
+    def wrap_to_thread(loop, func, executor, *args, **kwargs):
         callee = partial(func, *args, **kwargs)
-        return loop.run_in_executor(None, callee)
+        return loop.run_in_executor(executor, callee)
 
     async def method(self, *args, **kwargs):
         func = getattr(self.fp, name)
-        wrapper = wrap_to_thread if in_thread else wrap_to_future
-        return await wrapper(self.loop, func, *args, **kwargs)
+
+        if in_thread:
+            return await wrap_to_thread(
+                self.loop, func, self.executor, *args, **kwargs
+            )
+
+        return await wrap_to_future(self.loop, func, *args, **kwargs)
 
     method.__name__ = name
     return method
 
 
-# noinspection PyPep8Naming
-class async_open:
-    __slots__ = ('loop', 'name', 'mode', 'opener', 'fp', 'isatty', 'fileno')
+def bypass_method(name):
+    def method(self, *args, **kwargs):
+        return getattr(self.fp, name)(*args, **kwargs)
 
-    def __init__(self, fname, mode="r", *args, **kwargs):
+    method.__name__ = name
+    return method
+
+
+def bypass_property(name):
+    def fset(self, value):
+        setattr(self.fp, name, value)
+
+    def fget(self):
+        return getattr(self.fp, name)
+
+    def fdel(self):
+        delattr(self.fp, name)
+
+    return property(fget, fset, fdel)
+
+
+# noinspection PyPep8Naming
+@total_ordering
+class AsyncFileIOBase:
+    __slots__ = ('loop', 'opener', 'fp', 'executor')
+
+    def __init__(self, fname, mode="r", executor=None, *args, **kwargs):
         self.loop = kwargs.pop('loop', asyncio.get_event_loop())
-        self.name = fname
-        self.mode = mode
-        self.opener = partial(opener, self.name, self.mode, *args, **kwargs)
+        self.opener = partial(opener, fname, mode, *args, **kwargs)
         self.fp = None
-        self.isatty = None
-        self.fileno = None
+        self.executor = executor
 
     def closed(self):
         return self.fp.closed
@@ -54,8 +78,6 @@ class async_open:
             return
 
         self.fp = await self.opener()
-        self.fileno = self.fp.fileno()
-        self.isatty = self.fp.isatty
 
     async def __aenter__(self):
         await self.open()
@@ -67,11 +89,40 @@ class async_open:
         )
 
     def __del__(self):
-        if self.fp.closed:
+        if not self.fp or self.fp.closed:
             return
 
         self.fp.close()
         del self.fp
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        line = await self.readline()
+        if not len(line):
+            raise StopAsyncIteration
+
+        return line
+
+    def __eq__(self, other: "async_open"):
+        return (
+            self.__class__, self.fp.__eq__(other)
+        ) == (
+            other.__class__, self.fp.__eq__(other)
+        )
+
+    def __lt__(self, other: "async_open"):
+        return self.fp < other.fp
+
+    def __hash__(self):
+        return hash((self.__class__, self.fp.__hash__()))
+
+    fileno = bypass_method('fileno')
+
+    isatty = bypass_method('isatty')
+    mode = bypass_property('mode')
+    name = bypass_property('name')
 
     close = async_method('close')
     detach = async_method('detach')
@@ -85,10 +136,31 @@ class async_open:
     readline = async_method('readline')
     readlines = async_method('readlines')
     seek = async_method('seek')
+    peek = async_method('peek')
     truncate = async_method('truncate')
     write = async_method('write')
     writelines = async_method('writelines')
+
+    tell = async_method('tell', in_thread=False)
     readable = async_method('readable', in_thread=False)
     seekable = async_method('seekable', in_thread=False)
-    tell = async_method('tell', in_thread=False)
     writable = async_method('writable', in_thread=False)
+
+
+class AsyncTextFileIO(AsyncFileIOBase):
+    newlines = bypass_property('newlines')
+    errors = bypass_property('errors')
+    line_buffering = bypass_property('line_buffering')
+    encoding = bypass_property('encoding')
+    buffer = bypass_property('buffer')
+
+
+class AsyncBytesFileIO(AsyncFileIOBase):
+    raw = bypass_property('raw')
+
+
+def async_open(fname, mode="r", *args, **kwargs) -> AsyncFileIOBase:
+    if 'b' in mode:
+        return AsyncBytesFileIO(fname, mode=mode, *args, **kwargs)
+
+    return AsyncTextFileIO(fname, mode=mode, *args, **kwargs)
