@@ -5,7 +5,7 @@ import socket
 from functools import wraps
 from multiprocessing import cpu_count
 from types import CoroutineType
-from typing import Any, Iterable, Tuple
+from typing import Any, Iterable, Tuple, Optional
 
 try:
     from typing import Coroutine
@@ -156,18 +156,14 @@ class SelectResult:
             yield None
 
 
-async def cancel_tasks(tasks, loop=None):
+def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Optional[asyncio.Task]:
     if not tasks:
         return
-
-    loop = loop or asyncio.get_event_loop()
 
     for task in tasks:
         task.cancel()
 
-    return await loop.create_task(
-        asyncio.wait(tasks, loop=loop, return_when=asyncio.ALL_COMPLETED)
-    )
+    return tasks
 
 
 async def select(*awaitables, return_exceptions=False, cancel=True,
@@ -195,10 +191,13 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
 
     try:
         if cancel:
-            cancelling = cancel_tasks(pending, loop=loop)
+            cancelling = cancel_tasks(pending)
 
-            if wait:
-                await cancelling
+            if wait and cancelling:
+                await asyncio.gather(
+                    *cancelling, loop=loop,
+                    return_exceptions=True
+                )
     except Exception:
         raise
 

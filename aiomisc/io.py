@@ -7,13 +7,27 @@ from .thread_pool import threaded
 opener = threaded(open)
 
 
-def async_method(name):
+def async_method(name, in_thread=True):
+    def wrap_to_future(loop, func, *args, **kwargs):
+        future = loop.create_future()
+
+        def _inner():
+            try:
+                return future.set_result(func(*args, **kwargs))
+            except Exception as e:
+                return future.set_exception(e)
+
+        loop.call_soon(_inner)
+        return future
+
+    def wrap_to_thread(loop, func, *args, **kwargs):
+        callee = partial(func, *args, **kwargs)
+        return loop.run_in_executor(None, callee)
+
     async def method(self, *args, **kwargs):
         func = getattr(self.fp, name)
-
-        return await self.loop.run_in_executor(
-            None, partial(func, *args, **kwargs)
-        )
+        wrapper = wrap_to_thread if in_thread else wrap_to_future
+        return await wrapper(self.loop, func, *args, **kwargs)
 
     method.__name__ = name
     return method
@@ -59,15 +73,15 @@ class async_open:
     raw = async_method('raw')
     read = async_method('read')
     read1 = async_method('read1')
-    readable = async_method('readable')
     readinto = async_method('readinto')
     readinto1 = async_method('readinto1')
     readline = async_method('readline')
     readlines = async_method('readlines')
     seek = async_method('seek')
-    seekable = async_method('seekable')
-    tell = async_method('tell')
     truncate = async_method('truncate')
     write = async_method('write')
-    writable = async_method('writable')
     writelines = async_method('writelines')
+    readable = async_method('readable', in_thread=False)
+    seekable = async_method('seekable', in_thread=False)
+    tell = async_method('tell', in_thread=False)
+    writable = async_method('writable', in_thread=False)

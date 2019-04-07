@@ -1,3 +1,5 @@
+import struct
+
 import pytest
 from tempfile import NamedTemporaryFile
 import aiomisc
@@ -36,3 +38,25 @@ async def test_simple(loop):
 
     with pytest.raises(ValueError):
         assert await afp.writable()
+
+
+@pytest.mark.asyncio
+async def test_ordering(loop):
+    tmp = NamedTemporaryFile(prefix='test_io')
+
+    with tmp:
+        async with aiomisc.io.async_open(tmp.name, 'wb+', loop=loop) as afp:
+            await afp.seek(4)
+            assert await afp.tell() == 4
+
+            await afp.write(struct.pack("!I", 65535))
+            assert await afp.tell() == 8
+
+        assert afp.closed()
+
+        async with aiomisc.io.async_open(tmp.name, 'rb+', loop=loop) as afp:
+            assert (await afp.read(4)) == b'\0\0\0\0'
+            assert await afp.tell() == 4
+
+            assert (await afp.read(4)) == struct.pack("!I", 65535)
+            assert await afp.tell() == 8
