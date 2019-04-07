@@ -28,6 +28,16 @@ def isasyncgenerator(func):
         return False
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers",
+                            "forbid_get_event_loop: "
+                            "fail when asyncio.get_event_loop will be called")
+    config.addinivalue_line("markers",
+                            "catch_loop_exceptions: "
+                            "fails when unhandled loop exception "
+                            "will be raised")
+
+
 def pytest_addoption(parser):
     group = parser.getgroup('aiomisc plugin options')
     group.addoption('--aiomisc', action='store_true', default=True,
@@ -173,7 +183,7 @@ def _loop(event_loop_policy):
 
 
 @pytest.fixture(autouse=loop_autouse)
-def loop(services, loop_debug, default_context, entrypoint_kwargs,
+def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
          thread_pool_size, thread_pool_executor, loop):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
@@ -182,6 +192,27 @@ def loop(services, loop_debug, default_context, entrypoint_kwargs,
 
     pool = thread_pool_executor(thread_pool_size)
     loop.set_default_executor(pool)
+
+    forbid_loop_getter_marker = any(
+        marker.name == 'forbid_get_event_loop'
+        for marker in request.node.own_markers
+    )
+
+    catch_unhandled_marker = any(
+        marker.name == 'catch_loop_exceptions'
+        for marker in request.node.own_markers
+    )
+
+    get_event_loop = asyncio.get_event_loop
+    if forbid_loop_getter_marker:
+        def getter_mock():
+            raise RuntimeError('asyncio.get_event_loop() call forbidden')
+        asyncio.get_event_loop = getter_mock
+
+    exceptions = list()
+    if catch_unhandled_marker:
+        breakpoint()
+        loop.set_exception_handler(lambda l, c: exceptions.append(c))
 
     try:
         with entrypoint(*services, pool_size=thread_pool_size,
@@ -194,9 +225,16 @@ def loop(services, loop_debug, default_context, entrypoint_kwargs,
                 ctx[key] = value
 
             yield loop
+
+            if exceptions:
+                raise RuntimeError("Unhandled exceptions found", exceptions)
     finally:
+        asyncio.get_event_loop = get_event_loop
+
         with suppress(Exception):
             pool.shutdown(True)
+
+        del loop
 
 
 def get_unused_port() -> int:

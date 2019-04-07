@@ -5,7 +5,6 @@ from tempfile import NamedTemporaryFile
 import aiomisc
 
 
-@pytest.mark.asyncio
 async def test_simple(loop):
     tmp_file = NamedTemporaryFile(prefix='test_io')
 
@@ -40,7 +39,6 @@ async def test_simple(loop):
         assert await afp.writable()
 
 
-@pytest.mark.asyncio
 async def test_ordering(loop):
     tmp = NamedTemporaryFile(prefix='test_io')
 
@@ -62,7 +60,6 @@ async def test_ordering(loop):
             assert await afp.tell() == 8
 
 
-@pytest.mark.asyncio
 async def test_async_for(loop):
     tmp = NamedTemporaryFile(prefix='test_io')
 
