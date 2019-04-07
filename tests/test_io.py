@@ -5,6 +5,9 @@ from tempfile import NamedTemporaryFile
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_simple(loop):
     tmp_file = NamedTemporaryFile(prefix='test_io')
 

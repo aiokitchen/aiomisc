@@ -4,6 +4,9 @@ import pytest
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_periodic(loop):
     counter = 0
 

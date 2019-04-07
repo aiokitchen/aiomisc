@@ -15,6 +15,9 @@ from aiomisc.service import TCPServer, UDPServer, TLSServer
 from aiomisc.service.aiohttp import AIOHTTPService
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 @pytest.fixture()
 def unix_socket_udp():
     socket_path = mktemp(dir='/tmp', suffix='.sock')

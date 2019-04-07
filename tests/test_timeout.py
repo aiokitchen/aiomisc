@@ -4,6 +4,9 @@ import pytest
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_simple(loop):
     @aiomisc.timeout(0)
     async def test():

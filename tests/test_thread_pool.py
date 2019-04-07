@@ -8,6 +8,9 @@ import time
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 @pytest.fixture
 def executor(loop: asyncio.AbstractEventLoop):
     thread_pool = aiomisc.ThreadPoolExecutor(8, loop=loop)
@@ -61,7 +64,7 @@ async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):
     for future in futures:
         future.set_exception(asyncio.CancelledError())
 
-    await asyncio.wait(futures)
+    await asyncio.gather(*futures, return_exceptions=True)
 
 
 async def test_future_when_pool_shutting_down(executor):
@@ -92,7 +95,7 @@ async def test_failed_future_already_done(executor):
     for future in futures:
         future.set_exception(asyncio.CancelledError())
 
-    await asyncio.wait(futures)
+    await asyncio.gather(*futures, return_exceptions=True)
 
 
 async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):

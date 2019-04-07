@@ -193,14 +193,12 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
     pool = thread_pool_executor(thread_pool_size)
     loop.set_default_executor(pool)
 
-    forbid_loop_getter_marker = any(
-        marker.name == 'forbid_get_event_loop'
-        for marker in request.node.own_markers
+    forbid_loop_getter_marker = request.node.get_closest_marker(
+        'forbid_get_event_loop'
     )
 
-    catch_unhandled_marker = any(
-        marker.name == 'catch_loop_exceptions'
-        for marker in request.node.own_markers
+    catch_unhandled_marker = request.node.get_closest_marker(
+        'catch_loop_exceptions'
     )
 
     get_event_loop = asyncio.get_event_loop
@@ -211,7 +209,6 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
 
     exceptions = list()
     if catch_unhandled_marker:
-        breakpoint()
         loop.set_exception_handler(lambda l, c: exceptions.append(c))
 
     try:

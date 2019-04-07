@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import logging.handlers
+from functools import partial
 
 from typing import Union
 
@@ -32,7 +33,9 @@ def wrap_logging_handler(handler: logging.Handler,
     )
 
     periodic = PeriodicCallback(buffered_handler.flush_async)
-    loop.call_soon_threadsafe(periodic.start, flush_interval, loop)
+    loop.call_soon_threadsafe(
+        partial(periodic.start, flush_interval, loop, suppress_exceptions=True)
+    )
 
     return buffered_handler
 

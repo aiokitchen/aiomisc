@@ -17,9 +17,6 @@ except ImportError:
     uvloop = None
 
 
-pytestmark = [pytest.mark.asyncio, pytest.mark.catch_loop_exceptions]
-
-
 @pytest.fixture
 def timer():
     @contextmanager

@@ -27,14 +27,18 @@ class PeriodicCallback:
         self._handle = None
         self._task = None
 
-    async def _run(self):
+    async def _run(self, suppress_exceptions=False):
         try:
             await self._cb()
         except Exception:
+            if suppress_exceptions:
+                return
+
             log.exception("Periodic task error:")
 
     def start(self, interval: Union[int, float],
-              loop=None, *, shield: bool = False):
+              loop=None, *, shield: bool = False,
+              suppress_exceptions=False):
 
         if self._closed:
             raise asyncio.InvalidStateError
@@ -49,7 +53,9 @@ class PeriodicCallback:
             del self._task
 
             self._task = self._loop.create_task(
-                (utils.shield(self._run) if shield else self._run)()
+                (utils.shield(self._run) if shield else self._run)(
+                    suppress_exceptions
+                )
             )
 
             if self._closed:
