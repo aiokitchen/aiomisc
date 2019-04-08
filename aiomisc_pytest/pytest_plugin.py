@@ -1,17 +1,23 @@
 import asyncio
+import logging
 import os
 import typing
+from asyncio.events import get_event_loop
 from contextlib import suppress
-from functools import wraps
+from functools import wraps, partial
+from socket import socket
+from unittest.mock import MagicMock
+
+import pytest
+
+asyncio.get_event_loop = MagicMock(asyncio.get_event_loop)
+asyncio.get_event_loop.side_effect = get_event_loop
+
 
 try:
     import uvloop
 except ImportError:
     uvloop = None
-
-from socket import socket
-
-import pytest
 
 
 try:
@@ -26,16 +32,6 @@ def isasyncgenerator(func):
         return True
     elif asyncio.iscoroutinefunction(func):
         return False
-
-
-def pytest_configure(config):
-    config.addinivalue_line("markers",
-                            "forbid_get_event_loop: "
-                            "fail when asyncio.get_event_loop will be called")
-    config.addinivalue_line("markers",
-                            "catch_loop_exceptions: "
-                            "fails when unhandled loop exception "
-                            "will be raised")
 
 
 def pytest_addoption(parser):
@@ -193,19 +189,9 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
     pool = thread_pool_executor(thread_pool_size)
     loop.set_default_executor(pool)
 
-    forbid_loop_getter_marker = request.node.get_closest_marker(
-        'forbid_get_event_loop'
-    )
-
-    catch_unhandled_marker = request.node.get_closest_marker(
-        'catch_loop_exceptions'
-    )
-
-    get_event_loop = asyncio.get_event_loop
-    if forbid_loop_getter_marker:
-        def getter_mock():
-            raise RuntimeError('asyncio.get_event_loop() call forbidden')
-        asyncio.get_event_loop = getter_mock
+    get_marker = request.node.get_closest_marker
+    forbid_loop_getter_marker = get_marker('forbid_get_event_loop')
+    catch_unhandled_marker = get_marker('catch_loop_exceptions')
 
     exceptions = list()
     if catch_unhandled_marker:
@@ -221,16 +207,33 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
             for key, value in default_context.items():
                 ctx[key] = value
 
+            if forbid_loop_getter_marker:
+                asyncio.get_event_loop.side_effect = partial(
+                    pytest.fail, "get_event_loop is forbidden"
+                )
+
             yield loop
 
             if exceptions:
-                raise RuntimeError("Unhandled exceptions found", exceptions)
+                logging.error(
+                    'Unhandled exceptions found:\n\n\t%s',
+                    "\n\t".join(
+                        (
+                            "Message: {m}\n\t"
+                            "Future: {f}\n\t"
+                            "Exception: {e}"
+                        ).format(
+                            m=e['message'],
+                            f=repr(e['future']),
+                            e=repr(e['exception'])
+                        ) for e in exceptions)
+                )
+                pytest.fail("Unhandled exceptions found. See logs.")
     finally:
-        asyncio.get_event_loop = get_event_loop
-
         with suppress(Exception):
             pool.shutdown(True)
 
+        asyncio.get_event_loop.side_effect = get_event_loop
         del loop
 
 

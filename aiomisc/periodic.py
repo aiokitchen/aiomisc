@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from functools import partial
-from typing import Union
+from typing import Union, Type, Tuple
 from . import utils
 
 
@@ -37,7 +37,7 @@ class PeriodicCallback:
 
     def start(self, interval: Union[int, float],
               loop=None, *, shield: bool = False,
-              suppress_exceptions=()):
+              suppress_exceptions: Tuple[Type[Exception]] = ()):
 
         if self._closed:
             raise asyncio.InvalidStateError

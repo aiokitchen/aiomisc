@@ -5,22 +5,27 @@ import typing
 
 import janus
 
-
 T = typing.TypeVar('T')
 R = typing.TypeVar('R')
 
 
 class IteratorWrapper(typing.AsyncIterator):
+    __slots__ = (
+        "loop", "closed", "executor", "__close_event",
+        "__queue", "__gen_task", "__gen_func"
+    )
+
     def __init__(self, gen_func: typing.Generator[T, None, R],
-                 loop=None, max_size=0):
+                 loop=None, max_size=0, executor=None):
 
         self.loop = loop or asyncio.get_event_loop()
         self.closed = False
+        self.executor = executor
 
         self.__close_event = asyncio.Event(loop=self.loop)
         self.__queue = janus.Queue(loop=self.loop, maxsize=max_size)
-        self.__gen_task = None          # type: asyncio.Task
-        self.__gen_func = gen_func      # type: typing.Callable
+        self.__gen_task = None      # type: asyncio.Task
+        self.__gen_func = gen_func  # type: typing.Callable
 
     @staticmethod
     def __throw(_):
@@ -76,7 +81,9 @@ class IteratorWrapper(typing.AsyncIterator):
         if self.__gen_task is not None:
             return self
 
-        self.__gen_task = self.loop.run_in_executor(None, self.__in_thread)
+        self.__gen_task = self.loop.run_in_executor(
+            self.executor, self.__in_thread
+        )
         return self
 
     async def __anext__(self) -> typing.Awaitable[T]:

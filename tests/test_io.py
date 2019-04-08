@@ -1,4 +1,6 @@
+import asyncio
 import struct
+import uuid
 
 import pytest
 from tempfile import NamedTemporaryFile
@@ -67,19 +69,51 @@ async def test_async_for(loop):
     tmp = NamedTemporaryFile(prefix='test_io')
 
     with tmp:
-        async with aiomisc.io.async_open(tmp.name, 'w+', loop=loop) as afp:
+        async with aiomisc.io.async_open(tmp.name, 'w', loop=loop) as afp:
             await afp.write("foo\nbar\nbaz\n")
 
-        with open(tmp.name, 'w+') as fp:
+        with open(tmp.name, 'r') as fp:
             expected = []
 
             for line in fp:
                 expected.append(line)
 
-        async with aiomisc.io.async_open(tmp.name, 'rb+', loop=loop) as afp:
+        assert expected
+
+        async with aiomisc.io.async_open(tmp.name, 'r', loop=loop) as afp:
             result = []
             async for line in afp:
                 result.append(line)
+
+    assert result == expected
+
+
+async def test_async_for_parallel(loop):
+    tmp = NamedTemporaryFile(prefix='test_io')
+
+    with tmp:
+        async with aiomisc.io.async_open(tmp.name, 'w+', loop=loop) as afp:
+            for _ in range(1024):
+                await afp.write("{}\n".format(uuid.uuid4().hex))
+
+        with open(tmp.name, 'r') as fp:
+            expected = set()
+
+            for line in fp:
+                expected.add(line)
+
+        assert expected
+
+        async with aiomisc.io.async_open(tmp.name, 'r', loop=loop) as afp:
+            result = set()
+
+            async def reader():
+                async for line in afp:
+                    result.add(line)
+
+            await asyncio.gather(
+                reader(), reader(), reader(), reader()
+            )
 
     assert result == expected
 
@@ -102,6 +136,7 @@ async def test_object(loop):
                 assert afp1 < afp2
 
             for afp in (afp1, afp2):
+                assert hash(afp) == hash(afp)
                 assert isinstance(afp.fileno(), int)
                 assert isinstance(afp.mode, str)
                 assert isinstance(afp.name, str)

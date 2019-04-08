@@ -66,6 +66,7 @@ def entrypoint(*services: Service,
         basic_config(
             level=log_level,
             log_format=log_format,
+            loop=loop,
             buffered=False,
         )
 
@@ -92,7 +93,8 @@ def entrypoint(*services: Service,
         async def start_service(svc: Service):
             await select(
                 svc.start(), svc.start_event.wait(),
-                cancel=False
+                cancel=False,
+                loop=loop,
             )
 
             if not svc.start_event.is_set():

@@ -1,11 +1,10 @@
-import asyncio
 import inspect
-
-from threading import Thread
-from queue import Queue, Empty
-
+from asyncio import AbstractEventLoop
+from asyncio.events import get_event_loop
 from concurrent.futures._base import Executor
 from functools import partial, wraps
+from queue import Queue, Empty
+from threading import Thread
 from types import MappingProxyType
 
 from .iterator_wrapper import IteratorWrapper
@@ -19,9 +18,9 @@ class ThreadPoolExecutor(Executor):
     __slots__ = '__loop', '__futures', '__running', '__pool', '__tasks'
 
     def __init__(self, max_workers=None,
-                 loop: asyncio.AbstractEventLoop = None):
+                 loop: AbstractEventLoop = None):
 
-        self.__loop = loop or asyncio.get_event_loop()
+        self.__loop = loop or get_event_loop()
         self.__futures = set()
         self.__running = True
 
@@ -94,7 +93,7 @@ class ThreadPoolExecutor(Executor):
 
 
 def run_in_executor(func, executor=None, args=(), kwargs=MappingProxyType({})):
-    loop = asyncio.get_event_loop()
+    loop = get_event_loop()
 
     return loop.run_in_executor(
         executor, partial(func, *args, **kwargs)
