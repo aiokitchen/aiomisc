@@ -1,10 +1,8 @@
 import asyncio
 from functools import partial, total_ordering
+from typing import Union
 
 from .thread_pool import threaded
-
-
-opener = threaded(open)
 
 
 def async_method(name, in_executor=True):
@@ -59,14 +57,15 @@ def bypass_property(name):
     return property(fget, fset, fdel)
 
 
-# noinspection PyPep8Naming
 @total_ordering
 class AsyncFileIOBase:
-    __slots__ = ('loop', 'opener', 'fp', 'executor')
+    __slots__ = ('loop', '__opener', 'fp', 'executor')
+
+    opener = staticmethod(threaded(open))
 
     def __init__(self, fname, mode="r", executor=None, *args, **kwargs):
         self.loop = kwargs.pop('loop', asyncio.get_event_loop())
-        self.opener = partial(opener, fname, mode, *args, **kwargs)
+        self.__opener = partial(self.opener, fname, mode, *args, **kwargs)
         self.fp = None
         self.executor = executor
 
@@ -77,7 +76,11 @@ class AsyncFileIOBase:
         if self.fp is not None:
             return
 
-        self.fp = await self.opener()
+        self.fp = await self.__opener()
+
+    def __await__(self):
+        yield from self.open().__await__()
+        return self
 
     async def __aenter__(self):
         await self.open()
@@ -116,11 +119,11 @@ class AsyncFileIOBase:
         return self.fp < other.fp
 
     def __hash__(self):
-        return hash((self.__class__, self.fp.__hash__()))
+        return hash((self.__class__, self.fp))
 
     fileno = bypass_method('fileno')
-
     isatty = bypass_method('isatty')
+
     mode = bypass_property('mode')
     name = bypass_property('name')
 
@@ -159,7 +162,10 @@ class AsyncBytesFileIO(AsyncFileIOBase):
     raw = bypass_property('raw')
 
 
-def async_open(fname, mode="r", *args, **kwargs) -> AsyncFileIOBase:
+AsyncFileType = Union[AsyncBytesFileIO, AsyncTextFileIO]
+
+
+def async_open(fname, mode="r", *args, **kwargs) -> AsyncFileType:
     if 'b' in mode:
         return AsyncBytesFileIO(fname, mode=mode, *args, **kwargs)
 

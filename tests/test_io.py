@@ -82,3 +82,24 @@ async def test_async_for(loop):
                 result.append(line)
 
     assert result == expected
+
+
+async def test_object(loop):
+    with NamedTemporaryFile(prefix='test_io') as tmp:
+        afp1 = await aiomisc.io.async_open(tmp.name, 'w+', loop=loop)
+        afp2 = await aiomisc.io.async_open(tmp.name, 'w+', loop=loop)
+
+        async with afp1, afp2:
+            assert afp1 == afp2
+            assert hash(afp1) != hash(afp2)
+            assert afp2 not in {afp1}
+            assert afp1 in {afp1}
+
+            for afp in (afp1, afp2):
+                assert isinstance(afp.fileno(), int)
+                assert isinstance(afp.mode, str)
+                assert isinstance(afp.name, str)
+                assert isinstance(afp.errors, str)
+                assert isinstance(afp.line_buffering, bool)
+                assert afp.newlines is None
+
