@@ -51,11 +51,8 @@ class PeriodicCallback:
 
             del self._task
 
-            self._task = self._loop.create_task(
-                (utils.shield(self._run) if shield else self._run)(
-                    suppress_exceptions
-                )
-            )
+            runner = utils.shield(self._run) if shield else self._run
+            self._task = self._loop.create_task(runner(suppress_exceptions))
 
             if self._closed:
                 return

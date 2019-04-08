@@ -7,7 +7,7 @@ from .thread_pool import threaded
 opener = threaded(open)
 
 
-def async_method(name, in_thread=True):
+def async_method(name, in_executor=True):
     def wrap_to_future(loop, func, *args, **kwargs):
         future = loop.create_future()
 
@@ -27,7 +27,7 @@ def async_method(name, in_thread=True):
     async def method(self, *args, **kwargs):
         func = getattr(self.fp, name)
 
-        if in_thread:
+        if in_executor:
             return await wrap_to_thread(
                 self.loop, func, self.executor, *args, **kwargs
             )
@@ -141,10 +141,10 @@ class AsyncFileIOBase:
     write = async_method('write')
     writelines = async_method('writelines')
 
-    tell = async_method('tell', in_thread=False)
-    readable = async_method('readable', in_thread=False)
-    seekable = async_method('seekable', in_thread=False)
-    writable = async_method('writable', in_thread=False)
+    tell = async_method('tell', in_executor=False)
+    readable = async_method('readable', in_executor=False)
+    seekable = async_method('seekable', in_executor=False)
+    writable = async_method('writable', in_executor=False)
 
 
 class AsyncTextFileIO(AsyncFileIOBase):
