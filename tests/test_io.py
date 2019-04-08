@@ -102,4 +102,3 @@ async def test_object(loop):
                 assert isinstance(afp.errors, str)
                 assert isinstance(afp.line_buffering, bool)
                 assert afp.newlines is None
-
