@@ -11,6 +11,10 @@ from types import MappingProxyType
 from .iterator_wrapper import IteratorWrapper
 
 
+class ThreadPoolException(RuntimeError):
+    pass
+
+
 class ThreadPoolExecutor(Executor):
     __slots__ = '__loop', '__futures', '__running', '__pool', '__tasks'
 
@@ -83,7 +87,7 @@ class ThreadPoolExecutor(Executor):
         self.__running = False
 
         for f in filter(lambda x: not x.done(), self.__futures):
-            f.set_exception(RuntimeError("Pool closed"))
+            f.set_exception(ThreadPoolException("Pool closed"))
 
     def __del__(self):
         self.shutdown()

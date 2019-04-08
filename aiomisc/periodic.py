@@ -27,18 +27,17 @@ class PeriodicCallback:
         self._handle = None
         self._task = None
 
-    async def _run(self, suppress_exceptions=False):
+    async def _run(self, suppress_exceptions=()):
         try:
             await self._cb()
+        except suppress_exceptions:
+            return
         except Exception:
-            if suppress_exceptions:
-                return
-
             log.exception("Periodic task error:")
 
     def start(self, interval: Union[int, float],
               loop=None, *, shield: bool = False,
-              suppress_exceptions=False):
+              suppress_exceptions=()):
 
         if self._closed:
             raise asyncio.InvalidStateError
