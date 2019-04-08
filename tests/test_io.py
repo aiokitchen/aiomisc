@@ -95,6 +95,12 @@ async def test_object(loop):
             assert afp2 not in {afp1}
             assert afp1 in {afp1}
 
+            with pytest.raises(TypeError):
+                assert afp1 > afp2
+
+            with pytest.raises(TypeError):
+                assert afp1 < afp2
+
             for afp in (afp1, afp2):
                 assert isinstance(afp.fileno(), int)
                 assert isinstance(afp.mode, str)
