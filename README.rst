@@ -974,6 +974,46 @@ asynchronous fuxture example:
         yield
 
 
+pytest markers
+**************
+
+Package contains some useful markers for pytest:
+
+* ``catch_loop_exceptions`` - uncaught event loop exceptions will failling test.
+* ``forbid_get_event_loop`` - forbids call ``asyncio.get_event_loop``
+  during test case.
+
+.. code-block:: python
+
+    import pytest
+
+
+    # Test will be failed
+    @pytest.mark.forbid_get_event_loop
+    async def test_with_get_loop():
+        def switch_context():
+            loop = get_event_loop()
+            future = loop.create_future()
+            loop.call_soon(future.set_result, True)
+            return future
+
+        with pytest.raises(Failed):
+            await switch_context()
+
+
+    # Test will be failed
+    @pytest.mark.catch_loop_exceptions
+    async def test_with_errors(loop):
+        async def fail():
+            # switch context
+            await asyncio.sleep(0)
+            raise Exception()
+
+        loop.create_task(fail())
+        await asyncio.sleep(0.1)
+        return
+
+
 Passing default context
 ***********************
 

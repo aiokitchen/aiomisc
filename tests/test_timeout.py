@@ -4,7 +4,9 @@ import pytest
 import aiomisc
 
 
-@pytest.mark.asyncio
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_simple(loop):
     @aiomisc.timeout(0)
     async def test():
@@ -14,7 +16,6 @@ async def test_simple(loop):
         await test()
 
 
-@pytest.mark.asyncio
 async def test_already_done_2(loop):
     @aiomisc.timeout(0.5)
     async def test(sec):
@@ -27,7 +28,6 @@ async def test_already_done_2(loop):
         await task
 
 
-@pytest.mark.asyncio
 async def test_non_coroutine(loop):
     with pytest.raises(TypeError):
         @aiomisc.timeout(0)

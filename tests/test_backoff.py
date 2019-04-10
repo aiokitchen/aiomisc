@@ -7,6 +7,9 @@ from async_timeout import timeout
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_kwargs(loop):
     mana = 0
 

@@ -4,7 +4,9 @@ import pytest
 import aiomisc
 
 
-@pytest.mark.asyncio
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_periodic(loop):
     counter = 0
 
@@ -25,7 +27,6 @@ async def test_periodic(loop):
     assert 4 < counter < 7
 
 
-@pytest.mark.asyncio
 async def test_long_func(loop):
     counter = 0
 
@@ -43,7 +44,6 @@ async def test_long_func(loop):
     assert 1 < counter < 3
 
 
-@pytest.mark.asyncio
 async def test_shield(loop):
     counter = 0
 

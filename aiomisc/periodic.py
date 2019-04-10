@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from functools import partial
-from typing import Union
+from typing import Union, Type, Tuple
 from . import utils
 
 
@@ -27,14 +27,17 @@ class PeriodicCallback:
         self._handle = None
         self._task = None
 
-    async def _run(self):
+    async def _run(self, suppress_exceptions=()):
         try:
             await self._cb()
+        except suppress_exceptions:
+            return
         except Exception:
             log.exception("Periodic task error:")
 
     def start(self, interval: Union[int, float],
-              loop=None, *, shield: bool = False):
+              loop=None, *, shield: bool = False,
+              suppress_exceptions: Tuple[Type[Exception]] = ()):
 
         if self._closed:
             raise asyncio.InvalidStateError
@@ -48,9 +51,8 @@ class PeriodicCallback:
 
             del self._task
 
-            self._task = self._loop.create_task(
-                (utils.shield(self._run) if shield else self._run)()
-            )
+            runner = utils.shield(self._run) if shield else self._run
+            self._task = self._loop.create_task(runner(suppress_exceptions))
 
             if self._closed:
                 return

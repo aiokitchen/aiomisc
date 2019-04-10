@@ -8,6 +8,9 @@ import time
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 @pytest.fixture
 def executor(loop: asyncio.AbstractEventLoop):
     thread_pool = aiomisc.ThreadPoolExecutor(8, loop=loop)
@@ -21,7 +24,6 @@ def executor(loop: asyncio.AbstractEventLoop):
         loop.set_default_executor(None)
 
 
-@pytest.mark.asyncio
 async def test_threaded(executor: aiomisc.ThreadPoolExecutor, timer):
     assert executor
 
@@ -37,7 +39,6 @@ async def test_threaded(executor: aiomisc.ThreadPoolExecutor, timer):
         )
 
 
-@pytest.mark.asyncio
 async def test_threaded_exc(executor: aiomisc.ThreadPoolExecutor):
     assert executor
 
@@ -54,7 +55,6 @@ async def test_threaded_exc(executor: aiomisc.ThreadPoolExecutor):
             task.result()
 
 
-@pytest.mark.asyncio
 async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):
     futures = []
 
@@ -64,10 +64,9 @@ async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):
     for future in futures:
         future.set_exception(asyncio.CancelledError())
 
-    await asyncio.wait(futures)
+    await asyncio.gather(*futures, return_exceptions=True)
 
 
-@pytest.mark.asyncio
 async def test_future_when_pool_shutting_down(executor):
     futures = []
 
@@ -83,7 +82,6 @@ async def test_future_when_pool_shutting_down(executor):
             task.result()
 
 
-@pytest.mark.asyncio
 async def test_failed_future_already_done(executor):
     futures = []
 
@@ -97,10 +95,9 @@ async def test_failed_future_already_done(executor):
     for future in futures:
         future.set_exception(asyncio.CancelledError())
 
-    await asyncio.wait(futures)
+    await asyncio.gather(*futures, return_exceptions=True)
 
 
-@pytest.mark.asyncio
 async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
     assert executor
 
@@ -117,7 +114,6 @@ async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
         executor.shutdown(wait=True)
 
 
-@pytest.mark.asyncio
 async def test_simple(loop, timer):
     sleep = aiomisc.threaded(time.sleep)
 
@@ -130,7 +126,6 @@ async def test_simple(loop, timer):
         )
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator(loop, timer):
     @aiomisc.threaded
     def arange(*args):
@@ -146,7 +141,6 @@ async def test_threaded_generator(loop, timer):
     assert result == list(range(count))
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator_max_size(loop, timer):
     @aiomisc.threaded_iterable(max_size=1)
     def arange(*args):
@@ -171,7 +165,6 @@ async def test_threaded_generator_max_size(loop, timer):
     assert result == list(range(count))
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator_exception(loop, timer):
     @aiomisc.threaded_iterable
     def arange(*args):
@@ -190,7 +183,6 @@ async def test_threaded_generator_exception(loop, timer):
     assert result == list(range(count))
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator_close(loop, timer):
     stopped = False
 
@@ -216,7 +208,6 @@ async def test_threaded_generator_close(loop, timer):
     assert stopped
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator_close_cm(loop, timer):
     stopped = False
 
@@ -240,7 +231,6 @@ async def test_threaded_generator_close_cm(loop, timer):
     assert stopped
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator_non_generator_raises(loop, timer):
     @aiomisc.threaded_iterable()
     def errored():
@@ -251,7 +241,6 @@ async def test_threaded_generator_non_generator_raises(loop, timer):
             pass
 
 
-@pytest.mark.asyncio
 async def test_threaded_generator_func_raises(loop, timer):
     @aiomisc.threaded
     def errored(val):

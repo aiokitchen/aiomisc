@@ -1,10 +1,11 @@
 import asyncio
 import logging
 import logging.handlers
+from functools import partial
 
 from typing import Union
 
-from aiomisc.thread_pool import threaded
+from aiomisc.thread_pool import threaded, ThreadPoolException
 from aiomisc.periodic import PeriodicCallback
 from prettylog import (
     color_formatter,
@@ -32,7 +33,12 @@ def wrap_logging_handler(handler: logging.Handler,
     )
 
     periodic = PeriodicCallback(buffered_handler.flush_async)
-    loop.call_soon_threadsafe(periodic.start, flush_interval, loop)
+    loop.call_soon_threadsafe(
+        partial(
+            periodic.start, flush_interval, loop,
+            suppress_exceptions=(ThreadPoolException,)
+        )
+    )
 
     return buffered_handler
 

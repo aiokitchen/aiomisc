@@ -9,6 +9,9 @@ import pytest
 import aiomisc
 
 
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_select(loop: asyncio.AbstractEventLoop):
     f_one = asyncio.Event()
     f_two = asyncio.Event()

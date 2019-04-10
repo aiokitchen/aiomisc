@@ -1,9 +1,15 @@
+import asyncio
+import struct
+import uuid
+
 import pytest
 from tempfile import NamedTemporaryFile
 import aiomisc
 
 
-@pytest.mark.asyncio
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
 async def test_simple(loop):
     tmp_file = NamedTemporaryFile(prefix='test_io')
 
@@ -36,3 +42,104 @@ async def test_simple(loop):
 
     with pytest.raises(ValueError):
         assert await afp.writable()
+
+
+async def test_ordering(loop):
+    tmp = NamedTemporaryFile(prefix='test_io')
+
+    with tmp:
+        async with aiomisc.io.async_open(tmp.name, 'wb+', loop=loop) as afp:
+            await afp.seek(4)
+            assert await afp.tell() == 4
+
+            await afp.write(struct.pack("!I", 65535))
+            assert await afp.tell() == 8
+
+        assert afp.closed()
+
+        async with aiomisc.io.async_open(tmp.name, 'rb+', loop=loop) as afp:
+            assert (await afp.read(4)) == b'\0\0\0\0'
+            assert await afp.tell() == 4
+
+            assert (await afp.read(4)) == struct.pack("!I", 65535)
+            assert await afp.tell() == 8
+
+
+async def test_async_for(loop):
+    tmp = NamedTemporaryFile(prefix='test_io')
+
+    with tmp:
+        async with aiomisc.io.async_open(tmp.name, 'w', loop=loop) as afp:
+            await afp.write("foo\nbar\nbaz\n")
+
+        with open(tmp.name, 'r') as fp:
+            expected = []
+
+            for line in fp:
+                expected.append(line)
+
+        assert expected
+
+        async with aiomisc.io.async_open(tmp.name, 'r', loop=loop) as afp:
+            result = []
+            async for line in afp:
+                result.append(line)
+
+    assert result == expected
+
+
+async def test_async_for_parallel(loop):
+    tmp = NamedTemporaryFile(prefix='test_io')
+
+    with tmp:
+        async with aiomisc.io.async_open(tmp.name, 'w+', loop=loop) as afp:
+            for _ in range(1024):
+                await afp.write("{}\n".format(uuid.uuid4().hex))
+
+        with open(tmp.name, 'r') as fp:
+            expected = set()
+
+            for line in fp:
+                expected.add(line)
+
+        assert expected
+
+        async with aiomisc.io.async_open(tmp.name, 'r', loop=loop) as afp:
+            result = set()
+
+            async def reader():
+                async for line in afp:
+                    result.add(line)
+
+            await asyncio.gather(
+                reader(), reader(), reader(), reader()
+            )
+
+    assert result == expected
+
+
+async def test_object(loop):
+    with NamedTemporaryFile(prefix='test_io') as tmp:
+        afp1 = await aiomisc.io.async_open(tmp.name, 'w+', loop=loop)
+        afp2 = await aiomisc.io.async_open(tmp.name, 'w+', loop=loop)
+
+        async with afp1, afp2:
+            assert afp1 == afp2
+            assert hash(afp1) != hash(afp2)
+            assert afp2 not in {afp1}
+            assert afp1 in {afp1}
+
+            with pytest.raises(TypeError):
+                assert afp1 > afp2
+
+            with pytest.raises(TypeError):
+                assert afp1 < afp2
+
+            for afp in (afp1, afp2):
+                assert hash(afp) == hash(afp)
+                assert isinstance(afp.fileno(), int)
+                assert isinstance(afp.mode, str)
+                assert isinstance(afp.name, str)
+                assert isinstance(afp.errors, str)
+                assert isinstance(afp.line_buffering, bool)
+                assert afp.newlines is None
