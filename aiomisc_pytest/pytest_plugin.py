@@ -34,6 +34,16 @@ def isasyncgenerator(func):
         return False
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers",
+                            "forbid_get_event_loop: "
+                            "fail when asyncio.get_event_loop will be called")
+    config.addinivalue_line("markers",
+                            "catch_loop_exceptions: "
+                            "fails when unhandled loop exception "
+                            "will be raised")
+
+
 def pytest_addoption(parser):
     group = parser.getgroup('aiomisc plugin options')
     group.addoption('--aiomisc', action='store_true', default=True,
