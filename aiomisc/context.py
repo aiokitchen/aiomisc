@@ -18,13 +18,13 @@ class Context:
         return self._storage[item]
 
     def __setitem__(self, item, value):
-        def setter(future: asyncio.Future):
-            if future.done():
-                self._storage.pop(future)
+        self._loop.call_soon_threadsafe(self.__setter, item, value)
 
-            future.set_result(value)
+    def __setter(self, item, value):
+        if self._storage[item].done():
+            del self._storage[item]
 
-        self._loop.call_soon_threadsafe(setter, self._storage[item])
+        self._storage[item].set_result(value)
 
 
 def get_context(loop: asyncio.AbstractEventLoop = None) -> Context:
