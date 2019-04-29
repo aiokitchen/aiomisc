@@ -426,3 +426,27 @@ def test_service_no_start_event():
         pass
 
     assert Sleeper.result
+
+
+def test_context_multiple_set():
+    results = []
+
+    async def test():
+        context = aiomisc.get_context()
+
+        context['foo'] = True
+        await asyncio.sleep(0.1)
+        results.append(await context['foo'])
+
+        context['foo'] = False
+        await asyncio.sleep(0.1)
+        results.append(await context['foo'])
+
+        context['foo'] = None
+        await asyncio.sleep(0.1)
+        results.append(await context['foo'])
+
+    with aiomisc.entrypoint() as loop:
+        loop.run_until_complete(test())
+
+    assert results == [True, False, None]
