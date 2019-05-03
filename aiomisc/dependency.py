@@ -1,7 +1,5 @@
 import asyncio
 from types import MappingProxyType
-from typing import Any
-from functools import wraps
 
 
 DEPENDENCIES = {}
@@ -44,7 +42,6 @@ async def start_dependencies(names, loop=None):
     await asyncio.gather(*setup, loop=loop)
 
     loop._aiomisc_dependencies = MappingProxyType(dependencies)
-
 
 
 def get_dependencies(names, loop=None):

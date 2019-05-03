@@ -1,5 +1,4 @@
 import asyncio
-from functools import partial
 
 from aiomisc.context import Context, get_context
 

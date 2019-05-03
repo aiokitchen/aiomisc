@@ -34,12 +34,13 @@ def test_dependency_injection():
 
     class TestService(Service):
         __dependencies__ = ('foo', 'bar')
+
         async def start(self):
             ...
 
     service = TestService()
 
-    with entrypoint(service) as loop:
+    with entrypoint(service):
         assert service.foo == 'Foo'
         assert service.bar == 'Bar'
 
@@ -48,11 +49,12 @@ def test_missed_dependency_exception():
 
     class TestService(Service):
         __dependencies__ = ('spam',)
+
         async def start(self):
             ...
 
     with pytest.raises(RuntimeError):
-        with entrypoint(TestService()) as loop:
+        with entrypoint(TestService()):
             ...
 
 
@@ -66,13 +68,14 @@ def test_graceful_dependency_shutdown():
 
     class TestService(Service):
         __dependencies__ = ('spam',)
+
         async def start(self):
             ...
 
     service = TestService()
 
     resource = None
-    with entrypoint(service) as loop:
+    with entrypoint(service):
         resource = service.spam
         assert resource == ['spam'] * 3
 
@@ -92,10 +95,11 @@ def test_start_used_dependencies_only():
 
     class TestService(Service):
         __dependencies__ = ('used',)
+
         async def start(self):
             ...
 
-    with entrypoint(TestService()) as loop:
+    with entrypoint(TestService()):
         ...
 
 
@@ -107,10 +111,11 @@ def test_set_dependency_in_init():
 
     class TestService(Service):
         __dependencies__ = ('answer',)
+
         async def start(self):
             ...
 
     service = TestService(answer=42)
 
-    with entrypoint(service) as loop:
+    with entrypoint(service):
         assert service.answer == 42
