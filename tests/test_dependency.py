@@ -1,9 +1,16 @@
 import pytest
 
-from aiomisc import Service, dependency, entrypoint
+from aiomisc import Service, dependency, entrypoint, DEPENDENCIES
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
+
+
+@pytest.fixture(autouse=True)
+def clear_dependencies():
+    DEPENDENCIES.clear()
+    yield
+    DEPENDENCIES.clear()
 
 
 def test_ignore_required_dependencies_in_init():

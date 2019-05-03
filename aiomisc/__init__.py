@@ -9,7 +9,7 @@ from .periodic import PeriodicCallback
 from .service import Service
 from .thread_pool import threaded, threaded_iterable, ThreadPoolExecutor
 from .timeout import timeout
-from .dependency import dependency
+from .dependency import dependency, DEPENDENCIES
 
 from .utils import (
     bind_socket, chunk_list, new_event_loop, select, SelectResult, shield
@@ -17,7 +17,7 @@ from .utils import (
 
 
 __all__ = (
-    'asyncbackoff', 'Context', 'get_context', 'entrypoint',
+    'asyncbackoff', 'Context', 'get_context', 'entrypoint', 'DEPENDENCIES',
     'dependency', 'io', 'IteratorWrapper', 'log', 'PeriodicCallback',
     'Service', 'threaded', 'threaded_iterable', 'ThreadPoolExecutor',
     'timeout', 'bind_socket', 'chunk_list', 'new_event_loop', 'select',
