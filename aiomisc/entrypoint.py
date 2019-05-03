@@ -7,6 +7,11 @@ from .context import Context, get_context
 from .log import basic_config, LogFormat
 from .service import Service
 from .utils import new_event_loop, select
+from .dependency import (
+    get_dependencies,
+    start_dependencies,
+    stop_dependencies,
+)
 
 
 def graceful_shutdown(services: Tuple[Service, ...],
@@ -24,14 +29,14 @@ def graceful_shutdown(services: Tuple[Service, ...],
         for svc in services
     ]
 
-    if not tasks:
-        return
-
-    loop.run_until_complete(
-        asyncio.wait(
-            tasks, loop=loop, return_when=asyncio.ALL_COMPLETED
+    if tasks:
+        loop.run_until_complete(
+            asyncio.wait(
+                tasks, loop=loop, return_when=asyncio.ALL_COMPLETED
+            )
         )
-    )
+
+    loop.run_until_complete(stop_dependencies(loop))
 
 
 @contextmanager
@@ -88,9 +93,15 @@ def entrypoint(*services: Service,
                 flush_interval=log_flush_interval,
             )
 
+        await start_dependencies(loop)
+
         starting = []
 
         async def start_service(svc: Service):
+            # inject dependencies
+            deps = await get_dependencies(svc.__dependencies__, loop)
+            svc.__dict__.update(deps)
+
             await select(
                 svc.start(), svc.start_event.wait(),
                 cancel=False,
