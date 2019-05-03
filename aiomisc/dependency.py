@@ -17,14 +17,14 @@ class DependencyState:
     async def start(self):
         self.dependency = await self.generator.asend(None)
 
-    async def stop():
+    async def stop(self):
         try:
             await self.generator.asend(None)
         except StopAsyncIteration:
             ...
 
 
-async def dependency(f):
+def dependency(f):
     DEPENDENCIES[f.__name__] = f
     return f
 
@@ -34,12 +34,12 @@ async def start_dependencies(loop=None):
         loop = asyncio.get_event_loop()
 
     deps = dict()
-    tasks = []
+    setup = []
     for dep_name, dep_func in DEPENDENCIES.items():
         deps[dep_name] = DependencyState(dep_func)
-        tasks.append(deps[dep_name].start())
+        setup.append(deps[dep_name].start())
 
-    await asyncio.gather(*tasks, loop=loop)
+    await asyncio.gather(*setup, loop=loop)
 
     loop._aiomisc_dependencies = MappingProxyType(deps)
 
@@ -65,10 +65,10 @@ async def stop_dependencies(loop=None):
     if not hasattr(loop, '_aiomisc_dependencies'):
         return
 
-    for dep_state in loop._aiomisc_dependencies:
-        try:
-            await dep_state.stop()
-        except StopAsyncIteration:
-            ...
+    halt = []
+    for dep_state in loop._aiomisc_dependencies.values():
+        halt.append(dep_state.stop())
+
+    await asyncio.gather(*halt, return_exceptions=True)
 
     del loop._aiomisc_dependencies

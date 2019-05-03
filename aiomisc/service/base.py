@@ -30,7 +30,7 @@ class Service(metaclass=ServiceMeta):
     __dependencies__ = ()
 
     def __init__(self, **kwargs):
-        lost_kw = self.__required__ - kwargs.keys()
+        lost_kw = self.__required__ - kwargs.keys() - set(self.__dependencies__)
         if lost_kw:
             raise AttributeError('Absent attributes', lost_kw)
 

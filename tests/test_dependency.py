@@ -1,0 +1,74 @@
+import pytest
+
+from aiomisc import Service, dependency, entrypoint
+
+
+pytestmark = pytest.mark.catch_loop_exceptions
+
+
+def test_ignore_required_dependencies_in_init():
+
+    class TestService(Service):
+        __dependencies__ = ('some_dep',)
+        __required__ = ('some_dep',)
+
+    assert TestService()
+
+
+def test_dependency_injection():
+
+    @dependency
+    async def foo():
+        yield 'Foo'
+
+    @dependency
+    async def bar():
+        yield 'Bar'
+
+    class TestService(Service):
+        __dependencies__ = ('foo', 'bar')
+        async def start(self):
+            ...
+
+    service = TestService()
+
+    with entrypoint(service) as loop:
+        assert service.foo == 'Foo'
+        assert service.bar == 'Bar'
+
+
+def test_missed_dependency_exception():
+
+    class TestService(Service):
+        __dependencies__ = ('spam',)
+        async def start(self):
+            ...
+
+    service = TestService()
+
+    with pytest.raises(RuntimeError):
+        with entrypoint(service) as loop:
+            ...
+
+
+def test_graceful_dependency_shutdown():
+
+    @dependency
+    async def spam():
+        resource = ['spam'] * 3
+        yield resource
+        resource.clear()
+
+    class TestService(Service):
+        __dependencies__ = ('spam',)
+        async def start(self):
+            ...
+
+    service = TestService()
+
+    resource = None
+    with entrypoint(service) as loop:
+        resource = service.spam
+        assert resource == ['spam'] * 3
+
+    assert resource == []
