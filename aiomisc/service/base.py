@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 
 from aiomisc.context import Context, get_context
 
@@ -7,7 +8,7 @@ class ServiceMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         instance = type.__new__(cls, name, bases, dict(namespace))
 
-        for key in ('__async_required__', '__required__'):
+        for key in ('__async_required__', '__required__', '__dependencies__'):
             setattr(instance, key, frozenset(getattr(instance, key, ())))
 
         check_instance = all(
@@ -52,6 +53,12 @@ class Service(metaclass=ServiceMeta):
     def _set_params(self, **kwargs):
         for name, value in kwargs.items():
             setattr(self, name, value)
+
+    @property
+    def undefined_dependencies(self):
+        return frozenset(
+            filter(lambda x: not hasattr(self, x), self.__dependencies__)
+        )
 
     async def start(self):
         raise NotImplementedError

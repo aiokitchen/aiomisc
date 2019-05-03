@@ -90,3 +90,20 @@ def test_start_used_dependencies_only():
 
     with entrypoint(TestService()) as loop:
         ...
+
+
+def test_set_dependency_in_init():
+
+    @dependency
+    async def answer():
+        yield 777
+
+    class TestService(Service):
+        __dependencies__ = ('answer',)
+        async def start(self):
+            ...
+
+    service = TestService(answer=42)
+
+    with entrypoint(service) as loop:
+        assert service.answer == 42

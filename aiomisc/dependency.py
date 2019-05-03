@@ -43,7 +43,6 @@ async def start_dependencies(names, loop=None):
 
     await asyncio.gather(*setup, loop=loop)
 
-    print(dependencies)
     loop._aiomisc_dependencies = MappingProxyType(dependencies)
 
 

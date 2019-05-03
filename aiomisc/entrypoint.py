@@ -95,14 +95,14 @@ def entrypoint(*services: Service,
 
         used_deps = set()
         for svc in services:
-            used_deps.update(svc.__dependencies__)
+            used_deps.update(svc.undefined_dependencies)
 
         await start_dependencies(used_deps, loop)
 
         starting = []
 
         async def start_service(svc: Service):
-            deps = get_dependencies(svc.__dependencies__, loop)
+            deps = get_dependencies(svc.undefined_dependencies, loop)
             svc.__dict__.update(deps)
 
             await select(
