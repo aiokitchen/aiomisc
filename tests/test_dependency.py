@@ -44,10 +44,8 @@ def test_missed_dependency_exception():
         async def start(self):
             ...
 
-    service = TestService()
-
     with pytest.raises(RuntimeError):
-        with entrypoint(service) as loop:
+        with entrypoint(TestService()) as loop:
             ...
 
 
@@ -72,3 +70,23 @@ def test_graceful_dependency_shutdown():
         assert resource == ['spam'] * 3
 
     assert resource == []
+
+
+def test_start_used_dependencies_only():
+
+    @dependency
+    async def not_used():
+        raise RuntimeError("Shouldn't been used")
+        yield
+
+    @dependency
+    async def used():
+        yield
+
+    class TestService(Service):
+        __dependencies__ = ('used',)
+        async def start(self):
+            ...
+
+    with entrypoint(TestService()) as loop:
+        ...

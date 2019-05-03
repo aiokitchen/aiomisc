@@ -29,34 +29,29 @@ def dependency(f):
     return f
 
 
-async def start_dependencies(loop=None):
+async def start_dependencies(names, loop=None):
     if loop is None:
         loop = asyncio.get_event_loop()
 
-    deps = dict()
+    dependencies = dict()
     setup = []
-    for dep_name, dep_func in DEPENDENCIES.items():
-        deps[dep_name] = DependencyState(dep_func)
-        setup.append(deps[dep_name].start())
+    for name in names:
+        if name not in DEPENDENCIES:
+            raise RuntimeError("Dependency %s wasn't found", name)
+        dependencies[name] = DependencyState(DEPENDENCIES[name])
+        setup.append(dependencies[name].start())
 
     await asyncio.gather(*setup, loop=loop)
 
-    loop._aiomisc_dependencies = MappingProxyType(deps)
+    print(dependencies)
+    loop._aiomisc_dependencies = MappingProxyType(dependencies)
 
 
 
-async def get_dependencies(deps, loop=None):
-    if loop is None:
-        loop = asyncio.get_event_loop()
+def get_dependencies(names, loop=None):
+    loop = asyncio.get_event_loop()
 
-    result = dict()
-    for dep_name in deps:
-        if dep_name not in loop._aiomisc_dependencies:
-            raise RuntimeError('Dependency %s not found', dep_name)
-
-        result[dep_name] = loop._aiomisc_dependencies[dep_name].dependency
-
-    return result
+    return {name: loop._aiomisc_dependencies[name].dependency for name in names}
 
 
 async def stop_dependencies(loop=None):

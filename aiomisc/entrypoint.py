@@ -93,13 +93,16 @@ def entrypoint(*services: Service,
                 flush_interval=log_flush_interval,
             )
 
-        await start_dependencies(loop)
+        used_deps = set()
+        for svc in services:
+            used_deps.update(svc.__dependencies__)
+
+        await start_dependencies(used_deps, loop)
 
         starting = []
 
         async def start_service(svc: Service):
-            # inject dependencies
-            deps = await get_dependencies(svc.__dependencies__, loop)
+            deps = get_dependencies(svc.__dependencies__, loop)
             svc.__dict__.update(deps)
 
             await select(
