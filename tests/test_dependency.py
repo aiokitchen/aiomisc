@@ -1,3 +1,4 @@
+import asyncio
 import pytest
 
 from aiomisc import Service, dependency, entrypoint, DEPENDENCIES
@@ -119,3 +120,27 @@ def test_set_dependency_in_init():
 
     with entrypoint(service):
         assert service.answer == 42
+
+
+def test_coroutine_function_dependency():
+
+    @dependency
+    async def foo():
+        await asyncio.sleep(0.1)
+        return 'Foo'
+
+    @dependency
+    async def bar():
+        return 'Bar'
+
+    class TestService(Service):
+        __dependencies__ = ('foo', 'bar',)
+
+        async def start(self):
+            ...
+
+    service = TestService()
+
+    with entrypoint(service):
+        assert service.foo == 'Foo'
+        assert service.bar == 'Bar'
