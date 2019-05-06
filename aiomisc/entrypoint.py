@@ -78,7 +78,9 @@ class Entrypoint:
     def __del__(self):
         if self._loop and self._loop.is_closed():
             return
-        self._loop.close()
+
+        if self._loop_owner:
+            self._loop.close()
 
     def __enter__(self):
         if self.log_config:
