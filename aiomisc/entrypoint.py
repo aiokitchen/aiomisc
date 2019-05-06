@@ -6,7 +6,7 @@ from functools import partial
 from .context import Context, get_context
 from .log import basic_config, LogFormat
 from .service import Service
-from .utils import create_default_event_loop, select, event_loop_policy, shield
+from .utils import create_default_event_loop, event_loop_policy, shield
 
 
 class Entrypoint:
