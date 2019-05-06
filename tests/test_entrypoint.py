@@ -336,7 +336,6 @@ def test_aiohttp_service_sock(unix_socket_tcp):
     @aiomisc.threaded
     def http_client():
         url = 'http+unix://%s/' % quote(unix_socket_tcp.getsockname(), safe='')
-
         return requests_unixsocket.get(url).status_code
 
     service = AIOHTTPTestApp(sock=unix_socket_tcp)

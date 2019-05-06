@@ -52,7 +52,7 @@ class ThreadPoolExecutor(Executor):
         future.set_result(result)
 
     def _in_thread(self):
-        while self.__running:
+        while self.__running and not self.__loop.is_closed():
             try:
                 func, future = self.__tasks.get(timeout=1, block=True)
             except Empty:
@@ -63,10 +63,16 @@ class ThreadPoolExecutor(Executor):
 
             result, exception = None, None
 
+            if self.__loop.is_closed():
+                break
+
             try:
                 result = func()
             except Exception as e:
                 exception = e
+
+            if self.__loop.is_closed():
+                break
 
             self.__loop.call_soon_threadsafe(
                 self._set_result,

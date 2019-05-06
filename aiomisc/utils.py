@@ -2,10 +2,10 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
-from functools import wraps
+from functools import wraps, partial
 from multiprocessing import cpu_count
 from types import CoroutineType
-from typing import Any, Iterable, Tuple, Optional
+from typing import Any, Iterable, Tuple
 
 try:
     from typing import Coroutine
@@ -87,25 +87,29 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     return sock
 
 
-def new_event_loop(pool_size=None,
-                   policy=event_loop_policy) -> asyncio.AbstractEventLoop:
-
-    asyncio.set_event_loop_policy(policy)
-
-    pool_size = pool_size or cpu_count()
-
+def create_default_event_loop(pool_size=None, policy=event_loop_policy,
+                              debug=False):
     try:
         asyncio.get_event_loop().close()
     except RuntimeError:
         pass  # event loop is not created yet
 
+    asyncio.set_event_loop_policy(policy)
+
     loop = asyncio.new_event_loop()
-    thread_pool = ThreadPoolExecutor(pool_size, loop=loop)
-
-    loop.set_default_executor(thread_pool)
-
+    loop.set_debug(debug)
     asyncio.set_event_loop(loop)
 
+    pool_size = pool_size or cpu_count()
+    thread_pool = ThreadPoolExecutor(pool_size, loop=loop)
+    loop.set_default_executor(thread_pool)
+
+    return loop, thread_pool
+
+
+def new_event_loop(pool_size=None,
+                   policy=event_loop_policy) -> asyncio.AbstractEventLoop:
+    loop, thread_pool = create_default_event_loop(pool_size, policy)
     return loop
 
 
@@ -159,14 +163,25 @@ class SelectResult:
             yield None
 
 
-def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Optional[asyncio.Task]:
+def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Iterable[asyncio.Task]:
     if not tasks:
-        return
+        return []
 
     for task in tasks:
         task.cancel()
 
     return tasks
+
+
+async def _select_waiter(idx, awaitable, result):
+    try:
+        ret = await awaitable
+    except asyncio.CancelledError:
+        raise
+    except Exception as e:
+        return result.set_result(idx, e, is_exception=True)
+
+    result.set_result(idx, ret, is_exception=False)
 
 
 async def select(*awaitables, return_exceptions=False, cancel=True,
@@ -175,34 +190,34 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     loop = loop or asyncio.get_event_loop()
     result = SelectResult(len(awaitables))
 
-    async def waiter(idx, awaitable):
-        nonlocal result
-        try:
-            ret = await awaitable
-        except asyncio.CancelledError:
-            raise
-        except Exception as e:
-            result.set_result(idx, e, True)
-        else:
-            result.set_result(idx, ret, False)
+    def waiter(args):
+        return _select_waiter(*args, result=result)
 
-    _, pending = await asyncio.wait(
-        [asyncio.ensure_future(waiter(i, c)) for i, c in enumerate(awaitables)],
-        loop=loop, return_when=asyncio.FIRST_COMPLETED,
-        timeout=timeout,
+    ensure_future = partial(asyncio.ensure_future, loop=loop)
+
+    _, pending = await loop.create_task(
+        asyncio.wait(
+            map(
+                loop.create_task,
+                map(waiter, enumerate(map(ensure_future, awaitables)))
+            ),
+            timeout=timeout, loop=loop,
+            return_when=asyncio.FIRST_COMPLETED,
+        ),
     )
 
-    try:
-        if cancel:
-            cancelling = cancel_tasks(pending)
+    if cancel:
+        cancelling = cancel_tasks(pending)
 
-            if wait and cancelling:
-                await asyncio.gather(
-                    *cancelling, loop=loop,
-                    return_exceptions=True
-                )
-    except Exception:
-        raise
+        cancel_task = asyncio.ensure_future(
+            asyncio.gather(
+                *cancelling, loop=loop, return_exceptions=True
+            ),
+            loop=loop
+        )
+
+        if wait:
+            await cancel_task
 
     if result.is_exception and not return_exceptions:
         result.result()
