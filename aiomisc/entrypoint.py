@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import typing
+from functools import partial
 
 from .context import Context, get_context
 from .log import basic_config, LogFormat
@@ -114,9 +115,10 @@ class Entrypoint:
     async def start_service(self, svc: Service):
         svc.set_loop(self.loop)
 
+        ensure_future = partial(asyncio.ensure_future, loop=self.loop)
+
         start_task, ev_task = map(
-            lambda x: asyncio.ensure_future(x, loop=self.loop),
-            (svc.start(), svc.start_event.wait())
+            ensure_future, (svc.start(), svc.start_event.wait())
         )
 
         await self.loop.create_task(asyncio.wait(
@@ -124,7 +126,7 @@ class Entrypoint:
             return_when=asyncio.FIRST_COMPLETED,
         ))
 
-        self.loop.call_soon_threadsafe(svc.start_event.set)
+        self.loop.call_soon(svc.start_event.set)
         await ev_task
 
         if start_task.done():
