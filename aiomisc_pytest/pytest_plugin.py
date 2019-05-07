@@ -21,10 +21,9 @@ except ImportError:
 
 
 try:
-    from inspect import isasyncgenfunction
+    from async_generator import isasyncgenfunction
 except ImportError:
-    def isasyncgenfunction(_):
-        return False
+    from inspect import isasyncgenfunction
 
 
 def isasyncgenerator(func):

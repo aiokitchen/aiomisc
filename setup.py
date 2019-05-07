@@ -59,6 +59,7 @@ setup(
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop<1'],
+        ':python_version < "3.7"': 'async-generator',
     },
     entry_points={
         "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
