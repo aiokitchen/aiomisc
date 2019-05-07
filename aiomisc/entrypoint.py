@@ -10,7 +10,7 @@ from .utils import create_default_event_loop, event_loop_policy, shield
 
 
 class Entrypoint:
-    async def start(self):
+    async def _start(self):
         if self.log_config:
             basic_config(
                 level=self.log_level,
@@ -22,7 +22,7 @@ class Entrypoint:
             )
 
         await asyncio.gather(
-            *[self.start_service(svc) for svc in self.services],
+            *[self._start_service(svc) for svc in self.services],
             loop=self.loop
         )
 
@@ -93,7 +93,7 @@ class Entrypoint:
             )
 
         self.ctx = Context(loop=self.loop)
-        self.loop.run_until_complete(self.start())
+        self.loop.run_until_complete(self._start())
         return self.loop
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -112,7 +112,7 @@ class Entrypoint:
             if self._loop_owner:
                 self._loop.close()
 
-    async def start_service(self, svc: Service):
+    async def _start_service(self, svc: Service):
         svc.set_loop(self.loop)
 
         ensure_future = partial(asyncio.ensure_future, loop=self.loop)
@@ -133,12 +133,12 @@ class Entrypoint:
             return await start_task
 
     @shield
-    async def stop_service(self, svc, exception):
+    async def _stop_service(self, svc, exception):
         await svc.stop(exception)
 
     def graceful_shutdown(self, exception):
         tasks = [
-            self.stop_service(svc, exception) for svc in self.services
+            self._stop_service(svc, exception) for svc in self.services
         ]
 
         if not tasks:
