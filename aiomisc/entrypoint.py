@@ -121,10 +121,10 @@ class Entrypoint:
             ensure_future, (svc.start(), svc.start_event.wait())
         )
 
-        await self.loop.create_task(asyncio.wait(
+        await asyncio.wait(
             (start_task, ev_task), loop=self.loop,
             return_when=asyncio.FIRST_COMPLETED,
-        ))
+        )
 
         self.loop.call_soon(svc.start_event.set)
         await ev_task
