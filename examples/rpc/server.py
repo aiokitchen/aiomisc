@@ -1,7 +1,9 @@
 import io
+import logging
 import struct
 import asyncio
 from types import MappingProxyType
+from typing import Callable, Dict
 
 import msgpack
 
@@ -9,11 +11,14 @@ from aiomisc.entrypoint import entrypoint
 from aiomisc.service import TCPServer
 
 
+log = logging.getLogger()
+
+
 class RPCServer(TCPServer):
     __required__ = 'handlers',
 
-    HEADER = ">I"
-    HEADER_SIZE = struct.calcsize(HEADER)
+    HEADER = struct.Struct(">I")
+    handlers: Dict[str, Callable]
 
     async def handle_client(self, reader: asyncio.StreamReader,
                             writer: asyncio.StreamWriter):
@@ -23,11 +28,13 @@ class RPCServer(TCPServer):
 
         try:
             while True:
-                body_size = struct.unpack(
-                    self.HEADER, await reader.readexactly(self.HEADER_SIZE)
+                body_size = self.HEADER.unpack(
+                    await reader.readexactly(self.HEADER.size)
                 )[0]
 
                 if body_size == 0:
+                    log.info('Client tcp://%s:%d initial to close connection',
+                             *writer.get_extra_info('peername')[:2])
                     return
 
                 body_bytes = await reader.readexactly(body_size)
@@ -51,7 +58,7 @@ class RPCServer(TCPServer):
 
                 with io.BytesIO() as f:
                     response = packer.pack(result)
-                    f.write(struct.pack(self.HEADER, len(response)))
+                    f.write(self.HEADER.pack(len(response)))
                     f.write(response)
 
                     payload = f.getvalue()
