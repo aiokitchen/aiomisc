@@ -1,12 +1,12 @@
 import asyncio
 import logging
 import logging.handlers
-from functools import partial
+import time
+from contextlib import suppress
+from threading import Thread
 
 from typing import Union
 
-from aiomisc.thread_pool import threaded, ThreadPoolException
-from aiomisc.periodic import PeriodicCallback
 from prettylog import (
     color_formatter,
     create_logging_handler,
@@ -17,8 +17,15 @@ from prettylog import (
 )
 
 
-class AsyncMemoryHandler(logging.handlers.MemoryHandler):
-    flush_async = threaded(logging.handlers.MemoryHandler.flush)
+def _thread_flusher(handler: logging.handlers.MemoryHandler,
+                    flush_interval: Union[float, int],
+                    loop: asyncio.AbstractEventLoop):
+    while not loop.is_closed():
+        if handler.buffer:
+            with suppress(Exception):
+                handler.flush()
+
+        time.sleep(flush_interval)
 
 
 def wrap_logging_handler(handler: logging.Handler,
@@ -28,18 +35,18 @@ def wrap_logging_handler(handler: logging.Handler,
     loop = loop or asyncio.get_event_loop()
 
     buffered_handler = _wrap_logging_handler(
-        handler=handler, buffer_size=buffer_size,
-        logger_class=AsyncMemoryHandler,
+        handler=handler, buffer_size=buffer_size
     )
 
-    periodic = PeriodicCallback(buffered_handler.flush_async)
-    loop.call_soon_threadsafe(
-        partial(
-            periodic.start, flush_interval, loop,
-            suppress_exceptions=(ThreadPoolException,)
-        )
+    flusher = Thread(
+        target=_thread_flusher,
+        args=(buffered_handler, flush_interval, loop),
+        name="Log flusher"
     )
 
+    flusher.daemon = True
+
+    loop.call_soon_threadsafe(flusher.start)
     return buffered_handler
 
 

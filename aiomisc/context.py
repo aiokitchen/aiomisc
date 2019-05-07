@@ -3,6 +3,8 @@ from collections import defaultdict
 
 
 class Context:
+    __slots__ = ('_storage', '_loop')
+
     _EVENT_OBJECTS = dict()
 
     def close(self):

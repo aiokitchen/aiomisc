@@ -13,12 +13,11 @@ log = logging.getLogger('client')
 
 
 class RPCClient:
-    HEADER = ">I"
-    HEADER_SIZE = struct.calcsize(HEADER)
+    HEADER = struct.Struct(">I")
 
     def __init__(self, reader: asyncio.StreamReader,
                  writer: asyncio.StreamWriter,
-                 loop: asyncio.AbstractEventLoop=None):
+                 loop: asyncio.AbstractEventLoop = None):
 
         self.reader = reader
         self.writer = writer
@@ -27,15 +26,13 @@ class RPCClient:
         self.serial = 0
         self.futures = {}
         self.loop = loop or asyncio.get_event_loop()
-
-        self.loop.create_task(self._response_reader())
+        self.reader_task = self.loop.create_task(self._response_reader())
 
     async def _response_reader(self):
         try:
             while True:
-                body_size = struct.unpack(
-                    self.HEADER,
-                    await self.reader.readexactly(self.HEADER_SIZE)
+                body_size = self.HEADER.unpack(
+                    await self.reader.readexactly(self.HEADER.size)
                 )[0]
 
                 self.unpacker.feed(
@@ -67,9 +64,14 @@ class RPCClient:
                 future.set_exception(ConnectionAbortedError)
 
     async def close(self):
-        self.writer.write(struct.pack(self.HEADER, 0))
+        self.writer.write(self.HEADER.pack(0))
+
+        self.reader_task.cancel()
+        await asyncio.gather(self.reader_task, return_exceptions=True)
+
         self.loop.call_soon(self.writer.close)
-        await self.writer.wait_closed()
+        self.writer.write_eof()
+        self.writer.close()
 
     def __call__(self, method, **kwargs):
         self.serial += 1
@@ -83,7 +85,7 @@ class RPCClient:
                 'params': kwargs,
             })
 
-            f.write(struct.pack(self.HEADER, len(body)))
+            f.write(self.HEADER.pack(len(body)))
             f.write(body)
 
             self.writer.write(f.getvalue())
@@ -112,7 +114,7 @@ async def main(host, port):
     log.info("Total executed %d requests on %.3f", total_request_sent, delta)
     log.info("RPS: %.3f", total_request_sent / delta)
 
-    client.close()
+    await client.close()
     log.info('Close connection')
 
 

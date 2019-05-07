@@ -234,8 +234,8 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
                             "Exception: {e}"
                         ).format(
                             m=e['message'],
-                            f=repr(e['future']),
-                            e=repr(e['exception'])
+                            f=repr(e.get('future')),
+                            e=repr(e.get('exception'))
                         ) for e in exceptions)
                 )
                 pytest.fail("Unhandled exceptions found. See logs.")
@@ -244,6 +244,7 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
             pool.shutdown(True)
 
         asyncio.get_event_loop.side_effect = get_event_loop
+        loop.close()
         del loop
 
 

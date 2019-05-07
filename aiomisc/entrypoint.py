@@ -1,127 +1,159 @@
 import asyncio
 import logging
-from contextlib import contextmanager
-from typing import Tuple, Optional, Union
+import typing
+from functools import partial
 
 from .context import Context, get_context
 from .log import basic_config, LogFormat
 from .service import Service
-from .utils import new_event_loop, select
+from .utils import create_default_event_loop, event_loop_policy, shield
 
 
-def graceful_shutdown(services: Tuple[Service, ...],
-                      loop: asyncio.AbstractEventLoop,
-                      exception: Optional[Exception]):
-
-    if hasattr(loop, '_default_executor'):
-        try:
-            loop._default_executor.shutdown()
-        except Exception:
-            logging.exception("Failed to stop default executor")
-
-    tasks = [
-        asyncio.shield(loop.create_task(svc.stop(exception)), loop=loop)
-        for svc in services
-    ]
-
-    if not tasks:
-        return
-
-    loop.run_until_complete(
-        asyncio.wait(
-            tasks, loop=loop, return_when=asyncio.ALL_COMPLETED
-        )
-    )
-
-
-@contextmanager
-def entrypoint(*services: Service,
-               loop: asyncio.AbstractEventLoop = None,
-               pool_size: int = None,
-               log_level: Union[int, str] = logging.INFO,
-               log_format: Union[str, LogFormat] = 'color',
-               log_buffer_size: int = 1024,
-               log_flush_interval: float = 0.2,
-               log_config: bool = True,
-               debug: bool = False):
-    """
-
-    :param debug: set debug to event loop
-    :param loop: loop
-    :param services: Service instances which will be starting.
-    :param pool_size: thread pool size
-    :param log_level: Logging level which will be configured
-    :param log_format: Logging format which will be configures
-    :param log_buffer_size: Buffer size for logging
-    :param log_flush_interval: interval in seconds for flushing logs
-    :param log_config: if False do not configure logging
-    """
-
-    loop = loop or new_event_loop(pool_size)
-    loop.set_debug(debug)
-
-    ctx = Context(loop=loop)
-
-    if log_config:
-        basic_config(
-            level=log_level,
-            log_format=log_format,
-            loop=loop,
-            buffered=False,
-        )
-
-    async def start():
-        nonlocal loop
-        nonlocal services
-        nonlocal log_format
-        nonlocal log_level
-        nonlocal log_buffer_size
-        nonlocal log_flush_interval
-
-        if log_config:
+class Entrypoint:
+    async def _start(self):
+        if self.log_config:
             basic_config(
-                level=log_level,
-                log_format=log_format,
+                level=self.log_level,
+                log_format=self.log_format,
                 buffered=True,
-                loop=loop,
-                buffer_size=log_buffer_size,
-                flush_interval=log_flush_interval,
+                loop=self.loop,
+                buffer_size=self.log_buffer_size,
+                flush_interval=self.log_flush_interval,
             )
 
-        starting = []
+        await asyncio.gather(
+            *[self._start_service(svc) for svc in self.services],
+            loop=self.loop
+        )
 
-        async def start_service(svc: Service):
-            await select(
-                svc.start(), svc.start_event.wait(),
-                cancel=False,
-                loop=loop,
+    def __init__(self, *services, loop: asyncio.AbstractEventLoop = None,
+                 pool_size: int = None,
+                 log_level: typing.Union[int, str] = logging.INFO,
+                 log_format: typing.Union[str, LogFormat] = 'color',
+                 log_buffer_size: int = 1024,
+                 log_flush_interval: float = 0.2,
+                 log_config: bool = True,
+                 policy=event_loop_policy,
+                 debug: bool = False):
+
+        """
+
+        :param debug: set debug to event loop
+        :param loop: loop
+        :param services: Service instances which will be starting.
+        :param pool_size: thread pool size
+        :param log_level: Logging level which will be configured
+        :param log_format: Logging format which will be configures
+        :param log_buffer_size: Buffer size for logging
+        :param log_flush_interval: interval in seconds for flushing logs
+        :param log_config: if False do not configure logging
+        """
+
+        self._debug = debug
+        self._loop = loop
+        self._loop_owner = False
+        self._thread_pool = None
+        self.ctx = None
+        self.log_buffer_size = log_buffer_size
+        self.log_config = log_config
+        self.log_flush_interval = log_flush_interval
+        self.log_format = log_format
+        self.log_level = log_level
+        self.policy = policy
+        self.pool_size = pool_size
+        self.services = services
+        self.shutting_down = False
+
+    @property
+    def loop(self) -> asyncio.AbstractEventLoop:
+        if self._loop is None:
+            self._loop, self._thread_pool = create_default_event_loop(
+                pool_size=self.pool_size,
+                policy=self.policy,
+                debug=self._debug
+            )
+            self._loop_owner = True
+
+        return self._loop
+
+    def __del__(self):
+        if self._loop and self._loop.is_closed():
+            return
+
+        if self._loop_owner:
+            self._loop.close()
+
+    def __enter__(self):
+        if self.log_config:
+            basic_config(
+                level=self.log_level,
+                log_format=self.log_format,
+                loop=self.loop,
+                buffered=False,
             )
 
-            if not svc.start_event.is_set():
-                svc.start_event.set()
+        self.ctx = Context(loop=self.loop)
+        self.loop.run_until_complete(self._start())
+        return self.loop
 
-        for svc in services:
-            svc.set_loop(loop)
-            starting.append(loop.create_task(start_service(svc)))
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self.graceful_shutdown(exc_val)
+            self.shutting_down = True
+        finally:
+            if not self.shutting_down:
+                self.graceful_shutdown(None)
 
-        await asyncio.gather(*starting, loop=loop)
+            self.ctx.close()
 
-    loop.run_until_complete(start())
+            if self._thread_pool:
+                self._thread_pool.shutdown()
 
-    shutting_down = False
+            if self._loop_owner:
+                self._loop.close()
 
-    try:
-        yield loop
-    except Exception as e:
-        graceful_shutdown(services, loop, e)
-        shutting_down = True
-        raise
-    finally:
-        if not shutting_down:
-            graceful_shutdown(services, loop, None)
+    async def _start_service(self, svc: Service):
+        svc.set_loop(self.loop)
 
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        ctx.close()
+        ensure_future = partial(asyncio.ensure_future, loop=self.loop)
+
+        start_task, ev_task = map(
+            ensure_future, (svc.start(), svc.start_event.wait())
+        )
+
+        await asyncio.wait(
+            (start_task, ev_task), loop=self.loop,
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        self.loop.call_soon(svc.start_event.set)
+        await ev_task
+
+        if start_task.done():
+            return await start_task
+
+    @shield
+    async def _stop_service(self, svc, exception):
+        await svc.stop(exception)
+
+    def graceful_shutdown(self, exception):
+        tasks = [
+            self._stop_service(svc, exception) for svc in self.services
+        ]
+
+        if not tasks:
+            return
+
+        self.loop.run_until_complete(
+            asyncio.gather(*tasks, loop=self.loop, return_exceptions=True)
+        )
+
+        self.loop.run_until_complete(
+            self.loop.shutdown_asyncgens()
+        )
 
 
-__all__ = ('entrypoint', 'get_context')
+entrypoint = Entrypoint
+
+
+__all__ = ('entrypoint', 'Entrypoint', 'get_context')

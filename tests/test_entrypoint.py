@@ -3,12 +3,11 @@ import os
 import socket
 from contextlib import ExitStack
 from tempfile import mktemp
-from urllib.parse import quote
+
 
 import aiohttp.web
 import pytest
-import requests
-import requests_unixsocket
+import http.client
 
 import aiomisc
 from aiomisc.service import TCPServer, UDPServer, TLSServer
@@ -321,8 +320,15 @@ def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
 def test_aiohttp_service(aiomisc_unused_port):
     @aiomisc.threaded
     def http_client():
-        url = 'http://127.0.0.1:%s/' % aiomisc_unused_port
-        return requests.get(url, timeout=1).status_code
+        conn = http.client.HTTPConnection(
+            host='127.0.0.1',
+            port=aiomisc_unused_port,
+            timeout=1
+        )
+
+        conn.request('GET', '/')
+        response = conn.getresponse()
+        return response.code
 
     service = AIOHTTPTestApp(address='127.0.0.1', port=aiomisc_unused_port)
 
@@ -335,9 +341,11 @@ def test_aiohttp_service(aiomisc_unused_port):
 def test_aiohttp_service_sock(unix_socket_tcp):
     @aiomisc.threaded
     def http_client():
-        url = 'http+unix://%s/' % quote(unix_socket_tcp.getsockname(), safe='')
-
-        return requests_unixsocket.get(url).status_code
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.connect(unix_socket_tcp.getsockname())
+            sock.send(b'GET / HTTP/1.1\nConnection: close\n\n')
+            status = sock.recv(65535).splitlines()[0]
+            return int(status.split()[1])
 
     service = AIOHTTPTestApp(sock=unix_socket_tcp)
 

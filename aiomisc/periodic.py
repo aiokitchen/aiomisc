@@ -45,6 +45,9 @@ class PeriodicCallback:
         self._loop = loop or asyncio.get_event_loop()
 
         def periodic():
+            if self._loop.is_closed():
+                return
+
             if self._task and not self._task.done():
                 log.warning('Task %r still running skipping', self)
                 return
