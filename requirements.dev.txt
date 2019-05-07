@@ -5,7 +5,5 @@ coveralls
 pylava
 pytest
 pytest-cov~=2.5.1
-requests
-requests_unixsocket
 timeout-decorator
 tox>=2.4
