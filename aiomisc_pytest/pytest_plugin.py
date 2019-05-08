@@ -243,7 +243,6 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
             pool.shutdown(True)
 
         asyncio.get_event_loop.side_effect = get_event_loop
-        loop.close()
         del loop
 
 
