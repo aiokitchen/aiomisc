@@ -25,7 +25,7 @@ class Entrypoint:
         for signal in (self.pre_start, self.post_stop):
             signal.freeze()
 
-        await self.pre_start.call(sender=self, services=self.services)
+        await self.pre_start.call(entrypoint=self, services=self.services)
 
         await asyncio.gather(
             *[self._start_service(svc) for svc in self.services],
@@ -156,7 +156,7 @@ class Entrypoint:
             asyncio.gather(*tasks, loop=self.loop, return_exceptions=True)
         )
 
-        self.loop.run_until_complete(self.post_stop.call(sender=self))
+        self.loop.run_until_complete(self.post_stop.call(entrypoint=self))
 
         self.loop.run_until_complete(
             self.loop.shutdown_asyncgens()
