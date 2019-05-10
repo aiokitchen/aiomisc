@@ -7,6 +7,7 @@ from .entrypoint import entrypoint
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
 from .service import Service
+from .signal import Signal
 from .thread_pool import threaded, threaded_iterable, ThreadPoolExecutor
 from .timeout import timeout
 
@@ -20,5 +21,5 @@ __all__ = (
     'entrypoint', 'io', 'IteratorWrapper', 'log', 'PeriodicCallback',
     'Service', 'threaded', 'threaded_iterable', 'ThreadPoolExecutor',
     'timeout', 'bind_socket', 'chunk_list', 'new_event_loop', 'select',
-    'SelectResult', 'shield',
+    'SelectResult', 'shield', 'Signal',
 )
