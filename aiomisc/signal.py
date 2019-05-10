@@ -1,11 +1,4 @@
 import inspect
-from typing import Any, Callable, NamedTuple
-
-
-class SignalReceiver(NamedTuple):
-
-    callback: Callable
-    expected_sender: Any
 
 
 class Signal:
@@ -19,29 +12,18 @@ class Signal:
     def freeze(self):
         self._is_frozen = True
 
-    def connect(self, callback, sender=None):
+    def connect(self, receiver):
         if self._is_frozen:
             raise RuntimeError(
-                "Can't connect callback (%r) to the frozen signal",
-                callback,
+                "Can't connect receiver (%r) to the frozen signal",
+                receiver,
             )
 
-        if not inspect.iscoroutinefunction(callback):
-            raise RuntimeError('%r is not a coroutine function', callback)
+        if not inspect.iscoroutinefunction(receiver):
+            raise RuntimeError('%r is not a coroutine function', receiver)
 
-        self._receivers.append(
-            SignalReceiver(callback=callback, expected_sender=sender),
-        )
+        self._receivers.append(receiver)
 
-    async def call(self, *args, sender=None, **kwargs):
-        args = args or []
-        kwargs = kwargs or {}
-
+    async def call(self, *args, **kwargs):
         for receiver in self._receivers:
-            if (
-                receiver.expected_sender is not None
-                and receiver.expected_sender != sender
-            ):
-                continue
-
-            await receiver.callback(*args, sender=sender, **kwargs)
+            await receiver(*args, **kwargs)
