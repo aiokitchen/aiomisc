@@ -27,3 +27,11 @@ class Signal:
     async def call(self, *args, **kwargs):
         for receiver in self._receivers:
             await receiver(*args, **kwargs)
+
+
+def receiver(s: Signal):
+    def decorator(func):
+        s.connect(func)
+        return func
+
+    return decorator
