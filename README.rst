@@ -855,6 +855,49 @@ waits first passed awaitable object and returns list of results.
 When you don't want to cancel pending tasks pass ``cancel=False`` argument.
 
 
+Signal
+++++++
+
+You can register async callback functions for specific events of an entrypoint.
+
+pre_start
+*********
+
+``pre_start`` signal occurs on entrypoint start up before any service have started.
+
+.. code-block:: python
+
+    from aiomisc import entrypoint, receiver
+
+    ep = entrypoint(*services)
+
+    @receiver(ep.pre_start)
+    async def prepare_database(entrypoint, services):
+      ...
+
+    with ep as loop:
+        loop.run_forever()
+
+
+post_stop
+*********
+
+``post_stop`` signal occurs on entrypoint shutdown after all services have been
+stopped.
+
+.. code-block:: python
+
+    from aiomisc import entrypoint, receiver
+
+    ep = entrypoint(*services)
+
+    @receiver(ep.post_stop)
+    async def cleanup(entrypoint):
+      ...
+
+    with ep as loop:
+        loop.run_forever()
+
 
 Bind socket
 +++++++++++
