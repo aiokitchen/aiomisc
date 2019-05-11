@@ -174,3 +174,15 @@ def test_dependencies_for_depndencies():
 
     with entrypoint(service):
         assert service.spam == 'FooFooFoo'
+
+
+def test_loop_dependency():
+    injected_loop = None
+
+    @dependency
+    def need_loop(loop):
+        nonlocal injected_loop
+        injected_loop = loop
+
+    with entrypoint() as loop:
+        assert loop == injected_loop
