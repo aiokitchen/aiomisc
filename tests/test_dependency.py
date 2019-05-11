@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from aiomisc import dependency, Service, entrypoint, reset_dependency_store
+from aiomisc import dependency, Service, entrypoint
 from aiomisc.dependency import freeze, consumer, inject
 
 
