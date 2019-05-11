@@ -1,3 +1,4 @@
+aiodine~=1.2.6
 chardet<4
 colorlog
 prettylog

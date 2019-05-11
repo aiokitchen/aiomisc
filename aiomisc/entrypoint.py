@@ -4,6 +4,7 @@ import typing
 from functools import partial
 
 from .context import Context, get_context
+from .dependency import inject, enter_session, exit_session
 from .log import basic_config, LogFormat
 from .service import Service
 from .signal import Signal
@@ -69,8 +70,20 @@ class Entrypoint:
         self.pool_size = pool_size
         self.services = services
         self.shutting_down = False
-        self.pre_start = Signal()
+
         self.post_stop = Signal()
+        self.post_stop.connect(self.clear_dependencies)
+
+        self.pre_start = Signal()
+        self.pre_start.connect(self.resolve_dependencies)
+
+    async def resolve_dependencies(self, entrypoint, services):
+        await enter_session()
+        for svc in services:
+            await inject(svc, svc.__dependencies__)
+
+    async def clear_dependencies(self, entrypoint):
+        await exit_session()
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:

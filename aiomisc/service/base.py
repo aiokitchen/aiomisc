@@ -27,6 +27,7 @@ class ServiceMeta(type):
 class Service(metaclass=ServiceMeta):
     __async_required__ = 'start', 'stop'
     __required__ = ()
+    __dependencies__ = ()
 
     def __init__(self, **kwargs):
         lost_kw = self.__required__ - kwargs.keys()
