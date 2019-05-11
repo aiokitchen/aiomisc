@@ -6,12 +6,6 @@ from aiomisc import dependency, Service, entrypoint, reset_dependency_store
 from aiomisc.dependency import freeze, consumer, inject
 
 
-@pytest.fixture(autouse=True)
-def reset_store():
-    yield
-    reset_dependency_store()
-
-
 async def test_register_dependency():
 
     @dependency

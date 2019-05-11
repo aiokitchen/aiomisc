@@ -262,3 +262,10 @@ def aiomisc_unused_port_factory() -> typing.Callable[[], int]:
 @pytest.fixture
 def aiomisc_unused_port() -> int:
     return get_unused_port()
+
+
+@pytest.fixture(autouse=loop_autouse)
+def reset_store():
+    from aiomisc import reset_dependency_store
+    yield
+    reset_dependency_store()

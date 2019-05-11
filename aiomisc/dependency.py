@@ -28,10 +28,10 @@ async def inject(target, dependencies):
 
     for name in dependencies:
         value = getattr(resolved_deps, name)
-        if value is NOT_FOUND_DEP:
-            raise RuntimeError("Required %s dependency wasn't found", name)
-
         if not hasattr(target, name):
+            if value is NOT_FOUND_DEP:
+                raise RuntimeError("Required %s dependency wasn't found", name)
+
             setattr(target, name, value)
 
 

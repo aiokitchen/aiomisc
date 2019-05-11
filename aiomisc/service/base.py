@@ -7,7 +7,7 @@ class ServiceMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         instance = type.__new__(cls, name, bases, dict(namespace))
 
-        for key in ('__async_required__', '__required__'):
+        for key in ('__async_required__', '__required__', '__dependencies__'):
             setattr(instance, key, frozenset(getattr(instance, key, ())))
 
         check_instance = all(
@@ -30,7 +30,7 @@ class Service(metaclass=ServiceMeta):
     __dependencies__ = ()
 
     def __init__(self, **kwargs):
-        lost_kw = self.__required__ - kwargs.keys()
+        lost_kw = self.__required__ - kwargs.keys() - self.__dependencies__
         if lost_kw:
             raise AttributeError('Absent attributes', lost_kw)
 
