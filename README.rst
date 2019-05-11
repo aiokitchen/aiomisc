@@ -546,6 +546,102 @@ Output example:
           14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40
 
 
+Dependencies
+++++++++++++
+
+Aiomisc has built-in dependency injection tools for services. It's built with
+aiodine_ library and support pytest fixture style dependency injection.
+
+.. _aiodine: https://github.com/bocadilloproject/aiodine
+
+Register dependency
+*******************
+
+To register dependency you can use ``aiomisc.dependency`` decorator.
+
+.. code-block:: python
+
+    from aiomisc import dependency
+
+    @dependency
+    async def pg_engine():
+        pg_engine = await create_engine(dsn=pg_url)
+        yield pg_engine
+        pg_engine.close()
+        await pg_engine.wait_closed()
+
+
+As you can see dependency can be async generator function. Code after yield
+will be executed on teardown to correctly close the dependency.
+
+Coroutine functions, non async functions and generators are also supported.
+
+Use dependency
+**************
+
+To use dependency you need to add it's name to ``__dependencies__`` property
+for every service which depends on it. Specified dependencies will be injected
+as service's attributes on entrypoint startup.
+
+.. code-block:: python
+
+    from aiomisc import Service
+    from aiomisc.service.aiohttp import AIOHTTPService
+
+    class HealthcheckService(Service):
+
+        __dependencies__ = ('pg_engine',)
+
+
+    class RESTService(AIOHTTPService):
+
+        __dependencies__ = ('pg_engine',)
+
+If any required dependency won't be found ``RuntimeError`` will be raised.
+You can set a dependency manually by adding it to kw arguments on service
+creation. This could be convenient in tests.
+
+.. code-block:: python
+
+    from unittest import Mock
+
+    def test_rest_service():
+        pg_engine_mock = Mock()
+        service = RESTService(pg_engine=pg_engine_mock)
+        ...
+
+Dependencies for dependencies
+*****************************
+
+You can use dependencies as arguments for other dependencies. Arguments will
+injected automatically.
+
+.. code-block:: python
+
+    @dependency
+    async def pg_connection(pg_engine):
+        async with pg_engine.acquire() as conn:
+            yield conn
+
+
+``loop`` built-in dependency
+****************************
+
+Built-in ``loop`` dependency can be used if your dependency requires
+event loop instance.
+
+.. code-block:: python
+
+    import aioredis
+
+    @dependency
+    async def redis_pool(loop):
+        pool = aioredis.create_pool(redis_url, loop=loop)
+        yield pool
+        pool.close()
+        await pool.wait_closed()
+
+
 timeout decorator
 +++++++++++++++++
 
@@ -813,8 +909,8 @@ waits first passed awaitable object and returns list of results.
 When you don't want to cancel pending tasks pass ``cancel=False`` argument.
 
 
-Signal
-++++++
+Signals
++++++++
 
 You can register async callback functions for specific events of an entrypoint.
 
