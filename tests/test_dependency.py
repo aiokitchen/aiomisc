@@ -152,3 +152,25 @@ def test_coroutine_function_dependency():
     with entrypoint(service):
         assert service.foo == 'Foo'
         assert service.bar == 'Bar'
+
+
+def test_dependencies_for_depndencies():
+
+    @dependency
+    async def foo():
+        return 'Foo'
+
+    @dependency
+    async def spam(foo):
+        return foo * 3
+
+    class TestService(Service):
+        __dependencies__ = ('spam',)
+
+        async def start(self):
+            ...
+
+    service = TestService()
+
+    with entrypoint(service):
+        assert service.spam == 'FooFooFoo'

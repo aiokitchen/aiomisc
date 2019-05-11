@@ -4,7 +4,7 @@ import typing
 from functools import partial
 
 from .context import Context, get_context
-from .dependency import inject, enter_session, exit_session
+from .dependency import inject, enter_session, exit_session, freeze
 from .log import basic_config, LogFormat
 from .service import Service
 from .signal import Signal
@@ -78,6 +78,7 @@ class Entrypoint:
         self.pre_start.connect(self.resolve_dependencies)
 
     async def resolve_dependencies(self, entrypoint, services):
+        freeze()
         await enter_session()
         for svc in services:
             await inject(svc, svc.__dependencies__)
