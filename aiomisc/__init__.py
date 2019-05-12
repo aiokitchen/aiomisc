@@ -1,3 +1,6 @@
+import logging
+import pkg_resources
+
 from . import io
 from . import log
 
@@ -16,8 +19,23 @@ from .utils import (
 )
 
 
+plugins = {
+    entry_point.name: entry_point.load()
+    for entry_point
+    in pkg_resources.iter_entry_points('aiomisc.plugins')
+}
+
+def setup_plugins():
+    logger = logging.getLogger(__name__)
+    for name, plugin in plugins.items():
+        try:
+            plugin.setup()
+        except:
+            logger.exception('Error on %s aiomisc plugin setup', name)
+
+
 __all__ = (
-    'asyncbackoff', 'Context', 'get_context',
+    'asyncbackoff', 'Context', 'get_context', 'plugins',
     'entrypoint', 'io', 'IteratorWrapper', 'log', 'PeriodicCallback',
     'Service', 'threaded', 'threaded_iterable', 'ThreadPoolExecutor',
     'timeout', 'bind_socket', 'chunk_list', 'new_event_loop', 'select',
