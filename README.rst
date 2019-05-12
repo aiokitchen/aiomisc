@@ -585,6 +585,7 @@ as service's attributes on entrypoint startup.
 
 .. code-block:: python
 
+    import aiohttp
     from aiomisc import Service
     from aiomisc.service.aiohttp import AIOHTTPService
 
@@ -592,12 +593,34 @@ as service's attributes on entrypoint startup.
 
         __dependencies__ = ('pg_engine',)
 
+    async def create_application(self):
+        app = aiohttp.web.Application()
+        app.add_routes([aiohttp.web.get('/ping', self.healthcheck_handler)])
+        return app
+
+    async def healthcheck_handler(self, request):
+        pg_status = True
+        try:
+            async with self.pg_engine.acquire() as conn:
+                await conn.execute('SELECT 1')
+        except:
+            pg_status = False
+
+        return aiohttp.web.json_response(
+            {'db': pg_status},
+            status=(200 if pg_status else 500),
+        )
+
 
     class RESTService(AIOHTTPService):
 
         __dependencies__ = ('pg_engine',)
 
-If any required dependency won't be found ``RuntimeError`` will be raised.
+        ...
+
+If any required dependency won't be found on entrypoint startup,
+``RuntimeError`` will be raised.
+
 You can set a dependency manually by adding it to kw arguments on service
 creation. This could be convenient in tests.
 
