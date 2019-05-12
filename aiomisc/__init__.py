@@ -30,6 +30,7 @@ def setup_plugins():
     logger = logging.getLogger(__name__)
     for name, plugin in plugins.items():
         try:
+            logger.debug("Trying to load %r %r", name, plugin)
             plugin.setup()
         except:  # noqa
             logger.exception('Error on %s aiomisc plugin setup', name)
