@@ -869,13 +869,11 @@ pre_start
 
     from aiomisc import entrypoint, receiver
 
-    ep = entrypoint(*services)
-
-    @receiver(ep.pre_start)
+    @receiver(entrypoint.PRE_START)
     async def prepare_database(entrypoint, services):
       ...
 
-    with ep as loop:
+    with entrypoint as loop:
         loop.run_forever()
 
 
@@ -889,14 +887,52 @@ stopped.
 
     from aiomisc import entrypoint, receiver
 
-    ep = entrypoint(*services)
-
-    @receiver(ep.post_stop)
+    @receiver(entrypoint.POST_STOP)
     async def cleanup(entrypoint):
       ...
 
-    with ep as loop:
+    with entrypoint() as loop:
         loop.run_forever()
+
+
+Plugins
++++++++
+
+aiomisc can be extended with plugins as separate packages. Plugins can
+enhance aiomisc by mean of signals_.
+
+.. _signals: #signal
+
+In order to make your plugin discoverable by aiomisc you should add
+``aiomisc.plugins`` entry to entry to ``entry_points`` argument of ``setup``
+call in ``setup.py`` of a plugin.
+
+.. code-block:: python
+
+    # setup.py
+
+    setup(
+        # ...
+        entry_points={
+            "aiomisc.plugins": ["myplugin = aiomisc_myplugin.plugin"]
+        },
+        # ...
+    )
+
+
+Modules which provided in ``entry_points`` should have ``setup`` function.
+This functions would be called by aiomisc and must contain signals connecting.
+
+.. code-block:: python
+
+    async def hello(entrypoint, services):
+        print('Hello from aiomisc plugin')
+
+
+    def setup():
+        from aiomisc import entrypoint
+
+        entrypoint.PRE_START.connect(hello)
 
 
 Bind socket
