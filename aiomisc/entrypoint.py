@@ -11,6 +11,10 @@ from .utils import create_default_event_loop, event_loop_policy, shield
 
 
 class Entrypoint:
+
+    PRE_START = Signal()
+    POST_STOP = Signal()
+
     async def _start(self):
         if self.log_config:
             basic_config(
@@ -69,8 +73,8 @@ class Entrypoint:
         self.pool_size = pool_size
         self.services = services
         self.shutting_down = False
-        self.pre_start = Signal()
-        self.post_stop = Signal()
+        self.pre_start = self.PRE_START.copy()
+        self.post_stop = self.POST_STOP.copy()
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
