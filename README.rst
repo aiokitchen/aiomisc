@@ -873,7 +873,7 @@ pre_start
     async def prepare_database(entrypoint, services):
       ...
 
-    with entrypoint as loop:
+    with entrypoint() as loop:
         loop.run_forever()
 
 
