@@ -595,22 +595,22 @@ as service's attributes on entrypoint startup.
 
         __dependencies__ = ('pg_engine',)
 
-    async def create_application(self):
-        app = aiohttp.web.Application()
-        app.add_routes([aiohttp.web.get('/ping', self.healthcheck_handler)])
-        return app
+        async def create_application(self):
+            app = aiohttp.web.Application()
+            app.add_routes([aiohttp.web.get('/ping', self.healthcheck_handler)])
+            return app
 
-    async def healthcheck_handler(self, request):
-        pg_status = False
-        with suppress(Exception):
-           async with self.pg_engine.acquire() as conn:
-               await conn.execute('SELECT 1')
-               pg_status = True
+        async def healthcheck_handler(self, request):
+            pg_status = False
+            with suppress(Exception):
+               async with self.pg_engine.acquire() as conn:
+                   await conn.execute('SELECT 1')
+                   pg_status = True
 
-        return aiohttp.web.json_response(
-            {'db': pg_status},
-            status=(200 if pg_status else 500),
-        )
+            return aiohttp.web.json_response(
+                {'db': pg_status},
+                status=(200 if pg_status else 500),
+            )
 
 
     class RESTService(AIOHTTPService):
