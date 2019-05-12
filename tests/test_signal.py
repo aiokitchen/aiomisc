@@ -10,6 +10,12 @@ def signal():
     return Signal()
 
 
+@pytest.fixture(autouse=True, scope="module")
+def clear_entrypoint_signals():
+    entrypoint.PRE_START = Signal()
+    entrypoint.POST_STOP = Signal()
+
+
 class FooService(Service):
 
     async def start(self):
@@ -47,6 +53,39 @@ def test_post_stop_signal(loop):
 
     assert called
 
+
+def test_entrypoint_class_pre_start_signal(loop):
+    received_services, received_entrypoint = None, None
+
+    async def pre_start_callback(services, entrypoint):
+        nonlocal received_services, received_entrypoint
+        received_services = services
+        received_entrypoint = entrypoint
+
+    entrypoint.PRE_START.connect(pre_start_callback)
+
+    expected_services = (FooService(),)
+    ep = entrypoint(*expected_services, loop=loop)
+    with ep:
+        assert received_services == expected_services
+        assert received_entrypoint == ep
+
+
+def test_entrypoint_class_post_stop_signal(loop):
+    received_entrypoint = None
+
+    async def post_stop_callback(entrypoint):
+        nonlocal received_entrypoint
+        received_entrypoint = entrypoint
+
+    entrypoint.POST_STOP.connect(post_stop_callback)
+
+    ep = entrypoint(FooService(), loop=loop)
+
+    with ep:
+        ...
+
+    assert received_entrypoint == ep
 
 def test_connect_to_frozen_signal(signal):
     signal.freeze()
