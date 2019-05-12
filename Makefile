@@ -20,6 +20,6 @@ clean:
 	rm -fr *.egg-info .tox dist build
 
 develop: clean
-	virtualenv -p python3 env
+	python3 -m venv env
 	env/bin/pip install -Ue '.'
 	env/bin/pip install -Ue '.[develop]'
