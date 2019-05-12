@@ -585,6 +585,8 @@ as service's attributes on entrypoint startup.
 
 .. code-block:: python
 
+    from contextlib import suppress
+
     import aiohttp
     from aiomisc import Service
     from aiomisc.service.aiohttp import AIOHTTPService
@@ -599,12 +601,11 @@ as service's attributes on entrypoint startup.
         return app
 
     async def healthcheck_handler(self, request):
-        pg_status = True
-        try:
-            async with self.pg_engine.acquire() as conn:
-                await conn.execute('SELECT 1')
-        except:
-            pg_status = False
+        pg_status = False
+        with suppress(Exception):
+           async with self.pg_engine.acquire() as conn:
+               await conn.execute('SELECT 1')
+               pg_status = True
 
         return aiohttp.web.json_response(
             {'db': pg_status},
