@@ -7,13 +7,9 @@ class Signal:
 
     def __init__(self):
         self._receivers = set()
-        self._is_frozen = False
-
-    def freeze(self):
-        self._is_frozen = True
 
     def connect(self, receiver):
-        if self._is_frozen:
+        if self.is_frozen:
             raise RuntimeError(
                 "Can't connect receiver (%r) to the frozen signal",
                 receiver,
@@ -30,9 +26,16 @@ class Signal:
 
     def copy(self):
         clone = Signal()
-        clone._receivers = self._receivers.copy()
-        clone._is_frozen = self._is_frozen
+        # unfreeze on copy
+        clone._receivers = set(self._receivers)
         return clone
+
+    @property
+    def is_frozen(self):
+        return isinstance(self._receivers, frozenset)
+
+    def freeze(self):
+        self._receivers = frozenset(self._receivers)
 
 
 def receiver(s: Signal):
