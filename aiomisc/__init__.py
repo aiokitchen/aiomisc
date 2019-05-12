@@ -25,13 +25,18 @@ plugins = {
     in pkg_resources.iter_entry_points('aiomisc.plugins')
 }
 
+
 def setup_plugins():
     logger = logging.getLogger(__name__)
     for name, plugin in plugins.items():
         try:
             plugin.setup()
-        except:
+        except:  # noqa
             logger.exception('Error on %s aiomisc plugin setup', name)
+            raise
+
+
+setup_plugins()
 
 
 __all__ = (

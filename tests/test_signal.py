@@ -87,6 +87,7 @@ def test_entrypoint_class_post_stop_signal(loop):
 
     assert received_entrypoint == ep
 
+
 def test_connect_to_frozen_signal(signal):
     signal.freeze()
 

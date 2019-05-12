@@ -29,8 +29,8 @@ async def test_loop_fixture(service: _TestService,
 try:
     from .yield_fixture_native import yield_fixture
 except SyntaxError:
-    from .yield_fixture import yield_fixture
+    from .yield_fixture import yield_fixture  # noqa
 
 
-async def test_yield_fixture(yield_fixture):
+async def test_yield_fixture(yield_fixture):  # noqa
     assert yield_fixture is True
