@@ -813,6 +813,85 @@ waits first passed awaitable object and returns list of results.
 When you don't want to cancel pending tasks pass ``cancel=False`` argument.
 
 
+Signal
+++++++
+
+You can register async callback functions for specific events of an entrypoint.
+
+pre_start
+*********
+
+``pre_start`` signal occurs on entrypoint start up before any service have started.
+
+.. code-block:: python
+
+    from aiomisc import entrypoint, receiver
+
+    @receiver(entrypoint.PRE_START)
+    async def prepare_database(entrypoint, services):
+      ...
+
+    with entrypoint() as loop:
+        loop.run_forever()
+
+
+post_stop
+*********
+
+``post_stop`` signal occurs on entrypoint shutdown after all services have been
+stopped.
+
+.. code-block:: python
+
+    from aiomisc import entrypoint, receiver
+
+    @receiver(entrypoint.POST_STOP)
+    async def cleanup(entrypoint):
+      ...
+
+    with entrypoint() as loop:
+        loop.run_forever()
+
+
+Plugins
++++++++
+
+aiomisc can be extended with plugins as separate packages. Plugins can
+enhance aiomisc by mean of signals_.
+
+.. _signals: #signal
+
+In order to make your plugin discoverable by aiomisc you should add
+``aiomisc.plugins`` entry to entry to ``entry_points`` argument of ``setup``
+call in ``setup.py`` of a plugin.
+
+.. code-block:: python
+
+    # setup.py
+
+    setup(
+        # ...
+        entry_points={
+            "aiomisc.plugins": ["myplugin = aiomisc_myplugin.plugin"]
+        },
+        # ...
+    )
+
+
+Modules which provided in ``entry_points`` should have ``setup`` function.
+This functions would be called by aiomisc and must contain signals connecting.
+
+.. code-block:: python
+
+    async def hello(entrypoint, services):
+        print('Hello from aiomisc plugin')
+
+
+    def setup():
+        from aiomisc import entrypoint
+
+        entrypoint.PRE_START.connect(hello)
+
 
 Bind socket
 +++++++++++

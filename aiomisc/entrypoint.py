@@ -6,10 +6,15 @@ from functools import partial
 from .context import Context, get_context
 from .log import basic_config, LogFormat
 from .service import Service
+from .signal import Signal
 from .utils import create_default_event_loop, event_loop_policy, shield
 
 
 class Entrypoint:
+
+    PRE_START = Signal()
+    POST_STOP = Signal()
+
     async def _start(self):
         if self.log_config:
             basic_config(
@@ -20,6 +25,11 @@ class Entrypoint:
                 buffer_size=self.log_buffer_size,
                 flush_interval=self.log_flush_interval,
             )
+
+        for signal in (self.pre_start, self.post_stop):
+            signal.freeze()
+
+        await self.pre_start.call(entrypoint=self, services=self.services)
 
         await asyncio.gather(
             *[self._start_service(svc) for svc in self.services],
@@ -63,6 +73,8 @@ class Entrypoint:
         self.pool_size = pool_size
         self.services = services
         self.shutting_down = False
+        self.pre_start = self.PRE_START.copy()
+        self.post_stop = self.POST_STOP.copy()
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -147,6 +159,8 @@ class Entrypoint:
         self.loop.run_until_complete(
             asyncio.gather(*tasks, loop=self.loop, return_exceptions=True)
         )
+
+        self.loop.run_until_complete(self.post_stop.call(entrypoint=self))
 
         self.loop.run_until_complete(
             self.loop.shutdown_asyncgens()
