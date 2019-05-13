@@ -937,7 +937,7 @@ waits first passed awaitable object and returns list of results.
         loop.run_until_complete(main())
 
 
-.. warn::
+.. warning::
 
     When you don't want to cancel pending tasks pass ``cancel=False`` argument.
     In this case you have to handle task completion manually or get warnings.
