@@ -127,7 +127,7 @@ def threaded_iterable(func=None, max_size: int = 0):
     def wrap(*args, **kwargs):
         return IteratorWrapper(
             partial(func, *args, **kwargs),
-            max_size=max_size
+            max_size=max_size,
         )
 
     return wrap

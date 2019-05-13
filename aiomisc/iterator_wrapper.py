@@ -7,25 +7,32 @@ from collections import deque
 T = typing.TypeVar('T')
 R = typing.TypeVar('R')
 
+GenType = typing.Generator[T, R, None]
+FuncType = typing.Callable[[], GenType]
+
 
 class IteratorWrapper(typing.AsyncIterator):
     __slots__ = (
-        "loop", "closed", "executor", "__close_event",
+        "loop", "__closed", "executor", "__close_event",
         "__queue", "__queue_maxsize", "__gen_task", "__gen_func"
     )
 
-    def __init__(self, gen_func: typing.Generator[T, None, R],
-                 loop=None, max_size=0, executor=None):
+    def __init__(self, gen_func: FuncType, loop=None,
+                 max_size=0, executor=None):
 
         self.loop = loop or asyncio.get_event_loop()
-        self.closed = False
         self.executor = executor
 
+        self.__closed = False
         self.__close_event = asyncio.Event(loop=self.loop)
         self.__queue = deque()
         self.__queue_maxsize = max_size
         self.__gen_task = None      # type: asyncio.Task
         self.__gen_func = gen_func  # type: typing.Callable
+
+    @property
+    def closed(self):
+        return self.__closed
 
     @staticmethod
     def __throw(_):
@@ -62,13 +69,16 @@ class IteratorWrapper(typing.AsyncIterator):
             self.loop.call_soon_threadsafe(self.__close_event.set)
 
     async def close(self):
-        self.closed = True
+        self.__closed = True
         self.__queue.clear()
 
         if not self.__gen_task.done():
             self.__gen_task.cancel()
 
         await self.__close_event.wait()
+        await asyncio.gather(
+            self.__gen_task, loop=self.loop, return_exceptions=True
+        )
         del self.__queue
 
     def __aiter__(self):
