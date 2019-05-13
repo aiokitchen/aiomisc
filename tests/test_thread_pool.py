@@ -196,15 +196,19 @@ async def test_threaded_generator_close(loop, timer):
         finally:
             stopped = True
 
-    gen = noise()
     counter = 0
 
-    async for _ in gen:     # NOQA
-        counter += 1
-        if counter > 9:
-            break
+    async with noise() as gen:
+        async for _ in gen:     # NOQA
+            counter += 1
+            if counter > 9:
+                break
 
-    await gen.close()
+    wait_counter = 0
+    while not stopped and wait_counter < 5:
+        await asyncio.sleep(1)
+        wait_counter += 1
+
     assert stopped
 
 
