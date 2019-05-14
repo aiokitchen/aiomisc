@@ -37,18 +37,17 @@ class Profiler(Service):
         self._periodic.start(self.interval)
 
     def save_stats(self):
-        stream = io.StringIO()
-        stats = Stats(
-            self._profiler, stream=stream
-        ).strip_dirs().sort_stats(self.order)
-        stats.print_stats(self.top_results)
-        log.info(stream.getvalue())
-        stream.close()
-        try:
-            if self.path is not None:
-                stats.dump_stats(self.path)
-        finally:
-            self._profiler.enable()
+        with io.StringIO() as stream:
+            stats = Stats(
+                self._profiler, stream=stream
+            ).strip_dirs().sort_stats(self.order)
+            stats.print_stats(self.top_results)
+            log.info(stream.getvalue())
+            try:
+                if self.path is not None:
+                    stats.dump_stats(self.path)
+            finally:
+                self._profiler.enable()
 
     async def stop(self, exception: Exception = None):
         log.info("Stop profiler")
