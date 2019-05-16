@@ -2,7 +2,7 @@ import logging
 import socket
 import inspect
 from types import MappingProxyType
-from typing import Mapping  # NOQA
+from typing import Mapping, Iterable  # NOQA
 
 import yarl
 from aiohttp import TCPConnector, ClientSession
@@ -79,6 +79,8 @@ class RavenSender(Service):
 
     client = None  # type: Client
 
+    filters = ()  # type: Iterable[logging.Filter]
+
     async def start(self):
         self.client = Client(
             str(self.sentry_dsn),
@@ -99,6 +101,10 @@ class RavenSender(Service):
             client=self.client,
             level=self.min_level
         )
+
+        # Add filters
+        for fltr in self.filters:
+            handler.addFilter(fltr)
 
         logging.getLogger().handlers.append(
             handler
