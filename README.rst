@@ -292,6 +292,33 @@ Just implement ``handle_client(reader, writer)`` to use it.
         loop.run_forever()
 
 
+PeriodicService
+***************
+
+``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for
+running callback to complete on stop. You need to use ``PeriodicService``
+as a base class and override ``callback`` async coroutine method.
+
+Service class accepts required ``interval`` argument - periodic interval
+in seconds.
+
+.. code-block:: python
+
+    import aiomisc
+    from aiomisc.service.periodic import PeriodicService
+
+
+    class MyPeriodicService(PeriodicService):
+        async def callback(self):
+            log.info('Running periodic callback')
+            # ...
+
+    service = MyPeriodicService(interval=3600)  # once per hour
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
 Multiple services
 *****************
 

@@ -87,3 +87,7 @@ class PeriodicCallback:
 
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self.__name)
+
+    @property
+    def task(self):
+        return self._task
