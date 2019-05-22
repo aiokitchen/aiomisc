@@ -10,7 +10,7 @@ class PeriodicService(Service):
 
     __required__ = ('interval',)
 
-    interval: int  # in seconds
+    interval: float  # in seconds
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

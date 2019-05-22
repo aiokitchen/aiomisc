@@ -20,9 +20,10 @@ def test_periodic():
     counter = 0
 
     class CountPeriodicService(PeriodicService):
-        def callback(self):
+        async def callback(self):
             nonlocal counter
             counter += 1
+            await asyncio.sleep(0)
 
     svc = CountPeriodicService(interval=0.1)
 
