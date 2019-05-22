@@ -21,8 +21,8 @@ class PeriodicService(Service):
         log.info('Periodic service %s started', self)
 
     async def stop(self, err):
-        if self.periodic._task:
-            await self.periodic._task
+        if self.periodic.task:
+            await self.periodic.task
         self.periodic.stop()
         log.info('Periodic service %s is stopped')
 
