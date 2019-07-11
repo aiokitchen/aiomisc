@@ -180,9 +180,15 @@ def entrypoint_kwargs() -> dict:
 
 @pytest.fixture(name='loop', autouse=loop_autouse)
 def _loop(event_loop_policy):
-    asyncio.set_event_loop_policy(event_loop_policy)
     try:
-        yield asyncio.new_event_loop()
+        asyncio.set_event_loop_policy(event_loop_policy)
+        loop = asyncio.new_event_loop()
+        try:
+            yield loop
+        finally:
+            if not loop.is_closed():
+                loop.run_until_complete(loop.shutdown_asyncgens())
+                loop.close()
     finally:
         asyncio.set_event_loop_policy(None)
 
