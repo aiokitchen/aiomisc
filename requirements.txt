@@ -1,4 +1,4 @@
 chardet<4
 colorlog
-prettylog
+prettylog~=0.3.0
 pycares<3

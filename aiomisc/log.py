@@ -53,7 +53,7 @@ def wrap_logging_handler(handler: logging.Handler,
 def basic_config(level: int = logging.INFO,
                  log_format: Union[str, LogFormat] = LogFormat.color,
                  buffered: bool = True, buffer_size: int = 1024,
-                 flush_interval: float = 0.2, loop=None):
+                 flush_interval: float = 0.2, loop=None, **kwargs):
 
     if isinstance(level, str):
         level = getattr(logging, level.upper())
@@ -65,7 +65,7 @@ def basic_config(level: int = logging.INFO,
     if isinstance(log_format, str):
         log_format = LogFormat[log_format]
 
-    handler = create_logging_handler(log_format)
+    handler = create_logging_handler(log_format, **kwargs)
 
     if buffered:
         handler = wrap_logging_handler(
