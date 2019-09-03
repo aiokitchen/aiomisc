@@ -24,7 +24,7 @@ class PeriodicService(Service):
         if self.periodic.task:
             await self.periodic.task
         self.periodic.stop()
-        log.info('Periodic service %s is stopped')
+        log.info('Periodic service %s is stopped', self)
 
     async def callback(self):
         raise NotImplementedError
