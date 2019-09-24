@@ -6,7 +6,7 @@ import pytest
 import time
 
 import aiomisc
-
+from aiomisc.thread_pool import Priority
 
 pytestmark = pytest.mark.catch_loop_exceptions
 
@@ -256,3 +256,11 @@ async def test_threaded_generator_func_raises(loop, timer):
     with pytest.raises(RuntimeError):
         async for _ in errored(True):    # NOQA
             pass
+
+
+async def test_threaded_priority(loop, timer):
+    @aiomisc.threaded(Priority.DEFAULT)
+    def func():
+        return True
+
+    await asyncio.gather(*[func() for _ in range(100)])

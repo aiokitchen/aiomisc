@@ -1,11 +1,16 @@
+import asyncio
 import inspect
+import weakref
 from asyncio import AbstractEventLoop
 from asyncio.events import get_event_loop
 from concurrent.futures._base import Executor
-from functools import partial, wraps
-from queue import Queue, Empty
+from enum import IntEnum
+from functools import partial, wraps, total_ordering
+from multiprocessing import cpu_count
+from queue import PriorityQueue, Empty
 from threading import Thread
 from types import MappingProxyType
+from typing import Callable, Union
 
 from .iterator_wrapper import IteratorWrapper
 
@@ -14,10 +19,51 @@ class ThreadPoolException(RuntimeError):
     pass
 
 
+class Priority(IntEnum):
+    LOW = 1024
+    MEDIUM = 512
+    HIGH = 128
+    DEFAULT = MEDIUM
+
+
+@total_ordering
+class ThreadedTask:
+    __slots__ = '__priority', '__future', '__callable'
+
+    def __init__(self, priority: Priority, callable: Callable,
+                 future: asyncio.Future):
+
+        self.__priority = priority
+        self.__future = future
+        self.__callable = callable
+
+    @property
+    def callable(self):
+        return self.__callable
+
+    @property
+    def future(self):
+        return self.__future
+
+    @property
+    def priority(self):
+        return self.__priority
+
+    def __gt__(self, other):
+        return self.__priority > other.priority
+
+    def __eq__(self, other):
+        return (
+            self.priority == other.priority and
+            self.callable == other.callable and
+            self.future == other.future
+        )
+
+
 class ThreadPoolExecutor(Executor):
     __slots__ = '__loop', '__futures', '__running', '__pool', '__tasks'
 
-    def __init__(self, max_workers=None,
+    def __init__(self, max_workers=cpu_count(),
                  loop: AbstractEventLoop = None):
 
         self.__loop = loop or get_event_loop()
@@ -25,7 +71,7 @@ class ThreadPoolExecutor(Executor):
         self.__running = True
 
         self.__pool = set()
-        self.__tasks = Queue(0)
+        self.__tasks = PriorityQueue(0)
 
         for idx in range(max_workers):
             thread = Thread(
@@ -54,11 +100,13 @@ class ThreadPoolExecutor(Executor):
     def _in_thread(self):
         while self.__running and not self.__loop.is_closed():
             try:
-                func, future = self.__tasks.get(timeout=1, block=True)
+                task = self.__tasks.get(
+                    timeout=1, block=True
+                )  # type: ThreadedTask
             except Empty:
                 continue
 
-            if future.done():
+            if task.future.done():
                 continue
 
             result, exception = None, None
@@ -67,7 +115,7 @@ class ThreadPoolExecutor(Executor):
                 break
 
             try:
-                result = func()
+                result = task.callable()
             except Exception as e:
                 exception = e
 
@@ -76,16 +124,27 @@ class ThreadPoolExecutor(Executor):
 
             self.__loop.call_soon_threadsafe(
                 self._set_result,
-                future,
+                task.future,
                 result,
                 exception,
             )
 
     def submit(self, fn, *args, **kwargs):
-        future = self.__loop.create_future()     # type: asyncio.Future
+        return self.submit_priority(
+            fn, Priority.DEFAULT, args, kwargs
+        )
+
+    def submit_priority(self, fn, priority, args, kwargs):
+        future = self.__loop.create_future()  # type: asyncio.Future
         self.__futures.add(future)
         future.add_done_callback(self.__futures.remove)
-        self.__tasks.put_nowait((partial(fn, *args, **kwargs), future))
+        self.__tasks.put_nowait(
+            ThreadedTask(
+                priority=priority,
+                callable=partial(fn, *args, **kwargs),
+                future=future,
+            )
+        )
         return future
 
     def shutdown(self, wait=True):
@@ -98,18 +157,56 @@ class ThreadPoolExecutor(Executor):
         self.shutdown()
 
 
-def run_in_executor(func, executor=None, args=(), kwargs=MappingProxyType({})):
+_loop_pool_mapping = weakref.WeakValueDictionary()
+
+
+def _inspect_executor(loop):
+    global _loop_pool_mapping
+
+    loop_executor = _loop_pool_mapping.get(id(loop))
+
+    if isinstance(loop_executor, ThreadPoolExecutor):
+        return loop_executor
+
+    executor = getattr(loop, '_default_executor', None)
+
+    if executor is not None:
+        return executor
+
+    executor = ThreadPoolExecutor()
+
+    loop.set_default_executor(executor)
+    _loop_pool_mapping[id(loop)] = executor
+    weakref.ref(executor, lambda: _loop_pool_mapping.pop(id(loop)))
+
+    return executor
+
+
+def run_in_executor(func, executor=None, args=(), kwargs=MappingProxyType({}),
+                    priority: Union[int, Priority] = Priority.DEFAULT):
     loop = get_event_loop()
 
-    return loop.run_in_executor(
-        executor, partial(func, *args, **kwargs)
-    )
+    if executor is None:
+        executor = _inspect_executor(loop)
+
+    if not isinstance(executor, ThreadPoolExecutor):
+        return loop.run_in_executor(executor, partial(func, *args, **kwargs))
+
+    return executor.submit_priority(func, priority, args, kwargs)
 
 
-def threaded(func):
+def threaded(func, priority=Priority.DEFAULT):
+    if isinstance(func, (int, Priority)):
+        return partial(threaded, priority=priority)
+
     @wraps(func)
     async def wrap(*args, **kwargs):
-        return await run_in_executor(func=func, args=args, kwargs=kwargs)
+        return await run_in_executor(
+            func=func,
+            args=args,
+            kwargs=kwargs,
+            priority=priority
+        )
 
     if inspect.isgeneratorfunction(func):
         return threaded_iterable(func)
