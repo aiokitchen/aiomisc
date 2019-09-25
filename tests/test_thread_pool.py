@@ -5,6 +5,8 @@ from contextlib import suppress
 import pytest
 import time
 
+from async_timeout import timeout
+
 import aiomisc
 
 
@@ -131,14 +133,15 @@ async def test_threaded_generator(loop, timer):
     def arange(*args):
         return (yield from range(*args))
 
-    count = 10
+    async with timeout(2):
+        count = 10
 
-    result = []
-    agen = arange(count)
-    async for item in agen:
-        result.append(item)
+        result = []
+        agen = arange(count)
+        async for item in agen:
+            result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
 
 async def test_threaded_generator_max_size(loop, timer):
@@ -146,23 +149,24 @@ async def test_threaded_generator_max_size(loop, timer):
     def arange(*args):
         return (yield from range(*args))
 
-    arange2 = aiomisc.threaded_iterable(max_size=1)(range)
+    async with timeout(2):
+        arange2 = aiomisc.threaded_iterable(max_size=1)(range)
 
-    count = 10
+        count = 10
 
-    result = []
-    agen = arange(count)
-    async for item in agen:
-        result.append(item)
+        result = []
+        agen = arange(count)
+        async for item in agen:
+            result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
-    result = []
-    agen = arange2(count)
-    async for item in agen:
-        result.append(item)
+        result = []
+        agen = arange2(count)
+        async for item in agen:
+            result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
 
 async def test_threaded_generator_exception(loop, timer):
@@ -171,16 +175,17 @@ async def test_threaded_generator_exception(loop, timer):
         yield from range(*args)
         raise ZeroDivisionError
 
-    count = 10
+    async with timeout(2):
+        count = 10
 
-    result = []
-    agen = arange(count)
+        result = []
+        agen = arange(count)
 
-    with pytest.raises(ZeroDivisionError):
-        async for item in agen:
-            result.append(item)
+        with pytest.raises(ZeroDivisionError):
+            async for item in agen:
+                result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
 
 async def test_threaded_generator_close(loop, timer):
@@ -196,20 +201,21 @@ async def test_threaded_generator_close(loop, timer):
         finally:
             stopped = True
 
-    counter = 0
+    async with timeout(2):
+        counter = 0
 
-    async with noise() as gen:
-        async for _ in gen:     # NOQA
-            counter += 1
-            if counter > 9:
-                break
+        async with noise() as gen:
+            async for _ in gen:     # NOQA
+                counter += 1
+                if counter > 9:
+                    break
 
-    wait_counter = 0
-    while not stopped and wait_counter < 5:
-        await asyncio.sleep(1)
-        wait_counter += 1
+        wait_counter = 0
+        while not stopped and wait_counter < 5:
+            await asyncio.sleep(1)
+            wait_counter += 1
 
-    assert stopped
+        assert stopped
 
 
 async def test_threaded_generator_close_cm(loop, timer):
@@ -225,14 +231,15 @@ async def test_threaded_generator_close_cm(loop, timer):
         finally:
             stopped = True
 
-    async with noise() as gen:
-        counter = 0
-        async for _ in gen:     # NOQA
-            counter += 1
-            if counter > 9:
-                break
+    async with timeout(2):
+        async with noise() as gen:
+            counter = 0
+            async for _ in gen:     # NOQA
+                counter += 1
+                if counter > 9:
+                    break
 
-    assert stopped
+        assert stopped
 
 
 async def test_threaded_generator_non_generator_raises(loop, timer):
@@ -240,9 +247,10 @@ async def test_threaded_generator_non_generator_raises(loop, timer):
     def errored():
         raise RuntimeError("Aaaaaaaa")
 
-    with pytest.raises(RuntimeError):
-        async for _ in errored():       # NOQA
-            pass
+    async with timeout(2):
+        with pytest.raises(RuntimeError):
+            async for _ in errored():       # NOQA
+                pass
 
 
 async def test_threaded_generator_func_raises(loop, timer):
@@ -253,6 +261,7 @@ async def test_threaded_generator_func_raises(loop, timer):
 
         yield
 
-    with pytest.raises(RuntimeError):
-        async for _ in errored(True):    # NOQA
-            pass
+    async with timeout(2):
+        with pytest.raises(RuntimeError):
+            async for _ in errored(True):    # NOQA
+                pass
