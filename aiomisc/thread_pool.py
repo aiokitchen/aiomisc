@@ -135,7 +135,12 @@ def run_in_executor(func, executor=None, args=(),
 def threaded(func):
     @wraps(func)
     async def wrap(*args, **kwargs):
-        return await run_in_executor(func=func, args=args, kwargs=kwargs)
+        future = run_in_executor(func=func, args=args, kwargs=kwargs)
+        try:
+            return await future
+        except asyncio.CancelledError as e:
+            future.set_exception(e)
+            raise
 
     if inspect.isgeneratorfunction(func):
         return threaded_iterable(func)
