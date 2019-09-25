@@ -139,7 +139,8 @@ def threaded(func):
         try:
             return await future
         except asyncio.CancelledError as e:
-            future.set_exception(e)
+            if not future.done():
+                future.set_exception(e)
             raise
 
     if inspect.isgeneratorfunction(func):
