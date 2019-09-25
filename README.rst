@@ -755,6 +755,12 @@ In case function is a generator function ``@threaded`` decorator will return
 ``IteratorWrapper`` (see Threaded generator decorator).
 
 
+`@threaded` decorator allow to set priority for function:
+
+.. code-block:: python
+
+
+
 Threaded generator decorator
 ++++++++++++++++++++++++++++
 

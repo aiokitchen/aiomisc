@@ -11,7 +11,9 @@ from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
 from .service import Service
 from .signal import Signal, receiver
-from .thread_pool import threaded, threaded_iterable, ThreadPoolExecutor
+from .thread_pool import (
+    Priority, threaded, threaded_iterable, ThreadPoolExecutor
+)
 from .timeout import timeout
 
 from .utils import (

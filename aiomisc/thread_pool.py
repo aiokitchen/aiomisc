@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import math
 import weakref
 from asyncio import AbstractEventLoop
 from asyncio.events import get_event_loop
@@ -30,7 +31,7 @@ class Priority(IntEnum):
 class ThreadedTask:
     __slots__ = '__priority', '__future', '__callable'
 
-    def __init__(self, priority: Priority, callable: Callable,
+    def __init__(self, priority: int, callable: Callable,
                  future: asyncio.Future):
 
         self.__priority = priority
@@ -140,7 +141,7 @@ class ThreadPoolExecutor(Executor):
         future.add_done_callback(self.__futures.remove)
         self.__tasks.put_nowait(
             ThreadedTask(
-                priority=priority,
+                priority=int(math.log(priority * 10) * self.__loop.time()),
                 callable=partial(fn, *args, **kwargs),
                 future=future,
             )
