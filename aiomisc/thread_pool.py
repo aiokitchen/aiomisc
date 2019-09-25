@@ -1,10 +1,13 @@
+import asyncio
 import inspect
+import time
 from asyncio import AbstractEventLoop
 from asyncio.events import get_event_loop
+from collections import deque
 from concurrent.futures._base import Executor
 from functools import partial, wraps
-from queue import Queue, Empty
-from threading import Thread
+from multiprocessing import cpu_count
+import threading
 from types import MappingProxyType
 
 from .iterator_wrapper import IteratorWrapper
@@ -15,9 +18,12 @@ class ThreadPoolException(RuntimeError):
 
 
 class ThreadPoolExecutor(Executor):
-    __slots__ = '__loop', '__futures', '__running', '__pool', '__tasks'
+    __slots__ = (
+        '__loop', '__futures', '__running', '__pool', '__tasks',
+        '__read_event', '__read_lock', '__write_lock',
+    )
 
-    def __init__(self, max_workers=None,
+    def __init__(self, max_workers=max((cpu_count(), 2)),
                  loop: AbstractEventLoop = None):
 
         self.__loop = loop or get_event_loop()
@@ -25,14 +31,19 @@ class ThreadPoolExecutor(Executor):
         self.__running = True
 
         self.__pool = set()
-        self.__tasks = Queue(0)
+        self.__tasks = deque()
+        self.__read_event = threading.Event()
+        self.__read_lock = threading.Lock()
+        self.__write_lock = threading.RLock()
 
         for idx in range(max_workers):
-            thread = Thread(
+            thread = threading.Thread(
                 target=self._in_thread,
                 name="[%d] Thread Pool" % idx,
                 daemon=True,
             )
+
+            thread.daemon = True
 
             self.__pool.add(thread)
             # Starting the thread only after thread-pool will be started
@@ -51,42 +62,58 @@ class ThreadPoolExecutor(Executor):
 
         future.set_result(result)
 
+    def _execute(self, func, future):
+        if future.done():
+            return
+
+        result, exception = None, None
+
+        if self.__loop.is_closed():
+            raise asyncio.CancelledError
+
+        try:
+            result = func()
+        except Exception as e:
+            exception = e
+
+        if self.__loop.is_closed():
+            raise asyncio.CancelledError
+
+        self.__loop.call_soon_threadsafe(
+            self._set_result,
+            future,
+            result,
+            exception,
+        )
+
     def _in_thread(self):
         while self.__running and not self.__loop.is_closed():
             try:
-                func, future = self.__tasks.get(timeout=1, block=True)
-            except Empty:
-                continue
+                func, future = self.__tasks.popleft()
+                self._execute(func, future)
+            except IndexError:
+                with self.__read_lock:
+                    if self.__read_event.is_set():
+                        self.__read_event.clear()
 
-            if future.done():
-                continue
-
-            result, exception = None, None
-
-            if self.__loop.is_closed():
+                self.__read_event.wait(timeout=1)
+            except asyncio.CancelledError:
                 break
-
-            try:
-                result = func()
-            except Exception as e:
-                exception = e
-
-            if self.__loop.is_closed():
-                break
-
-            self.__loop.call_soon_threadsafe(
-                self._set_result,
-                future,
-                result,
-                exception,
-            )
 
     def submit(self, fn, *args, **kwargs):
-        future = self.__loop.create_future()     # type: asyncio.Future
-        self.__futures.add(future)
-        future.add_done_callback(self.__futures.remove)
-        self.__tasks.put_nowait((partial(fn, *args, **kwargs), future))
-        return future
+        with self.__write_lock:
+            task_count = len(self.__tasks)
+
+            future = self.__loop.create_future()     # type: asyncio.Future
+            self.__futures.add(future)
+            future.add_done_callback(self.__futures.remove)
+
+            self.__tasks.append((partial(fn, *args, **kwargs), future))
+
+            if task_count == 0 and not self.__read_event.is_set():
+                self.__read_event.set()
+
+            return future
 
     def shutdown(self, wait=True):
         self.__running = False
@@ -98,9 +125,11 @@ class ThreadPoolExecutor(Executor):
         self.shutdown()
 
 
-def run_in_executor(func, executor=None, args=(), kwargs=MappingProxyType({})):
+def run_in_executor(func, executor=None, args=(),
+                    kwargs=MappingProxyType({})) -> asyncio.Future:
     loop = get_event_loop()
 
+    # noinspection PyTypeChecker
     return loop.run_in_executor(
         executor, partial(func, *args, **kwargs)
     )
