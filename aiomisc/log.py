@@ -20,9 +20,21 @@ from prettylog import (
 def _thread_flusher(handler: logging.handlers.MemoryHandler,
                     flush_interval: Union[float, int],
                     loop: asyncio.AbstractEventLoop):
-    while not loop.is_closed():
-        if handler.buffer:
-            with suppress(Exception):
+
+    def has_no_target():
+        return True
+
+    def has_target():
+        return bool(handler.target)
+
+    is_target = has_no_target
+
+    if isinstance(handler, logging.handlers.MemoryHandler):
+        is_target = has_target
+
+    while not loop.is_closed() or is_target():
+        with suppress(Exception):
+            if handler.buffer:
                 handler.flush()
 
         time.sleep(flush_interval)

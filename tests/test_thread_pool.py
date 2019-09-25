@@ -31,14 +31,15 @@ async def test_threaded(executor: aiomisc.ThreadPoolExecutor, timer):
 
     sleep = aiomisc.threaded(time.sleep)
 
-    with timer(1):
-        await asyncio.gather(
-            sleep(1),
-            sleep(1),
-            sleep(1),
-            sleep(1),
-            sleep(1),
-        )
+    async with timeout(5):
+        with timer(1):
+            await asyncio.gather(
+                sleep(1),
+                sleep(1),
+                sleep(1),
+                sleep(1),
+                sleep(1),
+            )
 
 
 async def test_threaded_exc(executor: aiomisc.ThreadPoolExecutor):
@@ -48,40 +49,43 @@ async def test_threaded_exc(executor: aiomisc.ThreadPoolExecutor):
     def worker():
         raise Exception
 
-    number = 90
+    async with timeout(1):
+        number = 90
 
-    done, _ = await asyncio.wait([worker() for _ in range(number)])
+        done, _ = await asyncio.wait([worker() for _ in range(number)])
 
-    for task in done:
-        with pytest.raises(Exception):
-            task.result()
+        for task in done:
+            with pytest.raises(Exception):
+                task.result()
 
 
 async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):
     futures = []
 
-    for _ in range(10):
-        futures.append(executor.submit(time.sleep, 0.1))
+    async with timeout(10):
+        for _ in range(10):
+            futures.append(executor.submit(time.sleep, 0.1))
 
-    for future in futures:
-        future.set_exception(asyncio.CancelledError())
+        for future in futures:
+            future.set_exception(asyncio.CancelledError())
 
-    await asyncio.gather(*futures, return_exceptions=True)
+        await asyncio.gather(*futures, return_exceptions=True)
 
 
 async def test_future_when_pool_shutting_down(executor):
     futures = []
 
-    for _ in range(10):
-        futures.append(executor.submit(time.sleep, 0.1))
+    async with timeout(10):
+        for _ in range(10):
+            futures.append(executor.submit(time.sleep, 0.1))
 
-    executor.shutdown(wait=False)
+        executor.shutdown(wait=False)
 
-    done, _ = await asyncio.wait(futures)
+        done, _ = await asyncio.wait(futures)
 
-    for task in done:
-        with pytest.raises(RuntimeError):
-            task.result()
+        for task in done:
+            with pytest.raises(RuntimeError):
+                task.result()
 
 
 async def test_failed_future_already_done(executor):
@@ -91,13 +95,14 @@ async def test_failed_future_already_done(executor):
         time.sleep(0.1)
         raise Exception
 
-    for _ in range(10):
-        futures.append(executor.submit(exc))
+    async with timeout(10):
+        for _ in range(10):
+            futures.append(executor.submit(exc))
 
-    for future in futures:
-        future.set_exception(asyncio.CancelledError())
+        for future in futures:
+            future.set_exception(asyncio.CancelledError())
 
-    await asyncio.gather(*futures, return_exceptions=True)
+        await asyncio.gather(*futures, return_exceptions=True)
 
 
 async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
@@ -105,27 +110,29 @@ async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
 
     sleep = aiomisc.threaded(time.sleep)
 
-    with timer(1, dispersion=2):
-        tasks = [loop.create_task(sleep(1)) for _ in range(1000)]
+    async with timeout(2):
+        with timer(1, dispersion=2):
+            tasks = [loop.create_task(sleep(1)) for _ in range(1000)]
 
-        await asyncio.sleep(1)
+            await asyncio.sleep(1)
 
-        for task in tasks:
-            task.cancel()
+            for task in tasks:
+                task.cancel()
 
-        executor.shutdown(wait=True)
+            executor.shutdown(wait=True)
 
 
 async def test_simple(loop, timer):
     sleep = aiomisc.threaded(time.sleep)
 
-    with timer(1):
-        await asyncio.gather(
-            sleep(1),
-            sleep(1),
-            sleep(1),
-            sleep(1),
-        )
+    async with timeout(2):
+        with timer(1):
+            await asyncio.gather(
+                sleep(1),
+                sleep(1),
+                sleep(1),
+                sleep(1),
+            )
 
 
 async def test_threaded_generator(loop, timer):
