@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import time
+import weakref
 from asyncio import AbstractEventLoop
 from asyncio.events import get_event_loop
 from collections import deque
@@ -125,14 +126,45 @@ class ThreadPoolExecutor(Executor):
         self.shutdown()
 
 
+_loop_pool_mapping = weakref.WeakValueDictionary()
+
+
+def _inspect_executor(loop):
+    global _loop_pool_mapping
+
+    loop_executor = _loop_pool_mapping.get(id(loop))
+
+    if isinstance(loop_executor, ThreadPoolExecutor):
+        return loop_executor
+
+    executor = getattr(loop, '_default_executor', None)
+
+    if executor is not None:
+        return executor
+
+    executor = ThreadPoolExecutor()
+
+    loop.set_default_executor(executor)
+
+    _loop_pool_mapping[id(loop)] = executor
+    weakref.ref(executor, lambda: _loop_pool_mapping.pop(id(loop)))
+
+    return executor
+
+
 def run_in_executor(func, executor=None, args=(),
                     kwargs=MappingProxyType({})) -> asyncio.Future:
+
     loop = get_event_loop()
 
-    # noinspection PyTypeChecker
-    return loop.run_in_executor(
-        executor, partial(func, *args, **kwargs)
-    )
+    if executor is None:
+        executor = _inspect_executor(loop)
+
+    if not isinstance(executor, ThreadPoolExecutor):
+        # noinspection PyTypeChecker
+        return loop.run_in_executor(executor, partial(func, *args, **kwargs))
+
+    return executor.submit(func, *args, *kwargs)
 
 
 def threaded(func):
