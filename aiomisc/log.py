@@ -3,9 +3,9 @@ import logging
 import logging.handlers
 import time
 from contextlib import suppress
-from threading import Thread
 
 from typing import Union
+from .thread_pool import run_in_new_thread
 
 from prettylog import (
     color_formatter,
@@ -50,15 +50,10 @@ def wrap_logging_handler(handler: logging.Handler,
         handler=handler, buffer_size=buffer_size
     )
 
-    flusher = Thread(
-        target=_thread_flusher,
-        args=(buffered_handler, flush_interval, loop),
-        name="Log flusher"
+    run_in_new_thread(
+        _thread_flusher, args=(buffered_handler, flush_interval, loop)
     )
 
-    flusher.daemon = True
-
-    loop.call_soon_threadsafe(flusher.start)
     return buffered_handler
 
 

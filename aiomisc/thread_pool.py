@@ -152,6 +152,39 @@ def threaded(func):
     return wrap
 
 
+def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
+                      detouch=True) -> asyncio.Future:
+    loop = asyncio.get_event_loop()
+    future = loop.create_future()
+
+    def set_result(result):
+        if future.done() or loop.is_closed():
+            return
+
+        future.set_result(result)
+
+    def set_exception(exc):
+        if future.done() or loop.is_closed():
+            return
+
+        future.set_exception(exc)
+
+    @wraps(func)
+    def in_thread(*args, **kwargs):
+        try:
+            loop.call_soon_threadsafe(
+                set_result, func(*args, **kwargs)
+            )
+        except Exception as exc:
+            loop.call_soon_threadsafe(set_exception, exc)
+
+    thread = threading.Thread(target=in_thread, args=args, kwargs=kwargs)
+    thread.daemon = detouch
+
+    loop.call_soon_threadsafe(thread.start)
+    return future
+
+
 def threaded_separate(func, detouch=True):
     if isinstance(func, bool):
         return partial(threaded_separate, detouch=detouch)
@@ -161,34 +194,9 @@ def threaded_separate(func, detouch=True):
 
     @wraps(func)
     async def wrap(*args, **kwargs):
-        loop = asyncio.get_event_loop()
-        future = loop.create_future()
-
-        def set_result(result):
-            if future.done():
-                return
-
-            future.set_result(result)
-
-        def set_exception(exc):
-            if future.done():
-                return
-
-            future.set_exception(exc)
-
-        @wraps(func)
-        def in_thread(*args, **kwargs):
-            try:
-                loop.call_soon_threadsafe(
-                    set_result, func(*args, **kwargs)
-                )
-            except Exception as exc:
-                loop.call_soon_threadsafe(set_exception, exc)
-
-        thread = threading.Thread(target=in_thread, args=args, kwargs=kwargs)
-        thread.daemon = detouch
-
-        loop.call_soon_threadsafe(thread.start)
+        future = run_in_new_thread(
+            func, args=args, kwargs=kwargs, detouch=detouch
+        )
 
         try:
             return await future
