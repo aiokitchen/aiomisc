@@ -1,6 +1,7 @@
 import asyncio
 import os
 import socket
+import threading
 from contextlib import ExitStack
 from tempfile import mktemp
 
@@ -12,6 +13,12 @@ import http.client
 import aiomisc
 from aiomisc.service import TCPServer, UDPServer, TLSServer
 from aiomisc.service.aiohttp import AIOHTTPService
+
+try:
+    import uvloop
+    uvloop_loop_type = uvloop.Loop
+except ImportError:
+    uvloop_loop_type = None
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -266,6 +273,11 @@ def test_udp_socket_server(unix_socket_udp):
             sock.sendto(b'hello server\n', unix_socket_udp.getsockname())
 
     with aiomisc.entrypoint(service) as loop:
+        if type(loop) == uvloop_loop_type:
+            raise pytest.skip(
+                "https://github.com/MagicStack/uvloop/issues/269"
+            )
+
         loop.run_until_complete(writer())
 
     assert TestService.DATA
