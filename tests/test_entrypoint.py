@@ -1,7 +1,6 @@
 import asyncio
 import os
 import socket
-import threading
 from contextlib import ExitStack
 from tempfile import mktemp
 
