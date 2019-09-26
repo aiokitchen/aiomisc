@@ -721,8 +721,15 @@ Asynchronous files operations. Based on thread-pool under the hood.
             print(await afp.read())
 
 
-Threaded decorator
-++++++++++++++++++
+
+Working with threads
+++++++++++++++++++++
+
+Wraps blocking function and runs it in
+the different thread or thread pool.
+
+@threaded
+*********
 
 Wraps blocking function and runs it in the current thread pool.
 
@@ -755,10 +762,56 @@ In case function is a generator function ``@threaded`` decorator will return
 ``IteratorWrapper`` (see Threaded generator decorator).
 
 
-Threaded generator decorator
-++++++++++++++++++++++++++++
+@threaded_separate
+******************
 
-Wraps blocking generator function and runs it in the current thread pool.
+Wraps blocking function and runs it in a new separate thread.
+Highly recommended for long background tasks:
+
+.. code-block:: python
+
+    import asyncio
+    import time
+    import threading
+    import aiomisc
+
+
+    @aiomisc.threaded
+    def blocking_function():
+        time.sleep(1)
+
+
+    @aiomisc.threaded_separate
+    def long_blocking_function(event: threading.Event):
+        while not event.is_set():
+            print("Running")
+            time.sleep(1)
+        print("Exitting")
+
+
+    async def main():
+        stop_event = threading.Event()
+
+        loop = asyncio.get_event_loop()
+        loop.call_later(10, stop_event.set)
+
+        # Running in parallel
+        await asyncio.gather(
+            blocking_function(),
+            # New thread will be spawned
+            long_blocking_function(stop_event),
+        )
+
+
+    with aiomisc.entrypoint() as loop:
+        loop.run_until_complete(main())
+
+
+Threaded iterator decorator
+***************************
+
+Wraps blocking generator function and runs it in the current thread pool or
+on a new separate thread.
 
 Following example reads itself file, chains hashes of every line with
 hash of previous line and sends hash and content via TCP:
@@ -792,8 +845,7 @@ hash of previous line and sends hash and content via TCP:
                 await writer.drain()
 
 
-    if __name__ == '__main__':
-        loop = aiomisc.new_event_loop()
+    with aiomisc.entrypoint() as loop
         loop.run_until_complete(main())
 
 
@@ -842,19 +894,19 @@ infinity, or you have to await the ``.close()`` method when you avoid context ma
 .. code-block:: python
 
     import asyncio
-    from aiomisc import new_event_loop, threaded_iterable
+    import aiomisc
 
 
     # Set 2 chunk buffer
-    @threaded_iterable(max_size=2)
+    @aiomisc.threaded_iterable(max_size=2)
     def urandom_reader():
         with open('/dev/urandom', "rb") as fp:
             while True:
                 yield fp.read(8)
 
 
-    # Infinity buffer
-    @threaded_iterable
+    # Infinity buffer on a separate thread
+    @aiomisc.threaded_iterable_separate
     def blocking_reader(fname):
         with open(fname, "r") as fp:
             yield from fp
@@ -894,10 +946,12 @@ infinity, or you have to await the ``.close()`` method when you avoid context ma
 
         await writer.drain()
 
-    if __name__ == '__main__':
-        loop = new_event_loop()
+
+    with aiomisc.entrypoint() as loop:
         loop.run_until_complete(main())
 
+aiomisc.IteratorWrapper
+***********************
 
 Run iterables on dedicated thread pool:
 
@@ -941,12 +995,53 @@ Run iterables on dedicated thread pool:
         with aiomisc.entrypoint() as loop:
             loop.run_until_complete(main())
 
+aiomisc.IteratorWrapperSeparate
+*******************************
+
+Run iterables on separate thread:
+
+.. code-block:: python
+
+    import concurrent.futures
+    import hashlib
+    import aiomisc
 
 
-Fast ThreadPoolExecutor
-+++++++++++++++++++++++
+    def urandom_reader():
+        with open('/dev/urandom', "rb") as fp:
+            while True:
+                yield fp.read(1024)
 
-This is a simple thread pool implementation.
+
+    async def main():
+        # create a new thread pool
+        wrapper = aiomisc.IteratorWrapperSeparate(
+            urandom_reader, max_size=2
+        )
+
+        async with wrapper as gen:
+            md5_hash = hashlib.md5(b'')
+            counter = 0
+            async for item in gen:
+                md5_hash.update(item)
+                counter += 1
+
+                if counter >= 100:
+                    break
+
+        print(md5_hash.hexdigest())
+
+
+    if __name__ == '__main__':
+        with aiomisc.entrypoint() as loop:
+            loop.run_until_complete(main())
+
+
+
+aiomisc.ThreadPoolExecutor
+**************************
+
+This is a fast thread pool implementation.
 
 Setting as a default thread pool:
 
