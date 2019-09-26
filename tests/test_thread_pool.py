@@ -152,7 +152,7 @@ async def test_threaded_generator(loop, timer):
     def arange(*args):
         return (yield from range(*args))
 
-    async with timeout(600):
+    async with timeout(10):
         count = 10
 
         result = []
