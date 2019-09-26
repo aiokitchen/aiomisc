@@ -133,6 +133,12 @@ def run_in_executor(func, executor=None, args=(),
 
 
 def threaded(func):
+    if asyncio.iscoroutinefunction(func):
+        raise TypeError('Can not wrap coroutine')
+
+    if inspect.isgeneratorfunction(func):
+        return threaded_iterable(func)
+
     @wraps(func)
     async def wrap(*args, **kwargs):
         future = run_in_executor(func=func, args=args, kwargs=kwargs)
@@ -143,8 +149,53 @@ def threaded(func):
                 future.set_exception(e)
             raise
 
-    if inspect.isgeneratorfunction(func):
-        return threaded_iterable(func)
+    return wrap
+
+
+def threaded_separate(func, detouch=True):
+    if isinstance(func, bool):
+        return partial(threaded_separate, detouch=detouch)
+
+    if asyncio.iscoroutinefunction(func):
+        raise TypeError('Can not wrap coroutine')
+
+    @wraps(func)
+    async def wrap(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        future = loop.create_future()
+
+        def set_result(result):
+            if future.done():
+                return
+
+            future.set_result(result)
+
+        def set_exception(exc):
+            if future.done():
+                return
+
+            future.set_exception(exc)
+
+        @wraps(func)
+        def in_thread(*args, **kwargs):
+            try:
+                loop.call_soon_threadsafe(
+                    set_result, func(*args, **kwargs)
+                )
+            except Exception as exc:
+                loop.call_soon_threadsafe(set_exception, exc)
+
+        thread = threading.Thread(target=in_thread, args=args, kwargs=kwargs)
+        thread.daemon = detouch
+
+        loop.call_soon_threadsafe(thread.start)
+
+        try:
+            return await future
+        except asyncio.CancelledError as e:
+            if not future.done():
+                future.set_exception(e)
+            raise
 
     return wrap
 
@@ -158,6 +209,28 @@ def threaded_iterable(func=None, max_size: int = 0):
     @wraps(func)
     def wrap(*args, **kwargs):
         return IteratorWrapper(
+            partial(func, *args, **kwargs),
+            max_size=max_size,
+        )
+
+    return wrap
+
+
+class IteratorWrapperSeparate(IteratorWrapper):
+    @threaded_separate
+    def _run(self):
+        return self._in_thread()
+
+
+def threaded_iterable_separate(func=None, max_size: int = 0):
+    if isinstance(func, int):
+        return partial(threaded_iterable, max_size=func)
+    if func is None:
+        return partial(threaded_iterable, max_size=max_size)
+
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        return IteratorWrapperSeparate(
             partial(func, *args, **kwargs),
             max_size=max_size,
         )

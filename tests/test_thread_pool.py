@@ -13,6 +13,12 @@ import aiomisc
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
+@pytest.fixture(params=(aiomisc.threaded, aiomisc.threaded_separate))
+def threaded_decorator(request, executor: aiomisc.ThreadPoolExecutor):
+    assert executor
+    return request.param
+
+
 @pytest.fixture
 def executor(loop: asyncio.AbstractEventLoop):
     thread_pool = aiomisc.ThreadPoolExecutor(8, loop=loop)
@@ -24,12 +30,11 @@ def executor(loop: asyncio.AbstractEventLoop):
             thread_pool.shutdown(wait=True)
 
         loop.set_default_executor(None)
+        thread_pool.shutdown(wait=True)
 
 
-async def test_threaded(executor: aiomisc.ThreadPoolExecutor, timer):
-    assert executor
-
-    sleep = aiomisc.threaded(time.sleep)
+async def test_threaded(threaded_decorator, timer):
+    sleep = threaded_decorator(time.sleep)
 
     async with timeout(5):
         with timer(1):
@@ -42,10 +47,8 @@ async def test_threaded(executor: aiomisc.ThreadPoolExecutor, timer):
             )
 
 
-async def test_threaded_exc(executor: aiomisc.ThreadPoolExecutor):
-    assert executor
-
-    @aiomisc.threaded
+async def test_threaded_exc(threaded_decorator):
+    @threaded_decorator
     def worker():
         raise Exception
 
@@ -105,9 +108,7 @@ async def test_failed_future_already_done(executor):
         await asyncio.gather(*futures, return_exceptions=True)
 
 
-async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
-    assert executor
-
+async def test_cancel(executor, loop, timer):
     sleep = aiomisc.threaded(time.sleep)
 
     async with timeout(2):
@@ -122,8 +123,8 @@ async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
             executor.shutdown(wait=True)
 
 
-async def test_simple(loop, timer):
-    sleep = aiomisc.threaded(time.sleep)
+async def test_simple(threaded_decorator, loop, timer):
+    sleep = threaded_decorator(time.sleep)
 
     async with timeout(2):
         with timer(1):
@@ -135,12 +136,23 @@ async def test_simple(loop, timer):
             )
 
 
+gen_decos = (
+    aiomisc.threaded_iterable,
+    aiomisc.threaded_iterable_separate
+)
+
+
+@pytest.fixture(params=gen_decos)
+def iterator_decorator(request):
+    return request.param
+
+
 async def test_threaded_generator(loop, timer):
     @aiomisc.threaded
     def arange(*args):
         return (yield from range(*args))
 
-    async with timeout(2):
+    async with timeout(600):
         count = 10
 
         result = []
@@ -151,8 +163,8 @@ async def test_threaded_generator(loop, timer):
         assert result == list(range(count))
 
 
-async def test_threaded_generator_max_size(loop, timer):
-    @aiomisc.threaded_iterable(max_size=1)
+async def test_threaded_generator_max_size(iterator_decorator, loop, timer):
+    @iterator_decorator(max_size=1)
     def arange(*args):
         return (yield from range(*args))
 
@@ -176,8 +188,8 @@ async def test_threaded_generator_max_size(loop, timer):
         assert result == list(range(count))
 
 
-async def test_threaded_generator_exception(loop, timer):
-    @aiomisc.threaded_iterable
+async def test_threaded_generator_exception(iterator_decorator, loop, timer):
+    @iterator_decorator
     def arange(*args):
         yield from range(*args)
         raise ZeroDivisionError
@@ -195,10 +207,10 @@ async def test_threaded_generator_exception(loop, timer):
         assert result == list(range(count))
 
 
-async def test_threaded_generator_close(loop, timer):
+async def test_threaded_generator_close(iterator_decorator, loop, timer):
     stopped = False
 
-    @aiomisc.threaded_iterable(max_size=2)
+    @iterator_decorator(max_size=2)
     def noise():
         nonlocal stopped
 
@@ -225,10 +237,10 @@ async def test_threaded_generator_close(loop, timer):
         assert stopped
 
 
-async def test_threaded_generator_close_cm(loop, timer):
+async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
     stopped = False
 
-    @aiomisc.threaded_iterable(max_size=1)
+    @iterator_decorator(max_size=1)
     def noise():
         nonlocal stopped
 
@@ -249,8 +261,10 @@ async def test_threaded_generator_close_cm(loop, timer):
         assert stopped
 
 
-async def test_threaded_generator_non_generator_raises(loop, timer):
-    @aiomisc.threaded_iterable()
+async def test_threaded_generator_non_generator_raises(
+        iterator_decorator, loop, timer
+):
+    @iterator_decorator()
     def errored():
         raise RuntimeError("Aaaaaaaa")
 
@@ -260,8 +274,8 @@ async def test_threaded_generator_non_generator_raises(loop, timer):
                 pass
 
 
-async def test_threaded_generator_func_raises(loop, timer):
-    @aiomisc.threaded
+async def test_threaded_generator_func_raises(iterator_decorator, loop, timer):
+    @iterator_decorator
     def errored(val):
         if val:
             raise RuntimeError("Aaaaaaaa")
