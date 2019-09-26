@@ -13,8 +13,8 @@ FuncType = typing.Callable[[], GenType]
 
 class IteratorWrapper(typing.AsyncIterator):
     __slots__ = (
-        "loop", "__closed", "executor", "__close_event", "__write_event",
-        "__queue", "__queue_maxsize", "__gen_task", "__gen_func", "__read_event",
+        "__close_event", "__closed", "__gen_func", "__gen_task", "__queue",
+        "__queue_maxsize", "__read_event", "__write_event", "executor", "loop",
     )
 
     def __init__(self, gen_func: FuncType, loop=None,
