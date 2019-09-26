@@ -59,8 +59,8 @@ policies = (asyncio.DefaultEventLoopPolicy(),)
 policy_ids = ('asyncio',)
 
 if uvloop:
-    policies += (uvloop.EventLoopPolicy(),)
-    policy_ids += ('uvloop',)
+    policies = (uvloop.EventLoopPolicy(),) + policies
+    policy_ids = ('uvloop',) + policy_ids
 
 
 @pytest.fixture(params=policies, ids=policy_ids)

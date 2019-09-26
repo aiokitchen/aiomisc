@@ -16,6 +16,10 @@ upload: clean sdist
 test:
 	tox
 
+test-docker:
+	docker run --rm -i -v $(shell pwd):/mnt -w /mnt \
+	    snakepacker/python:all tox --workdir /tmp
+
 clean:
 	rm -fr *.egg-info .tox dist build
 

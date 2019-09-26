@@ -5,10 +5,18 @@ from contextlib import suppress
 import pytest
 import time
 
+from async_timeout import timeout
+
 import aiomisc
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
+
+
+@pytest.fixture(params=(aiomisc.threaded, aiomisc.threaded_separate))
+def threaded_decorator(request, executor: aiomisc.ThreadPoolExecutor):
+    assert executor
+    return request.param
 
 
 @pytest.fixture
@@ -22,64 +30,65 @@ def executor(loop: asyncio.AbstractEventLoop):
             thread_pool.shutdown(wait=True)
 
         loop.set_default_executor(None)
+        thread_pool.shutdown(wait=True)
 
 
-async def test_threaded(executor: aiomisc.ThreadPoolExecutor, timer):
-    assert executor
+async def test_threaded(threaded_decorator, timer):
+    sleep = threaded_decorator(time.sleep)
 
-    sleep = aiomisc.threaded(time.sleep)
+    async with timeout(5):
+        with timer(1):
+            await asyncio.gather(
+                sleep(1),
+                sleep(1),
+                sleep(1),
+                sleep(1),
+                sleep(1),
+            )
 
-    with timer(1):
-        await asyncio.gather(
-            sleep(1),
-            sleep(1),
-            sleep(1),
-            sleep(1),
-            sleep(1),
-        )
 
-
-async def test_threaded_exc(executor: aiomisc.ThreadPoolExecutor):
-    assert executor
-
-    @aiomisc.threaded
+async def test_threaded_exc(threaded_decorator):
+    @threaded_decorator
     def worker():
         raise Exception
 
-    number = 90
+    async with timeout(1):
+        number = 90
 
-    done, _ = await asyncio.wait([worker() for _ in range(number)])
+        done, _ = await asyncio.wait([worker() for _ in range(number)])
 
-    for task in done:
-        with pytest.raises(Exception):
-            task.result()
+        for task in done:
+            with pytest.raises(Exception):
+                task.result()
 
 
 async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):
     futures = []
 
-    for _ in range(10):
-        futures.append(executor.submit(time.sleep, 0.1))
+    async with timeout(10):
+        for _ in range(10):
+            futures.append(executor.submit(time.sleep, 0.1))
 
-    for future in futures:
-        future.set_exception(asyncio.CancelledError())
+        for future in futures:
+            future.set_exception(asyncio.CancelledError())
 
-    await asyncio.gather(*futures, return_exceptions=True)
+        await asyncio.gather(*futures, return_exceptions=True)
 
 
 async def test_future_when_pool_shutting_down(executor):
     futures = []
 
-    for _ in range(10):
-        futures.append(executor.submit(time.sleep, 0.1))
+    async with timeout(10):
+        for _ in range(10):
+            futures.append(executor.submit(time.sleep, 0.1))
 
-    executor.shutdown(wait=False)
+        executor.shutdown(wait=False)
 
-    done, _ = await asyncio.wait(futures)
+        done, _ = await asyncio.wait(futures)
 
-    for task in done:
-        with pytest.raises(RuntimeError):
-            task.result()
+        for task in done:
+            with pytest.raises(RuntimeError):
+                task.result()
 
 
 async def test_failed_future_already_done(executor):
@@ -89,41 +98,53 @@ async def test_failed_future_already_done(executor):
         time.sleep(0.1)
         raise Exception
 
-    for _ in range(10):
-        futures.append(executor.submit(exc))
+    async with timeout(10):
+        for _ in range(10):
+            futures.append(executor.submit(exc))
 
-    for future in futures:
-        future.set_exception(asyncio.CancelledError())
+        for future in futures:
+            future.set_exception(asyncio.CancelledError())
 
-    await asyncio.gather(*futures, return_exceptions=True)
+        await asyncio.gather(*futures, return_exceptions=True)
 
 
-async def test_cancel(executor: aiomisc.ThreadPoolExecutor, loop, timer):
-    assert executor
-
+async def test_cancel(executor, loop, timer):
     sleep = aiomisc.threaded(time.sleep)
 
-    with timer(1, dispersion=2):
-        tasks = [loop.create_task(sleep(1)) for _ in range(1000)]
+    async with timeout(2):
+        with timer(1, dispersion=2):
+            tasks = [loop.create_task(sleep(1)) for _ in range(1000)]
 
-        await asyncio.sleep(1)
+            await asyncio.sleep(1)
 
-        for task in tasks:
-            task.cancel()
+            for task in tasks:
+                task.cancel()
 
-        executor.shutdown(wait=True)
+            executor.shutdown(wait=True)
 
 
-async def test_simple(loop, timer):
-    sleep = aiomisc.threaded(time.sleep)
+async def test_simple(threaded_decorator, loop, timer):
+    sleep = threaded_decorator(time.sleep)
 
-    with timer(1):
-        await asyncio.gather(
-            sleep(1),
-            sleep(1),
-            sleep(1),
-            sleep(1),
-        )
+    async with timeout(2):
+        with timer(1):
+            await asyncio.gather(
+                sleep(1),
+                sleep(1),
+                sleep(1),
+                sleep(1),
+            )
+
+
+gen_decos = (
+    aiomisc.threaded_iterable,
+    aiomisc.threaded_iterable_separate
+)
+
+
+@pytest.fixture(params=gen_decos)
+def iterator_decorator(request):
+    return request.param
 
 
 async def test_threaded_generator(loop, timer):
@@ -131,62 +152,65 @@ async def test_threaded_generator(loop, timer):
     def arange(*args):
         return (yield from range(*args))
 
-    count = 10
+    async with timeout(10):
+        count = 10
 
-    result = []
-    agen = arange(count)
-    async for item in agen:
-        result.append(item)
+        result = []
+        agen = arange(count)
+        async for item in agen:
+            result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
 
-async def test_threaded_generator_max_size(loop, timer):
-    @aiomisc.threaded_iterable(max_size=1)
+async def test_threaded_generator_max_size(iterator_decorator, loop, timer):
+    @iterator_decorator(max_size=1)
     def arange(*args):
         return (yield from range(*args))
 
-    arange2 = aiomisc.threaded_iterable(max_size=1)(range)
+    async with timeout(2):
+        arange2 = aiomisc.threaded_iterable(max_size=1)(range)
 
-    count = 10
+        count = 10
 
-    result = []
-    agen = arange(count)
-    async for item in agen:
-        result.append(item)
+        result = []
+        agen = arange(count)
+        async for item in agen:
+            result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
-    result = []
-    agen = arange2(count)
-    async for item in agen:
-        result.append(item)
+        result = []
+        agen = arange2(count)
+        async for item in agen:
+            result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
 
-async def test_threaded_generator_exception(loop, timer):
-    @aiomisc.threaded_iterable
+async def test_threaded_generator_exception(iterator_decorator, loop, timer):
+    @iterator_decorator
     def arange(*args):
         yield from range(*args)
         raise ZeroDivisionError
 
-    count = 10
+    async with timeout(2):
+        count = 10
 
-    result = []
-    agen = arange(count)
+        result = []
+        agen = arange(count)
 
-    with pytest.raises(ZeroDivisionError):
-        async for item in agen:
-            result.append(item)
+        with pytest.raises(ZeroDivisionError):
+            async for item in agen:
+                result.append(item)
 
-    assert result == list(range(count))
+        assert result == list(range(count))
 
 
-async def test_threaded_generator_close(loop, timer):
+async def test_threaded_generator_close(iterator_decorator, loop, timer):
     stopped = False
 
-    @aiomisc.threaded_iterable(max_size=2)
+    @iterator_decorator(max_size=2)
     def noise():
         nonlocal stopped
 
@@ -196,63 +220,69 @@ async def test_threaded_generator_close(loop, timer):
         finally:
             stopped = True
 
-    counter = 0
-
-    async with noise() as gen:
-        async for _ in gen:     # NOQA
-            counter += 1
-            if counter > 9:
-                break
-
-    wait_counter = 0
-    while not stopped and wait_counter < 5:
-        await asyncio.sleep(1)
-        wait_counter += 1
-
-    assert stopped
-
-
-async def test_threaded_generator_close_cm(loop, timer):
-    stopped = False
-
-    @aiomisc.threaded_iterable(max_size=1)
-    def noise():
-        nonlocal stopped
-
-        try:
-            while True:
-                yield os.urandom(32)
-        finally:
-            stopped = True
-
-    async with noise() as gen:
+    async with timeout(2):
         counter = 0
-        async for _ in gen:     # NOQA
-            counter += 1
-            if counter > 9:
-                break
 
-    assert stopped
+        async with noise() as gen:
+            async for _ in gen:     # NOQA
+                counter += 1
+                if counter > 9:
+                    break
+
+        wait_counter = 0
+        while not stopped and wait_counter < 5:
+            await asyncio.sleep(1)
+            wait_counter += 1
+
+        assert stopped
 
 
-async def test_threaded_generator_non_generator_raises(loop, timer):
-    @aiomisc.threaded_iterable()
+async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
+    stopped = False
+
+    @iterator_decorator(max_size=1)
+    def noise():
+        nonlocal stopped
+
+        try:
+            while True:
+                yield os.urandom(32)
+        finally:
+            stopped = True
+
+    async with timeout(2):
+        async with noise() as gen:
+            counter = 0
+            async for _ in gen:     # NOQA
+                counter += 1
+                if counter > 9:
+                    break
+
+        assert stopped
+
+
+async def test_threaded_generator_non_generator_raises(
+        iterator_decorator, loop, timer
+):
+    @iterator_decorator()
     def errored():
         raise RuntimeError("Aaaaaaaa")
 
-    with pytest.raises(RuntimeError):
-        async for _ in errored():       # NOQA
-            pass
+    async with timeout(2):
+        with pytest.raises(RuntimeError):
+            async for _ in errored():       # NOQA
+                pass
 
 
-async def test_threaded_generator_func_raises(loop, timer):
-    @aiomisc.threaded
+async def test_threaded_generator_func_raises(iterator_decorator, loop, timer):
+    @iterator_decorator
     def errored(val):
         if val:
             raise RuntimeError("Aaaaaaaa")
 
         yield
 
-    with pytest.raises(RuntimeError):
-        async for _ in errored(True):    # NOQA
-            pass
+    async with timeout(2):
+        with pytest.raises(RuntimeError):
+            async for _ in errored(True):    # NOQA
+                pass
