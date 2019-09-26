@@ -44,10 +44,10 @@ setup_plugins()
 
 
 __all__ = (
-    'asyncbackoff', 'Context', 'get_context', 'plugins',
-    'entrypoint', 'io', 'IteratorWrapper', 'log', 'PeriodicCallback',
-    'Service', 'threaded', 'threaded_iterable', 'threaded_iterable_separate',
-    'ThreadPoolExecutor', 'threaded_separate', 'timeout', 'bind_socket',
-    'chunk_list', 'new_event_loop', 'select', 'SelectResult', 'shield',
-    'Signal', 'receiver',
+    'asyncbackoff', 'bind_socket', 'chunk_list', 'Context', 'entrypoint',
+    'get_context', 'io', 'IteratorWrapper', 'IteratorWrapperSeparate', 'log',
+    'new_event_loop', 'PeriodicCallback', 'plugins', 'receiver', 'select',
+    'SelectResult', 'Service', 'shield', 'Signal', 'threaded',
+    'threaded_iterable', 'threaded_iterable_separate', 'threaded_separate',
+    'ThreadPoolExecutor', 'timeout',
 )
