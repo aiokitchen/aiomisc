@@ -16,6 +16,12 @@ class ThreadPoolException(RuntimeError):
     pass
 
 
+try:
+    import contextvars
+except ImportError:
+    contextvars = None
+
+
 class ThreadPoolExecutor(Executor):
     __slots__ = (
         '__loop', '__futures', '__running', '__pool', '__tasks',
@@ -129,7 +135,18 @@ def run_in_executor(func, executor=None, args=(),
 
     loop = get_event_loop()
     # noinspection PyTypeChecker
-    return loop.run_in_executor(executor, partial(func, *args, **kwargs))
+    return loop.run_in_executor(
+        executor, context_partial(func, *args, **kwargs)
+    )
+
+
+def context_partial(func, *args, **kwargs):
+    if contextvars is None:
+        return partial(func, *args, **kwargs)
+
+    context = contextvars.copy_context()
+
+    return partial(context.run, func, *args, **kwargs)
 
 
 def threaded(func):
@@ -169,17 +186,20 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
 
         future.set_exception(exc)
 
+    target = context_partial(func, *args, **kwargs)
+
     @wraps(func)
     def in_thread(*args, **kwargs):
         try:
             loop.call_soon_threadsafe(
-                set_result, func(*args, **kwargs)
+                set_result, target
             )
         except Exception as exc:
             loop.call_soon_threadsafe(set_exception, exc)
 
-    thread = threading.Thread(target=in_thread, args=args, kwargs=kwargs)
-    thread.daemon = detouch
+    thread = threading.Thread(
+        target=in_thread, name=func.__name__, daemon=detouch
+    )
 
     loop.call_soon_threadsafe(thread.start)
     return future
