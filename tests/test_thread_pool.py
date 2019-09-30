@@ -1,6 +1,5 @@
 import asyncio
 import os
-import sys
 from contextlib import suppress
 
 import pytest
@@ -9,6 +8,12 @@ import time
 from async_timeout import timeout
 
 import aiomisc
+
+
+try:
+    import contextvars
+except ImportError:
+    contextvars = None
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -289,7 +294,7 @@ async def test_threaded_generator_func_raises(iterator_decorator, loop, timer):
                 pass
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="no contextvars support")
+@pytest.mark.skipif(contextvars is None, reason="no contextvars support")
 async def test_context_vars(threaded_decorator, loop):
     import contextvars
 
