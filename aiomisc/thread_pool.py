@@ -189,7 +189,7 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
     target = context_partial(func, *args, **kwargs)
 
     @wraps(func)
-    def in_thread(*args, **kwargs):
+    def in_thread():
         try:
             loop.call_soon_threadsafe(
                 set_result, target
