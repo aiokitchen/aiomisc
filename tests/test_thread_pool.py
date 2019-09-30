@@ -296,8 +296,6 @@ async def test_threaded_generator_func_raises(iterator_decorator, loop, timer):
 
 @pytest.mark.skipif(contextvars is None, reason="no contextvars support")
 async def test_context_vars(threaded_decorator, loop):
-    import contextvars
-
     ctx_var = contextvars.ContextVar("test")
 
     @threaded_decorator
