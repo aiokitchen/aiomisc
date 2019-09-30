@@ -149,6 +149,15 @@ def context_partial(func, *args, **kwargs):
     return partial(context.run, func, *args, **kwargs)
 
 
+async def _awaiter(future):
+    try:
+        return await future
+    except asyncio.CancelledError as e:
+        if not future.done():
+            future.set_exception(e)
+        raise
+
+
 def threaded(func):
     if asyncio.iscoroutinefunction(func):
         raise TypeError('Can not wrap coroutine')
@@ -157,14 +166,9 @@ def threaded(func):
         return threaded_iterable(func)
 
     @wraps(func)
-    async def wrap(*args, **kwargs):
+    def wrap(*args, **kwargs):
         future = run_in_executor(func=func, args=args, kwargs=kwargs)
-        try:
-            return await future
-        except asyncio.CancelledError as e:
-            if not future.done():
-                future.set_exception(e)
-            raise
+        return _awaiter(future)
 
     return wrap
 
@@ -186,19 +190,20 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
 
         future.set_exception(exc)
 
-    target = context_partial(func, *args, **kwargs)
-
     @wraps(func)
-    def in_thread():
+    def in_thread(target):
         try:
             loop.call_soon_threadsafe(
-                set_result, target
+                set_result, target()
             )
         except Exception as exc:
             loop.call_soon_threadsafe(set_exception, exc)
 
     thread = threading.Thread(
-        target=in_thread, name=func.__name__, daemon=detouch
+        target=in_thread, name=func.__name__, daemon=detouch,
+        args=(
+            context_partial(func, *args, **kwargs),
+        ),
     )
 
     loop.call_soon_threadsafe(thread.start)
@@ -213,17 +218,12 @@ def threaded_separate(func, detouch=True):
         raise TypeError('Can not wrap coroutine')
 
     @wraps(func)
-    async def wrap(*args, **kwargs):
+    def wrap(*args, **kwargs):
         future = run_in_new_thread(
             func, args=args, kwargs=kwargs, detouch=detouch
         )
 
-        try:
-            return await future
-        except asyncio.CancelledError as e:
-            if not future.done():
-                future.set_exception(e)
-            raise
+        return _awaiter(future)
 
     return wrap
 
@@ -237,7 +237,7 @@ def threaded_iterable(func=None, max_size: int = 0):
     @wraps(func)
     def wrap(*args, **kwargs):
         return IteratorWrapper(
-            partial(func, *args, **kwargs),
+            context_partial(func, *args, **kwargs),
             max_size=max_size,
         )
 
@@ -259,7 +259,7 @@ def threaded_iterable_separate(func=None, max_size: int = 0):
     @wraps(func)
     def wrap(*args, **kwargs):
         return IteratorWrapperSeparate(
-            partial(func, *args, **kwargs),
+            context_partial(func, *args, **kwargs),
             max_size=max_size,
         )
 

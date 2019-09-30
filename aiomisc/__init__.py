@@ -13,7 +13,7 @@ from .signal import Signal, receiver
 from .iterator_wrapper import IteratorWrapper
 from .thread_pool import (
     threaded, threaded_iterable, ThreadPoolExecutor, threaded_separate,
-    IteratorWrapperSeparate, threaded_iterable_separate
+    IteratorWrapperSeparate, threaded_iterable_separate, context_partial
 )
 from .timeout import timeout
 
@@ -44,10 +44,10 @@ setup_plugins()
 
 
 __all__ = (
-    'asyncbackoff', 'bind_socket', 'chunk_list', 'Context', 'entrypoint',
-    'get_context', 'io', 'IteratorWrapper', 'IteratorWrapperSeparate', 'log',
-    'new_event_loop', 'PeriodicCallback', 'plugins', 'receiver', 'select',
-    'SelectResult', 'Service', 'shield', 'Signal', 'threaded',
-    'threaded_iterable', 'threaded_iterable_separate', 'threaded_separate',
-    'ThreadPoolExecutor', 'timeout',
+    'asyncbackoff', 'bind_socket', 'chunk_list', 'Context', 'context_partial',
+    'entrypoint', 'get_context', 'io', 'IteratorWrapper',
+    'IteratorWrapperSeparate', 'log', 'new_event_loop', 'PeriodicCallback',
+    'plugins', 'receiver', 'select', 'SelectResult', 'Service', 'shield',
+    'Signal', 'threaded', 'threaded_iterable', 'threaded_iterable_separate',
+    'threaded_separate', 'ThreadPoolExecutor', 'timeout',
 )
