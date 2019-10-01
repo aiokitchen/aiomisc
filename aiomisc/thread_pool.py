@@ -18,8 +18,13 @@ class ThreadPoolException(RuntimeError):
 
 try:
     import contextvars
+
+    def context_partial(func, *args, **kwargs):
+        context = contextvars.copy_context()
+        return partial(context.run, func, *args, **kwargs)
+
 except ImportError:
-    contextvars = None
+    context_partial = partial
 
 
 class ThreadPoolExecutor(Executor):
@@ -138,15 +143,6 @@ def run_in_executor(func, executor=None, args=(),
     return loop.run_in_executor(
         executor, context_partial(func, *args, **kwargs)
     )
-
-
-def context_partial(func, *args, **kwargs):
-    if contextvars is None:
-        return partial(func, *args, **kwargs)
-
-    context = contextvars.copy_context()
-
-    return partial(context.run, func, *args, **kwargs)
 
 
 async def _awaiter(future):
