@@ -268,7 +268,7 @@ Just implement ``handle_datagram(data, addr)`` to use it.
 TLSServer
 *********
 
-TLSServer - it's a base class for writing TCP servers with TLS.
+``TLSServer`` - it's a base class for writing TCP servers with TLS.
 Just implement ``handle_client(reader, writer)`` to use it.
 
 .. code-block:: python
@@ -727,6 +727,78 @@ Working with threads
 
 Wraps blocking function and runs it in
 the different thread or thread pool.
+
+contextvars support
+********************
+
+All following decorators and functions support ``contextvars`` module,
+from PyPI for python earlier 3.7 and builtin standard library for python 3.7.
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+    import contextvars
+    import random
+    import struct
+
+
+    user_id = contextvars.ContextVar("user_id")
+
+    record_struct = struct.Struct(">I")
+
+
+    @aiomisc.threaded
+    def write_user():
+        with open("/tmp/audit.bin", 'ab') as fp:
+            fp.write(record_struct.pack(user_id.get()))
+
+
+    @aiomisc.threaded
+    def read_log():
+        with open("/tmp/audit.bin", "rb") as fp:
+            for chunk in iter(lambda: fp.read(record_struct.size), b''):
+                yield record_struct.unpack(chunk)[0]
+
+
+    async def main():
+        futures = []
+        for _ in range(5):
+            user_id.set(random.randint(1, 65535))
+            futures.append(write_user())
+
+        await asyncio.gather(*futures)
+
+        async for data in read_log():
+            print(data)
+
+
+    await main()
+
+    if __name__ == '__main__':
+        with aiomisc.entrypoint() as loop:
+            loop.run_until_complete(main())
+
+
+Example output:
+
+.. code-block::
+
+    6621
+    33012
+    1590
+    45008
+    56844
+
+
+.. note::
+
+    ``contextvars`` has different use cases then ``Context`` class.
+    ``contextvars`` applicable for passing context variables through the
+    execution stack but created task can not change parent context variables
+    because ``contextvars`` creates lightweight copy. ``Context`` class
+    allows it because do not copying context variables.
+
 
 @threaded
 *********
