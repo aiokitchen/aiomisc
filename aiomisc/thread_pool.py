@@ -53,8 +53,6 @@ class ThreadPoolExecutor(Executor):
                 daemon=True,
             )
 
-            thread.daemon = True
-
             self.__pool.add(thread)
             # Starting the thread only after thread-pool will be started
             self.__loop.call_soon(thread.start)
@@ -98,6 +96,9 @@ class ThreadPoolExecutor(Executor):
 
     def _in_thread(self):
         while self.__running and not self.__loop.is_closed():
+            while len(self.__tasks) == 0:
+                self.__read_event.wait()
+
             try:
                 func, future = self.__tasks.popleft()
                 self._execute(func, future)
@@ -105,8 +106,6 @@ class ThreadPoolExecutor(Executor):
                 with self.__read_lock:
                     if self.__read_event.is_set():
                         self.__read_event.clear()
-
-                self.__read_event.wait(timeout=1)
             except asyncio.CancelledError:
                 break
 
