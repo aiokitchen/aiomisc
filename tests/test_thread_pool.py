@@ -10,6 +10,12 @@ from async_timeout import timeout
 import aiomisc
 
 
+try:
+    import contextvars
+except ImportError:
+    contextvars = None
+
+
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -286,3 +292,21 @@ async def test_threaded_generator_func_raises(iterator_decorator, loop, timer):
         with pytest.raises(RuntimeError):
             async for _ in errored(True):    # NOQA
                 pass
+
+
+@pytest.mark.skipif(contextvars is None, reason="no contextvars support")
+async def test_context_vars(threaded_decorator, loop):
+    ctx_var = contextvars.ContextVar("test")
+
+    @threaded_decorator
+    def test(arg):
+        value = ctx_var.get()
+        assert value == arg * arg
+
+    futures = []
+
+    for i in range(8):
+        ctx_var.set(i * i)
+        futures.append(test(i))
+
+    await asyncio.gather(*futures)

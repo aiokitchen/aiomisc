@@ -16,6 +16,17 @@ class ThreadPoolException(RuntimeError):
     pass
 
 
+try:
+    import contextvars
+
+    def context_partial(func, *args, **kwargs):
+        context = contextvars.copy_context()
+        return partial(context.run, func, *args, **kwargs)
+
+except ImportError:
+    context_partial = partial
+
+
 class ThreadPoolExecutor(Executor):
     __slots__ = (
         '__loop', '__futures', '__running', '__pool', '__tasks',
@@ -129,7 +140,18 @@ def run_in_executor(func, executor=None, args=(),
 
     loop = get_event_loop()
     # noinspection PyTypeChecker
-    return loop.run_in_executor(executor, partial(func, *args, **kwargs))
+    return loop.run_in_executor(
+        executor, context_partial(func, *args, **kwargs)
+    )
+
+
+async def _awaiter(future):
+    try:
+        return await future
+    except asyncio.CancelledError as e:
+        if not future.done():
+            future.set_exception(e)
+        raise
 
 
 def threaded(func):
@@ -140,14 +162,9 @@ def threaded(func):
         return threaded_iterable(func)
 
     @wraps(func)
-    async def wrap(*args, **kwargs):
+    def wrap(*args, **kwargs):
         future = run_in_executor(func=func, args=args, kwargs=kwargs)
-        try:
-            return await future
-        except asyncio.CancelledError as e:
-            if not future.done():
-                future.set_exception(e)
-            raise
+        return _awaiter(future)
 
     return wrap
 
@@ -170,16 +187,20 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
         future.set_exception(exc)
 
     @wraps(func)
-    def in_thread(*args, **kwargs):
+    def in_thread(target):
         try:
             loop.call_soon_threadsafe(
-                set_result, func(*args, **kwargs)
+                set_result, target()
             )
         except Exception as exc:
             loop.call_soon_threadsafe(set_exception, exc)
 
-    thread = threading.Thread(target=in_thread, args=args, kwargs=kwargs)
-    thread.daemon = detouch
+    thread = threading.Thread(
+        target=in_thread, name=func.__name__, daemon=detouch,
+        args=(
+            context_partial(func, *args, **kwargs),
+        ),
+    )
 
     loop.call_soon_threadsafe(thread.start)
     return future
@@ -193,17 +214,12 @@ def threaded_separate(func, detouch=True):
         raise TypeError('Can not wrap coroutine')
 
     @wraps(func)
-    async def wrap(*args, **kwargs):
+    def wrap(*args, **kwargs):
         future = run_in_new_thread(
             func, args=args, kwargs=kwargs, detouch=detouch
         )
 
-        try:
-            return await future
-        except asyncio.CancelledError as e:
-            if not future.done():
-                future.set_exception(e)
-            raise
+        return _awaiter(future)
 
     return wrap
 
@@ -217,7 +233,7 @@ def threaded_iterable(func=None, max_size: int = 0):
     @wraps(func)
     def wrap(*args, **kwargs):
         return IteratorWrapper(
-            partial(func, *args, **kwargs),
+            context_partial(func, *args, **kwargs),
             max_size=max_size,
         )
 
@@ -239,7 +255,7 @@ def threaded_iterable_separate(func=None, max_size: int = 0):
     @wraps(func)
     def wrap(*args, **kwargs):
         return IteratorWrapperSeparate(
-            partial(func, *args, **kwargs),
+            context_partial(func, *args, **kwargs),
             max_size=max_size,
         )
 
