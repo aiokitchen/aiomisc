@@ -773,8 +773,6 @@ from PyPI for python earlier 3.7 and builtin standard library for python 3.7.
             print(data)
 
 
-    await main()
-
     if __name__ == '__main__':
         with aiomisc.entrypoint() as loop:
             loop.run_until_complete(main())
