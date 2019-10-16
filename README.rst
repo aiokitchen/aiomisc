@@ -638,6 +638,9 @@ Abstraction:
 * ``deadline`` is maximum execution time for all execution attempts.
 * ``pause`` is time gap between execution attempts.
 * ``exceptions`` retrying when this exceptions was raised.
+* ``giveup`` (keyword only) is a predicate function which can decide by a given
+  exception if we should continue to do retries.
+* ``max_tries`` (keyword only) is maximum count of execution attempts (>= 1).
 
 Decorator that ensures that ``attempt_timeout`` and ``deadline`` time
 limits are met by decorated function.
