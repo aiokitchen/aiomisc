@@ -225,3 +225,42 @@ async def test_too_long_multiple(loop):
     assert t3 > 0.8
 
     assert mana < 3.8
+
+
+@pytest.mark.parametrize('max_tries', (1, 2, 5))
+async def test_max_tries(loop, max_tries):
+    mana = 0
+
+    @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception, max_tries=max_tries)
+    async def test():
+        nonlocal mana
+        mana += 1
+        raise ValueError("RETRY")
+
+    with pytest.raises(ValueError, match="^RETRY$"):
+        await test()
+
+    assert mana == max_tries
+
+
+@pytest.mark.parametrize('max_mana', (1, 2, 5))
+async def test_giveup(loop, max_mana):
+    mana = 0
+    giveup_exception = None
+
+    def giveup(exception):
+        nonlocal giveup_exception
+        giveup_exception = exception
+        return mana >= max_mana
+
+    @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception, giveup=giveup)
+    async def test():
+        nonlocal mana
+        mana += 1
+        raise ValueError("RETRY")
+
+    with pytest.raises(ValueError, match="^RETRY$") as e:
+        await test()
+
+    assert giveup_exception is e.value
+    assert mana == max_mana
