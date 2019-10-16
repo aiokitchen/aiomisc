@@ -703,6 +703,21 @@ Keyword arguments notation:
         ...
 
 
+    # Will be retried no more than 2 times (3 tries total)
+    @asyncbackoff(attempt_timeout=0.5, deadline=1, pause=0.1, max_tries=3,
+                  exceptions=[TypeError, RuntimeError, ValueError])
+    async def db_fetch(data: dict):
+        ...
+
+
+    # Will be retried only on connection abort (on POSIX systems)
+    @asyncbackoff(attempt_timeout=0.5, deadline=1, pause=0.1,
+                  exceptions=[OSError],
+                  giveup=lambda e: e.errno == errno.ECONNABORTED)
+    async def db_fetch(data: dict):
+        ...
+
+
 
 asynchronous file operations
 ++++++++++++++++++++++++++++
