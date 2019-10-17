@@ -713,7 +713,7 @@ Keyword arguments notation:
     # Will be retried only on connection abort (on POSIX systems)
     @asyncbackoff(attempt_timeout=0.5, deadline=1, pause=0.1,
                   exceptions=[OSError],
-                  giveup=lambda e: e.errno == errno.ECONNABORTED)
+                  giveup=lambda e: e.errno != errno.ECONNABORTED)
     async def db_fetch(data: dict):
         ...
 
