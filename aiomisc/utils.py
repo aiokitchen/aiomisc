@@ -157,10 +157,11 @@ class SelectResult:
         return self.result_idx is not None
 
     def __iter__(self):
-        for i in range(self.length - 1):
+        for i in range(self.length):
             if i == self.result_idx:
                 yield self.value
-            yield None
+            else:
+                yield None
 
 
 def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Iterable[asyncio.Task]:

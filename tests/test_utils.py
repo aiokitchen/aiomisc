@@ -19,7 +19,7 @@ async def test_select(loop: asyncio.AbstractEventLoop):
     loop.call_soon(f_one.set)
     loop.call_later(1, f_two.set)
 
-    one, two = await aiomisc.select(f_one.wait(), f_two.wait())
+    two, one = await aiomisc.select(f_two.wait(), f_one.wait())
 
     assert one
     assert two is None

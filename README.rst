@@ -183,6 +183,33 @@ running coroutines on exit.
         loop.run_until_complete(main())
 
 
+Complete example:
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+    import logging
+
+    async def main():
+        while True:
+            await asyncio.sleep(1)
+            logging.info("Hello there")
+
+    with aiomisc.entrypoint(
+        pool_size=2,
+        log_level='info',
+        log_format='color',                         # default
+        log_buffer_size=1024,                       # default
+        log_flush_interval=0.2,                     # default
+        log_config=True,                            # default
+        policy=asyncio.DefaultEventLoopPolicy(),    # default
+        debug=False,                                # default
+    ) as loop:
+        loop.create_task(main())
+        loop.run_forever()
+
+
 Services
 ++++++++
 
@@ -332,11 +359,9 @@ After exiting the entrypoint service instances will be gracefully shut down.
     from aiomisc.service import Service, TCPServer, UDPServer
 
 
-    class LoggingService(Service):
-        async def start(self):
-            while True:
-                print('Hello from service', self.name)
-                await asyncio.sleep(1)
+    class LoggingService(PeriodicService):
+        async def callabck(self):
+            print('Hello from service', self.name)
 
 
     class EchoServer(TCPServer):
@@ -352,7 +377,7 @@ After exiting the entrypoint service instances will be gracefully shut down.
 
 
     services = (
-        LoggingService(name='#1'),
+        LoggingService(name='#1', interval=1),
         EchoServer(address='::1', port=8901),
         UDPPrinter(address='::1', port=3000),
     )
@@ -383,6 +408,7 @@ to ``self`` as attributes.
         delay: int = 1
 
         async def start(self):
+            self.start_event.set()
             while True:
                 # attribute ``name`` from kwargs
                 # must be defined when instance initializes
@@ -729,7 +755,7 @@ Asynchronous files operations. Based on thread-pool under the hood.
     import aiomisc
 
 
-    async def db_fetch():
+    async def file_write():
         async with aiomisc.io.async_open('/tmp/test.txt', 'w+') as afp:
             await afp.write("Hello")
             await afp.write(" ")
