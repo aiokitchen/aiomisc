@@ -11,13 +11,14 @@ class PeriodicService(Service):
     __required__ = ('interval',)
 
     interval = None  # type: float # in seconds
+    delay = 0  # type: float # in seconds
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.periodic = PeriodicCallback(self.callback)
 
     async def start(self):
-        self.periodic.start(self.interval, loop=self.loop)
+        self.periodic.start(self.interval, delay=self.delay, loop=self.loop)
         log.info('Periodic service %s started', self)
 
     async def stop(self, err):
@@ -30,7 +31,8 @@ class PeriodicService(Service):
         raise NotImplementedError
 
     def __str__(self):
-        return '{}(interval={})'.format(
+        return '{}(interval={},delay={})'.format(
             self.__class__.__name__,
             self.interval,
+            self.delay,
         )

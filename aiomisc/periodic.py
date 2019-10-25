@@ -36,7 +36,9 @@ class PeriodicCallback:
             log.exception("Periodic task error:")
 
     def start(self, interval: Union[int, float],
-              loop=None, *, shield: bool = False,
+              loop=None, *,
+              delay: Union[int, float] = 0,
+              shield: bool = False,
               suppress_exceptions: Tuple[Type[Exception]] = ()):
 
         if self._closed:
@@ -69,7 +71,7 @@ class PeriodicCallback:
 
             self._handle = self._loop.call_later(interval, periodic)
 
-        self._loop.call_soon_threadsafe(periodic)
+        self._loop.call_soon_threadsafe(self._loop.call_later, delay, periodic)
 
     def stop(self):
         self._closed = True
