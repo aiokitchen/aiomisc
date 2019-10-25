@@ -49,29 +49,39 @@ async def test_shield(loop):
 
     async def task():
         nonlocal counter
+        await asyncio.sleep(0.1)
         counter += 1
-        await asyncio.sleep(2)
 
     periodic = aiomisc.PeriodicCallback(task)
-    periodic.start(0.1, loop, shield=True)
+    periodic.start(0.2, loop, shield=True)
 
-    await asyncio.sleep(0)
+    # Wait for periodic callback to start
+    await asyncio.sleep(0.01)
 
     with pytest.raises(asyncio.CancelledError):
         await periodic.stop()
 
+    # Wait for counter to increment
+    await asyncio.sleep(0.1)
+
+    # Shielded
     assert counter == 1
 
     # No shield
     counter = 0
     periodic = aiomisc.PeriodicCallback(task)
-    periodic.start(0.1, loop, shield=False)
+    periodic.start(0.2, loop, shield=False)
 
-    await asyncio.sleep(0)
+    # Wait for periodic callback to start
+    await asyncio.sleep(0.01)
 
     with pytest.raises(asyncio.CancelledError):
         await periodic.stop()
 
+    # Wait for counter to increment
+    await asyncio.sleep(0.1)
+
+    # Cancelled
     assert counter == 0
 
 
