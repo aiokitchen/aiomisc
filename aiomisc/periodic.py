@@ -32,6 +32,8 @@ class PeriodicCallback:
             await self._cb()
         except suppress_exceptions:
             return
+        except asyncio.CancelledError:
+            raise
         except Exception:
             log.exception("Periodic task error:")
 
@@ -71,7 +73,7 @@ class PeriodicCallback:
 
             self._handle = self._loop.call_later(interval, periodic)
 
-        self._loop.call_soon_threadsafe(self._loop.call_later, delay, periodic)
+        self._loop.call_later(delay, self._loop.call_soon_threadsafe, periodic)
 
     def stop(self):
         self._closed = True
