@@ -268,7 +268,7 @@ Just implement ``handle_datagram(data, addr)`` to use it.
 TLSServer
 *********
 
-TLSServer - it's a base class for writing TCP servers with TLS.
+``TLSServer`` - it's a base class for writing TCP servers with TLS.
 Just implement ``handle_client(reader, writer)`` to use it.
 
 .. code-block:: python
@@ -287,6 +287,33 @@ Just implement ``handle_client(reader, writer)`` to use it.
         key='key.pem',
         verify=False,
     )
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
+PeriodicService
+***************
+
+``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for
+running callback to complete on stop. You need to use ``PeriodicService``
+as a base class and override ``callback`` async coroutine method.
+
+Service class accepts required ``interval`` argument - periodic interval
+in seconds.
+
+.. code-block:: python
+
+    import aiomisc
+    from aiomisc.service.periodic import PeriodicService
+
+
+    class MyPeriodicService(PeriodicService):
+        async def callback(self):
+            log.info('Running periodic callback')
+            # ...
+
+    service = MyPeriodicService(interval=3600)  # once per hour
 
     with entrypoint(service) as loop:
         loop.run_forever()
@@ -611,6 +638,9 @@ Abstraction:
 * ``deadline`` is maximum execution time for all execution attempts.
 * ``pause`` is time gap between execution attempts.
 * ``exceptions`` retrying when this exceptions was raised.
+* ``giveup`` (keyword only) is a predicate function which can decide by a given
+  exception if we should continue to do retries.
+* ``max_tries`` (keyword only) is maximum count of execution attempts (>= 1).
 
 Decorator that ensures that ``attempt_timeout`` and ``deadline`` time
 limits are met by decorated function.
@@ -673,6 +703,21 @@ Keyword arguments notation:
         ...
 
 
+    # Will be retried no more than 2 times (3 tries total)
+    @asyncbackoff(attempt_timeout=0.5, deadline=1, pause=0.1, max_tries=3,
+                  exceptions=[TypeError, RuntimeError, ValueError])
+    async def db_fetch(data: dict):
+        ...
+
+
+    # Will be retried only on connection abort (on POSIX systems)
+    @asyncbackoff(attempt_timeout=0.5, deadline=1, pause=0.1,
+                  exceptions=[OSError],
+                  giveup=lambda e: e.errno != errno.ECONNABORTED)
+    async def db_fetch(data: dict):
+        ...
+
+
 
 asynchronous file operations
 ++++++++++++++++++++++++++++
@@ -694,8 +739,85 @@ Asynchronous files operations. Based on thread-pool under the hood.
             print(await afp.read())
 
 
-Threaded decorator
-++++++++++++++++++
+
+Working with threads
+++++++++++++++++++++
+
+Wraps blocking function and runs it in
+the different thread or thread pool.
+
+contextvars support
+********************
+
+All following decorators and functions support ``contextvars`` module,
+from PyPI for python earlier 3.7 and builtin standard library for python 3.7.
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+    import contextvars
+    import random
+    import struct
+
+
+    user_id = contextvars.ContextVar("user_id")
+
+    record_struct = struct.Struct(">I")
+
+
+    @aiomisc.threaded
+    def write_user():
+        with open("/tmp/audit.bin", 'ab') as fp:
+            fp.write(record_struct.pack(user_id.get()))
+
+
+    @aiomisc.threaded
+    def read_log():
+        with open("/tmp/audit.bin", "rb") as fp:
+            for chunk in iter(lambda: fp.read(record_struct.size), b''):
+                yield record_struct.unpack(chunk)[0]
+
+
+    async def main():
+        futures = []
+        for _ in range(5):
+            user_id.set(random.randint(1, 65535))
+            futures.append(write_user())
+
+        await asyncio.gather(*futures)
+
+        async for data in read_log():
+            print(data)
+
+
+    if __name__ == '__main__':
+        with aiomisc.entrypoint() as loop:
+            loop.run_until_complete(main())
+
+
+Example output:
+
+.. code-block::
+
+    6621
+    33012
+    1590
+    45008
+    56844
+
+
+.. note::
+
+    ``contextvars`` has different use cases then ``Context`` class.
+    ``contextvars`` applicable for passing context variables through the
+    execution stack but created task can not change parent context variables
+    because ``contextvars`` creates lightweight copy. ``Context`` class
+    allows it because do not copying context variables.
+
+
+@threaded
+*********
 
 Wraps blocking function and runs it in the current thread pool.
 
@@ -728,10 +850,56 @@ In case function is a generator function ``@threaded`` decorator will return
 ``IteratorWrapper`` (see Threaded generator decorator).
 
 
-Threaded generator decorator
-++++++++++++++++++++++++++++
+@threaded_separate
+******************
 
-Wraps blocking generator function and runs it in the current thread pool.
+Wraps blocking function and runs it in a new separate thread.
+Highly recommended for long background tasks:
+
+.. code-block:: python
+
+    import asyncio
+    import time
+    import threading
+    import aiomisc
+
+
+    @aiomisc.threaded
+    def blocking_function():
+        time.sleep(1)
+
+
+    @aiomisc.threaded_separate
+    def long_blocking_function(event: threading.Event):
+        while not event.is_set():
+            print("Running")
+            time.sleep(1)
+        print("Exitting")
+
+
+    async def main():
+        stop_event = threading.Event()
+
+        loop = asyncio.get_event_loop()
+        loop.call_later(10, stop_event.set)
+
+        # Running in parallel
+        await asyncio.gather(
+            blocking_function(),
+            # New thread will be spawned
+            long_blocking_function(stop_event),
+        )
+
+
+    with aiomisc.entrypoint() as loop:
+        loop.run_until_complete(main())
+
+
+Threaded iterator decorator
+***************************
+
+Wraps blocking generator function and runs it in the current thread pool or
+on a new separate thread.
 
 Following example reads itself file, chains hashes of every line with
 hash of previous line and sends hash and content via TCP:
@@ -765,8 +933,7 @@ hash of previous line and sends hash and content via TCP:
                 await writer.drain()
 
 
-    if __name__ == '__main__':
-        loop = aiomisc.new_event_loop()
+    with aiomisc.entrypoint() as loop
         loop.run_until_complete(main())
 
 
@@ -815,19 +982,19 @@ infinity, or you have to await the ``.close()`` method when you avoid context ma
 .. code-block:: python
 
     import asyncio
-    from aiomisc import new_event_loop, threaded_iterable
+    import aiomisc
 
 
     # Set 2 chunk buffer
-    @threaded_iterable(max_size=2)
+    @aiomisc.threaded_iterable(max_size=2)
     def urandom_reader():
         with open('/dev/urandom', "rb") as fp:
             while True:
                 yield fp.read(8)
 
 
-    # Infinity buffer
-    @threaded_iterable
+    # Infinity buffer on a separate thread
+    @aiomisc.threaded_iterable_separate
     def blocking_reader(fname):
         with open(fname, "r") as fp:
             yield from fp
@@ -867,10 +1034,12 @@ infinity, or you have to await the ``.close()`` method when you avoid context ma
 
         await writer.drain()
 
-    if __name__ == '__main__':
-        loop = new_event_loop()
+
+    with aiomisc.entrypoint() as loop:
         loop.run_until_complete(main())
 
+aiomisc.IteratorWrapper
+***********************
 
 Run iterables on dedicated thread pool:
 
@@ -914,12 +1083,53 @@ Run iterables on dedicated thread pool:
         with aiomisc.entrypoint() as loop:
             loop.run_until_complete(main())
 
+aiomisc.IteratorWrapperSeparate
+*******************************
+
+Run iterables on separate thread:
+
+.. code-block:: python
+
+    import concurrent.futures
+    import hashlib
+    import aiomisc
 
 
-Fast ThreadPoolExecutor
-+++++++++++++++++++++++
+    def urandom_reader():
+        with open('/dev/urandom', "rb") as fp:
+            while True:
+                yield fp.read(1024)
 
-This is a simple thread pool implementation.
+
+    async def main():
+        # create a new thread pool
+        wrapper = aiomisc.IteratorWrapperSeparate(
+            urandom_reader, max_size=2
+        )
+
+        async with wrapper as gen:
+            md5_hash = hashlib.md5(b'')
+            counter = 0
+            async for item in gen:
+                md5_hash.update(item)
+                counter += 1
+
+                if counter >= 100:
+                    break
+
+        print(md5_hash.hexdigest())
+
+
+    if __name__ == '__main__':
+        with aiomisc.entrypoint() as loop:
+            loop.run_until_complete(main())
+
+
+
+aiomisc.ThreadPoolExecutor
+**************************
+
+This is a fast thread pool implementation.
 
 Setting as a default thread pool:
 

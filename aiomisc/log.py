@@ -3,9 +3,9 @@ import logging
 import logging.handlers
 import time
 from contextlib import suppress
-from threading import Thread
 
 from typing import Union
+from .thread_pool import run_in_new_thread
 
 from prettylog import (
     color_formatter,
@@ -20,9 +20,21 @@ from prettylog import (
 def _thread_flusher(handler: logging.handlers.MemoryHandler,
                     flush_interval: Union[float, int],
                     loop: asyncio.AbstractEventLoop):
-    while not loop.is_closed():
-        if handler.buffer:
-            with suppress(Exception):
+
+    def has_no_target():
+        return True
+
+    def has_target():
+        return bool(handler.target)
+
+    is_target = has_no_target
+
+    if isinstance(handler, logging.handlers.MemoryHandler):
+        is_target = has_target
+
+    while not loop.is_closed() or is_target():
+        with suppress(Exception):
+            if handler.buffer:
                 handler.flush()
 
         time.sleep(flush_interval)
@@ -38,22 +50,17 @@ def wrap_logging_handler(handler: logging.Handler,
         handler=handler, buffer_size=buffer_size
     )
 
-    flusher = Thread(
-        target=_thread_flusher,
-        args=(buffered_handler, flush_interval, loop),
-        name="Log flusher"
+    run_in_new_thread(
+        _thread_flusher, args=(buffered_handler, flush_interval, loop)
     )
 
-    flusher.daemon = True
-
-    loop.call_soon_threadsafe(flusher.start)
     return buffered_handler
 
 
 def basic_config(level: int = logging.INFO,
                  log_format: Union[str, LogFormat] = LogFormat.color,
                  buffered: bool = True, buffer_size: int = 1024,
-                 flush_interval: float = 0.2, loop=None):
+                 flush_interval: float = 0.2, loop=None, **kwargs):
 
     if isinstance(level, str):
         level = getattr(logging, level.upper())
@@ -65,7 +72,7 @@ def basic_config(level: int = logging.INFO,
     if isinstance(log_format, str):
         log_format = LogFormat[log_format]
 
-    handler = create_logging_handler(log_format)
+    handler = create_logging_handler(log_format, **kwargs)
 
     if buffered:
         handler = wrap_logging_handler(
