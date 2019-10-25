@@ -327,7 +327,8 @@ running callback to complete on stop. You need to use ``PeriodicService``
 as a base class and override ``callback`` async coroutine method.
 
 Service class accepts required ``interval`` argument - periodic interval
-in seconds.
+in seconds and
+optional ``delay`` argument - periodic execution delay in seconds (0 by default).
 
 .. code-block:: python
 
@@ -340,7 +341,7 @@ in seconds.
             log.info('Running periodic callback')
             # ...
 
-    service = MyPeriodicService(interval=3600)  # once per hour
+    service = MyPeriodicService(interval=3600, delay=0)  # once per hour
 
     with entrypoint(service) as loop:
         loop.run_forever()
@@ -1321,7 +1322,7 @@ This detects ``address`` format and select socket family automatically.
 Periodic callback
 +++++++++++++++++
 
-Runs coroutine function periodically.
+Runs coroutine function periodically with an optional delay of the first execution.
 
 .. code-block:: python
 
@@ -1339,8 +1340,8 @@ Runs coroutine function periodically.
 
         periodic = PeriodicCallback(periodic_function)
 
-        # Call it each second
-        periodic.start(1)
+        # Wait 10 seconds and call it each second after that
+        periodic.start(1, delay=10)
 
         loop.run_forever()
 
