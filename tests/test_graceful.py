@@ -112,6 +112,34 @@ async def test_graceful_service():
 
     assert not service.task_wait.exception()
     with pytest.raises(CancelledError):
-        service.task_cancel.exception()
+        assert not service.task_cancel.exception()
+
+    assert not service._GracefulMixin__tasks
+
+
+async def test_graceful_service_with_timeout():
+    class TestService(GracefulService):
+
+        graceful_wait_timeout = 0.1
+
+        task_wait = None
+
+        async def start(self):
+            self.task_wait = self.create_graceful_task(
+                self.pho(), cancel=False
+            )
+
+        async def pho(self):
+            await asyncio.sleep(0.2)
+
+    service = TestService()
+
+    await service.start()
+    await service.stop()
+
+    assert service.task_wait.done()
+
+    with pytest.raises(CancelledError):
+        service.task_wait.exception()
 
     assert not service._GracefulMixin__tasks

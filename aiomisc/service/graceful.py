@@ -29,7 +29,7 @@ class GracefulMixin:
             await waiter
 
             waiter = timeout(wait_timeout)(self.__wait_tasks)(
-                *to_wait, cancel=False
+                *to_wait, cancel=False,
             )
             with suppress(asyncio.TimeoutError):
                 await waiter
@@ -60,8 +60,10 @@ class GracefulMixin:
 
 class GracefulService(Service, GracefulMixin):
 
+    graceful_wait_timeout = None  # type: float # in seconds
+
     async def start(self):
         raise NotImplementedError
 
     async def stop(self, exception: Exception = None):
-        await self.graceful_shutdown()
+        await self.graceful_shutdown(wait_timeout=self.graceful_wait_timeout)
