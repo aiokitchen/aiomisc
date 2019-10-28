@@ -126,7 +126,7 @@ async def test_cancel(executor, loop, timer):
             for task in tasks:
                 task.cancel()
 
-            executor.shutdown(wait=True)
+    executor.shutdown(wait=True)
 
 
 async def test_simple(threaded_decorator, loop, timer):
