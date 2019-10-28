@@ -108,9 +108,16 @@ class ThreadPoolExecutor(Executor):
             func, future, loop = self.__tasks.get()
 
             if func is None:
+                self.__tasks.task_done()
                 break
 
             try:
+                if loop.is_closed():
+                    log.warning(
+                        "Event loop is closed. Call %r skipped",
+                        func
+                    )
+
                 self._execute(func, future, loop)
             except asyncio.CancelledError:
                 break
