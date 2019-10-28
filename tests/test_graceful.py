@@ -26,12 +26,42 @@ async def test_graceful():
 
 
 @pytest.mark.parametrize(
-    'cancel,expected', [
+    'sleep,timeout,error', [
+        (0.2, 0.1, CancelledError),
+        (0.1, 0.2, None),
+    ]
+)
+async def test_graceful_timeout(sleep, timeout, error):
+    class Graceful(GracefulMixin):
+        pass
+
+    async def pho():
+        await asyncio.sleep(sleep)
+
+    graceful = Graceful()
+
+    task = graceful.create_graceful_task(pho(), cancel=False)
+    assert isinstance(task, Task)
+
+    await graceful.graceful_shutdown(wait_timeout=timeout)
+    assert task.done()
+
+    if not error:
+        assert not task.exception()
+    else:
+        with pytest.raises(error):
+            assert task.exception()
+
+    assert not graceful._GracefulMixin__tasks
+
+
+@pytest.mark.parametrize(
+    'cancel,error', [
         (False, None),
         (True, CancelledError),
     ]
 )
-async def test_graceful_shutdown(cancel, expected):
+async def test_graceful_shutdown(cancel, error):
     class Graceful(GracefulMixin):
         pass
 
@@ -46,10 +76,10 @@ async def test_graceful_shutdown(cancel, expected):
     await graceful.graceful_shutdown()
     assert task.done()
 
-    if expected is None:
+    if not error:
         assert not task.exception()
     else:
-        with pytest.raises(CancelledError):
+        with pytest.raises(error):
             task.exception()
 
     assert not graceful._GracefulMixin__tasks
