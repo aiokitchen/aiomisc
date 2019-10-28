@@ -117,6 +117,7 @@ class ThreadPoolExecutor(Executor):
                         "Event loop is closed. Call %r skipped",
                         func
                     )
+                    continue
 
                 self._execute(func, future, loop)
             except asyncio.CancelledError:
@@ -130,8 +131,9 @@ class ThreadPoolExecutor(Executor):
         if fn is None or not callable(fn):
             raise ValueError('First argument must be callable')
 
+        loop = asyncio.get_event_loop()
+
         with self.__write_lock:
-            loop = asyncio.get_event_loop()
             future = loop.create_future()     # type: asyncio.Future
             self.__futures.add(future)
             future.add_done_callback(self.__futures.remove)
@@ -146,12 +148,14 @@ class ThreadPoolExecutor(Executor):
         for _ in self.__pool:
             self.__tasks.put_nowait((None, None, None))
 
-        if wait:
-            while not all(e.is_set() for e in self.__thread_events):
-                time.sleep(0)
-
         for f in filter(lambda x: not x.done(), self.__futures):
             f.set_exception(ThreadPoolException("Pool closed"))
+
+        if not wait:
+            return
+
+        while not all(e.is_set() for e in self.__thread_events):
+            time.sleep(0)
 
     def __del__(self):
         self.shutdown()

@@ -175,7 +175,7 @@ def event_loop_policy():
 
 @pytest.fixture
 def entrypoint_kwargs() -> dict:
-    return {}
+    return {"log_config": False}
 
 
 @pytest.fixture(name='loop', autouse=loop_autouse)
@@ -195,7 +195,7 @@ def _loop(event_loop_policy):
 
 @pytest.fixture(autouse=loop_autouse)
 def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
-         thread_pool_size, thread_pool_executor, loop):
+         thread_pool_size, thread_pool_executor, loop, caplog):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
 
