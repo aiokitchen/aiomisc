@@ -127,8 +127,8 @@ class ThreadPoolExecutor(Executor):
         event.set()
 
     def submit(self, fn, *args, **kwargs):
-        if fn is None:
-            raise ValueError('First argument must be function')
+        if fn is None or not callable(fn):
+            raise ValueError('First argument must be callable')
 
         with self.__write_lock:
             loop = asyncio.get_event_loop()
