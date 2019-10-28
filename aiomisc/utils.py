@@ -101,7 +101,7 @@ def create_default_event_loop(pool_size=None, policy=event_loop_policy,
     asyncio.set_event_loop(loop)
 
     pool_size = pool_size or cpu_count()
-    thread_pool = ThreadPoolExecutor(pool_size, loop=loop)
+    thread_pool = ThreadPoolExecutor(pool_size)
     loop.set_default_executor(thread_pool)
 
     return loop, thread_pool

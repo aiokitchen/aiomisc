@@ -1,6 +1,8 @@
 import asyncio
 import inspect
-from asyncio import AbstractEventLoop
+import logging
+import time
+import warnings
 from asyncio.events import get_event_loop
 from concurrent.futures._base import Executor
 from functools import partial, wraps
@@ -10,6 +12,9 @@ from queue import Queue
 from types import MappingProxyType
 
 from .iterator_wrapper import IteratorWrapper
+
+
+log = logging.getLogger(__name__)
 
 
 class ThreadPoolException(RuntimeError):
@@ -29,34 +34,39 @@ except ImportError:
 
 class ThreadPoolExecutor(Executor):
     __slots__ = (
-        '__loop', '__futures', '__running', '__pool', '__tasks',
-        '__write_lock',
+        '__futures', '__pool', '__tasks',
+        '__write_lock', '__thread_events',
     )
 
-    def __init__(self, max_workers=max((cpu_count(), 2)),
-                 loop: AbstractEventLoop = None):
+    def __init__(self, max_workers=max((cpu_count(), 4)), loop=None):
+        if loop:
+            warnings.warn(DeprecationWarning("loop argument is obsolete"))
 
-        self.__loop = loop or get_event_loop()
         self.__futures = set()
-        self.__running = True
 
         self.__pool = set()
+        self.__thread_events = set()
         self.__tasks = Queue()
         self.__write_lock = threading.RLock()
 
         for idx in range(max_workers):
-            thread = threading.Thread(
-                target=self._in_thread,
-                name="[%d] Thread Pool" % idx,
-            )
-
-            thread.daemon = True
-
-            self.__pool.add(thread)
-            # Starting the thread only after thread-pool will be started
-            self.__loop.call_soon(thread.start)
+            self.__pool.add(self._start_thread(idx))
 
         self.__pool = frozenset(self.__pool)
+
+    def _start_thread(self, idx):
+        event = threading.Event()
+        self.__thread_events.add(event)
+
+        thread = threading.Thread(
+            target=self._in_thread,
+            name="[%d] Thread Pool" % idx,
+            args=(event,)
+        )
+
+        thread.daemon = True
+        thread.start()
+        return thread
 
     @staticmethod
     def _set_result(future, result, exception):
@@ -69,13 +79,13 @@ class ThreadPoolExecutor(Executor):
 
         future.set_result(result)
 
-    def _execute(self, func, future):
+    def _execute(self, func, future, loop: asyncio.AbstractEventLoop):
         if future.done():
             return
 
         result, exception = None, None
 
-        if self.__loop.is_closed():
+        if loop.is_closed():
             raise asyncio.CancelledError
 
         try:
@@ -83,38 +93,55 @@ class ThreadPoolExecutor(Executor):
         except Exception as e:
             exception = e
 
-        if self.__loop.is_closed():
+        if loop.is_closed():
             raise asyncio.CancelledError
 
-        self.__loop.call_soon_threadsafe(
+        loop.call_soon_threadsafe(
             self._set_result,
             future,
             result,
             exception,
         )
 
-    def _in_thread(self):
-        while self.__running and not self.__loop.is_closed():
+    def _in_thread(self, event: threading.Event):
+        while True:
+            func, future, loop = self.__tasks.get()
+
+            if func is None:
+                break
+
             try:
-                func, future = self.__tasks.get()
-                self._execute(func, future)
+                self._execute(func, future, loop)
             except asyncio.CancelledError:
                 break
             finally:
                 self.__tasks.task_done()
 
+        event.set()
+
     def submit(self, fn, *args, **kwargs):
+        if fn is None:
+            raise ValueError('First argument must be function')
+
         with self.__write_lock:
-            future = self.__loop.create_future()     # type: asyncio.Future
+            loop = asyncio.get_event_loop()
+            future = loop.create_future()     # type: asyncio.Future
             self.__futures.add(future)
             future.add_done_callback(self.__futures.remove)
 
-            self.__tasks.put_nowait((partial(fn, *args, **kwargs), future))
+            self.__tasks.put_nowait((
+                partial(fn, *args, **kwargs), future, loop
+            ))
 
             return future
 
     def shutdown(self, wait=True):
-        self.__running = False
+        for _ in self.__pool:
+            self.__tasks.put_nowait((None, None, None))
+
+        if wait:
+            while not all(e.is_set() for e in self.__thread_events):
+                time.sleep(0)
 
         for f in filter(lambda x: not x.done(), self.__futures):
             f.set_exception(ThreadPoolException("Pool closed"))
@@ -158,7 +185,7 @@ def threaded(func):
 
 
 def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
-                      detouch=True) -> asyncio.Future:
+                      detouch=True, no_return=False) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()
 
@@ -181,6 +208,13 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
                 set_result, target()
             )
         except Exception as exc:
+            if loop.is_closed() and no_return:
+                return
+
+            elif loop.is_closed():
+                log.exception("Uncaught exception from separate thread")
+                return
+
             loop.call_soon_threadsafe(set_exception, exc)
 
     thread = threading.Thread(

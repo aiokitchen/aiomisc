@@ -27,7 +27,7 @@ def threaded_decorator(request, executor: aiomisc.ThreadPoolExecutor):
 
 @pytest.fixture
 def executor(loop: asyncio.AbstractEventLoop):
-    thread_pool = aiomisc.ThreadPoolExecutor(8, loop=loop)
+    thread_pool = aiomisc.ThreadPoolExecutor(8)
     loop.set_default_executor(thread_pool)
     try:
         yield thread_pool
