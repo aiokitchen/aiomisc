@@ -3,7 +3,8 @@ from asyncio import Task
 from contextlib import suppress
 from typing import Coroutine
 
-from aiomisc import Service, timeout
+from . import Service
+from ..timeout import timeout
 
 
 class GracefulMixin:

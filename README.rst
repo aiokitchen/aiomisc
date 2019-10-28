@@ -615,6 +615,45 @@ Output example:
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/cProfile.py:50(create_stats)
 
 
+Graceful
+*************
+
+``GracefulService`` allows creation of tasks that upon service stop will be
+either awaited with optional timeout or cancelled and awaited.
+Optional parameter ``graceful_wait_timeout`` (in seconds) specifies the allowed
+wait time for tasks created with ``create_graceful_task(<coro>, cancel=False)``.
+Tasks created with ``create_graceful_task(<coro>, cancel=True)`` will be cancelled.
+
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc.service import GracefulService
+
+    class SwanService(GracefulService):
+        async def fly(self):
+            await asyncio.sleep(1)
+            print('Flew to a lake')
+
+        async def duckify(self):
+            await asyncio.sleep(1)
+            print('Became ugly duck')
+
+        async def start(self):
+            self.create_graceful_task(self.fly(), cancel=False)
+            self.create_graceful_task(self.duckify(), cancel=True)
+
+    service = SwanService(graceful_wait_timeout=10)
+    await service.start()
+    await service.stop()
+
+Output example:
+
+.. code-block::
+
+   Flew to a lake
+
+
 timeout decorator
 +++++++++++++++++
 
