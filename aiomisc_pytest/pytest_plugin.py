@@ -142,7 +142,7 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
     return True
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def thread_pool_size(request):
     return request.config.getoption('--aiomisc-pool-size')
 
@@ -175,7 +175,7 @@ def event_loop_policy():
 
 @pytest.fixture
 def entrypoint_kwargs() -> dict:
-    return {}
+    return {"log_config": False}
 
 
 @pytest.fixture(name='loop', autouse=loop_autouse)
@@ -195,7 +195,7 @@ def _loop(event_loop_policy):
 
 @pytest.fixture(autouse=loop_autouse)
 def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
-         thread_pool_size, thread_pool_executor, loop):
+         thread_pool_size, thread_pool_executor, loop, caplog):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
 
@@ -213,9 +213,7 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
         loop.set_exception_handler(lambda l, c: exceptions.append(c))
 
     try:
-        with entrypoint(*services, pool_size=thread_pool_size,
-                        debug=loop_debug, loop=loop,
-                        **entrypoint_kwargs):
+        with entrypoint(*services, loop=loop, **entrypoint_kwargs):
 
             ctx = get_context(loop)
 
@@ -246,7 +244,7 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
                 pytest.fail("Unhandled exceptions found. See logs.")
     finally:
         with suppress(Exception):
-            pool.shutdown(True)
+            loop.close()
 
         asyncio.get_event_loop.side_effect = get_event_loop
         del loop
