@@ -1,8 +1,9 @@
 import asyncio
 from asyncio import Task
+from contextlib import suppress
 from typing import Coroutine
 
-from aiomisc import Service
+from aiomisc import Service, timeout
 
 
 class GracefulMixin:
@@ -18,13 +19,21 @@ class GracefulMixin:
     def __pop_task(self, task: Task):
         self.__tasks.pop(task)
 
-    async def graceful_shutdown(self):
+    async def graceful_shutdown(self, *, wait_timeout: float = None):
         if self.__tasks:
             items = list(self.__tasks.items())
             to_cancel = [task for task, cancel in items if cancel]
             to_wait = [task for task, cancel in items if not cancel]
-            await self.__wait_tasks(*to_cancel, cancel=True)
-            await self.__wait_tasks(*to_wait, cancel=False)
+
+            waiter = self.__wait_tasks(*to_cancel, cancel=True)
+            await waiter
+
+            waiter = timeout(wait_timeout)(self.__wait_tasks)(
+                *to_wait, cancel=False
+            )
+            with suppress(asyncio.TimeoutError):
+                await waiter
+
             self.__tasks.clear()
 
     @staticmethod
