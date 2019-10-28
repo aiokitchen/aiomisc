@@ -1,5 +1,5 @@
 import asyncio
-from asyncio import Task
+from asyncio import Task, get_event_loop
 from contextlib import suppress
 from typing import Coroutine
 
@@ -12,7 +12,7 @@ class GracefulMixin:
     __tasks = {}
 
     def create_graceful_task(self, coro: Coroutine, *, cancel: bool):
-        task = asyncio.create_task(coro)
+        task = get_event_loop().create_task(coro)
         task.add_done_callback(self.__pop_task)
         self.__tasks[task] = cancel
         return task
