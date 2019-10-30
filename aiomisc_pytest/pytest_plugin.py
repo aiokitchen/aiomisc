@@ -183,14 +183,20 @@ def _loop(event_loop_policy):
     try:
         asyncio.set_event_loop_policy(event_loop_policy)
         loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         try:
             yield loop
         finally:
-            if not loop.is_closed():
+            if loop.is_closed():
+                return
+
+            with suppress(Exception):
                 loop.run_until_complete(loop.shutdown_asyncgens())
+            with suppress(Exception):
                 loop.close()
     finally:
-        asyncio.set_event_loop_policy(None)
+        asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
 
 
 @pytest.fixture(autouse=loop_autouse)
@@ -198,8 +204,6 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
          thread_pool_size, thread_pool_executor, loop, caplog):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
-
-    asyncio.set_event_loop(loop)
 
     pool = thread_pool_executor(thread_pool_size)
     loop.set_default_executor(pool)
@@ -243,9 +247,6 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
                 )
                 pytest.fail("Unhandled exceptions found. See logs.")
     finally:
-        with suppress(Exception):
-            loop.close()
-
         asyncio.get_event_loop.side_effect = get_event_loop
         del loop
 

@@ -12,12 +12,19 @@ class _TestService(Service):
 
 
 @pytest.fixture()
+async def async_sleep(loop):
+    f = loop.create_future()
+    loop.call_soon(f.set_result, True)
+    return await f
+
+
+@pytest.fixture()
 def service(loop: asyncio.AbstractEventLoop):
     return _TestService(loop_on_init=loop)
 
 
 @pytest.fixture()
-def services(service: _TestService):
+def services(service: _TestService, async_sleep):
     return [service]
 
 
