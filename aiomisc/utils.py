@@ -19,6 +19,24 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
+def awaitable(func):
+    if asyncio.iscoroutinefunction(func):
+        return func
+
+    @wraps(func)
+    async def wrap(*args, **kwargs):
+        result = func(*args, **kwargs)
+        is_awaitable = (
+            asyncio.iscoroutine(result) or
+            asyncio.isfuture(result) or
+            hasattr(result, '__await__')
+        )
+        if is_awaitable:
+            return await result
+        return result
+    return wrap
+
+
 def chunk_list(iterable: Iterable[Any], size: int):
     """
     Split list or generator by chunks with fixed maximum size.
