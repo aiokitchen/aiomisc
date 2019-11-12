@@ -44,11 +44,7 @@ async def test_future_gc(thread_pool_executor, loop):
     thread_pool = thread_pool_executor(2)
     event = threading.Event()
 
-    cf = None
-
     async def run():
-        nonlocal cf
-
         future = loop.create_future()
 
         cfuture = thread_pool.submit(time.sleep, 0.5)
@@ -59,8 +55,7 @@ async def test_future_gc(thread_pool_executor, loop):
             )
         )
 
-        cf = weakref.proxy(cfuture, lambda *_: event.set())
-
+        weakref.finalize(cfuture, lambda *_: event.set())
         await future
 
     await run()
