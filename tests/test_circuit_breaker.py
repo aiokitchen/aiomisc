@@ -9,7 +9,7 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 
 async def test_simple(loop):
-    circuit_breaker = aiomisc.CircuitBreaker(ratio=0.5, recovery_time=1)
+    circuit_breaker = aiomisc.CircuitBreaker(error_ratio=0.5, recovery_time=1)
 
     for _ in range(10):
         circuit_breaker.call(lambda: None)
