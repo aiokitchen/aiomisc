@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import logging
+import threading
 import time
 import warnings
 from asyncio.events import get_event_loop
@@ -8,11 +9,14 @@ from collections import namedtuple
 from concurrent.futures._base import Executor
 from functools import partial, wraps
 from multiprocessing import cpu_count
-import threading
-from queue import Queue
 from types import MappingProxyType
 
 from .iterator_wrapper import IteratorWrapper
+
+try:
+    from queue import SimpleQueue
+except ImportError:
+    from queue import Queue as SimpleQueue
 
 
 log = logging.getLogger(__name__)
@@ -88,7 +92,7 @@ class ThreadPoolExecutor(Executor):
 
         self.__pool = set()
         self.__thread_events = set()
-        self.__tasks = Queue()
+        self.__tasks = SimpleQueue()
         self.__write_lock = threading.RLock()
 
         for idx in range(max_workers):

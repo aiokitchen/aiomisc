@@ -65,11 +65,10 @@ async def test_future_gc(thread_pool_executor, loop):
 
     await run()
 
-    for _ in range(5):
-        gc.collect()
-        event.wait(1)
+    gc.collect()
+    event.wait(1)
 
-    assert event.is_set(), gc.get_referrers(cf)
+    assert event.is_set()
 
 
 async def test_threaded(threaded_decorator, timer):
