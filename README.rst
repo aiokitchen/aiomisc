@@ -881,6 +881,36 @@ Keyword arguments notation:
         ...
 
 
+Circuit Breaker
++++++++++++++++
+
+Circuit breaker is a design pattern used in modern software development.
+It is used to detect failures and encapsulates the logic of preventing a
+failure from constantly recurring, during maintenance, temporary external
+system failure or unexpected system difficulties.
+
+
+.. code-block:: python
+
+    import asyncio
+
+    circuit_breaker = aiomisc.CircuitBreaker(
+        ratio=0.5,
+        recovery_time=1
+    )
+
+    def div(a, b):
+        return a / b
+
+    # Success call
+    circuit_breaker.call(div, 1, 1)
+
+    try:
+        # Failed call
+        circuit_breaker.call(div, 1, 0)
+    except ZeroDivisionError:
+        pass
+
 
 asynchronous file operations
 ++++++++++++++++++++++++++++

@@ -11,7 +11,8 @@ from random import random
 from aiomisc.utils import awaitable
 
 
-RecoveryTimeType = typing.Union[int, float]
+TimeType = typing.Union[int, float]
+StatisticType = typing.Deque[typing.Tuple[int, Counter]]
 
 
 @unique
@@ -34,29 +35,39 @@ class CircuitBroken(Exception):
 
 class CircuitBreaker:
     __slots__ = (
-        'ratio', 'lock', 'recovery_time', 'statistic', 'exceptions', 'state',
-        'recovery_ratio'
+        'broken_delay', 'error_ratio', 'exceptions', 'lock',
+        'passing_delay', 'recovery_delay', 'recovery_ratio',
+        'recovery_time', 'state',
+        'statistic', 'stuck_until', 'recovery_at'
     )
 
     BUCKET_COUNT = 10
 
-    RECOVER_THRESHOLD = 0
-    PASSING_THRESHOLD = 0.5
-    BROKEN_THRESHOLD = 1.0
+    # Ratio of
+    RECOVER_BROKEN_THRESHOLD = 0.2
+    PASSING_BROKEN_THRESHOLD = 1
 
-    def __init__(self, ratio: float,
-                 recovery_time: RecoveryTimeType,
+    def __init__(self, error_ratio: float,
+                 recovery_time: TimeType,
+                 recovery_delay: TimeType = None,
+                 passing_delay: TimeType = None,
+                 broken_delay: TimeType = None,
                  *exceptions: typing.Type[Exception]):
 
+        self.statistic = deque(maxlen=self.BUCKET_COUNT)  # type: StatisticType
         self.lock = threading.RLock()
-        self.ratio = ratio
+        self.error_ratio = error_ratio
         self.state = CircuitBreakerStates.PASSING
         self.recovery_time = recovery_time
         self.recovery_ratio = 0
-        self.statistic = deque(
-            maxlen=self.BUCKET_COUNT
-        )  # type: typing.Deque[typing.Tuple[int, Counter]]
+        self.stuck_until = 0
+        self.recovery_at = 0
+
         self.exceptions = tuple(frozenset(exceptions)) or (Exception,)
+
+        self.passing_delay = passing_delay or self.recovery_time
+        self.broken_delay = broken_delay or self.recovery_time
+        self.recovery_delay = recovery_delay or self.recovery_time
 
     def bucket(self) -> int:
         ts = time.monotonic() * self.BUCKET_COUNT
@@ -93,7 +104,10 @@ class CircuitBreaker:
             yield counter
 
     def delay(self):
-        return (self.bucket() + self.recovery_time) - time.monotonic()
+        delay = self.stuck_until - time.monotonic()
+        if delay < 0:
+            return 0
+        return delay
 
     def _on_passing(self, counter):
         try:
@@ -109,14 +123,38 @@ class CircuitBreaker:
         raise CircuitBroken()
 
     def _on_recover(self, counter):
-        if random() > self.recovery_ratio:
+        current_time = time.monotonic()
+        condition = (
+            (random() + 1) < (
+                2 ** ((current_time - self.recovery_at) / self.recovery_delay)
+            )
+        )
+
+        if condition:
             yield from self._on_passing(counter)
         else:
             raise CircuitBroken()
 
     def _compute_state(self):
+        current_time = time.monotonic()
         upper_count = 0
         total_count = 0
+
+        if current_time < self.stuck_until:
+            # Skip state changing until
+            return
+
+        if self.state is CircuitBreakerStates.BROKEN:
+            self.state = CircuitBreakerStates.RECOVER
+            self.recovery_at = current_time
+            return
+
+        # Do not compute when not enough statistic
+        if (
+                self.state is CircuitBreakerStates.PASSING and
+                len(self.statistic) < self.BUCKET_COUNT
+        ):
+            return
 
         for idx, counter in enumerate(self):
             total_count += 1
@@ -126,24 +164,28 @@ class CircuitBreaker:
 
             fail_ratio = counter[CounterKey.FAIL] / counter[CounterKey.TOTAL]
 
-            if fail_ratio >= self.ratio:
+            if fail_ratio >= self.error_ratio:
                 upper_count += 1
 
         self.recovery_ratio = upper_count / total_count
 
         if self.state is CircuitBreakerStates.PASSING:
-            if self.recovery_ratio >= self.BROKEN_THRESHOLD:
+            if self.recovery_ratio >= self.PASSING_BROKEN_THRESHOLD:
+                self.stuck_until = current_time + self.broken_delay
                 self.state = CircuitBreakerStates.BROKEN
+                self.statistic.clear()
             return
 
-        elif self.state is CircuitBreakerStates.RECOVER:
-            if self.recovery_ratio < self.PASSING_THRESHOLD:
+        if self.state is CircuitBreakerStates.RECOVER:
+            if self.recovery_ratio >= self.RECOVER_BROKEN_THRESHOLD:
+                self.stuck_until = current_time + self.passing_delay
+                self.state = CircuitBreakerStates.BROKEN
+                self.statistic.clear()
+
+            recovery_length = current_time - self.recovery_at
+            if recovery_length >= self.recovery_delay:
                 self.state = CircuitBreakerStates.PASSING
-            return
 
-        elif self.state is CircuitBreakerStates.BROKEN:
-            if self.recovery_ratio <= self.RECOVER_THRESHOLD:
-                self.state = CircuitBreakerStates.RECOVER
             return
 
     @contextmanager
@@ -182,14 +224,14 @@ class CircuitBreaker:
 
 def cutoff(ratio, recovery_time, *exceptions):
     circuit_breaker = CircuitBreaker(
-        ratio=ratio,
+        error_ratio=ratio,
         recovery_time=recovery_time,
         *exceptions
     )
 
     async def decorator(func):
         @wraps(func)
-        def async_wrap(*args, **kwargs):
+        async def async_wrap(*args, **kwargs):
             return await circuit_breaker.call_async(func, *args, **kwargs)
 
         @wraps(func)
