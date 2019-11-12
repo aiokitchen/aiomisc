@@ -1,7 +1,11 @@
 import asyncio
 import os
+import threading
+import weakref
+from concurrent.futures import Future
 from contextlib import suppress
 
+import gc
 import pytest
 import time
 
@@ -37,6 +41,38 @@ def executor(loop: asyncio.AbstractEventLoop):
 
         loop.set_default_executor(None)
         thread_pool.shutdown(wait=True)
+
+
+async def test_future_gc(thread_pool_executor, loop):
+    thread_pool = thread_pool_executor(2)
+    event = threading.Event()
+
+    cf = None
+
+    async def run():
+        nonlocal cf
+
+        future = loop.create_future()
+
+        cfuture = thread_pool.submit(time.sleep, 0.5)
+
+        cfuture.add_done_callback(
+            lambda *_: loop.call_soon_threadsafe(
+                future.set_result, True
+            )
+        )
+
+        cf = weakref.proxy(cfuture, lambda *_: event.set())
+
+        await future
+
+    await run()
+
+    for _ in range(5):
+        gc.collect()
+        event.wait(1)
+
+    assert event.is_set(), gc.get_referrers(cf)
 
 
 async def test_threaded(threaded_decorator, timer):
