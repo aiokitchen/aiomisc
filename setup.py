@@ -60,7 +60,7 @@ setup(
         'contextvars': ['contextvars~=2.4'],
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
-        'uvloop': ['uvloop<1'],
+        'uvloop': ['uvloop>0.14,<1'],
         ':python_version < "3.7"': 'async-generator',
     },
     entry_points={
