@@ -81,7 +81,7 @@ steps:
     commands:
       - tox
     environment:
-      TOXENV: uvloop
+      TOXENV: uvloop37
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
     volumes:
@@ -96,6 +96,20 @@ steps:
       - tox
     environment:
       TOXENV: py38
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
+  - name: python 3.8 uvloop
+    image: snakepacker/python:all
+    group: tests
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: uvloop38
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
     volumes:
@@ -152,6 +166,6 @@ volumes:
 
 ---
 kind: signature
-hmac: d97aaac7c47854a8a8a54469cf4444638c2f6371f50c553170db2431211fdd85
+hmac: f5f9511d61b9b1f49c403fecf4a158dd7134d9800031939299e046708292728c
 
 ...
