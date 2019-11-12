@@ -3,6 +3,7 @@ import inspect
 import logging
 import threading
 import time
+import typing
 import warnings
 from asyncio.events import get_event_loop
 from concurrent.futures._base import Executor
@@ -10,8 +11,6 @@ from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
 from typing import NamedTuple
-
-import typing
 
 from .iterator_wrapper import IteratorWrapper
 
@@ -127,7 +126,6 @@ class ThreadPoolExecutor(Executor):
             work_item = self.__tasks.get()
 
             if work_item is None:
-                self.__tasks.task_done()
                 break
 
             try:
@@ -142,7 +140,6 @@ class ThreadPoolExecutor(Executor):
             except asyncio.CancelledError:
                 break
             finally:
-                self.__tasks.task_done()
                 del work_item
 
         event.set()
