@@ -5,11 +5,13 @@ import threading
 import time
 import warnings
 from asyncio.events import get_event_loop
-from collections import namedtuple
 from concurrent.futures._base import Executor
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
+from typing import NamedTuple
+
+import typing
 
 from .iterator_wrapper import IteratorWrapper
 
@@ -37,8 +39,14 @@ except ImportError:
     context_partial = partial
 
 
-WorkItemBase = namedtuple(
-    "WorkItem", ("func", "args", "kwargs", "future", "loop")
+WorkItemBase = NamedTuple(
+    "WorkItemBase", (
+        ("func", typing.Callable),
+        ('args', typing.Tuple),
+        ('kwargs', typing.Dict),
+        ('future', asyncio.Future),
+        ('loop', asyncio.AbstractEventLoop),
+    )
 )
 
 
