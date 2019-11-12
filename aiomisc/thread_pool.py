@@ -1,17 +1,23 @@
 import asyncio
 import inspect
 import logging
+import threading
 import time
+import typing
 import warnings
 from asyncio.events import get_event_loop
 from concurrent.futures._base import Executor
 from functools import partial, wraps
 from multiprocessing import cpu_count
-import threading
-from queue import Queue
 from types import MappingProxyType
+from typing import NamedTuple
 
 from .iterator_wrapper import IteratorWrapper
+
+try:
+    from queue import SimpleQueue
+except ImportError:
+    from queue import Queue as SimpleQueue
 
 
 log = logging.getLogger(__name__)
@@ -32,6 +38,53 @@ except ImportError:
     context_partial = partial
 
 
+WorkItemBase = NamedTuple(
+    "WorkItemBase", (
+        ("func", typing.Callable),
+        ('args', typing.Tuple),
+        ('kwargs', typing.Dict),
+        ('future', asyncio.Future),
+        ('loop', asyncio.AbstractEventLoop),
+    )
+)
+
+
+class WorkItem(WorkItemBase):
+    @staticmethod
+    def set_result(future, result, exception):
+        if future.done():
+            return
+
+        if exception:
+            future.set_exception(exception)
+        else:
+            future.set_result(result)
+
+    def __call__(self):
+        if self.future.done():
+            return
+
+        result, exception = None, None
+
+        if self.loop.is_closed():
+            raise asyncio.CancelledError
+
+        try:
+            result = self.func(*self.args, **self.kwargs)
+        except Exception as e:
+            exception = e
+
+        if self.loop.is_closed():
+            raise asyncio.CancelledError
+
+        self.loop.call_soon_threadsafe(
+            self.__class__.set_result,
+            self.future,
+            result,
+            exception
+        )
+
+
 class ThreadPoolExecutor(Executor):
     __slots__ = (
         '__futures', '__pool', '__tasks',
@@ -46,7 +99,7 @@ class ThreadPoolExecutor(Executor):
 
         self.__pool = set()
         self.__thread_events = set()
-        self.__tasks = Queue()
+        self.__tasks = SimpleQueue()
         self.__write_lock = threading.RLock()
 
         for idx in range(max_workers):
@@ -68,62 +121,26 @@ class ThreadPoolExecutor(Executor):
         thread.start()
         return thread
 
-    @staticmethod
-    def _set_result(future, result, exception):
-        if future.done():
-            return
-
-        if exception:
-            future.set_exception(exception)
-            return
-
-        future.set_result(result)
-
-    def _execute(self, func, future, loop: asyncio.AbstractEventLoop):
-        if future.done():
-            return
-
-        result, exception = None, None
-
-        if loop.is_closed():
-            raise asyncio.CancelledError
-
-        try:
-            result = func()
-        except Exception as e:
-            exception = e
-
-        if loop.is_closed():
-            raise asyncio.CancelledError
-
-        loop.call_soon_threadsafe(
-            self._set_result,
-            future,
-            result,
-            exception,
-        )
-
     def _in_thread(self, event: threading.Event):
         while True:
-            func, future, loop = self.__tasks.get()
+            work_item = self.__tasks.get()
 
-            if func is None:
-                self.__tasks.task_done()
+            if work_item is None:
                 break
 
             try:
-                if loop.is_closed():
+                if work_item.loop.is_closed():
                     log.warning(
                         "Event loop is closed. Call %r skipped",
-                        func
+                        work_item.func
                     )
                     continue
 
-                self._execute(func, future, loop)
+                work_item()
             except asyncio.CancelledError:
                 break
             finally:
-                self.__tasks.task_done()
+                del work_item
 
         event.set()
 
@@ -138,15 +155,21 @@ class ThreadPoolExecutor(Executor):
             self.__futures.add(future)
             future.add_done_callback(self.__futures.remove)
 
-            self.__tasks.put_nowait((
-                partial(fn, *args, **kwargs), future, loop
-            ))
+            self.__tasks.put_nowait(
+                WorkItem(
+                    func=fn,
+                    args=args,
+                    kwargs=kwargs,
+                    future=future,
+                    loop=loop
+                )
+            )
 
             return future
 
     def shutdown(self, wait=True):
         for _ in self.__pool:
-            self.__tasks.put_nowait((None, None, None))
+            self.__tasks.put_nowait(None)
 
         for f in filter(lambda x: not x.done(), self.__futures):
             f.set_exception(ThreadPoolException("Pool closed"))

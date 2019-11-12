@@ -1,14 +1,15 @@
 import asyncio
+import gc
 import os
+import threading
+import time
+import weakref
 from contextlib import suppress
 
 import pytest
-import time
-
 from async_timeout import timeout
 
 import aiomisc
-
 
 try:
     import contextvars
@@ -37,6 +38,32 @@ def executor(loop: asyncio.AbstractEventLoop):
 
         loop.set_default_executor(None)
         thread_pool.shutdown(wait=True)
+
+
+async def test_future_gc(thread_pool_executor, loop):
+    thread_pool = thread_pool_executor(2)
+    event = threading.Event()
+
+    async def run():
+        future = loop.create_future()
+
+        cfuture = thread_pool.submit(time.sleep, 0.5)
+
+        cfuture.add_done_callback(
+            lambda *_: loop.call_soon_threadsafe(
+                future.set_result, True
+            )
+        )
+
+        weakref.finalize(cfuture, lambda *_: event.set())
+        await future
+
+    await run()
+
+    gc.collect()
+    event.wait(1)
+
+    assert event.is_set()
 
 
 async def test_threaded(threaded_decorator, timer):
