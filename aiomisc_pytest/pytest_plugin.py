@@ -99,6 +99,23 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
     fixturedef.func = wrapper
 
 
+@pytest.fixture(scope="session")
+def localhost():
+    params = (
+        (socket.AF_INET, "127.0.0.1"),
+        (socket.AF_INET6, "::1"),
+    )
+    for family, addr in params:
+        with socket.socket(family, socket.SOCK_STREAM) as sock:
+            try:
+                sock.bind((addr, 0))
+            except Exception:
+                pass
+            else:
+                return addr
+    raise RuntimeError("localhost unavailable")
+
+
 @pytest.fixture
 def loop_debug(request):
     return request.config.getoption('--aiomisc-debug')
