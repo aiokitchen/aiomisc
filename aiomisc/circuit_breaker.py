@@ -79,6 +79,14 @@ class CircuitBreaker:
         self._broken_time = broken_time or self._response_time
         self._recovery_time = recovery_time or self._response_time
 
+    @property
+    def response_time(self) -> TimeType:
+        return self._response_time
+
+    @property
+    def state(self) -> CircuitBreakerStates:
+        return self._state
+
     def bucket(self) -> int:
         ts = time.monotonic() * self.BUCKET_COUNT
         return int(ts - (ts % self._response_time))
