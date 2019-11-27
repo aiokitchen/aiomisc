@@ -44,7 +44,7 @@ cr is CircuitBroken
 
 @+10
 es is RECOVERING #ffffcc
-cr is {ERROR,CircuitBrken}
+cr is {ERROR,CircuitBroken}
 
 @+5
 err is 0.7
@@ -54,7 +54,7 @@ es is BROKEN #ffcccc
 
 @+10
 es is RECOVERING #ffffcc
-cr is {OK,CircuitBrken}
+cr is {OK,CircuitBroken}
 
 @+5
 err is 0.4
