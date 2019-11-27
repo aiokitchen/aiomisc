@@ -884,10 +884,16 @@ Keyword arguments notation:
 Circuit Breaker
 +++++++++++++++
 
-Circuit breaker is a design pattern used in modern software development.
+`Circuit breaker is a design pattern`_ used in modern software development.
 It is used to detect failures and encapsulates the logic of preventing a
 failure from constantly recurring, during maintenance, temporary external
 system failure or unexpected system difficulties.
+
+The following example demonstrates the simple usage of `CircuitBreaker`.
+An instance of `CircuitBreaker` collecting function call statistics.
+That contains counters mapping with successful and failed function calls.
+Function calls must be wrapped by the `CircuitBreaker.call`
+the method in order to gather it.
 
 
 .. code-block:: python
@@ -910,6 +916,42 @@ system failure or unexpected system difficulties.
         circuit_breaker.call(div, 1, 0)
     except ZeroDivisionError:
         pass
+
+
+.. _Circuit breaker is a design pattern: http://bit.ly/aimcbwiki
+
+
+The `CircuitBreaker` object might be in three states:
+
+    * *PASSING*
+    * *BROKEN*
+    * *RECOVERING*
+
+.. image:: /resources/build/uml/circuit-breaker/states.svg
+
+*PASSING* means all calls will be passed as is and statistics will be gathered.
+Next state will be determined after collecting statistics for
+`passing_time` seconds. If an effective error ratio is greater
+than `error_ratio` then the next state will be set to *BROKEN*, otherwise
+it will remain unchanged.
+
+*BROKEN* means the wrapped function will never be called and `CircuitBroken`
+exception will be raised instead. *BROKEN* state will be kept
+for `broken_time` seconds.
+
+.. note::
+
+    `CircuitBroken` exception is a consequence of *BROKEN* or *RECOVERY*
+    state and never be accounted for in the statistic.
+
+After that, it changes to *RECOVERING* state. While in that state, small sample
+of the wrapped function calls will actually be executed and statistics will be
+gathered. If the effective error ratio after `recovery_time` is lower than
+`error_ratio` then the next state will be set to *PASSING*, and
+otherwise - to *BROKEN*.
+
+
+.. image:: /resources/build/uml/circuit-breaker/flow.svg
 
 
 asynchronous file operations

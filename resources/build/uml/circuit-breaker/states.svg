@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="329px" preserveAspectRatio="none" style="width:445px;height:329px;" version="1.1" viewBox="0 0 445 329" width="445px" zoomAndPan="magnify"><defs><filter height="300%" id="fx46vk7j6ojlz" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="200" x="126.5" y="16.708">State Transition Model</text><rect fill="#FEFECE" filter="url(#fx46vk7j6ojlz)" height="50.2656" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="135" x="282" y="125.9531"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="282" x2="417" y1="152.25" y2="152.25"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="60" x="319.5" y="143.9482">PASSING</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="115" x="287" y="168.3887">Collecting statistic</text><rect fill="#FEFECE" filter="url(#fx46vk7j6ojlz)" height="50.2656" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="127" x="147" y="267.9531"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="147" x2="274" y1="294.25" y2="294.25"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="59" x="181" y="285.9482">BROKEN</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="107" x="152" y="310.3887">raising Exception</text><rect fill="#FEFECE" filter="url(#fx46vk7j6ojlz)" height="50.2656" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="133" x="6" y="125.9531"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="6" x2="139" y1="152.25" y2="152.25"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="92" x="26.5" y="143.9482">RECOVERING</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="113" x="11" y="168.3887">Half-opened state</text><ellipse cx="349.5" cy="38.9531" fill="#000000" filter="url(#fx46vk7j6ojlz)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><!--MD5=[ae47dda47b1e30e4de1b1450f1d2ca91]
+link *start to PASSING--><path d="M349.5,49.289 C349.5,65.299 349.5,96.7165 349.5,120.4102 " fill="none" id="*start-&gt;PASSING" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="349.5,125.6435,353.5,116.6435,349.5,120.6435,345.5,116.6435,349.5,125.6435" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="83" x="350.5" y="92.02">Default state</text><!--MD5=[ef8037e4f189f4d37770a59ec21b9fb3]
+link PASSING to BROKEN--><path d="M324.9696,176.013 C300.9014,200.6006 264.2238,238.0698 238.9033,263.9368 " fill="none" id="PASSING-&gt;BROKEN" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="235.2528,267.6661,244.407,264.0327,238.7504,264.0931,238.6901,258.4365,235.2528,267.6661" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="77" x="292.5" y="219.02">error_ratio</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="52" x="305" y="234.1528">reached</text><!--MD5=[8dea6bb125b5f8f5344c63974313de69]
+link RECOVERING to BROKEN--><path d="M96.854,176.013 C120.749,200.6006 157.1627,238.0698 182.301,263.9368 " fill="none" id="RECOVERING-&gt;BROKEN" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="185.9253,267.6661,182.5216,258.4241,182.4407,264.0804,176.7844,263.9995,185.9253,267.6661" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="21" x="168.5" y="219.02">still</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="47" x="155.5" y="234.1528">errored</text><!--MD5=[d7fb0f7e2716ff610b7169e7270cb3ad]
+link RECOVERING to PASSING--><path d="M139.2009,150.9531 C180.7357,150.9531 234.1781,150.9531 276.7942,150.9531 " fill="none" id="RECOVERING-&gt;PASSING" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="281.9361,150.9531,272.9361,146.9531,276.9361,150.9531,272.9361,154.9531,281.9361,150.9531" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="106" x="157.5" y="114.02">successful result</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="80" x="170.5" y="129.1528">greater then</text><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="77" x="172" y="144.2856">error_ratio</text><!--MD5=[79942990c2ded2fa0eb6112d4944afee]
+@startuml
+title State Transition Model
+
+state PASSING
+state BROKEN
+state RECOVERING
+
+[*] - -> PASSING: Default state
+BROKEN: raising Exception
+PASSING: Collecting statistic
+RECOVERING: Half-opened state
+
+PASSING - -> BROKEN: <b>error_ratio</b>\nreached
+RECOVERING -> BROKEN: still\nerrored
+RECOVERING -> PASSING: successful result\ngreater then\n<b>error_ratio</b>
+
+@enduml
+
+PlantUML version 1.2019.11(Sun Sep 22 10:02:15 GMT 2019)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 14-ea+15
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

@@ -1,0 +1,17 @@
+@startuml
+title State Transition Model
+
+state PASSING
+state BROKEN
+state RECOVERING
+
+[*] --> PASSING: Default state
+BROKEN: raising Exception
+PASSING: Collecting statistic
+RECOVERING: Half-opened state
+
+PASSING --> BROKEN: <b>error_ratio</b>\nreached
+RECOVERING -> BROKEN: still\nerrored
+RECOVERING -> PASSING: successful result\ngreater then\n<b>error_ratio</b>
+
+@enduml
