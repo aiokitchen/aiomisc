@@ -1,4 +1,6 @@
 import asyncio
+import socket
+
 import pytest
 
 from aiomisc import Service
@@ -41,3 +43,7 @@ except SyntaxError:
 
 async def test_yield_fixture(yield_fixture):  # noqa
     assert yield_fixture is True
+
+
+def test_localhost(localhost):
+    assert socket.gethostbyname('localhost') == localhost

@@ -1,11 +1,11 @@
 import asyncio
 import logging
 import os
+import socket
 import typing
 from asyncio.events import get_event_loop
 from contextlib import suppress
 from functools import wraps, partial
-from socket import socket
 from unittest.mock import MagicMock
 
 import pytest
@@ -269,7 +269,7 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
 
 
 def get_unused_port() -> int:
-    sock = socket()
+    sock = socket.socket()
     sock.bind(('', 0))
     port = sock.getsockname()[-1]
     sock.close()
