@@ -1,11 +1,11 @@
 import asyncio
 import logging
 import os
+import socket
 import typing
 from asyncio.events import get_event_loop
 from contextlib import suppress
 from functools import wraps, partial
-from socket import socket
 from unittest.mock import MagicMock
 
 import pytest
@@ -97,6 +97,23 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
         return event_loop.run_until_complete(gen.__anext__())
 
     fixturedef.func = wrapper
+
+
+@pytest.fixture(scope="session")
+def localhost():
+    params = (
+        (socket.AF_INET, "127.0.0.1"),
+        (socket.AF_INET6, "::1"),
+    )
+    for family, addr in params:
+        with socket.socket(family, socket.SOCK_STREAM) as sock:
+            try:
+                sock.bind((addr, 0))
+            except Exception:
+                pass
+            else:
+                return addr
+    raise RuntimeError("localhost unavailable")
 
 
 @pytest.fixture
@@ -252,7 +269,7 @@ def loop(request, services, loop_debug, default_context, entrypoint_kwargs,
 
 
 def get_unused_port() -> int:
-    sock = socket()
+    sock = socket.socket()
     sock.bind(('', 0))
     port = sock.getsockname()[-1]
     sock.close()
