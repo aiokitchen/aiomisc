@@ -165,6 +165,9 @@ class CircuitBreaker:
             if fail_ratio >= self._error_ratio:
                 upper_count += 1
 
+        if not total_count:
+            return 0
+
         return upper_count / total_count
 
     def _compute_state(self):
