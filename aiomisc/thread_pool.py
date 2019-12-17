@@ -318,3 +318,38 @@ def threaded_iterable_separate(func=None, max_size: int = 0):
         )
 
     return wrap
+
+
+class CoroutineWaiter:
+    def __init__(self, loop: asyncio.AbstractEventLoop, coroutine_func,
+                 *args, **kwargs):
+        self.__func = partial(coroutine_func, *args, **kwargs)
+        self.__loop = loop
+        self.__event = threading.Event()
+        self.__result = None
+        self.__exception = None
+
+    def _on_result(self, task: asyncio.Task):
+        self.__exception = task.exception()
+        if self.__exception is None:
+            self.__result = task.result()
+        self.__event.set()
+
+    def _awaiter(self):
+        task = self.__loop.create_task(self.__func())
+        task.add_done_callback(self._on_result)
+
+    def start(self):
+        self.__loop.call_soon_threadsafe(self._awaiter)
+
+    def wait(self):
+        self.__event.wait()
+        if self.__exception is not None:
+            raise self.__exception
+        return self.__result
+
+
+def sync_wait_coroutine(loop, coro_func, *args, **kwargs):
+    waiter = CoroutineWaiter(loop, coro_func, *args, **kwargs)
+    waiter.start()
+    return waiter.wait()
