@@ -1,11 +1,11 @@
 import asyncio
-import time
-from contextlib import suppress
 
 import pytest
 import aiomisc
-from aiomisc.circuit_breaker import CircuitBreakerStates as States, \
+from aiomisc.circuit_breaker import (
+    CircuitBreakerStates as States,
     CircuitBroken
+)
 
 pytestmark = pytest.mark.catch_loop_exceptions
 

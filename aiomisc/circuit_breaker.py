@@ -1,6 +1,5 @@
 import asyncio
 import threading
-import time
 import typing
 from collections import deque, Counter
 from contextlib import contextmanager
@@ -39,14 +38,15 @@ class CircuitBreaker:
         "_error_ratio",
         "_exceptions",
         "_lock",
+        "_loop",
         "_passing_time",
-        "_recovery_time",
+        "_recovery_at",
         "_recovery_ratio",
+        "_recovery_time",
         "_response_time",
         "_state",
         "_statistic",
         "_stuck_until",
-        "_recovery_at",
     )
 
     BUCKET_COUNT = 10
@@ -67,6 +67,7 @@ class CircuitBreaker:
 
         self._statistic = deque(maxlen=self.BUCKET_COUNT)  # type: StatisticType
         self._lock = threading.RLock()
+        self._loop = asyncio.get_event_loop()
         self._error_ratio = error_ratio
         self._state = CircuitBreakerStates.PASSING
         self._response_time = response_time
@@ -88,7 +89,7 @@ class CircuitBreaker:
         return self._state
 
     def bucket(self) -> int:
-        ts = time.monotonic() * self.BUCKET_COUNT
+        ts = self._loop.time() * self.BUCKET_COUNT
         return int(ts - (ts % self._response_time))
 
     def counter(self) -> Counter:
@@ -120,7 +121,7 @@ class CircuitBreaker:
             yield counter
 
     def get_state_delay(self):
-        delay = self._stuck_until - time.monotonic()
+        delay = self._stuck_until - self._loop.time()
         if delay < 0:
             return 0
         return delay
@@ -139,7 +140,7 @@ class CircuitBreaker:
         raise CircuitBroken()
 
     def _on_recover(self, counter):
-        current_time = time.monotonic()
+        current_time = self._loop.time()
         condition = (random() + 1) < (
             2 ** ((current_time - self._recovery_at) / self._recovery_time)
         )
@@ -171,7 +172,7 @@ class CircuitBreaker:
         return upper_count / total_count
 
     def _compute_state(self):
-        current_time = time.monotonic()
+        current_time = self._loop.time()
 
         if current_time < self._stuck_until:
             # Skip state changing until
