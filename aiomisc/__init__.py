@@ -12,9 +12,9 @@ from .service import Service
 from .signal import Signal, receiver
 from .iterator_wrapper import IteratorWrapper
 from .thread_pool import (
-    threaded, threaded_iterable, ThreadPoolExecutor, threaded_separate,
-    IteratorWrapperSeparate, threaded_iterable_separate, context_partial,
-    sync_wait_coroutine,
+    context_partial, IteratorWrapperSeparate, sync_wait_coroutine,
+    threaded, threaded_iterable, threaded_iterable_separate,
+    threaded_separate, ThreadPoolExecutor
 )
 from .timeout import timeout
 
@@ -49,6 +49,7 @@ __all__ = (
     'entrypoint', 'get_context', 'io', 'IteratorWrapper',
     'IteratorWrapperSeparate', 'log', 'new_event_loop', 'PeriodicCallback',
     'plugins', 'receiver', 'select', 'SelectResult', 'Service', 'shield',
-    'Signal', 'threaded', 'threaded_iterable', 'threaded_iterable_separate',
-    'threaded_separate', 'ThreadPoolExecutor', 'timeout', 'sync_wait_coroutine'
+    'Signal', 'sync_wait_coroutine', 'threaded', 'threaded_iterable',
+    'threaded_iterable_separate', 'threaded_separate', 'ThreadPoolExecutor',
+    'timeout',
 )
