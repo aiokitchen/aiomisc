@@ -1177,6 +1177,36 @@ Setting as a default thread pool:
     ``entrypoint``'s argument ``pool_size`` limits thread pool size.
 
 
+aiomisc.sync_wait_coroutine
+***************************
+
+Functions running in thread can't call and wait result from coroutines
+by default. This function is helper for send coroutine to event loop
+and wait it in current thread.
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+
+
+    async def coro():
+        print("Coroutine started")
+        await asyncio.sleep(1)
+        print("Coroutine done")
+
+
+    @aiomisc.threaded
+    def in_thread(loop):
+        print("Thread started")
+        aiomisc.sync_wait_coroutine(loop, coro)
+        print("Thread finished")
+
+
+    with aiomisc.entrypoint() as loop:
+        loop.run_until_complete(in_thread(loop))
+
+
 Select
 ++++++
 
