@@ -23,7 +23,7 @@ async def test_simple(pool, loop, timer):
     current_time = await loop.run_in_executor(pool, time)
     assert current_time > 0
 
-    async with timeout(2):
+    async with timeout(600):
         with timer(1):
             await asyncio.gather(*[
                 loop.run_in_executor(pool, sleep, 1) for _ in range(8)
@@ -36,7 +36,7 @@ async def test_exception(pool, loop):
 
 
 def suicide():
-    os.kill(os.getpid(), signal.SIGABRT)
+    os.kill(os.getpid(), signal.SIGINT)
 
 
 async def test_exit(pool, loop):
