@@ -69,6 +69,9 @@ def asyncbackoff(attempt_timeout: Optional[Number],
                         if giveup and giveup(e):
                             raise
                         await asyncio.sleep(pause, loop=loop)
+                    except Exception as e:
+                        last_exc = e
+                        raise
 
             try:
                 return await asyncio.wait_for(
