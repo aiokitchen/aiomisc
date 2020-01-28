@@ -264,3 +264,23 @@ async def test_giveup(loop, max_mana):
 
     assert giveup_exception is e.value
     assert mana == max_mana
+
+
+async def test_last_exception_is_last(loop):
+    mana = 0
+
+    class TestExc(Exception):
+        pass
+
+    @aiomisc.asyncbackoff(1, 2, 0)
+    async def test():
+        nonlocal mana
+
+        if mana == 0:
+            mana += 1
+            await asyncio.sleep(1.5)  # causes TimeoutError on first try
+
+        raise TestExc  # this is last exception actually
+
+    with pytest.raises(TestExc):
+        await test()
