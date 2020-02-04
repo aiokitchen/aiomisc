@@ -46,7 +46,7 @@ class Service(metaclass=ServiceMeta):
 
     def set_loop(self, loop: asyncio.AbstractEventLoop):
         self.loop = loop
-        self.start_event = asyncio.Event(loop=self.loop)
+        self.start_event = asyncio.Event()
 
     def _set_params(self, **kwargs):
         for name, value in kwargs.items():

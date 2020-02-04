@@ -194,15 +194,13 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     def waiter(args):
         return _select_waiter(*args, result=result)
 
-    ensure_future = partial(asyncio.ensure_future, loop=loop)
-
     _, pending = await loop.create_task(
         asyncio.wait(
             map(
                 loop.create_task,
-                map(waiter, enumerate(map(ensure_future, awaitables)))
+                map(waiter, enumerate(map(asyncio.ensure_future, awaitables)))
             ),
-            timeout=timeout, loop=loop,
+            timeout=timeout,
             return_when=asyncio.FIRST_COMPLETED,
         ),
     )
@@ -212,9 +210,8 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
 
         cancel_task = asyncio.ensure_future(
             asyncio.gather(
-                *cancelling, loop=loop, return_exceptions=True
+                *cancelling, return_exceptions=True
             ),
-            loop=loop
         )
 
         if wait:

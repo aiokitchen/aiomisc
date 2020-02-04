@@ -33,7 +33,6 @@ class Entrypoint:
 
         await asyncio.gather(
             *[self._start_service(svc) for svc in self.services],
-            loop=self.loop
         )
 
     def __init__(self, *services, loop: asyncio.AbstractEventLoop = None,
@@ -127,14 +126,12 @@ class Entrypoint:
     async def _start_service(self, svc: Service):
         svc.set_loop(self.loop)
 
-        ensure_future = partial(asyncio.ensure_future, loop=self.loop)
-
         start_task, ev_task = map(
-            ensure_future, (svc.start(), svc.start_event.wait())
+            asyncio.ensure_future, (svc.start(), svc.start_event.wait())
         )
 
         await asyncio.wait(
-            (start_task, ev_task), loop=self.loop,
+            (start_task, ev_task),
             return_when=asyncio.FIRST_COMPLETED,
         )
 
@@ -157,7 +154,7 @@ class Entrypoint:
             return
 
         self.loop.run_until_complete(
-            asyncio.gather(*tasks, loop=self.loop, return_exceptions=True)
+            asyncio.gather(*tasks, return_exceptions=True)
         )
 
         self.loop.run_until_complete(self.post_stop.call(entrypoint=self))
