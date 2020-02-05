@@ -2,7 +2,6 @@
 
 import logging
 import os
-from itertools import product
 from multiprocessing.pool import ThreadPool
 import argparse
 from pathlib import Path
