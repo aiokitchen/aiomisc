@@ -14,7 +14,7 @@ uml:
 		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
 		-tpng -o /mnt/resources/images/ '/mnt/resources/uml/*/**.puml'
 
-sdist: bump
+sdist: bump uml
 	rm -fr dist
 	python3 setup.py sdist bdist_wheel
 
