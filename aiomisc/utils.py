@@ -2,7 +2,7 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
-from functools import wraps, partial
+from functools import wraps
 from multiprocessing import cpu_count
 from types import CoroutineType
 from typing import Any, Iterable, Tuple

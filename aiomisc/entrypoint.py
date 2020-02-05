@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import typing
-from functools import partial
 
 from .context import Context, get_context
 from .log import basic_config, LogFormat
