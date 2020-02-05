@@ -40,7 +40,7 @@ def test_periodic():
         assert 4 <= counter <= 7
 
     with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(assert_counter())
+        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
 
 
 def test_delay():
@@ -68,4 +68,4 @@ def test_delay():
         assert 1 < counter < 4
 
     with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(assert_counter())
+        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))

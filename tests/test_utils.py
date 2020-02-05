@@ -122,7 +122,7 @@ def test_shield():
             await asyncio.sleep(1)
 
     with aiomisc.entrypoint() as loop:
-        loop.run_until_complete(main(loop))
+        loop.run_until_complete(asyncio.wait_for(main(loop), timeout=10))
 
     assert results == [True]
 
