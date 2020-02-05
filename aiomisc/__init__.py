@@ -16,6 +16,7 @@ from .thread_pool import (
     threaded, threaded_iterable, threaded_iterable_separate,
     threaded_separate, ThreadPoolExecutor
 )
+from .process_pool import ProcessPoolExecutor
 from .timeout import timeout
 
 from .utils import (

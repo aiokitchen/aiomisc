@@ -40,6 +40,9 @@ class ProcessPoolExecutor(Executor):
         return future
 
     def shutdown(self, wait=True):
+        if not self.__pool:
+            return
+
         self.__pool.terminate()
 
         for f in self.__futures:
