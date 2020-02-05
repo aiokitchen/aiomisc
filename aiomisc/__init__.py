@@ -16,6 +16,7 @@ from .thread_pool import (
     threaded, threaded_iterable, threaded_iterable_separate,
     threaded_separate, ThreadPoolExecutor
 )
+from .process_pool import ProcessPoolExecutor
 from .timeout import timeout
 
 from .utils import (
@@ -45,11 +46,32 @@ setup_plugins()
 
 
 __all__ = (
-    'asyncbackoff', 'bind_socket', 'chunk_list', 'Context', 'context_partial',
-    'entrypoint', 'get_context', 'io', 'IteratorWrapper',
-    'IteratorWrapperSeparate', 'log', 'new_event_loop', 'PeriodicCallback',
-    'plugins', 'receiver', 'select', 'SelectResult', 'Service', 'shield',
-    'Signal', 'sync_wait_coroutine', 'threaded', 'threaded_iterable',
-    'threaded_iterable_separate', 'threaded_separate', 'ThreadPoolExecutor',
+    'asyncbackoff',
+    'bind_socket',
+    'chunk_list',
+    'Context',
+    'context_partial',
+    'entrypoint',
+    'get_context',
+    'io',
+    'IteratorWrapper',
+    'IteratorWrapperSeparate',
+    'log',
+    'new_event_loop',
+    'PeriodicCallback',
+    'plugins',
+    'ProcessPoolExecutor',
+    'receiver',
+    'select',
+    'SelectResult',
+    'Service',
+    'shield',
+    'Signal',
+    'sync_wait_coroutine',
+    'threaded',
+    'threaded_iterable',
+    'threaded_iterable_separate',
+    'threaded_separate',
+    'ThreadPoolExecutor',
     'timeout',
 )
