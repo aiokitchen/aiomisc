@@ -232,3 +232,22 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
         result.result()
 
     return result
+
+
+def awaitable(func):
+    # Avoid python 3.8+ warning
+    if asyncio.iscoroutinefunction(func):
+        return func
+
+    @wraps(func)
+    async def wrap(*args, **kwargs):
+        result = func(*args, **kwargs)
+
+        if hasattr(result, "__await__"):
+            return await result
+        if asyncio.iscoroutine(result) or asyncio.isfuture(result):
+            return await result
+
+        return result
+
+    return wrap

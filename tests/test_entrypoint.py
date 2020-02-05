@@ -173,7 +173,9 @@ def test_tcp_server(aiomisc_unused_port):
             sock.send(b'hello server\n')
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(writer())
+        loop.run_until_complete(
+            asyncio.wait_for(writer(), timeout=10)
+        )
 
     assert TestService.DATA
     assert TestService.DATA == [b'hello server\n']
@@ -210,7 +212,9 @@ def test_tls_server(certs, ssl_client_context, aiomisc_unused_port):
             ssock.send(b'hello server\n')
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(writer())
+        loop.run_until_complete(
+            asyncio.wait_for(writer(), timeout=10)
+        )
 
     assert TestService.DATA
     assert TestService.DATA == [b'hello server\n']
@@ -233,7 +237,9 @@ def test_udp_server(aiomisc_unused_port):
             sock.sendto(b'hello server\n', ('127.0.0.1', aiomisc_unused_port))
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(writer())
+        loop.run_until_complete(
+            asyncio.wait_for(writer(), timeout=10)
+        )
 
     assert TestService.DATA
     assert TestService.DATA == [b'hello server\n']
@@ -277,7 +283,9 @@ def test_udp_socket_server(unix_socket_udp):
                 "https://github.com/MagicStack/uvloop/issues/269"
             )
 
-        loop.run_until_complete(writer())
+        loop.run_until_complete(
+            asyncio.wait_for(writer(), timeout=10)
+        )
 
     assert TestService.DATA
     assert TestService.DATA == [b'hello server\n']
@@ -301,7 +309,9 @@ def test_tcp_server_unix(unix_socket_tcp):
             sock.send(b'hello server\n')
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(writer())
+        loop.run_until_complete(
+            asyncio.wait_for(writer(), timeout=10)
+        )
 
     assert TestService.DATA
     assert TestService.DATA == [b'hello server\n']
@@ -344,7 +354,9 @@ def test_aiohttp_service(aiomisc_unused_port):
     service = AIOHTTPTestApp(address='127.0.0.1', port=aiomisc_unused_port)
 
     with aiomisc.entrypoint(service) as loop:
-        response = loop.run_until_complete(http_client())
+        response = loop.run_until_complete(
+            asyncio.wait_for(http_client(), timeout=10)
+        )
 
     assert response == 404
 
@@ -361,7 +373,9 @@ def test_aiohttp_service_sock(unix_socket_tcp):
     service = AIOHTTPTestApp(sock=unix_socket_tcp)
 
     with aiomisc.entrypoint(service) as loop:
-        response = loop.run_until_complete(http_client())
+        response = loop.run_until_complete(
+            asyncio.wait_for(http_client(), timeout=10)
+        )
 
     assert response == 404
 
@@ -466,6 +480,8 @@ def test_context_multiple_set():
         results.append(await context['foo'])
 
     with aiomisc.entrypoint() as loop:
-        loop.run_until_complete(test())
+        loop.run_until_complete(
+            asyncio.wait_for(test(), timeout=10)
+        )
 
     assert results == [True, False, None]

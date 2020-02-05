@@ -2,6 +2,7 @@ import asyncio
 import logging
 from functools import partial
 from typing import Union, Type, Tuple
+
 from . import utils
 
 
@@ -21,7 +22,7 @@ class PeriodicCallback:
 
     def __init__(self, coroutine_func, *args, **kwargs):
         self.__name = repr(coroutine_func)
-        self._cb = partial(asyncio.coroutine(coroutine_func), *args, **kwargs)
+        self._cb = partial(utils.awaitable(coroutine_func), *args, **kwargs)
         self._closed = False
         self._loop = None
         self._handle = None
