@@ -50,14 +50,13 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
             family=self.family,
             limit=self.connection_limit,
             limit_per_host=self.connection_limit_host,
-            loop=self._loop,
             ttl_dns_cache=self.dns_cache_ttl,
             use_dns_cache=self.dns_cache,
             verify_ssl=self.verify_ssl,
         )
 
         return ClientSession(
-            connector=self.connector, loop=self._loop,
+            connector=self.connector,
             connector_owner=False
         )
 

@@ -45,7 +45,6 @@ def asyncbackoff(attempt_timeout: Optional[Number],
 
         @wraps(func)
         async def wrap(*args, **kwargs):
-            loop = asyncio.get_event_loop()
             last_exc = None
             tries = 0
 
@@ -57,8 +56,7 @@ def asyncbackoff(attempt_timeout: Optional[Number],
                     try:
                         return await asyncio.wait_for(
                             func(*args, **kwargs),
-                            loop=loop,
-                            timeout=attempt_timeout
+                            timeout=attempt_timeout,
                         )
                     except asyncio.CancelledError:
                         raise
@@ -68,15 +66,13 @@ def asyncbackoff(attempt_timeout: Optional[Number],
                             raise
                         if giveup and giveup(e):
                             raise
-                        await asyncio.sleep(pause, loop=loop)
+                        await asyncio.sleep(pause)
                     except Exception as e:
                         last_exc = e
                         raise
 
             try:
-                return await asyncio.wait_for(
-                    run(), timeout=deadline, loop=loop
-                )
+                return await asyncio.wait_for(run(), timeout=deadline)
             except Exception:
                 if last_exc:
                     raise last_exc

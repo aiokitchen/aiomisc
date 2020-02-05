@@ -3,7 +3,7 @@ import socket
 from functools import partial
 
 from .base import SimpleServer
-from ..utils import OptionsType, bind_socket
+from ..utils import OptionsType, bind_socket, awaitable
 
 
 class UDPServer(SimpleServer):
@@ -11,7 +11,7 @@ class UDPServer(SimpleServer):
 
         def __init__(self, handle_datagram):
             super().__init__()
-            self.handler = asyncio.coroutine(handle_datagram)
+            self.handler = awaitable(handle_datagram)
             self.transport = None  # type: asyncio.DatagramTransport
             self.loop = None  # type: asyncio.AbstractEventLoop
 

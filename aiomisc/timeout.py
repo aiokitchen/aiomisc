@@ -14,12 +14,9 @@ def timeout(value):
 
         @wraps(func)
         async def wrap(*args, **kwargs):
-            loop = asyncio.get_event_loop()
-
             return await asyncio.wait_for(
                 func(*args, **kwargs),
                 timeout=value,
-                loop=loop,
             )
         return wrap
     return decorator

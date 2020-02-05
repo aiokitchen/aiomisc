@@ -46,7 +46,6 @@ class CarbonSender(Service):
             self.port,
             namespace=namespace,
             storage=self.storage(),
-            loop=self.loop
         )
 
         set_client(client)

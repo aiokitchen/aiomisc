@@ -81,7 +81,63 @@ steps:
     commands:
       - tox
     environment:
-      TOXENV: uvloop
+      TOXENV: uvloop37
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
+  - name: python 3.8
+    image: snakepacker/python:all
+    group: tests
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: py38
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
+  - name: python 3.8 uvloop
+    image: snakepacker/python:all
+    group: tests
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: uvloop38
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
+  - name: python 3.9
+    image: snakepacker/python:all
+    group: tests
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: py39
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+    volumes:
+      - name: cache
+        path: /drone/src/.tox
+
+  - name: python 3.9 uvloop
+    image: snakepacker/python:all
+    group: tests
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: uvloop39
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
     volumes:
@@ -138,6 +194,6 @@ volumes:
 
 ---
 kind: signature
-hmac: 226cb7a3d3028149644cce8d3bd23b0655208fd26adab1b8d25aa68d488d7483
+hmac: d7c4a07e54ac989bd6c735ad168580e7cdf42a38e4aa1e9c600d8a25e4dd1e8e
 
 ...

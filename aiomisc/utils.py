@@ -2,7 +2,7 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
-from functools import wraps, partial
+from functools import wraps
 from multiprocessing import cpu_count
 from types import CoroutineType
 from typing import Any, Iterable, Tuple
@@ -164,14 +164,31 @@ class SelectResult:
                 yield None
 
 
-def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Iterable[asyncio.Task]:
+def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
+    future = asyncio.get_event_loop().create_future()
+    future.set_result(None)
+
     if not tasks:
-        return []
+        return future
+
+    cancelled_tasks = []
 
     for task in tasks:
+        if task.done():
+            continue
+
         task.cancel()
 
-    return tasks
+    if not cancelled_tasks:
+        return future
+
+    waiter = asyncio.ensure_future(
+        asyncio.gather(
+            *cancelled_tasks, return_exceptions=True
+        ),
+    )
+
+    return waiter
 
 
 async def _select_waiter(idx, awaitable, result):
@@ -194,15 +211,13 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     def waiter(args):
         return _select_waiter(*args, result=result)
 
-    ensure_future = partial(asyncio.ensure_future, loop=loop)
-
     _, pending = await loop.create_task(
         asyncio.wait(
             map(
                 loop.create_task,
-                map(waiter, enumerate(map(ensure_future, awaitables)))
+                map(waiter, enumerate(map(asyncio.ensure_future, awaitables)))
             ),
-            timeout=timeout, loop=loop,
+            timeout=timeout,
             return_when=asyncio.FIRST_COMPLETED,
         ),
     )
@@ -210,17 +225,29 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     if cancel:
         cancelling = cancel_tasks(pending)
 
-        cancel_task = asyncio.ensure_future(
-            asyncio.gather(
-                *cancelling, loop=loop, return_exceptions=True
-            ),
-            loop=loop
-        )
-
         if wait:
-            await cancel_task
+            await cancelling
 
     if result.is_exception and not return_exceptions:
         result.result()
 
     return result
+
+
+def awaitable(func):
+    # Avoid python 3.8+ warning
+    if asyncio.iscoroutinefunction(func):
+        return func
+
+    @wraps(func)
+    async def wrap(*args, **kwargs):
+        result = func(*args, **kwargs)
+
+        if hasattr(result, "__await__"):
+            return await result
+        if asyncio.iscoroutine(result) or asyncio.isfuture(result):
+            return await result
+
+        return result
+
+    return wrap
