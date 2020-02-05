@@ -164,14 +164,31 @@ class SelectResult:
                 yield None
 
 
-def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Iterable[asyncio.Task]:
+def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
+    future = asyncio.get_event_loop().create_future()
+    future.set_result(None)
+
     if not tasks:
-        return []
+        return future
+
+    cancelled_tasks = []
 
     for task in tasks:
+        if task.done():
+            continue
+
         task.cancel()
 
-    return tasks
+    if not cancelled_tasks:
+        return future
+
+    waiter = asyncio.ensure_future(
+        asyncio.gather(
+            *cancelled_tasks, return_exceptions=True
+        ),
+    )
+
+    return waiter
 
 
 async def _select_waiter(idx, awaitable, result):
@@ -208,14 +225,8 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     if cancel:
         cancelling = cancel_tasks(pending)
 
-        cancel_task = asyncio.ensure_future(
-            asyncio.gather(
-                *cancelling, return_exceptions=True
-            ),
-        )
-
         if wait:
-            await cancel_task
+            await cancelling
 
     if result.is_exception and not return_exceptions:
         result.result()
