@@ -79,7 +79,7 @@ class PeriodicCallback:
         self._closed = True
 
         if self._task is None:
-            self._task = asyncio.Future(loop=self._loop)
+            self._task = self._loop.create_future()
             self._task.set_exception(RuntimeError("Callback not started"))
         elif not self._task.done():
             self._task.cancel()

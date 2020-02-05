@@ -68,7 +68,7 @@ class AsyncFileIOBase:
         self.fp = None
         self.executor = executor
         self.__opener = partial(self.opener, fname, mode, *args, **kwargs)
-        self.__iterator_lock = asyncio.Lock(loop=self.loop)
+        self.__iterator_lock = asyncio.Lock()
 
     def closed(self):
         return self.fp.closed

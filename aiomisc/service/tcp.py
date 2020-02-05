@@ -42,7 +42,6 @@ class TCPServer(SimpleServer):
         self.server = await asyncio.start_server(
             self.handle_client,
             sock=self.socket,
-            loop=self.loop,
         )
 
     async def stop(self, exc: Exception = None):
