@@ -6,7 +6,9 @@ import time
 import typing
 import warnings
 from asyncio.events import get_event_loop
-from concurrent.futures._base import Executor
+from concurrent.futures.thread import (
+    ThreadPoolExecutor as ThreadPoolExecutorBase
+)
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
@@ -85,7 +87,7 @@ class WorkItem(WorkItemBase):
         )
 
 
-class ThreadPoolExecutor(Executor):
+class ThreadPoolExecutor(ThreadPoolExecutorBase):
     __slots__ = (
         '__futures', '__pool', '__tasks',
         '__write_lock', '__thread_events',
@@ -179,6 +181,9 @@ class ThreadPoolExecutor(Executor):
 
         while not all(e.is_set() for e in self.__thread_events):
             time.sleep(0)
+
+    def _adjust_thread_count(self):
+        raise NotImplementedError
 
     def __del__(self):
         self.shutdown()
