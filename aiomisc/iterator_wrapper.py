@@ -24,13 +24,13 @@ class IteratorWrapper(typing.AsyncIterator):
         self.executor = executor
 
         self.__closed = False
-        self.__close_event = asyncio.Event(loop=self.loop)
+        self.__close_event = asyncio.Event()
         self.__queue = deque()
         self.__queue_maxsize = max_size
         self.__gen_task = None      # type: asyncio.Task
         self.__gen_func = gen_func  # type: typing.Callable
         self.__write_event = threading.Event()
-        self.__read_event = asyncio.Event(loop=self.loop)
+        self.__read_event = asyncio.Event()
 
     @property
     def closed(self):

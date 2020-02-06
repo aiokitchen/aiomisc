@@ -6,9 +6,7 @@ import time
 import typing
 import warnings
 from asyncio.events import get_event_loop
-from concurrent.futures.thread import (
-    ThreadPoolExecutor as ThreadPoolExecutorBase
-)
+from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
@@ -201,7 +199,8 @@ def run_in_executor(func, executor=None, args=(),
 
 async def _awaiter(future):
     try:
-        return await future
+        result = await future
+        return result
     except asyncio.CancelledError as e:
         if not future.done():
             future.set_exception(e)
@@ -218,7 +217,8 @@ def threaded(func):
     @wraps(func)
     def wrap(*args, **kwargs):
         future = run_in_executor(func=func, args=args, kwargs=kwargs)
-        return _awaiter(future)
+        result = _awaiter(future)
+        return result
 
     return wrap
 
