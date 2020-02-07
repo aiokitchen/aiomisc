@@ -150,8 +150,7 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
     async def func():
         return await asyncio.wait_for(
             pyfuncitem.obj(**kwargs),
-            timeout=aiomisc_test_timeout,
-            loop=event_loop
+            timeout=aiomisc_test_timeout
         )
 
     event_loop.run_until_complete(func())

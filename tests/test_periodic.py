@@ -17,12 +17,12 @@ async def test_periodic(loop):
     periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop)
 
-    await asyncio.sleep(0.5, loop=loop)
+    await asyncio.sleep(0.5)
     periodic.stop()
 
     assert 4 < counter < 7
 
-    await asyncio.sleep(0.5, loop=loop)
+    await asyncio.sleep(0.5)
 
     assert 4 < counter < 7
 
@@ -38,7 +38,7 @@ async def test_long_func(loop):
     periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop)
 
-    await asyncio.sleep(1, loop=loop)
+    await asyncio.sleep(1)
     periodic.stop()
 
     assert 1 < counter < 3
@@ -95,11 +95,11 @@ async def test_delay(loop):
     periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop, delay=0.5)
 
-    await asyncio.sleep(0.25, loop=loop)
+    await asyncio.sleep(0.25)
 
     assert not counter
 
-    await asyncio.sleep(0.5, loop=loop)
+    await asyncio.sleep(0.5)
 
     periodic.stop()
 

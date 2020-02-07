@@ -3,11 +3,8 @@ import os
 import socket
 from contextlib import ExitStack
 from tempfile import mktemp
-
-
 import aiohttp.web
 import pytest
-import http.client
 
 import aiomisc
 from aiomisc.service import TCPServer, UDPServer, TLSServer
@@ -339,17 +336,13 @@ def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
 
 
 def test_aiohttp_service(aiomisc_unused_port):
-    @aiomisc.threaded
-    def http_client():
-        conn = http.client.HTTPConnection(
-            host='127.0.0.1',
-            port=aiomisc_unused_port,
-            timeout=1
-        )
+    async def http_client():
+        session = aiohttp.ClientSession()
+        url = "http://localhost:{}".format(aiomisc_unused_port)
 
-        conn.request('GET', '/')
-        response = conn.getresponse()
-        return response.code
+        async with session:
+            async with session.get(url) as response:
+                return response.status
 
     service = AIOHTTPTestApp(address='127.0.0.1', port=aiomisc_unused_port)
 
@@ -362,19 +355,19 @@ def test_aiohttp_service(aiomisc_unused_port):
 
 
 def test_aiohttp_service_sock(unix_socket_tcp):
-    @aiomisc.threaded
-    def http_client():
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-            sock.connect(unix_socket_tcp.getsockname())
-            sock.send(b'GET / HTTP/1.1\nConnection: close\n\n')
-            status = sock.recv(65535).splitlines()[0]
-            return int(status.split()[1])
+    async def http_client():
+        conn = aiohttp.UnixConnector(path=unix_socket_tcp.getsockname())
+        session = aiohttp.ClientSession(connector=conn)
+
+        async with session:
+            async with session.get("http://unix/") as response:
+                return response.status
 
     service = AIOHTTPTestApp(sock=unix_socket_tcp)
 
     with aiomisc.entrypoint(service) as loop:
         response = loop.run_until_complete(
-            asyncio.wait_for(http_client(), timeout=10)
+            asyncio.wait_for(http_client(), timeout=10000)
         )
 
     assert response == 404

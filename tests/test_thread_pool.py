@@ -36,7 +36,6 @@ def executor(loop: asyncio.AbstractEventLoop):
         with suppress(Exception):
             thread_pool.shutdown(wait=True)
 
-        loop.set_default_executor(None)
         thread_pool.shutdown(wait=True)
 
 
