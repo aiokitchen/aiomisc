@@ -202,18 +202,17 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     loop = loop or asyncio.get_event_loop()
     result = SelectResult(len(awaitables))
 
-    def waiter(args):
-        return _select_waiter(*args, result=result)
+    coroutines = [
+        loop.create_task(_select_waiter(idx, coroutine, result))
+        for idx, coroutine in enumerate(awaitables)
+    ]
 
     _, pending = await loop.create_task(
         asyncio.wait(
-            map(
-                loop.create_task,
-                map(waiter, enumerate(map(asyncio.ensure_future, awaitables)))
-            ),
+            coroutines,
             timeout=timeout,
             return_when=asyncio.FIRST_COMPLETED,
-        ),
+        )
     )
 
     if cancel:
