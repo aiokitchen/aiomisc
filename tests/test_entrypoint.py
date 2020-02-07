@@ -337,10 +337,8 @@ def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
 
 def test_aiohttp_service(aiomisc_unused_port):
     async def http_client():
-        conn = aiohttp.UnixConnector(path=unix_socket_tcp.getsockname())
-        session = aiohttp.ClientSession(connector=conn)
-
-        url = "http://localhost{}".format(aiomisc_unused_port)
+        session = aiohttp.ClientSession()
+        url = "http://localhost:{}".format(aiomisc_unused_port)
 
         async with session:
             async with session.get(url) as response:
