@@ -166,12 +166,23 @@ def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
         return future
 
     cancelled_tasks = []
+    exc = asyncio.CancelledError()
 
     for task in tasks:
         if task.done():
             continue
 
-        task.cancel()
+        if isinstance(task, asyncio.Task):
+            task.cancel()
+            cancelled_tasks.append(task)
+
+        elif isinstance(task, asyncio.Future):
+            task.set_exception(exc)
+
+        else:
+            log.warning(
+                "Skipping object %r because it's not a Task or Future", task
+            )
 
     if not cancelled_tasks:
         return future
@@ -232,15 +243,18 @@ def awaitable(func):
     if asyncio.iscoroutinefunction(func):
         return func
 
+    async def awaiter(obj):
+        return obj
+
     @wraps(func)
-    async def wrap(*args, **kwargs):
+    def wrap(*args, **kwargs):
         result = func(*args, **kwargs)
 
         if hasattr(result, "__await__"):
-            return await result
+            return result
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
-            return await result
+            return result
 
-        return result
+        return awaiter(result)
 
     return wrap

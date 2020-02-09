@@ -20,7 +20,14 @@ from .process_pool import ProcessPoolExecutor
 from .timeout import timeout
 
 from .utils import (
-    bind_socket, chunk_list, new_event_loop, select, SelectResult, shield
+    awaitable,
+    bind_socket,
+    cancel_tasks,
+    chunk_list,
+    new_event_loop,
+    select,
+    SelectResult,
+    shield,
 )
 
 
@@ -47,7 +54,9 @@ setup_plugins()
 
 __all__ = (
     'asyncbackoff',
+    'awaitable',
     'bind_socket',
+    'cancel_tasks',
     'chunk_list',
     'Context',
     'context_partial',

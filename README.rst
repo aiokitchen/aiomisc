@@ -1291,6 +1291,57 @@ waits first passed awaitable object and returns list of results.
     In this case you have to handle task completion manually or get warnings.
 
 
+cancel_tasks
+++++++++++++
+
+All passed tasks will be cancelled and task will be returned:
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc import cancel_tasks
+
+
+    async def main():
+        done, pending = await asyncio.wait([
+            asyncio.sleep(i) for i in range(10)
+        ], timeout=5)
+
+        print("Done", len(done), "tasks")
+        print("Pending", len(pending), "tasks")
+        await cancel_tasks(pending)
+
+
+    asyncio.run(main())
+
+
+awaitable
++++++++++
+
+Decorator wraps function and returns a function which returns awaitable object.
+In case than a function returns a future, the original future will be returned.
+In case then the function returns a coroutine, the original coroutine will
+be returned. In case than function returns non-awaitable object, it's will
+be wrapped to a new coroutine which just returns this object. It's useful
+when you don't want to check function result before
+use it in ``await`` expression.
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+
+
+    async def do_callback(func, *args):
+        awaitable_func = aiomisc.awaitable(func)
+
+        return await awaitable_func(*args)
+
+
+    print(asyncio.run(do_callback(asyncio.sleep, 2)))
+    print(asyncio.run(do_callback(lambda: 45)))
+
+
 Signal
 ++++++
 
