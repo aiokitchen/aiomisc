@@ -184,28 +184,12 @@ steps:
       - name: cache
         path: /drone/src/.tox
 
-  - name: notify
-    image: drillster/drone-email
-    settings:
-      host:
-        from_secret: SMTP_HOST
-      username:
-        from_secret: SMTP_USERNAME
-      password:
-        from_secret: SMTP_PASSWORD
-      from:
-        from_secret: SMTP_USERNAME
-      when:
-        status:
-          - changed
-          - failure
-
 volumes:
   - name: cache
     temp: {}
 
 ---
 kind: signature
-hmac: 6f44967cb938275155229c1e6f9e988190d4a0fae95839d041a61601b0080b7e
+hmac: 70f4562f90e95db174ad4f207d080155733e4c3b3a52ccf2da80188b1044a18d
 
 ...
