@@ -12,7 +12,8 @@ steps:
 
   - name: prepare toxenv
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox --notest
@@ -22,7 +23,8 @@ steps:
 
   - name: checkdoc
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -34,7 +36,8 @@ steps:
 
   - name: python 3.5
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -48,7 +51,8 @@ steps:
 
   - name: python 3.6
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -62,7 +66,8 @@ steps:
 
   - name: python 3.7
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -76,7 +81,8 @@ steps:
 
   - name: python 3.7 uvloop
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -90,7 +96,8 @@ steps:
 
   - name: python 3.8
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -104,7 +111,8 @@ steps:
 
   - name: python 3.8 uvloop
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -118,7 +126,8 @@ steps:
 
   - name: python 3.9
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -132,7 +141,8 @@ steps:
 
   - name: python 3.9 uvloop
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -146,7 +156,8 @@ steps:
 
   - name: python 3.6 contextvars
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -160,7 +171,8 @@ steps:
 
   - name: RPC example
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - prepare toxenv
     pull: always
     commands:
       - tox
@@ -194,6 +206,6 @@ volumes:
 
 ---
 kind: signature
-hmac: d7c4a07e54ac989bd6c735ad168580e7cdf42a38e4aa1e9c600d8a25e4dd1e8e
+hmac: 6f44967cb938275155229c1e6f9e988190d4a0fae95839d041a61601b0080b7e
 
 ...
