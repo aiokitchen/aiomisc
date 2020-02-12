@@ -18,6 +18,7 @@ from .thread_pool import (
 )
 from .process_pool import ProcessPoolExecutor
 from .timeout import timeout
+from .pool import PoolBase
 
 from .utils import (
     awaitable,
@@ -70,6 +71,7 @@ __all__ = (
     'PeriodicCallback',
     'plugins',
     'ProcessPoolExecutor',
+    'PoolBase',
     'receiver',
     'select',
     'SelectResult',
