@@ -11,7 +11,7 @@ except ImportError:
 
 
 class ContextManager(AbstractAsyncContextManager):
-    __slots__ = "__constructor", "__destructor", "__instance"
+    __slots__ = "__aenter", "__aexit", "__instance"
 
     sentinel = object()
 
