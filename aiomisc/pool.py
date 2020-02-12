@@ -22,7 +22,7 @@ class ContextManager(AbstractAsyncContextManager):
 
     async def __aenter__(self):
         if self.__instance is not self.sentinel:
-            raise RuntimeError("Reuse of context manager not acceptable")
+            raise RuntimeError("Reuse of context manager is not acceptable")
 
         self.__instance = await self.__aenter()
         return self.__instance
