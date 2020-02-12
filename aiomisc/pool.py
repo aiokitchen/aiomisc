@@ -1,16 +1,11 @@
 import asyncio
 from abc import abstractmethod, ABC
+from typing import AsyncContextManager
 
 from .utils import cancel_tasks
 
 
-try:
-    from contextlib import AbstractAsyncContextManager
-except ImportError:
-    from typing import AsyncContextManager as AbstractAsyncContextManager
-
-
-class ContextManager(AbstractAsyncContextManager):
+class ContextManager(AsyncContextManager):
     __slots__ = "__aenter", "__aexit", "__instance"
 
     sentinel = object()
