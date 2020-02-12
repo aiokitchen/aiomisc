@@ -10,34 +10,20 @@ steps:
     commands:
       - pylava -o pylava.ini .
 
-  - name: prepare toxenv
+  - name: checkdoc
     image: snakepacker/python:all
     depends_on:
       - linter
     pull: always
     commands:
-      - tox --notest
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
-
-  - name: checkdoc
-    image: snakepacker/python:all
-    depends_on:
-      - prepare toxenv
-    pull: always
-    commands:
       - tox
     environment:
       TOXENV: checkdoc
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.5
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -45,14 +31,11 @@ steps:
       TOXENV: py35
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.6
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -60,14 +43,11 @@ steps:
       TOXENV: py36
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.7
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -75,14 +55,11 @@ steps:
       TOXENV: py37
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.7 uvloop
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -90,14 +67,11 @@ steps:
       TOXENV: uvloop37
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.8
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -105,14 +79,11 @@ steps:
       TOXENV: py38
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.8 uvloop
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -120,14 +91,11 @@ steps:
       TOXENV: uvloop38
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.9
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -135,14 +103,11 @@ steps:
       TOXENV: py39
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.9 uvloop
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -150,14 +115,11 @@ steps:
       TOXENV: uvloop39
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.6 contextvars
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -165,14 +127,11 @@ steps:
       TOXENV: contextvars36
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: RPC example
     image: snakepacker/python:all
     depends_on:
-      - prepare toxenv
+      - linter
     pull: always
     commands:
       - tox
@@ -180,16 +139,9 @@ steps:
       TOXENV: rpc
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
-
-volumes:
-  - name: cache
-    temp: {}
 
 ---
 kind: signature
-hmac: 70f4562f90e95db174ad4f207d080155733e4c3b3a52ccf2da80188b1044a18d
+hmac: 7076eb90019e4e86dde22276ce72a7a99de8cbd73e7aa126a074dbd460fe93f3
 
 ...
