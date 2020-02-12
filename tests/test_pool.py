@@ -26,6 +26,24 @@ class SimplePool(aiomisc.PoolBase):
         return not instance.done()
 
 
+async def test_simple_pool_no_reuse_context_manager(loop):
+    size = 5
+    recycle = 1
+
+    pool = SimplePool(maxsize=size, recycle=recycle)
+
+    cm = pool.acquire()
+
+    async with cm as future:
+        assert not future.done()
+
+    with pytest.raises(RuntimeError):
+        async with cm:
+            pass
+
+    await pool.close()
+
+
 async def test_simple_pool_recycle(loop):
     size = 5
     recycle = 1
