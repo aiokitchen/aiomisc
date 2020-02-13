@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from typing import AsyncContextManager
 
 from .utils import cancel_tasks
