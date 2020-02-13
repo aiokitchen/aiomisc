@@ -1,8 +1,12 @@
 import asyncio
+import logging
 from abc import abstractmethod, ABC
 from typing import AsyncContextManager
 
 from .utils import cancel_tasks
+
+
+log = logging.getLogger(__name__)
 
 
 class ContextManager(AsyncContextManager):
@@ -93,7 +97,7 @@ class PoolBase(ABC):
                         self._loop.call_later(
                             self._recycle,
                             self._recycle_bin.put_nowait,
-                            instance
+                            instance,
                         )
 
                     await self._instances.put(instance)
@@ -125,13 +129,20 @@ class PoolBase(ABC):
             except asyncio.QueueEmpty:
                 break
 
+        async def log_exception(coro):
+            try:
+                await coro()
+            except Exception:
+                log.exception("Exception when task execution")
+
         await asyncio.wait_for(
             asyncio.gather(
                 *[
-                    self.__create_task(self._destroy_instance(instance))
+                    self.__create_task(
+                        log_exception(self._destroy_instance(instance))
+                    )
                     for instance in instances
-                ],
-                return_exceptions=True
+                ]
             ),
             timeout=timeout,
         )
