@@ -80,7 +80,7 @@ class PoolBase(ABC):
 
             try:
                 await self._destroy_instance(instance)
-            except:
+            except Exception:
                 log.exception("Error when recycle instance %r", instance)
             finally:
                 self._recycle_bin.task_done()
@@ -178,10 +178,10 @@ class PoolBase(ABC):
                         log_exception(self._destroy_instance(instance))
                     )
                     for instance in instances
-                ], return_exceptions=True
+                ],
+                return_exceptions=True
             ),
             timeout=timeout,
         )
 
         await cancel_tasks(self._tasks)
-
