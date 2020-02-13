@@ -51,13 +51,31 @@ async def test_simple_pool_recycle(loop):
     pool = SimplePool(maxsize=size, recycle=recycle)
 
     futures = []
-    for _ in range(size):
+
+    def on_fail(future):
+        if future.done():
+            return
+
+        future.set_exception(TimeoutError)
+
+    async def run():
         async with pool.acquire() as future:
             assert not future.done()
             futures.append(future)
+            loop.call_later(5 * recycle, on_fail, future)
 
-    await asyncio.wait_for(asyncio.gather(*futures), timeout=recycle * 2)
+    await asyncio.gather(*[run() for _ in range(size)])
+    assert len(pool) == size
 
+    await asyncio.sleep(2 * recycle)
+
+    async def run():
+        async with pool.acquire():
+            pass
+
+    await asyncio.gather(*[run() for _ in range(size)])
+
+    await asyncio.gather(*futures)
     await pool.close()
 
 
@@ -75,7 +93,7 @@ async def test_simple_pool_check_before(loop):
 
     assert len(futures) == size * 2
 
-    await asyncio.gather(*futures)
+    await asyncio.wait_for(asyncio.gather(*futures), timeout=1)
 
     await pool.close()
 
