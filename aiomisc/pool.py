@@ -28,12 +28,13 @@ class ContextManager(AsyncContextManager):
 
 class PoolBase(ABC):
     __slots__ = (
-        "_loop",
-        "_recycle_bin",
+        "_create_lock",
         "_instances",
-        "_used",
+        "_loop",
         "_recycle",
+        "_recycle_bin",
         "_tasks",
+        "_used",
     )
 
     def __init__(self, maxsize=None, recycle=None):
@@ -48,6 +49,7 @@ class PoolBase(ABC):
         self._used = set()
         self._recycle = recycle
         self._tasks = set()
+        self._create_lock = asyncio.Lock()
 
         self.__create_task(self.__recycler())
 
@@ -81,14 +83,20 @@ class PoolBase(ABC):
 
     async def __acquire(self):
         if len(self) < self._instances.maxsize:
-            instance = await self._create_instance()
+            async with self._create_lock:
+                # check twice but no need to
+                # lock for every time
+                if len(self) < self._instances.maxsize:
+                    instance = await self._create_instance()
 
-            if self._recycle:
-                self._loop.call_later(
-                    self._recycle, self._recycle_bin.put_nowait, instance
-                )
+                    if self._recycle:
+                        self._loop.call_later(
+                            self._recycle,
+                            self._recycle_bin.put_nowait,
+                            instance
+                        )
 
-            await self._instances.put(instance)
+                    await self._instances.put(instance)
 
         instance = await self._instances.get()
 
