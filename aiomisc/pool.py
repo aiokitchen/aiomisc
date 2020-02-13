@@ -1,8 +1,9 @@
 import asyncio
 import logging
+from random import random
 from abc import ABC, abstractmethod
 from typing import AsyncContextManager
-
+from collections import defaultdict
 from .utils import cancel_tasks
 
 
@@ -37,7 +38,10 @@ class PoolBase(ABC):
         "_loop",
         "_recycle",
         "_recycle_bin",
+        "_recycle_times",
+        "_semaphore",
         "_tasks",
+        "_len",
         "_used",
     )
 
@@ -48,12 +52,19 @@ class PoolBase(ABC):
 
         self._loop = asyncio.get_event_loop()
 
+        self._instances = asyncio.Queue()
         self._recycle_bin = asyncio.Queue()
-        self._instances = asyncio.Queue(maxsize=maxsize)
-        self._used = set()
+
+        self._semaphore = asyncio.Semaphore(maxsize)
+        self._len = 0
+
         self._recycle = recycle
+
         self._tasks = set()
+        self._used = set()
+
         self._create_lock = asyncio.Lock()
+        self._recycle_times = defaultdict(self._loop.time)
 
         self.__create_task(self.__recycler())
 
@@ -66,8 +77,13 @@ class PoolBase(ABC):
     async def __recycler(self):
         while True:
             instance = await self._recycle_bin.get()
-            self.__create_task(self._destroy_instance(instance))
-            self._recycle_bin.task_done()
+
+            try:
+                await self._destroy_instance(instance)
+            except Exception:
+                log.exception("Error when recycle instance %r", instance)
+            finally:
+                self._recycle_bin.task_done()
 
     @abstractmethod
     async def _create_instance(self):
@@ -83,37 +99,57 @@ class PoolBase(ABC):
         return True
 
     def __len__(self):
-        return len(self._used) + self._instances.qsize()
+        return self._len
+
+    def __recycle_instance(self, instance):
+        self._len -= 1
+        self._semaphore.release()
+        if instance in self._recycle_times:
+            self._recycle_times.pop(instance)
+
+        if instance in self._used:
+            self._used.remove(instance)
+
+        self._recycle_bin.put_nowait(instance)
+
+    async def __create_new_instance(self):
+        await self._semaphore.acquire()
+
+        instance = await self._create_instance()
+        self._len += 1
+
+        if self._recycle:
+            deadline = self._recycle * (1 + random())
+            self._recycle_times[instance] += deadline
+
+        await self._instances.put(instance)
 
     async def __acquire(self):
-        if len(self) < self._instances.maxsize:
-            async with self._create_lock:
-                # check twice but no need to
-                # lock for every time
-                if len(self) < self._instances.maxsize:
-                    instance = await self._create_instance()
-
-                    if self._recycle:
-                        self._loop.call_later(
-                            self._recycle,
-                            self._recycle_bin.put_nowait,
-                            instance,
-                        )
-
-                    await self._instances.put(instance)
+        if not self._semaphore.locked():
+            await self.__create_new_instance()
 
         instance = await self._instances.get()
 
-        if not await self._check_instance(instance):
-            # Bad instance must create a new one
-            self._recycle_bin.put_nowait(instance)
-            return await self.__acquire()
+        try:
+            result = await self._check_instance(instance)
+        except Exception:
+            log.exception("Check instance %r failed", instance)
+            self.__recycle_instance(instance)
+        else:
+            if not result:
+                self.__recycle_instance(instance)
+                return await self.__acquire()
 
         self._used.add(instance)
         return instance
 
     async def __release(self, instance):
         self._used.remove(instance)
+
+        if self._recycle and self._recycle_times[instance] < self._loop.time():
+            self.__recycle_instance(instance)
+            return
+
         self._instances.put_nowait(instance)
 
     def acquire(self):
@@ -131,7 +167,7 @@ class PoolBase(ABC):
 
         async def log_exception(coro):
             try:
-                await coro()
+                await coro
             except Exception:
                 log.exception("Exception when task execution")
 
@@ -142,7 +178,8 @@ class PoolBase(ABC):
                         log_exception(self._destroy_instance(instance))
                     )
                     for instance in instances
-                ]
+                ],
+                return_exceptions=True
             ),
             timeout=timeout,
         )
