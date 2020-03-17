@@ -265,7 +265,7 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
 
     thread.daemon = detouch
 
-    loop.call_soon_threadsafe(thread.start)
+    thread.start()
     return future
 
 
