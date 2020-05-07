@@ -38,7 +38,7 @@ class TCPProxyClient:
         "server_reader", "server_writer",
         "chunk_size", "tasks", "loop",
         "delay", "closing",
-        "read_processor", "write_processor",
+        "processors",
     )
 
     def __init__(
@@ -58,8 +58,7 @@ class TCPProxyClient:
         self.chunk_size = chunk_size        # type: int
         self.delay = 0
         self.closing = self.loop.create_future()
-        self.read_processor = None   # type: t.Optional[ProxyProcessorType]
-        self.write_processor = None  # type: t.Optional[ProxyProcessorType]
+        self.processors = {"read": None, "write": None}
 
     async def pipe(
         self, reader: asyncio.StreamReader,
@@ -69,12 +68,12 @@ class TCPProxyClient:
         try:
             while True:
                 data = await reader.read(self.chunk_size)
-                processor_func = getattr(self, processor)
+                processor_func = self.processors[processor]
 
                 if not data:
                     return
 
-                if processor_func:
+                if processor_func is not None:
                     data = await aiomisc.awaitable(processor_func)(data)
 
                 if self.delay > 0:
@@ -99,14 +98,14 @@ class TCPProxyClient:
                 self.pipe(
                     self.server_reader,
                     self.client_writer,
-                    "write_processor",
+                    "write",
                 ),
             ),
             self.loop.create_task(
                 self.pipe(
                     self.client_reader,
                     self.server_writer,
-                    "read_processor",
+                    "read",
                 ),
             ),
         )
@@ -183,8 +182,8 @@ class TCPProxy:
         write: t.Optional[ProxyProcessorType],
     ):
         for client in self.clients:
-            client.read_processor = read
-            client.write_processor = write
+            client.processors["read"] = read
+            client.processors["write"] = write
 
         self.read_processor = read
         self.write_processor = write
@@ -205,8 +204,8 @@ class TCPProxy:
         self.clients.add(client)
 
         client.delay = self.delay
-        client.read_processor = self.read_processor
-        client.write_processor = self.write_processor
+        client.processors["read"] = self.read_processor
+        client.processors["write"] = self.write_processor
 
         await client.connect(self.target_host, self.target_port)
 
