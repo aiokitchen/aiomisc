@@ -2,7 +2,7 @@ import asyncio
 import socket
 from functools import partial
 
-from ..utils import OptionsType, awaitable, bind_socket, cancel_tasks
+from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
 
