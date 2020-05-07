@@ -120,6 +120,8 @@ class TCPProxyClient:
 
 
 class TCPProxy:
+    DEFAULT_TIMEOUT = 30
+
     __slots__ = (
         "proxy_port", "clients", "server", "proxy_host",
         "target_port", "target_host", "listen_host", "delay",
@@ -159,11 +161,11 @@ class TCPProxy:
 
     async def __aenter__(self):
         if self.server is None:
-            await self.start()
+            await self.start(timeout=self.DEFAULT_TIMEOUT)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
+        await self.close(timeout=self.DEFAULT_TIMEOUT)
 
     async def close(self, timeout=None):
         async def close():
