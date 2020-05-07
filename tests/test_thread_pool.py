@@ -271,7 +271,7 @@ async def test_threaded_generator_close(iterator_decorator, loop, timer):
 
 
 async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
-    stopped = False
+    stopped = threading.Event()
 
     @iterator_decorator(max_size=1)
     def noise():
@@ -281,7 +281,7 @@ async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
             while True:
                 yield os.urandom(32)
         finally:
-            stopped = True
+            stopped.set()
 
     async with timeout(2):
         async with noise() as gen:
@@ -291,7 +291,8 @@ async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
                 if counter > 9:
                     break
 
-        assert stopped
+        stopped.wait(timeout=5)
+        assert stopped.is_set()
 
 
 async def test_threaded_generator_non_generator_raises(

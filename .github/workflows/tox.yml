@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         linter:
-          - lint
+          - pylava
           - checkdoc
           - mypy
 
