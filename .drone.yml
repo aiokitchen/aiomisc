@@ -4,11 +4,13 @@ name: default
 
 
 steps:
-  - name: linter
-    image: snakepacker/python:pylava
+  - name: pylava
+    image: snakepacker/python:all
     pull: always
     commands:
-      - pylava -o pylava.ini .
+      - tox
+    environment:
+      TOXENV: pylava
 
   - name: checkdoc
     image: snakepacker/python:all
@@ -142,6 +144,6 @@ steps:
 
 ---
 kind: signature
-hmac: 7076eb90019e4e86dde22276ce72a7a99de8cbd73e7aa126a074dbd460fe93f3
+hmac: ad7b3be9cc94ae4ac82a5c28c1a48bc82dab11a51d502d66d150e2fe76cc9680
 
 ...
