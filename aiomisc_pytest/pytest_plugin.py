@@ -153,10 +153,25 @@ class TCPProxy:
         )
         return self.server
 
-    async def close(self):
-        await self.disconnect_all()
-        self.server.close()
-        await self.server.wait_closed()
+    ClientType = t.Tuple[asyncio.StreamReader, asyncio.StreamWriter]
+
+    async def create_client(self) -> ClientType:
+        return await asyncio.open_connection(self.proxy_host, self.proxy_port)
+
+    async def __aenter__(self):
+        if not self.server:
+            await self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
+
+    async def close(self, timeout=None):
+        async def close():
+            await self.disconnect_all()
+            self.server.close()
+            await self.server.wait_closed()
+        await asyncio.wait_for(close(), timeout=timeout)
 
     def set_delay(self, delay: float):
         for client in self.clients:

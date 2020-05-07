@@ -47,25 +47,12 @@ def services(service: HashServer):
 @pytest.fixture()
 @async_generator
 async def proxy(tcp_proxy, localhost, server_port):
-    proxy = tcp_proxy(localhost, server_port)
-
-    try:
+    async with tcp_proxy(localhost, server_port) as proxy:
         await yield_(proxy)
-    finally:
-        await asyncio.wait_for(proxy.close(), timeout=1)
 
 
-@pytest.fixture()
-async def proxy_client(proxy):
-    await proxy.start(timeout=1)
-
-    return await asyncio.wait_for(
-        asyncio.open_connection(proxy.proxy_host, proxy.proxy_port), timeout=1,
-    )
-
-
-async def test_proxy_client(proxy_client, proxy):
-    reader, writer = proxy_client
+async def test_proxy_client(proxy):
+    reader, writer = await proxy.create_client()
     payload = b"Hello world"
 
     writer.write(payload)
@@ -74,8 +61,8 @@ async def test_proxy_client(proxy_client, proxy):
     assert hash == hashlib.md5(payload).digest()
 
 
-async def test_proxy_client_close(proxy_client, proxy):
-    reader, writer = proxy_client
+async def test_proxy_client_close(proxy):
+    reader, writer = await proxy.create_client()
     payload = b"Hello world"
 
     writer.write(payload)
@@ -90,11 +77,11 @@ async def test_proxy_client_close(proxy_client, proxy):
     assert reader.at_eof()
 
 
-async def test_proxy_client_slow(proxy_client, proxy):
+async def test_proxy_client_slow(proxy):
     delay = 0.1
     proxy.set_delay(delay)
 
-    reader, writer = proxy_client
+    reader, writer = await proxy.create_client()
     payload = b"Hello world"
 
     delta = -time.monotonic()
@@ -107,7 +94,7 @@ async def test_proxy_client_slow(proxy_client, proxy):
     assert hash == hashlib.md5(payload).digest()
 
 
-async def test_proxy_client_with_processor(proxy_client, proxy):
+async def test_proxy_client_with_processor(proxy):
     processed_request = b"Never say hello"
     processed_response = b"Yeah"
 
@@ -116,7 +103,7 @@ async def test_proxy_client_with_processor(proxy_client, proxy):
         lambda _: processed_response,
     )
 
-    reader, writer = proxy_client
+    reader, writer = await proxy.create_client()
     payload = b"Hello world"
 
     writer.write(payload)

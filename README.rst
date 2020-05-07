@@ -1790,6 +1790,10 @@ TCPProxy
 
 Simple TCP proxy for emulate network problems.
 
+Awailable as fixture `tcp_proxy`
+
+
+
 Examples:
 
 .. code-block:: python
@@ -1803,23 +1807,13 @@ Examples:
     import aiomisc
 
 
-    class HashServer(aiomisc.service.TCPServer):
+    class EchoServer(aiomisc.service.TCPServer):
         async def handle_client(
             self, reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter
         ):
-            hasher = hashlib.md5()
-
             while not reader.at_eof():
-                chunk = await reader.read(65534)
-                if not chunk:
-                    writer.close()
-                    await writer.wait_closed()
-                    return
-
-                hasher.update(chunk)
-                writer.write(hasher.digest())
-
+                writer.write(await reader.read(65534))
 
     @pytest.fixture()
     def server_port(aiomisc_unused_port_factory) -> int:
@@ -1827,49 +1821,18 @@ Examples:
 
 
     @pytest.fixture()
-    def service(
-        loop: asyncio.AbstractEventLoop,
-        server_port, localhost,
-    ) -> HashServer:
-        return HashServer(port=server_port, address=localhost)
-
-
-    @pytest.fixture()
-    def services(service: HashServer):
-        return [service]
+    def services(service: HashServer, server_port, localhost):
+        return [HashServer(port=server_port, address=localhost)]
 
 
     @pytest.fixture()
     async def proxy(tcp_proxy, localhost, server_port):
-        proxy = tcp_proxy(localhost, server_port)
-
-        try:
+        async with tcp_proxy(localhost, server_port) as proxy:
             yield proxy
-        finally:
-            await asyncio.wait_for(proxy.close(), timeout=1)
 
 
-    @pytest.fixture()
-    async def proxy_client(proxy):
-        await proxy.start(timeout=1)
-
-        return await asyncio.wait_for(
-            asyncio.open_connection(proxy.proxy_host, proxy.proxy_port), timeout=1,
-        )
-
-
-    async def test_proxy_client(proxy_client, proxy):
-        reader, writer = proxy_client
-        payload = b"Hello world"
-
-        writer.write(payload)
-        hash = await asyncio.wait_for(reader.readexactly(16), timeout=1)
-
-        assert hash == hashlib.md5(payload).digest()
-
-
-    async def test_proxy_client_close(proxy_client, proxy):
-        reader, writer = proxy_client
+    async def test_proxy_client_close(proxy):
+        reader, writer = await proxy.create_client()
         payload = b"Hello world"
 
         writer.write(payload)
@@ -1884,11 +1847,11 @@ Examples:
         assert reader.at_eof()
 
 
-    async def test_proxy_client_slow(proxy_client, proxy):
+    async def test_proxy_client_slow(proxy):
         delay = 0.1
         proxy.set_delay(delay)
 
-        reader, writer = proxy_client
+        reader, writer = await proxy.create_client()
         payload = b"Hello world"
 
         delta = -time.monotonic()
@@ -1901,7 +1864,7 @@ Examples:
         assert hash == hashlib.md5(payload).digest()
 
 
-    async def test_proxy_client_with_processor(proxy_client, proxy):
+    async def test_proxy_client_with_processor(proxy):
         processed_request = b"Never say hello"
         processed_response = b"Yeah"
 
@@ -1910,7 +1873,7 @@ Examples:
             lambda _: processed_response,
         )
 
-        reader, writer = proxy_client
+        reader, writer = await proxy.create_client()
         payload = b"Hello world"
 
         writer.write(payload)
