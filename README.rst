@@ -5,9 +5,9 @@ aiomisc - miscellaneous utils for asyncio
    :target: https://coveralls.io/github/mosquito/aiomisc
    :alt: Coveralls
 
-.. image:: https://cloud.drone.io/api/badges/mosquito/aiomisc/status.svg
-   :target: https://cloud.drone.io/mosquito/aiomisc
-   :alt: Drone CI
+.. image:: https://github.com/aiokitchen/aiomisc/workflows/tox/badge.svg
+   :target: https://github.com/aiokitchen/aiomisc/actions?query=workflow%3Atox
+   :alt: Actions
 
 .. image:: https://img.shields.io/pypi/v/aiomisc.svg
    :target: https://pypi.python.org/pypi/aiomisc/
