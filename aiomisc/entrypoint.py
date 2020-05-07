@@ -3,7 +3,7 @@ import logging
 import typing
 
 from .context import Context, get_context
-from .log import basic_config, LogFormat
+from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
 from .utils import create_default_event_loop, event_loop_policy, shield
@@ -34,15 +34,17 @@ class Entrypoint:
             *[self._start_service(svc) for svc in self.services],
         )
 
-    def __init__(self, *services, loop: asyncio.AbstractEventLoop = None,
-                 pool_size: int = None,
-                 log_level: typing.Union[int, str] = logging.INFO,
-                 log_format: typing.Union[str, LogFormat] = 'color',
-                 log_buffer_size: int = 1024,
-                 log_flush_interval: float = 0.2,
-                 log_config: bool = True,
-                 policy=event_loop_policy,
-                 debug: bool = False):
+    def __init__(
+        self, *services, loop: asyncio.AbstractEventLoop = None,
+        pool_size: int = None,
+        log_level: typing.Union[int, str] = logging.INFO,
+        log_format: typing.Union[str, LogFormat] = "color",
+        log_buffer_size: int = 1024,
+        log_flush_interval: float = 0.2,
+        log_config: bool = True,
+        policy=event_loop_policy,
+        debug: bool = False
+    ):
 
         """
 
@@ -80,7 +82,7 @@ class Entrypoint:
             self._loop, self._thread_pool = create_default_event_loop(
                 pool_size=self.pool_size,
                 policy=self.policy,
-                debug=self._debug
+                debug=self._debug,
             )
             self._loop_owner = True
 
@@ -126,7 +128,7 @@ class Entrypoint:
         svc.set_loop(self.loop)
 
         start_task, ev_task = map(
-            asyncio.ensure_future, (svc.start(), svc.start_event.wait())
+            asyncio.ensure_future, (svc.start(), svc.start_event.wait()),
         )
 
         await asyncio.wait(
@@ -153,17 +155,17 @@ class Entrypoint:
             return
 
         self.loop.run_until_complete(
-            asyncio.gather(*tasks, return_exceptions=True)
+            asyncio.gather(*tasks, return_exceptions=True),
         )
 
         self.loop.run_until_complete(self.post_stop.call(entrypoint=self))
 
         self.loop.run_until_complete(
-            self.loop.shutdown_asyncgens()
+            self.loop.shutdown_asyncgens(),
         )
 
 
 entrypoint = Entrypoint
 
 
-__all__ = ('entrypoint', 'Entrypoint', 'get_context')
+__all__ = ("entrypoint", "Entrypoint", "get_context")

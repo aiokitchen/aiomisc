@@ -6,16 +6,18 @@ from .timeout import timeout
 
 
 Number = Union[int, float]
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 # noinspection SpellCheckingInspection
-def asyncbackoff(attempt_timeout: Optional[Number],
-                 deadline: Optional[Number],
-                 pause: Number = 0,
-                 *exc: Type[Exception], exceptions=(),
-                 max_tries: int = None,
-                 giveup: Callable[[Exception], bool] = None):
+def asyncbackoff(
+    attempt_timeout: Optional[Number],
+    deadline: Optional[Number],
+    pause: Number = 0,
+    *exc: Type[Exception], exceptions=(),
+    max_tries: int = None,
+    giveup: Callable[[Exception], bool] = None
+):
 
     exceptions = exc + tuple(exceptions)
 

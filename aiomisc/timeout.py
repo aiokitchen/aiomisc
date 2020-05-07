@@ -1,10 +1,10 @@
 import asyncio
 from functools import wraps
-from typing import Union, TypeVar
+from typing import TypeVar, Union
 
 
 Number = Union[int, float]
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def timeout(value):

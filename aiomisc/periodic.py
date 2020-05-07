@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from functools import partial
-from typing import Union, Type, Tuple
+from typing import Tuple, Type, Union
 
 from . import utils
 
@@ -18,7 +18,7 @@ class PeriodicCallback:
 
     """
 
-    __slots__ = '_cb', '_closed', '_task', '_loop', '_handle', '__name'
+    __slots__ = "_cb", "_closed", "_task", "_loop", "_handle", "__name"
 
     def __init__(self, coroutine_func, *args, **kwargs):
         self.__name = repr(coroutine_func)
@@ -38,11 +38,13 @@ class PeriodicCallback:
         except Exception:
             log.exception("Periodic task error:")
 
-    def start(self, interval: Union[int, float],
-              loop=None, *,
-              delay: Union[int, float] = 0,
-              shield: bool = False,
-              suppress_exceptions: Tuple[Type[Exception]] = ()):
+    def start(
+        self, interval: Union[int, float],
+        loop=None, *,
+        delay: Union[int, float] = 0,
+        shield: bool = False,
+        suppress_exceptions: Tuple[Type[Exception]] = ()
+    ):
 
         if self._closed:
             raise asyncio.InvalidStateError
@@ -54,7 +56,7 @@ class PeriodicCallback:
                 return
 
             if self._task and not self._task.done():
-                log.warning('Task %r still running skipping', self)
+                log.warning("Task %r still running skipping", self)
                 return
 
             del self._task
@@ -91,7 +93,7 @@ class PeriodicCallback:
         return self._task
 
     def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, self.__name)
+        return "%s(%s)" % (self.__class__.__name__, self.__name)
 
     @property
     def task(self):

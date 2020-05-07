@@ -1,9 +1,10 @@
 import asyncio
 import logging
-from random import random
 from abc import ABC, abstractmethod
-from typing import AsyncContextManager
 from collections import defaultdict
+from random import random
+from typing import AsyncContextManager
+
 from .utils import cancel_tasks
 
 
@@ -175,7 +176,7 @@ class PoolBase(ABC):
             asyncio.gather(
                 *[
                     self.__create_task(
-                        log_exception(self._destroy_instance(instance))
+                        log_exception(self._destroy_instance(instance)),
                     )
                     for instance in instances
                 ],

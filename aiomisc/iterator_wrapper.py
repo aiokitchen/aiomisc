@@ -1,11 +1,12 @@
 import asyncio
 import inspect
-import typing
 import threading
+import typing
 from collections import deque
 
-T = typing.TypeVar('T')
-R = typing.TypeVar('R')
+
+T = typing.TypeVar("T")
+R = typing.TypeVar("R")
 
 GenType = typing.Generator[T, R, None]
 FuncType = typing.Callable[[], GenType]
@@ -17,8 +18,10 @@ class IteratorWrapper(typing.AsyncIterator):
         "__queue_maxsize", "__read_event", "__write_event", "executor", "loop",
     )
 
-    def __init__(self, gen_func: FuncType, loop=None,
-                 max_size=0, executor=None):
+    def __init__(
+        self, gen_func: FuncType, loop=None,
+        max_size=0, executor=None,
+    ):
 
         self.loop = loop or asyncio.get_event_loop()
         self.executor = executor
@@ -96,7 +99,7 @@ class IteratorWrapper(typing.AsyncIterator):
 
         await self.__close_event.wait()
         await asyncio.gather(
-            self.__gen_task, loop=self.loop, return_exceptions=True
+            self.__gen_task, loop=self.loop, return_exceptions=True,
         )
         del self.__queue
 

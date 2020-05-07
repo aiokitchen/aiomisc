@@ -11,6 +11,7 @@ from async_timeout import timeout
 
 import aiomisc
 
+
 try:
     import contextvars
 except ImportError:
@@ -50,8 +51,8 @@ async def test_future_gc(thread_pool_executor, loop):
 
         cfuture.add_done_callback(
             lambda *_: loop.call_soon_threadsafe(
-                future.set_result, True
-            )
+                future.set_result, True,
+            ),
         )
 
         weakref.finalize(cfuture, lambda *_: event.set())
@@ -170,7 +171,7 @@ async def test_simple(threaded_decorator, loop, timer):
 
 gen_decos = (
     aiomisc.threaded_iterable,
-    aiomisc.threaded_iterable_separate
+    aiomisc.threaded_iterable_separate,
 )
 
 

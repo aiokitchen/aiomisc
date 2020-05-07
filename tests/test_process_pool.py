@@ -1,10 +1,9 @@
 import asyncio
 import os
 import signal
+from time import sleep, time
 
 import pytest
-from time import time, sleep
-
 from async_timeout import timeout
 
 from aiomisc.process_pool import ProcessPoolExecutor
@@ -25,9 +24,11 @@ async def test_simple(pool, loop, timer):
 
     async with timeout(2):
         with timer(1):
-            await asyncio.gather(*[
-                loop.run_in_executor(pool, sleep, 1) for _ in range(8)
-            ])
+            await asyncio.gather(
+                *[
+                    loop.run_in_executor(pool, sleep, 1) for _ in range(8)
+                ]
+            )
 
 
 async def test_exception(pool, loop):

@@ -6,6 +6,8 @@ from functools import wraps
 from multiprocessing import cpu_count
 from typing import Any, Iterable, Tuple
 
+from .thread_pool import ThreadPoolExecutor
+
 
 try:
     import uvloop
@@ -14,7 +16,6 @@ except ImportError:
     event_loop_policy = asyncio.DefaultEventLoopPolicy()
 
 
-from .thread_pool import ThreadPoolExecutor
 
 
 log = logging.getLogger(__name__)
@@ -36,9 +37,11 @@ def chunk_list(iterable: Iterable[Any], size: int):
 OptionsType = Iterable[Tuple[int, int, int]]
 
 
-def bind_socket(*args, address: str, port: int, options: OptionsType = (),
-                reuse_addr: bool = True, reuse_port: bool = False,
-                proto_name: str = 'tcp'):
+def bind_socket(
+    *args, address: str, port: int, options: OptionsType = (),
+    reuse_addr: bool = True, reuse_port: bool = False,
+    proto_name: str = "tcp"
+):
     """
 
     :param args: which will be passed to stdlib's socket constructor (optional)
@@ -53,7 +56,7 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     """
 
     if not args:
-        if ':' in address:
+        if ":" in address:
             args = (socket.AF_INET6, socket.SOCK_STREAM)
         else:
             args = (socket.AF_INET, socket.SOCK_STREAM)
@@ -62,10 +65,10 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     sock.setblocking(False)
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
-    if hasattr(socket, 'SO_REUSEPORT'):
+    if hasattr(socket, "SO_REUSEPORT"):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
     else:
-        log.warning('SO_REUSEPORT is not implemented by underlying library.')
+        log.warning("SO_REUSEPORT is not implemented by underlying library.")
 
     for level, option, value in options:
         sock.setsockopt(level, option, value)
@@ -74,15 +77,17 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     sock_addr = sock.getsockname()[:2]
 
     if sock.family == socket.AF_INET6:
-        log.info('Listening %s://[%s]:%s', proto_name, *sock_addr)
+        log.info("Listening %s://[%s]:%s", proto_name, *sock_addr)
     else:
-        log.info('Listening %s://%s:%s', proto_name, *sock_addr)
+        log.info("Listening %s://%s:%s", proto_name, *sock_addr)
 
     return sock
 
 
-def create_default_event_loop(pool_size=None, policy=event_loop_policy,
-                              debug=False):
+def create_default_event_loop(
+    pool_size=None, policy=event_loop_policy,
+    debug=False,
+):
     try:
         asyncio.get_event_loop().close()
     except RuntimeError:
@@ -101,8 +106,10 @@ def create_default_event_loop(pool_size=None, policy=event_loop_policy,
     return loop, thread_pool
 
 
-def new_event_loop(pool_size=None,
-                   policy=event_loop_policy) -> asyncio.AbstractEventLoop:
+def new_event_loop(
+    pool_size=None,
+    policy=event_loop_policy,
+) -> asyncio.AbstractEventLoop:
     loop, thread_pool = create_default_event_loop(pool_size, policy)
     return loop
 
@@ -181,7 +188,7 @@ def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
 
         else:
             log.warning(
-                "Skipping object %r because it's not a Task or Future", task
+                "Skipping object %r because it's not a Task or Future", task,
             )
 
     if not cancelled_tasks:
@@ -207,8 +214,10 @@ async def _select_waiter(idx, awaitable, result):
     result.set_result(idx, ret, is_exception=False)
 
 
-async def select(*awaitables, return_exceptions=False, cancel=True,
-                 timeout=None, wait=True, loop=None) -> SelectResult:
+async def select(
+    *awaitables, return_exceptions=False, cancel=True,
+    timeout=None, wait=True, loop=None
+) -> SelectResult:
 
     loop = loop or asyncio.get_event_loop()
     result = SelectResult(len(awaitables))
@@ -223,7 +232,7 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
             coroutines,
             timeout=timeout,
             return_when=asyncio.FIRST_COMPLETED,
-        )
+        ),
     )
 
     if cancel:

@@ -30,8 +30,10 @@ def services(service: _TestService, async_sleep):
     return [service]
 
 
-async def test_loop_fixture(service: _TestService,
-                            loop: asyncio.AbstractEventLoop):
+async def test_loop_fixture(
+    service: _TestService,
+    loop: asyncio.AbstractEventLoop
+):
     assert service.loop is service.loop_on_init is loop
 
 
@@ -46,4 +48,4 @@ async def test_yield_fixture(yield_fixture):  # noqa
 
 
 def test_localhost(localhost):
-    assert socket.gethostbyname('localhost') == localhost
+    assert socket.gethostbyname("localhost") == localhost

@@ -2,20 +2,22 @@ import asyncio
 import socket
 from functools import partial
 
-from .base import SimpleServer
 from ..utils import OptionsType, bind_socket
+from .base import SimpleServer
 
 
 class TCPServer(SimpleServer):
-    PROTO_NAME = 'tcp'
+    PROTO_NAME = "tcp"
 
-    def __init__(self, address: str = None, port: int = None,
-                 options: OptionsType = (), sock=None, **kwargs):
+    def __init__(
+        self, address: str = None, port: int = None,
+        options: OptionsType = (), sock=None, **kwargs
+    ):
         if not sock:
             if not (address and port):
                 raise RuntimeError(
-                    'You should pass socket instance or '
-                    '"address" and "port" couple'
+                    "You should pass socket instance or "
+                    '"address" and "port" couple',
                 )
 
             self.make_socket = partial(
@@ -25,7 +27,7 @@ class TCPServer(SimpleServer):
                 options=options,
             )
         elif not isinstance(sock, socket.socket):
-            raise ValueError('sock must be socket instance')
+            raise ValueError("sock must be socket instance")
         else:
             self.make_socket = lambda: sock
 
@@ -33,8 +35,10 @@ class TCPServer(SimpleServer):
 
         super().__init__(**kwargs)
 
-    async def handle_client(self, reader: asyncio.StreamReader,
-                            writer: asyncio.StreamWriter):
+    async def handle_client(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter
+    ):
         raise NotImplementedError
 
     async def start(self):

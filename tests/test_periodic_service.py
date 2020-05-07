@@ -1,4 +1,5 @@
 import asyncio
+
 import pytest
 
 import aiomisc
@@ -13,7 +14,7 @@ def test_str_representation():
         ...
 
     svc = FooPeriodicService(interval=42, delay=4815162342)
-    assert str(svc) == 'FooPeriodicService(interval=42,delay=4815162342)'
+    assert str(svc) == "FooPeriodicService(interval=42,delay=4815162342)"
 
 
 def test_periodic():

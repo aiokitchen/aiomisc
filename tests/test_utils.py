@@ -139,7 +139,7 @@ def test_configure_logging_json(capsys):
     data = str(uuid.uuid4())
 
     aiomisc.log.basic_config(
-        level=logging.DEBUG, log_format='json', buffered=False
+        level=logging.DEBUG, log_format="json", buffered=False,
     )
     logging.info(data)
 
@@ -147,7 +147,7 @@ def test_configure_logging_json(capsys):
     stdout, stderr = capsys.readouterr()
 
     json_result = json.loads(stdout.strip())
-    assert json_result['msg'] == data
+    assert json_result["msg"] == data
 
     logging.basicConfig(handlers=[], level=logging.INFO)
 
@@ -158,8 +158,10 @@ def test_configure_logging_stderr(capsys):
     out, err = capsys.readouterr()
 
     # logging.basicConfig(level=logging.INFO)
-    aiomisc.log.basic_config(level=logging.DEBUG,
-                             log_format='stream', buffered=False)
+    aiomisc.log.basic_config(
+        level=logging.DEBUG,
+        log_format="stream", buffered=False,
+    )
 
     logging.info(data)
 
@@ -171,11 +173,13 @@ def test_configure_logging_stderr(capsys):
     logging.basicConfig(handlers=[])
 
 
-@pytest.mark.parametrize("address,family", [
-    ("127.0.0.1", socket.AF_INET),
-    ("0.0.0.0", socket.AF_INET),
-    ("::", socket.AF_INET6),
-])
+@pytest.mark.parametrize(
+    "address,family", [
+        ("127.0.0.1", socket.AF_INET),
+        ("0.0.0.0", socket.AF_INET),
+        ("::", socket.AF_INET6),
+    ],
+)
 def test_bind_address(address, family, aiomisc_unused_port):
     sock = aiomisc.bind_socket(address=address, port=aiomisc_unused_port)
 

@@ -2,8 +2,8 @@ import asyncio
 import socket
 from functools import partial
 
+from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
-from ..utils import OptionsType, bind_socket, awaitable
 
 
 class UDPServer(SimpleServer):
@@ -22,24 +22,26 @@ class UDPServer(SimpleServer):
         def datagram_received(self, data: bytes, addr: tuple):
             self.loop.create_task(self.handler(data, addr))
 
-    def __init__(self, address: str = None, port: int = None,
-                 options: OptionsType = (), sock=None, **kwargs):
+    def __init__(
+        self, address: str = None, port: int = None,
+        options: OptionsType = (), sock=None, **kwargs
+    ):
         if not sock:
             if not (address and port):
                 raise RuntimeError(
-                    'You should pass socket instance or '
-                    '"address" and "port" couple'
+                    "You should pass socket instance or "
+                    '"address" and "port" couple',
                 )
 
             self.make_socket = partial(
                 bind_socket,
-                socket.AF_INET6 if ':' in address else socket.AF_INET,
+                socket.AF_INET6 if ":" in address else socket.AF_INET,
                 socket.SOCK_DGRAM,
                 address=address, port=port, options=options,
-                proto_name='udp',
+                proto_name="udp",
             )
         elif not isinstance(sock, socket.socket):
-            raise ValueError('sock must be socket instance')
+            raise ValueError("sock must be socket instance")
         else:
             self.make_socket = lambda: sock
 

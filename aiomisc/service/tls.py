@@ -5,8 +5,8 @@ from functools import partial
 from pathlib import Path
 from typing import Union
 
-from .base import SimpleServer
 from ..utils import OptionsType, bind_socket
+from .base import SimpleServer
 
 
 PathOrStr = Union[Path, str]
@@ -38,20 +38,22 @@ def get_ssl_context(cert, key, ca, verify, require_client_cert):
 
 
 class TLSServer(SimpleServer):
-    PROTO_NAME = 'tls'
+    PROTO_NAME = "tls"
 
-    def __init__(self, *, address: str = None, port: int = None,
-                 cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
-                 require_client_cert: bool = False, verify: bool = True,
-                 options: OptionsType = (), sock=None, **kwargs):
+    def __init__(
+        self, *, address: str = None, port: int = None,
+        cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
+        require_client_cert: bool = False, verify: bool = True,
+        options: OptionsType = (), sock=None, **kwargs
+    ):
 
         self.__ssl_options = cert, key, ca, verify, require_client_cert
 
         if not sock:
             if not (address and port):
                 raise RuntimeError(
-                    'You should pass socket instance or '
-                    '"address" and "port" couple'
+                    "You should pass socket instance or "
+                    '"address" and "port" couple',
                 )
 
             self.make_socket = partial(
@@ -61,7 +63,7 @@ class TLSServer(SimpleServer):
                 options=options,
             )
         elif not isinstance(sock, socket.socket):
-            raise ValueError('sock must be socket instance')
+            raise ValueError("sock must be socket instance")
         else:
             self.make_socket = lambda: sock
 
@@ -69,8 +71,10 @@ class TLSServer(SimpleServer):
 
         super().__init__(**kwargs)
 
-    async def handle_client(self, reader: asyncio.StreamReader,
-                            writer: asyncio.StreamWriter):
+    async def handle_client(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter
+    ):
         raise NotImplementedError
 
     async def start(self):
@@ -83,7 +87,7 @@ class TLSServer(SimpleServer):
         self.server = await asyncio.start_server(
             self.handle_client,
             sock=self.socket,
-            ssl=ssl_context
+            ssl=ssl_context,
         )
 
     async def stop(self, exc: Exception = None):

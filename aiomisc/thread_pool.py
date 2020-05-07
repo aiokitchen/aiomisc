@@ -14,6 +14,7 @@ from typing import NamedTuple
 
 from .iterator_wrapper import IteratorWrapper
 
+
 try:
     from queue import SimpleQueue
 except ImportError:
@@ -41,11 +42,11 @@ except ImportError:
 WorkItemBase = NamedTuple(
     "WorkItemBase", (
         ("func", typing.Callable),
-        ('args', typing.Tuple),
-        ('kwargs', typing.Dict),
-        ('future', asyncio.Future),
-        ('loop', asyncio.AbstractEventLoop),
-    )
+        ("args", typing.Tuple),
+        ("kwargs", typing.Dict),
+        ("future", asyncio.Future),
+        ("loop", asyncio.AbstractEventLoop),
+    ),
 )
 
 
@@ -81,14 +82,14 @@ class WorkItem(WorkItemBase):
             self.__class__.set_result,
             self.future,
             result,
-            exception
+            exception,
         )
 
 
 class ThreadPoolExecutor(ThreadPoolExecutorBase):
     __slots__ = (
-        '__futures', '__pool', '__tasks',
-        '__write_lock', '__thread_events',
+        "__futures", "__pool", "__tasks",
+        "__write_lock", "__thread_events",
     )
 
     def __init__(self, max_workers=max((cpu_count(), 4)), loop=None):
@@ -114,7 +115,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         thread = threading.Thread(
             target=self._in_thread,
             name="[%d] Thread Pool" % idx,
-            args=(event,)
+            args=(event,),
         )
 
         thread.daemon = True
@@ -132,7 +133,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
                 if work_item.loop.is_closed():
                     log.warning(
                         "Event loop is closed. Call %r skipped",
-                        work_item.func
+                        work_item.func,
                     )
                     continue
 
@@ -146,7 +147,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
     def submit(self, fn, *args, **kwargs):
         if fn is None or not callable(fn):
-            raise ValueError('First argument must be callable')
+            raise ValueError("First argument must be callable")
 
         loop = asyncio.get_event_loop()
 
@@ -161,8 +162,8 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
                     args=args,
                     kwargs=kwargs,
                     future=future,
-                    loop=loop
-                )
+                    loop=loop,
+                ),
             )
 
             return future
@@ -187,13 +188,15 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         self.shutdown()
 
 
-def run_in_executor(func, executor=None, args=(),
-                    kwargs=MappingProxyType({})) -> asyncio.Future:
+def run_in_executor(
+    func, executor=None, args=(),
+    kwargs=MappingProxyType({}),
+) -> asyncio.Future:
 
     loop = get_event_loop()
     # noinspection PyTypeChecker
     return loop.run_in_executor(
-        executor, context_partial(func, *args, **kwargs)
+        executor, context_partial(func, *args, **kwargs),
     )
 
 
@@ -209,7 +212,7 @@ async def _awaiter(future):
 
 def threaded(func):
     if asyncio.iscoroutinefunction(func):
-        raise TypeError('Can not wrap coroutine')
+        raise TypeError("Can not wrap coroutine")
 
     if inspect.isgeneratorfunction(func):
         return threaded_iterable(func)
@@ -223,8 +226,10 @@ def threaded(func):
     return wrap
 
 
-def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
-                      detouch=True, no_return=False) -> asyncio.Future:
+def run_in_new_thread(
+    func, args=(), kwargs=MappingProxyType({}),
+    detouch=True, no_return=False,
+) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()
 
@@ -244,7 +249,7 @@ def run_in_new_thread(func, args=(), kwargs=MappingProxyType({}),
     def in_thread(target):
         try:
             loop.call_soon_threadsafe(
-                set_result, target()
+                set_result, target(),
             )
         except Exception as exc:
             if loop.is_closed() and no_return:
@@ -274,12 +279,12 @@ def threaded_separate(func, detouch=True):
         return partial(threaded_separate, detouch=detouch)
 
     if asyncio.iscoroutinefunction(func):
-        raise TypeError('Can not wrap coroutine')
+        raise TypeError("Can not wrap coroutine")
 
     @wraps(func)
     def wrap(*args, **kwargs):
         future = run_in_new_thread(
-            func, args=args, kwargs=kwargs, detouch=detouch
+            func, args=args, kwargs=kwargs, detouch=detouch,
         )
 
         return _awaiter(future)
@@ -326,8 +331,10 @@ def threaded_iterable_separate(func=None, max_size: int = 0):
 
 
 class CoroutineWaiter:
-    def __init__(self, loop: asyncio.AbstractEventLoop, coroutine_func,
-                 *args, **kwargs):
+    def __init__(
+        self, loop: asyncio.AbstractEventLoop, coroutine_func,
+        *args, **kwargs
+    ):
         self.__func = partial(coroutine_func, *args, **kwargs)
         self.__loop = loop
         self.__event = threading.Event()

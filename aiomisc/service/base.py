@@ -7,7 +7,7 @@ class ServiceMeta(type):
     def __new__(cls, name, bases, namespace, **kwds):
         instance = type.__new__(cls, name, bases, dict(namespace))
 
-        for key in ('__async_required__', '__required__'):
+        for key in ("__async_required__", "__required__"):
             setattr(instance, key, frozenset(getattr(instance, key, ())))
 
         check_instance = all(
@@ -17,21 +17,21 @@ class ServiceMeta(type):
 
         if not check_instance:
             raise TypeError(
-                'Following methods must be coroutine functions',
-                tuple('%s.%s' % (name, m) for m in instance.__async_required__)
+                "Following methods must be coroutine functions",
+                tuple("%s.%s" % (name, m) for m in instance.__async_required__),
             )
 
         return instance
 
 
 class Service(metaclass=ServiceMeta):
-    __async_required__ = 'start', 'stop'
+    __async_required__ = "start", "stop"
     __required__ = ()
 
     def __init__(self, **kwargs):
         lost_kw = self.__required__ - kwargs.keys()
         if lost_kw:
-            raise AttributeError('Absent attributes', lost_kw)
+            raise AttributeError("Absent attributes", lost_kw)
 
         self.loop = None
         self._set_params(**kwargs)

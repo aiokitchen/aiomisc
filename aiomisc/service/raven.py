@@ -1,17 +1,18 @@
+import inspect
 import logging
 import socket
-import inspect
 from types import MappingProxyType
-from typing import Mapping, Iterable  # NOQA
+from typing import Iterable, Mapping  # NOQA
 
 import yarl
-from aiohttp import TCPConnector, ClientSession
+from aiohttp import ClientSession, TCPConnector
+
+from aiomisc.service import Service
 from raven import Client
 from raven.handlers.logging import SentryHandler
 from raven.transport import Transport
 from raven_aiohttp import QueuedAioHttpTransport
 
-from aiomisc.service import Service
 
 log = logging.getLogger(__name__)
 
@@ -29,12 +30,14 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
     WORKERS = 1
     QUEUE_SIZE = 1000
 
-    def __init__(self, *args, family=socket.AF_UNSPEC, loop=None,
-                 dns_cache: bool = DNS_CACHE,
-                 dns_cache_ttl: int = DNS_CACHE_TTL,
-                 connection_limit: int = TCP_CONNECTION_LIMIT,
-                 connection_limit_host: int = TCP_CONNECTION_LIMIT_HOST,
-                 workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs):
+    def __init__(
+        self, *args, family=socket.AF_UNSPEC, loop=None,
+        dns_cache: bool = DNS_CACHE,
+        dns_cache_ttl: int = DNS_CACHE_TTL,
+        connection_limit: int = TCP_CONNECTION_LIMIT,
+        connection_limit_host: int = TCP_CONNECTION_LIMIT_HOST,
+        workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs
+    ):
         self.connection_limit = connection_limit
         self.connection_limit_host = connection_limit_host
         self.dns_cache = dns_cache
@@ -57,7 +60,7 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
 
         return ClientSession(
             connector=self.connector,
-            connector_owner=False
+            connector_owner=False,
         )
 
     async def _close(self):
@@ -70,7 +73,7 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
 
 
 class RavenSender(Service):
-    __required__ = 'sentry_dsn',
+    __required__ = "sentry_dsn",
 
     sentry_dsn = None  # type: yarl.URL
     min_level = logging.WARNING  # type: int
@@ -91,14 +94,14 @@ class RavenSender(Service):
         self.client.remote.get_transport()
 
         self.sentry_dsn = yarl.URL(
-            self.sentry_dsn
-        ).with_password('').with_user('')
+            self.sentry_dsn,
+        ).with_password("").with_user("")
 
-        log.info('Starting Raven for %r', self.sentry_dsn)
+        log.info("Starting Raven for %r", self.sentry_dsn)
 
         handler = SentryHandler(
             client=self.client,
-            level=self.min_level
+            level=self.min_level,
         )
 
         # Add filters
@@ -106,16 +109,16 @@ class RavenSender(Service):
             handler.addFilter(fltr)
 
         logging.getLogger().handlers.append(
-            handler
+            handler,
         )
 
     async def stop(self, *_):
         transport = self.client.remote.get_transport()
-        self.client.set_dsn('', transport=DummyTransport)
+        self.client.set_dsn("", transport=DummyTransport)
 
         await transport.close()
 
-        log.info('Stopping Raven client for %r', self.sentry_dsn)
+        log.info("Stopping Raven client for %r", self.sentry_dsn)
 
 
-__all__ = ('RavenSender',)
+__all__ = ("RavenSender",)

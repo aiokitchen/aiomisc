@@ -59,12 +59,12 @@ def proxy_property(name):
 
 @total_ordering
 class AsyncFileIOBase:
-    __slots__ = ('loop', '__opener', 'fp', 'executor', '__iterator_lock')
+    __slots__ = ("loop", "__opener", "fp", "executor", "__iterator_lock")
 
     opener = staticmethod(threaded(open))
 
     def __init__(self, fname, mode="r", executor=None, *args, **kwargs):
-        self.loop = kwargs.pop('loop', asyncio.get_event_loop())
+        self.loop = kwargs.pop("loop", asyncio.get_event_loop())
         self.fp = None
         self.executor = executor
         self.__opener = partial(self.opener, fname, mode, *args, **kwargs)
@@ -89,7 +89,7 @@ class AsyncFileIOBase:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self.loop.run_in_executor(
-            None, self.fp.__exit__, exc_type, exc_val, exc_tb
+            None, self.fp.__exit__, exc_type, exc_val, exc_tb,
         )
 
     def __del__(self):
@@ -113,9 +113,9 @@ class AsyncFileIOBase:
 
     def __eq__(self, other: "async_open"):
         return (
-            self.__class__, self.fp.__eq__(other)
+            self.__class__, self.fp.__eq__(other),
         ) == (
-            other.__class__, self.fp.__eq__(other)
+            other.__class__, self.fp.__eq__(other),
         )
 
     def __lt__(self, other: "async_open"):
@@ -124,45 +124,45 @@ class AsyncFileIOBase:
     def __hash__(self):
         return hash((self.__class__, self.fp))
 
-    fileno = proxy_method('fileno')
-    isatty = proxy_method('isatty')
+    fileno = proxy_method("fileno")
+    isatty = proxy_method("isatty")
 
-    mode = proxy_property('mode')
-    name = proxy_property('name')
+    mode = proxy_property("mode")
+    name = proxy_property("name")
 
-    close = proxy_method_async('close')
-    detach = proxy_method_async('detach')
-    flush = proxy_method_async('flush')
-    peek = proxy_method_async('peek')
-    raw = proxy_method_async('raw')
-    read = proxy_method_async('read')
-    read1 = proxy_method_async('read1')
-    readinto = proxy_method_async('readinto')
-    readinto1 = proxy_method_async('readinto1')
-    readline = proxy_method_async('readline')
-    readlines = proxy_method_async('readlines')
-    seek = proxy_method_async('seek')
-    peek = proxy_method_async('peek')
-    truncate = proxy_method_async('truncate')
-    write = proxy_method_async('write')
-    writelines = proxy_method_async('writelines')
+    close = proxy_method_async("close")
+    detach = proxy_method_async("detach")
+    flush = proxy_method_async("flush")
+    peek = proxy_method_async("peek")
+    raw = proxy_method_async("raw")
+    read = proxy_method_async("read")
+    read1 = proxy_method_async("read1")
+    readinto = proxy_method_async("readinto")
+    readinto1 = proxy_method_async("readinto1")
+    readline = proxy_method_async("readline")
+    readlines = proxy_method_async("readlines")
+    seek = proxy_method_async("seek")
+    peek = proxy_method_async("peek")
+    truncate = proxy_method_async("truncate")
+    write = proxy_method_async("write")
+    writelines = proxy_method_async("writelines")
 
-    tell = proxy_method_async('tell', in_executor=False)
-    readable = proxy_method_async('readable', in_executor=False)
-    seekable = proxy_method_async('seekable', in_executor=False)
-    writable = proxy_method_async('writable', in_executor=False)
+    tell = proxy_method_async("tell", in_executor=False)
+    readable = proxy_method_async("readable", in_executor=False)
+    seekable = proxy_method_async("seekable", in_executor=False)
+    writable = proxy_method_async("writable", in_executor=False)
 
 
 class AsyncTextFileIOBase:
-    newlines = proxy_property('newlines')
-    errors = proxy_property('errors')
-    line_buffering = proxy_property('line_buffering')
-    encoding = proxy_property('encoding')
-    buffer = proxy_property('buffer')
+    newlines = proxy_property("newlines")
+    errors = proxy_property("errors")
+    line_buffering = proxy_property("line_buffering")
+    encoding = proxy_property("encoding")
+    buffer = proxy_property("buffer")
 
 
 class AsyncBytesFileIOBase:
-    raw = proxy_property('raw')
+    raw = proxy_property("raw")
 
 
 class AsyncTextFileIO(AsyncFileIOBase, AsyncTextFileIOBase):
@@ -180,6 +180,6 @@ AsyncFileT = Union[
 
 
 def async_open(fname, mode="r", *args, **kwargs) -> AsyncFileT:
-    if 'b' in mode:
+    if "b" in mode:
         return AsyncBytesFileIO(fname, mode=mode, *args, **kwargs)
     return AsyncTextFileIO(fname, mode=mode, *args, **kwargs)
