@@ -20,6 +20,7 @@ jobs:
         linter:
           - lint
           - checkdoc
+          - mypy
 
     steps:
       - uses: actions/checkout@v2
@@ -30,7 +31,7 @@ jobs:
         with:
           args: tox
 
-  build:
+  tests:
     needs: lint
     runs-on: ubuntu-latest
 
