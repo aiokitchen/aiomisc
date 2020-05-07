@@ -14,7 +14,6 @@ except ImportError:         # pragma: nocover
     from aiohttp.helpers import AccessLogger
 
 
-
 class AIOHTTPService(Service):
     __async_required__ = "start", "create_application"
 

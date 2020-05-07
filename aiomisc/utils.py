@@ -16,8 +16,6 @@ except ImportError:
     event_loop_policy = asyncio.DefaultEventLoopPolicy()
 
 
-
-
 log = logging.getLogger(__name__)
 
 
