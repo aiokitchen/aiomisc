@@ -78,7 +78,7 @@ async def test_proxy_client_close(proxy):
 
 async def test_proxy_client_slow(proxy):
     delay = 0.1
-    proxy.set_delay(delay)
+    proxy.set_delay(delay, delay)
 
     reader, writer = await proxy.create_client()
     payload = b"Hello world"

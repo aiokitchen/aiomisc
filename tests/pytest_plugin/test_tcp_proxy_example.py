@@ -55,21 +55,22 @@ async def test_proxy_client_close(proxy):
 
 
 async def test_proxy_client_slow(proxy):
-    delay = 0.1
-    # Proxy will delay each data chunk
-    proxy.set_delay(delay)
+    read_delay = 0.1
+    write_delay = 0.2
 
-    reader, writer = await proxy.create_client()
-    payload = b"Hello world"
+    # Emulation of asymmetric and slow ISP
+    with proxy.slowdown(read_delay, write_delay):
+        reader, writer = await proxy.create_client()
+        payload = b"Hello world"
 
-    delta = -time.monotonic()
+        delta = -time.monotonic()
 
-    writer.write(payload)
-    await asyncio.wait_for(reader.read(1024), timeout=2)
+        writer.write(payload)
+        await asyncio.wait_for(reader.read(1024), timeout=2)
 
-    delta += time.monotonic()
+        delta += time.monotonic()
 
-    assert delta >= delay
+        assert delta >= read_delay + write_delay
 
 
 async def test_proxy_client_with_processor(proxy):
