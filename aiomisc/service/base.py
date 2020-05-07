@@ -1,6 +1,7 @@
 import asyncio
 
-from aiomisc.context import Context, get_context
+from ..context import Context, get_context
+from ..utils import cancel_tasks
 
 
 class ServiceMeta(type):
@@ -62,10 +63,18 @@ class Service(metaclass=ServiceMeta):
 class SimpleServer(Service):
     def __init__(self, **kwargs):
         self.server = None
+        self.tasks = set()
         super().__init__(**kwargs)
+
+    def create_task(self, coro):
+        task = self.loop.create_task(coro)
+        self.tasks.add(task)
+        task.add_done_callback(self.tasks.remove)
+        return task
 
     async def start(self):
         raise NotImplementedError
 
     async def stop(self, exc: Exception = None):
+        await cancel_tasks(self.tasks)
         self.server.close()

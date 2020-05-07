@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import Path
 from typing import Union
 
-from ..utils import OptionsType, bind_socket
+from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
 
@@ -71,6 +71,12 @@ class TLSServer(SimpleServer):
 
         super().__init__(**kwargs)
 
+    def make_client_handler(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
+    ):
+        return self.create_task(awaitable(self.handle_client)(reader, writer))
+
     async def handle_client(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter
@@ -85,7 +91,7 @@ class TLSServer(SimpleServer):
         self.socket = self.make_socket()
 
         self.server = await asyncio.start_server(
-            self.handle_client,
+            self.make_client_handler,
             sock=self.socket,
             ssl=ssl_context,
         )

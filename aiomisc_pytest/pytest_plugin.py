@@ -2,13 +2,15 @@ import asyncio
 import logging
 import os
 import socket
-import typing
+import typing as t
 from asyncio.events import get_event_loop
 from contextlib import suppress
 from functools import partial, wraps
 from unittest.mock import MagicMock
 
 import pytest
+
+import aiomisc
 
 
 asyncio.get_event_loop = MagicMock(asyncio.get_event_loop)
@@ -25,6 +27,198 @@ try:
     from async_generator import isasyncgenfunction
 except ImportError:
     from inspect import isasyncgenfunction
+
+
+ProxyProcessorType = t.Callable[[bytes], t.Union[bytes, t.Awaitable[bytes]]]
+
+
+class TCPProxyClient:
+    __slots__ = (
+        "client_reader", "client_writer",
+        "server_reader", "server_writer",
+        "chunk_size", "tasks", "loop",
+        "delay", "closing",
+        "processors",
+    )
+
+    def __init__(
+        self, client_reader: asyncio.StreamReader,
+        client_writer: asyncio.StreamWriter,
+        chunk_size: int = 64 * 1024,
+    ):
+
+        self.loop = asyncio.get_event_loop()
+        self.client_reader = client_reader  # type: asyncio.StreamReader
+        self.client_writer = client_writer  # type: asyncio.StreamWriter
+
+        self.server_reader = None  # type: t.Optional[asyncio.StreamReader]
+        self.server_writer = None  # type: t.Optional[asyncio.StreamWriter]
+
+        self.tasks = ()  # type: t.Iterable[asyncio.Task]
+        self.chunk_size = chunk_size  # type: int
+        self.delay = 0  # type: int
+        self.closing = self.loop.create_future()  # type: asyncio.Future
+        self.processors = {"read": None, "write": None}
+
+    async def pipe(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
+        processor: str
+    ) -> None:
+        try:
+            while True:
+                data = await reader.read(self.chunk_size)
+                processor_func = self.processors[processor]
+
+                if not data:
+                    return
+
+                if processor_func is not None:
+                    data = await aiomisc.awaitable(processor_func)(data)
+
+                if self.delay > 0:
+                    await asyncio.sleep(self.delay)
+
+                writer.write(data)
+                await writer.drain()
+        except asyncio.CancelledError:
+            reader.feed_eof()
+            raise
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    async def connect(self, target_host: str, target_port: int) -> None:
+        self.server_reader, self.server_writer = await asyncio.open_connection(
+            host=target_host, port=target_port,
+        )
+
+        self.tasks = (
+            self.loop.create_task(
+                self.pipe(
+                    self.server_reader,
+                    self.client_writer,
+                    "write",
+                ),
+            ),
+            self.loop.create_task(
+                self.pipe(
+                    self.client_reader,
+                    self.server_writer,
+                    "read",
+                ),
+            ),
+        )
+
+    async def close(self):
+        if self.closing.done():
+            return
+
+        await aiomisc.cancel_tasks(self.tasks)
+        self.loop.call_soon(self.closing.set_result, True)
+        await self.closing
+
+
+class TCPProxy:
+    DEFAULT_TIMEOUT = 30
+
+    __slots__ = (
+        "proxy_port", "clients", "server", "proxy_host",
+        "target_port", "target_host", "listen_host", "delay",
+        "read_processor", "write_processor",
+    )
+
+    def __init__(
+        self, target_host: str, target_port: int,
+        listen_host: str = "127.0.0.1",
+    ):
+        self.target_port = target_port
+        self.target_host = target_host
+        self.proxy_host = listen_host
+        self.proxy_port = get_unused_port()
+        self.delay = 0
+
+        self.clients = set()  # type: t.Set[TCPProxyClient]
+        self.server = None  # type: t.Optional[asyncio.AbstractServer]
+
+        self.read_processor = None  # type: t.Optional[ProxyProcessorType]
+        self.write_processor = None  # type: t.Optional[ProxyProcessorType]
+
+    async def start(self, timeout=None) -> asyncio.AbstractServer:
+        self.server = await asyncio.wait_for(
+            asyncio.start_server(
+                self._handle_client,
+                host=self.proxy_host,
+                port=self.proxy_port,
+            ), timeout=timeout,
+        )
+        return self.server
+
+    ClientType = t.Tuple[asyncio.StreamReader, asyncio.StreamWriter]
+
+    async def create_client(self) -> ClientType:
+        return await asyncio.open_connection(self.proxy_host, self.proxy_port)
+
+    async def __aenter__(self):
+        if self.server is None:
+            await self.start(timeout=self.DEFAULT_TIMEOUT)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close(timeout=self.DEFAULT_TIMEOUT)
+
+    async def close(self, timeout=None):
+        async def close():
+            await self.disconnect_all()
+            self.server.close()
+            await self.server.wait_closed()
+        await asyncio.wait_for(close(), timeout=timeout)
+
+    def set_delay(self, delay: float):
+        for client in self.clients:
+            client.delay = delay
+        self.delay = delay
+
+    def set_content_processors(
+        self, read: t.Optional[ProxyProcessorType],
+        write: t.Optional[ProxyProcessorType],
+    ):
+        for client in self.clients:
+            client.processors["read"] = read
+            client.processors["write"] = write
+
+        self.read_processor = read
+        self.write_processor = write
+
+    def disconnect_all(self) -> asyncio.Future:
+        return asyncio.ensure_future(
+            asyncio.gather(
+                *[client.close() for client in self.clients],
+                return_exceptions=True
+            ),
+        )
+
+    async def _handle_client(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter
+    ):
+        client = TCPProxyClient(reader, writer)
+        self.clients.add(client)
+
+        client.delay = self.delay
+        client.processors["read"] = self.read_processor
+        client.processors["write"] = self.write_processor
+
+        await client.connect(self.target_host, self.target_port)
+
+        client.closing.add_done_callback(
+            lambda _: self.clients.remove(client),
+        )
+
+
+@pytest.fixture(scope="session")
+def tcp_proxy() -> t.Type[TCPProxy]:
+    return TCPProxy
 
 
 def isasyncgenerator(func):
@@ -292,7 +486,7 @@ def get_unused_port() -> int:
 
 
 @pytest.fixture
-def aiomisc_unused_port_factory() -> typing.Callable[[], int]:
+def aiomisc_unused_port_factory() -> t.Callable[[], int]:
     return get_unused_port
 
 

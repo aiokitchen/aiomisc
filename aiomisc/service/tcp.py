@@ -2,7 +2,7 @@ import asyncio
 import socket
 from functools import partial
 
-from ..utils import OptionsType, bind_socket
+from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
 
@@ -41,10 +41,16 @@ class TCPServer(SimpleServer):
     ):
         raise NotImplementedError
 
+    def make_client_handler(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
+    ):
+        return self.create_task(awaitable(self.handle_client)(reader, writer))
+
     async def start(self):
         self.socket = self.make_socket()
         self.server = await asyncio.start_server(
-            self.handle_client,
+            self.make_client_handler,
             sock=self.socket,
         )
 

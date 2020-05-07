@@ -9,8 +9,9 @@ from .base import SimpleServer
 class UDPServer(SimpleServer):
     class UDPSimpleProtocol(asyncio.DatagramProtocol):
 
-        def __init__(self, handle_datagram):
+        def __init__(self, handle_datagram, task_factory):
             super().__init__()
+            self.task_factory = task_factory
             self.handler = awaitable(handle_datagram)
             self.transport = None  # type: asyncio.DatagramTransport
             self.loop = None  # type: asyncio.AbstractEventLoop
@@ -20,7 +21,7 @@ class UDPServer(SimpleServer):
             self.loop = asyncio.get_event_loop()
 
         def datagram_received(self, data: bytes, addr: tuple):
-            self.loop.create_task(self.handler(data, addr))
+            self.task_factory(self.handler(data, addr))
 
     def __init__(
         self, address: str = None, port: int = None,
@@ -57,6 +58,9 @@ class UDPServer(SimpleServer):
         self.socket = self.make_socket()
 
         self.server, self._protocol = await self.loop.create_datagram_endpoint(
-            lambda: UDPServer.UDPSimpleProtocol(self.handle_datagram),
+            lambda: UDPServer.UDPSimpleProtocol(
+                self.handle_datagram,
+                self.create_task,
+            ),
             sock=self.socket,
         )
