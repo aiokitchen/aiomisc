@@ -3,6 +3,7 @@ import hashlib
 import time
 
 import pytest
+from async_generator import async_generator, yield_
 
 import aiomisc
 
@@ -44,11 +45,12 @@ def services(service: HashServer):
 
 
 @pytest.fixture()
+@async_generator
 async def proxy(tcp_proxy, localhost, server_port):
     proxy = tcp_proxy(localhost, server_port)
 
     try:
-        yield proxy
+        await yield_(proxy)
     finally:
         await asyncio.wait_for(proxy.close(), timeout=1)
 
