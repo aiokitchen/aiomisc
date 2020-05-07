@@ -54,10 +54,10 @@ class TCPProxyClient:
         self.server_reader = None  # type: t.Optional[asyncio.StreamReader]
         self.server_writer = None  # type: t.Optional[asyncio.StreamWriter]
 
-        self.tasks = ()                     # type: t.Iterable[asyncio.Task]
-        self.chunk_size = chunk_size        # type: int
-        self.delay = 0
-        self.closing = self.loop.create_future()
+        self.tasks = ()  # type: t.Iterable[asyncio.Task]
+        self.chunk_size = chunk_size  # type: int
+        self.delay = 0  # type: int
+        self.closing = self.loop.create_future()  # type: asyncio.Future
         self.processors = {"read": None, "write": None}
 
     async def pipe(
@@ -136,10 +136,10 @@ class TCPProxy:
         self.proxy_port = get_unused_port()
         self.delay = 0
 
-        self.clients = set()        # type: t.Set[TCPProxyClient]
+        self.clients = set()  # type: t.Set[TCPProxyClient]
         self.server = None  # type: t.Optional[asyncio.AbstractServer]
 
-        self.read_processor = None    # type: t.Optional[ProxyProcessorType]
+        self.read_processor = None  # type: t.Optional[ProxyProcessorType]
         self.write_processor = None  # type: t.Optional[ProxyProcessorType]
 
     async def start(self, timeout=None) -> asyncio.AbstractServer:
