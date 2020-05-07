@@ -1799,7 +1799,6 @@ Examples:
 .. code-block:: python
 
     import asyncio
-    import hashlib
     import time
 
     import pytest
@@ -1809,11 +1808,17 @@ Examples:
 
     class EchoServer(aiomisc.service.TCPServer):
         async def handle_client(
-            self, reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter
+                self, reader: asyncio.StreamReader,
+                writer: asyncio.StreamWriter
         ):
-            while not reader.at_eof():
-                writer.write(await reader.read(65534))
+            chunk = await reader.read(65534)
+            while chunk:
+                writer.write(chunk)
+                chunk = await reader.read(65534)
+
+            writer.close()
+            await writer.wait_closed()
+
 
     @pytest.fixture()
     def server_port(aiomisc_unused_port_factory) -> int:
@@ -1821,8 +1826,8 @@ Examples:
 
 
     @pytest.fixture()
-    def services(service: HashServer, server_port, localhost):
-        return [HashServer(port=server_port, address=localhost)]
+    def services(server_port, localhost):
+        return [EchoServer(port=server_port, address=localhost)]
 
 
     @pytest.fixture()
@@ -1836,9 +1841,9 @@ Examples:
         payload = b"Hello world"
 
         writer.write(payload)
-        hash = await asyncio.wait_for(reader.readexactly(16), timeout=1)
+        response = await asyncio.wait_for(reader.read(1024), timeout=1)
 
-        assert hash == hashlib.md5(payload).digest()
+        assert response == payload
 
         assert not reader.at_eof()
         await proxy.disconnect_all()
@@ -1849,37 +1854,40 @@ Examples:
 
     async def test_proxy_client_slow(proxy):
         delay = 0.1
+        # Proxy will delay each data chunk
         proxy.set_delay(delay)
 
         reader, writer = await proxy.create_client()
         payload = b"Hello world"
 
         delta = -time.monotonic()
+
         writer.write(payload)
-        hash = await asyncio.wait_for(reader.readexactly(16), timeout=2)
+        await asyncio.wait_for(reader.read(1024), timeout=2)
+
         delta += time.monotonic()
 
-        assert delta >= delay, [c.delay for c in proxy.clients]
-
-        assert hash == hashlib.md5(payload).digest()
+        assert delta >= delay
 
 
     async def test_proxy_client_with_processor(proxy):
         processed_request = b"Never say hello"
-        processed_response = b"Yeah"
 
+        # Patching protocol functions
         proxy.set_content_processors(
+            # Process data from client to server
             lambda _: processed_request,
-            lambda _: processed_response,
+
+            # Process data from server to client
+            lambda chunk: chunk[::-1],
         )
 
         reader, writer = await proxy.create_client()
-        payload = b"Hello world"
+        writer.write(b'nevermind')
 
-        writer.write(payload)
-        hash = await asyncio.wait_for(reader.read(16), timeout=2)
+        response = await reader.read(16)
 
-        assert hash == processed_response
+        assert response == processed_request[::-1]
 
 
 Versioning

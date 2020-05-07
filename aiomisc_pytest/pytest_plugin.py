@@ -158,7 +158,7 @@ class TCPProxy:
         return await asyncio.open_connection(self.proxy_host, self.proxy_port)
 
     async def __aenter__(self):
-        if not self.server:
+        if self.server is None:
             await self.start()
         return self
 

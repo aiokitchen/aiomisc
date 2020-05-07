@@ -15,15 +15,14 @@ class HashServer(aiomisc.service.TCPServer):
     ):
         hasher = hashlib.md5()
 
-        while not reader.at_eof():
-            chunk = await reader.read(65534)
-            if not chunk:
-                writer.close()
-                await writer.wait_closed()
-                return
-
+        chunk = await reader.read(65534)
+        while chunk:
             hasher.update(chunk)
             writer.write(hasher.digest())
+            chunk = await reader.read(65534)
+
+        writer.close()
+        await writer.wait_closed()
 
 
 @pytest.fixture()
@@ -96,11 +95,10 @@ async def test_proxy_client_slow(proxy):
 
 async def test_proxy_client_with_processor(proxy):
     processed_request = b"Never say hello"
-    processed_response = b"Yeah"
 
     proxy.set_content_processors(
         lambda _: processed_request,
-        lambda _: processed_response,
+        lambda chunk: chunk[::-1],
     )
 
     reader, writer = await proxy.create_client()
@@ -109,4 +107,4 @@ async def test_proxy_client_with_processor(proxy):
     writer.write(payload)
     hash = await asyncio.wait_for(reader.read(16), timeout=2)
 
-    assert hash == processed_response
+    assert hash == hashlib.md5(processed_request).digest()[::-1]
