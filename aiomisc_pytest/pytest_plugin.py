@@ -277,7 +277,6 @@ class TCPProxy:
         log.debug("Creating client for %r", self)
         return await asyncio.open_connection(
             self.proxy_host, self.proxy_port,
-            buffered=self.buffered,
         )
 
     async def __aenter__(self):
@@ -343,7 +342,7 @@ class TCPProxy:
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter
     ):
-        client = TCPProxyClient(reader, writer)
+        client = TCPProxyClient(reader, writer, buffered=self.buffered)
         self.clients.add(client)
 
         client.read_delay.timeout = self.read_delay
