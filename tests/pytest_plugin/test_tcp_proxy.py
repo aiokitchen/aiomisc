@@ -46,7 +46,7 @@ def services(service: HashServer):
 @pytest.fixture()
 @async_generator
 async def proxy(tcp_proxy, localhost, server_port):
-    async with tcp_proxy(localhost, server_port) as proxy:
+    async with tcp_proxy(localhost, server_port, buffered=True) as proxy:
         await yield_(proxy)
 
 
