@@ -153,7 +153,8 @@ class TCPProxyClient:
 
     def __repr__(self):
         return "<%s[%x]: %s => %s>" % (
-            self.__class__.__name__, id(self), self.__client_repr, self.__server_repr,
+            self.__class__.__name__, id(self),
+            self.__client_repr, self.__server_repr,
         )
 
     async def pipe(
