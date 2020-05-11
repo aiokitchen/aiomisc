@@ -224,6 +224,8 @@ Running entrypoint from async code
     async def main():
         service = MyPeriodicService(interval=60, delay=0)  # once per minute
 
+        # returns an entrypoint instance because event-loop
+        # already running and might be get via asyncio.get_event_loop()
         async with aiomisc.entrypoint(service) as ep:
             await ep.closing()
 
