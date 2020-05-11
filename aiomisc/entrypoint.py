@@ -95,7 +95,21 @@ class Entrypoint:
         if self._loop_owner:
             self._loop.close()
 
-    def __enter__(self):
+    def __enter__(self) -> asyncio.AbstractEventLoop:
+        return self.loop.run_until_complete(self.__aenter__())
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.loop.is_closed():
+            return
+
+        self.loop.run_until_complete(
+            self.__aexit__(exc_type, exc_val, exc_tb),
+        )
+
+        if self._loop_owner:
+            self._loop.close()
+
+    async def __aenter__(self) -> asyncio.AbstractEventLoop:
         if self.log_config:
             basic_config(
                 level=self.log_level,
@@ -105,24 +119,21 @@ class Entrypoint:
             )
 
         self.ctx = Context(loop=self.loop)
-        self.loop.run_until_complete(self._start())
+        await self._start()
         return self.loop
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:
-            self.graceful_shutdown(exc_val)
+            if self.loop.is_closed():
+                return
+
+            await self.graceful_shutdown(exc_val)
             self.shutting_down = True
         finally:
-            if not self.shutting_down:
-                self.graceful_shutdown(None)
-
             self.ctx.close()
 
             if self._thread_pool:
                 self._thread_pool.shutdown()
-
-            if self._loop_owner:
-                self._loop.close()
 
     async def _start_service(self, svc: Service):
         svc.set_loop(self.loop)
@@ -146,23 +157,16 @@ class Entrypoint:
     async def _stop_service(self, svc, exception):
         await svc.stop(exception)
 
-    def graceful_shutdown(self, exception):
+    async def graceful_shutdown(self, exception):
         tasks = [
             self._stop_service(svc, exception) for svc in self.services
         ]
 
-        if not tasks:
-            return
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
-        self.loop.run_until_complete(
-            asyncio.gather(*tasks, return_exceptions=True),
-        )
-
-        self.loop.run_until_complete(self.post_stop.call(entrypoint=self))
-
-        self.loop.run_until_complete(
-            self.loop.shutdown_asyncgens(),
-        )
+        await self.post_stop.call(entrypoint=self)
+        await self.loop.shutdown_asyncgens()
 
 
 entrypoint = Entrypoint
