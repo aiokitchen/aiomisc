@@ -6,7 +6,7 @@ from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import create_default_event_loop, event_loop_policy, shield
+from .utils import create_default_event_loop, event_loop_policy
 
 
 class Entrypoint:
@@ -121,7 +121,7 @@ class Entrypoint:
 
     async def __aenter__(self) -> "Entrypoint":
         if self._loop is None:
-            # When __aenter__ called first
+            # When __aenter__ called without __enter__
             self._loop = asyncio.get_event_loop()
 
         if self.log_config:
