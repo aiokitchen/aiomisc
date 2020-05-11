@@ -76,6 +76,15 @@ class Entrypoint:
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
 
+        self._closing = None
+
+    async def closing(self):
+        # Lazy initialization because event loop might be not exists
+        if self._closing is None:
+            self._closing = asyncio.Event()
+
+        await self._closing.wait()
+
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
         if self._loop is None:
@@ -96,7 +105,8 @@ class Entrypoint:
             self._loop.close()
 
     def __enter__(self) -> asyncio.AbstractEventLoop:
-        return self.loop.run_until_complete(self.__aenter__())
+        self.loop.run_until_complete(self.__aenter__())
+        return self.loop
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.loop.is_closed():
@@ -109,7 +119,11 @@ class Entrypoint:
         if self._loop_owner:
             self._loop.close()
 
-    async def __aenter__(self) -> asyncio.AbstractEventLoop:
+    async def __aenter__(self) -> "Entrypoint":
+        if self._loop is None:
+            # When __aenter__ called first
+            self._loop = asyncio.get_event_loop()
+
         if self.log_config:
             basic_config(
                 level=self.log_level,
@@ -120,7 +134,7 @@ class Entrypoint:
 
         self.ctx = Context(loop=self.loop)
         await self._start()
-        return self.loop
+        return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:
@@ -153,13 +167,12 @@ class Entrypoint:
         if start_task.done():
             return await start_task
 
-    @shield
-    async def _stop_service(self, svc, exception):
-        await svc.stop(exception)
-
     async def graceful_shutdown(self, exception):
+        if self._closing:
+            self._closing.set()
+
         tasks = [
-            self._stop_service(svc, exception) for svc in self.services
+            asyncio.shield(svc.stop(exception)) for svc in self.services
         ]
 
         if tasks:

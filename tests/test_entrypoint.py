@@ -488,3 +488,27 @@ def test_context_multiple_set():
         )
 
     assert results == [True, False, None]
+
+
+async def test_entrypoint_with_with_async():
+    class MyService(aiomisc.service.Service):
+        ctx = 0
+
+        async def start(self):
+            self.__class__.ctx = 1
+
+        async def stop(self, exc: Exception = None):
+            self.__class__.ctx = 2
+
+    service = MyService()
+    assert service.ctx == 0
+
+    async with aiomisc.entrypoint(service) as ep:
+        assert service.ctx == 1
+
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(ep.closing(), timeout=0.3)
+
+        assert service.ctx == 1
+
+    assert service.ctx == 2
