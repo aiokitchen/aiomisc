@@ -209,6 +209,29 @@ Complete example:
         loop.create_task(main())
         loop.run_forever()
 
+Running entrypoint from async code
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+
+    class MyPeriodicService(PeriodicService):
+        async def callback(self):
+            log.info('Running periodic callback')
+            # ...
+
+    async def main():
+        service = MyPeriodicService(interval=60, delay=0)  # once per minute
+
+        # returns an entrypoint instance because event-loop
+        # already running and might be get via asyncio.get_event_loop()
+        async with aiomisc.entrypoint(service) as ep:
+            await ep.closing()
+
+
+    asyncio.run(main())
+
 
 Services
 ++++++++

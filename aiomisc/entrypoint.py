@@ -6,7 +6,7 @@ from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import create_default_event_loop, event_loop_policy, shield
+from .utils import create_default_event_loop, event_loop_policy
 
 
 class Entrypoint:
@@ -76,6 +76,15 @@ class Entrypoint:
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
 
+        self._closing = None
+
+    async def closing(self):
+        # Lazy initialization because event loop might be not exists
+        if self._closing is None:
+            self._closing = asyncio.Event()
+
+        await self._closing.wait()
+
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
         if self._loop is None:
@@ -95,7 +104,26 @@ class Entrypoint:
         if self._loop_owner:
             self._loop.close()
 
-    def __enter__(self):
+    def __enter__(self) -> asyncio.AbstractEventLoop:
+        self.loop.run_until_complete(self.__aenter__())
+        return self.loop
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.loop.is_closed():
+            return
+
+        self.loop.run_until_complete(
+            self.__aexit__(exc_type, exc_val, exc_tb),
+        )
+
+        if self._loop_owner:
+            self._loop.close()
+
+    async def __aenter__(self) -> "Entrypoint":
+        if self._loop is None:
+            # When __aenter__ called without __enter__
+            self._loop = asyncio.get_event_loop()
+
         if self.log_config:
             basic_config(
                 level=self.log_level,
@@ -105,24 +133,21 @@ class Entrypoint:
             )
 
         self.ctx = Context(loop=self.loop)
-        self.loop.run_until_complete(self._start())
-        return self.loop
+        await self._start()
+        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:
-            self.graceful_shutdown(exc_val)
+            if self.loop.is_closed():
+                return
+
+            await self.graceful_shutdown(exc_val)
             self.shutting_down = True
         finally:
-            if not self.shutting_down:
-                self.graceful_shutdown(None)
-
             self.ctx.close()
 
             if self._thread_pool:
                 self._thread_pool.shutdown()
-
-            if self._loop_owner:
-                self._loop.close()
 
     async def _start_service(self, svc: Service):
         svc.set_loop(self.loop)
@@ -142,27 +167,19 @@ class Entrypoint:
         if start_task.done():
             return await start_task
 
-    @shield
-    async def _stop_service(self, svc, exception):
-        await svc.stop(exception)
+    async def graceful_shutdown(self, exception):
+        if self._closing:
+            self._closing.set()
 
-    def graceful_shutdown(self, exception):
         tasks = [
-            self._stop_service(svc, exception) for svc in self.services
+            asyncio.shield(svc.stop(exception)) for svc in self.services
         ]
 
-        if not tasks:
-            return
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
-        self.loop.run_until_complete(
-            asyncio.gather(*tasks, return_exceptions=True),
-        )
-
-        self.loop.run_until_complete(self.post_stop.call(entrypoint=self))
-
-        self.loop.run_until_complete(
-            self.loop.shutdown_asyncgens(),
-        )
+        await self.post_stop.call(entrypoint=self)
+        await self.loop.shutdown_asyncgens()
 
 
 entrypoint = Entrypoint
