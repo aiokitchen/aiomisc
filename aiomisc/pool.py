@@ -3,7 +3,21 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
-from typing import AsyncContextManager
+
+try:
+    from typing import AsyncContextManager
+except ImportError:
+    # Failed on Python 3.5.2 reproducible on ubuntu 16.04 (xenial)
+    class AsyncContextManager(ABC):
+
+        @abstractmethod
+        async def __aenter__(self):
+            raise NotImplementedError
+
+        @abstractmethod
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            raise NotImplementedError
+
 
 from .utils import cancel_tasks
 
