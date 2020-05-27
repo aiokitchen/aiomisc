@@ -1,8 +1,8 @@
+import asyncio
 import logging
 import struct
-import asyncio
+import typing
 from types import MappingProxyType
-from typing import Callable, Dict
 
 import msgpack
 
@@ -17,7 +17,7 @@ class RPCServer(UDPServer):
     __required__ = 'handlers',
 
     HEADER = struct.Struct(">I")
-    handlers: Dict[str, Callable]
+    handlers: typing.Dict[str, typing.Callable]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

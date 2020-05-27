@@ -1,6 +1,5 @@
 import logging
 import socket
-import typing
 import asyncio
 from collections import defaultdict
 from time import monotonic
@@ -51,7 +50,7 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
         else:
             future.set_result(payload['result'])
 
-    async def rpc(self, addr, method, **kwargs):
+    def rpc(self, addr, method, **kwargs):
         call_id = self._get_id()
         future = self.loop.create_future()
         self.waiting[addr][call_id] = future
@@ -63,7 +62,7 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
         }
 
         self.transport.sendto(self.packer.pack(payload), addr)
-        return await future
+        return future
 
     def connection_lost(self, exc):
         self.closing.set_exception(exc)
@@ -76,7 +75,7 @@ async def main(server_host, server_port, local_host, local_port):
     transport, protocol = await loop.create_datagram_endpoint(
         RPCClientUDPProtocol,
         local_addr=(local_host, local_port)
-    )   # type: typing.Tuple[asyncio.BaseTransport, RPCClientUDPProtocol]
+    )
 
     call_count = 300
 
