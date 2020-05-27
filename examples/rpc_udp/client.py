@@ -69,7 +69,7 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
 
 
 async def main(server_host, server_port, local_host, local_port):
-    log.info("Starting reply server at udp://%s:%d", local_host, local_port)
+    log.info("Starting reply server at udp://[%s]:%d", local_host, local_port)
     loop = asyncio.get_event_loop()
 
     transport, protocol = await loop.create_datagram_endpoint(
