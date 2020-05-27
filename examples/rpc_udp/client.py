@@ -1,6 +1,6 @@
+import asyncio
 import logging
 import socket
-import asyncio
 from collections import defaultdict
 from time import monotonic
 
@@ -9,7 +9,7 @@ import msgpack
 from aiomisc.entrypoint import entrypoint
 
 
-log = logging.getLogger('client')
+log = logging.getLogger("client")
 
 
 def get_random_port():
@@ -43,12 +43,12 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
     def datagram_received(self, data, addr):
         self.unpacker.feed(data)
         payload = self.unpacker.unpack()
-        future = self.waiting[addr[:2]][payload['id']]
+        future = self.waiting[addr[:2]][payload["id"]]
 
-        if 'error' in payload:
-            future.set_exception(RPCCallError(payload['error'], payload))
+        if "error" in payload:
+            future.set_exception(RPCCallError(payload["error"], payload))
         else:
-            future.set_result(payload['result'])
+            future.set_result(payload["result"])
 
     def rpc(self, addr, method, **kwargs):
         call_id = self._get_id()
@@ -69,12 +69,12 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
 
 
 async def main(server_host, server_port, local_host, local_port):
-    log.info('Starting reply server at udp://%s:%d', local_host, local_port)
+    log.info("Starting reply server at udp://%s:%d", local_host, local_port)
     loop = asyncio.get_event_loop()
 
     transport, protocol = await loop.create_datagram_endpoint(
         RPCClientUDPProtocol,
-        local_addr=(local_host, local_port)
+        local_addr=(local_host, local_port),
     )
 
     call_count = 300
@@ -82,12 +82,14 @@ async def main(server_host, server_port, local_host, local_port):
     delta = - monotonic()
 
     for i in range(call_count):
-        await asyncio.gather(*[
-            protocol.rpc(
-                (server_host, server_port),
-                'multiply', x=120000, y=1000000
-            ) for _ in range(call_count)
-        ])
+        await asyncio.gather(
+            *[
+                protocol.rpc(
+                    (server_host, server_port),
+                    "multiply", x=120000, y=1000000,
+                ) for _ in range(call_count)
+            ]
+        )
 
     delta += monotonic()
 
@@ -96,12 +98,14 @@ async def main(server_host, server_port, local_host, local_port):
     log.info("Total executed %d requests on %.3f", total_request_sent, delta)
     log.info("RPS: %.3f", total_request_sent / delta)
 
-    log.info('Close connection')
+    log.info("Close connection")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     with entrypoint() as loop:
-        loop.run_until_complete(main(
-            "::1", 15678,
-            "::1", get_random_port()
-        ))
+        loop.run_until_complete(
+            main(
+                "::1", 15678,
+                "::1", get_random_port(),
+            ),
+        )

@@ -14,7 +14,7 @@ log = logging.getLogger()
 
 
 class RPCServer(UDPServer):
-    __required__ = 'handlers',
+    __required__ = "handlers",
 
     HEADER = struct.Struct(">I")
     handlers: typing.Dict[str, typing.Callable]
@@ -30,19 +30,19 @@ class RPCServer(UDPServer):
         body = self.unpacker.unpack()
 
         # "method": "subtract", "params": [42, 23], "id": 1}
-        req_id = body['id']
-        meth = body['method']
-        kw = body['params']
+        req_id = body["id"]
+        meth = body["method"]
+        kw = body["params"]
 
         try:
             result = {
                 "id": req_id,
-                "result": await self.execute(meth, kw)
+                "result": await self.execute(meth, kw),
             }
         except Exception as e:
             result = {
-                'id': req_id,
-                'error': {'type': str(type(e)), 'args': e.args}
+                "id": req_id,
+                "error": {"type": str(type(e)), "args": e.args},
             }
 
         self.sendto(self.packer.pack(result), addr)
@@ -57,12 +57,12 @@ class RPCServer(UDPServer):
 
 
 handlers = MappingProxyType({
-    'multiply': lambda x, y: x * y,
+    "multiply": lambda x, y: x * y,
 })
 
 
-if __name__ == '__main__':
-    service = RPCServer(handlers=handlers, address='::', port=15678)
+if __name__ == "__main__":
+    service = RPCServer(handlers=handlers, address="::", port=15678)
 
     with entrypoint(service) as loop:
         loop.run_forever()
