@@ -13,8 +13,8 @@ class UDPServer(SimpleServer):
             super().__init__()
             self.task_factory = task_factory
             self.handler = awaitable(handle_datagram)
-            self.transport = None  # type: asyncio.DatagramTransport
-            self.loop = None  # type: asyncio.AbstractEventLoop
+            self.transport = None   # type: asyncio.DatagramTransport
+            self.loop = None        # type: asyncio.AbstractEventLoop
 
         def connection_made(self, transport: asyncio.DatagramTransport):
             self.transport = transport
@@ -50,6 +50,9 @@ class UDPServer(SimpleServer):
         self._protocol = None
         self.socket = None
         super().__init__(**kwargs)
+
+    def sendto(self, data, addr):
+        return self._protocol.transport.sendto(data, addr)
 
     def handle_datagram(self, data: bytes, addr):
         raise NotImplementedError
