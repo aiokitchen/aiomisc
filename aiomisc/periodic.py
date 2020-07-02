@@ -45,6 +45,8 @@ class PeriodicCallback:
         shield: bool = False,
         suppress_exceptions: Tuple[Type[Exception]] = ()
     ):
+        if self._task and not self._task.done():
+            raise asyncio.InvalidStateError
 
         self._loop = loop or asyncio.get_event_loop()
 
