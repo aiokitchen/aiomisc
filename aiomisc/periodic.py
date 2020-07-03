@@ -45,11 +45,12 @@ class PeriodicCallback:
         shield: bool = False,
         suppress_exceptions: Tuple[Type[Exception]] = ()
     ):
-
-        if self._closed:
+        if self._task and not self._task.done():
             raise asyncio.InvalidStateError
 
         self._loop = loop or asyncio.get_event_loop()
+
+        self._closed = False
 
         def periodic():
             if self._loop.is_closed():
@@ -60,12 +61,13 @@ class PeriodicCallback:
                 return
 
             del self._task
-
-            runner = utils.shield(self._run) if shield else self._run
-            self._task = self._loop.create_task(runner(suppress_exceptions))
+            self._task = None
 
             if self._closed:
                 return
+
+            runner = utils.shield(self._run) if shield else self._run
+            self._task = self._loop.create_task(runner(suppress_exceptions))
 
             self._task.add_done_callback(call)
 

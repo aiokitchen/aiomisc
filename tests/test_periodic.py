@@ -105,3 +105,34 @@ async def test_delay(loop):
     periodic.stop()
 
     assert 1 < counter < 4
+
+
+async def test_restart(loop):
+    counter = 0
+
+    def task():
+        nonlocal counter
+        counter += 1
+
+    periodic = aiomisc.PeriodicCallback(task)
+    periodic.start(0.1, loop)
+
+    await asyncio.sleep(0.5)
+    periodic.stop()
+
+    assert 4 < counter < 7
+
+    await asyncio.sleep(0.5)
+
+    assert 4 < counter < 7
+
+    periodic.start(0.1, loop)
+
+    await asyncio.sleep(0.5)
+    periodic.stop()
+
+    assert 8 < counter < 14
+
+    await asyncio.sleep(0.5)
+
+    assert 8 < counter < 14
