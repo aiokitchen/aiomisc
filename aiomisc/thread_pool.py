@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
-from typing import NamedTuple, Any, Optional, TypeVar, Callable
+from typing import NamedTuple, Any, Optional, TypeVar, Callable  # ignore
 
 from .iterator_wrapper import IteratorWrapper
 
@@ -32,7 +32,6 @@ class ThreadPoolException(RuntimeError):
 
 try:
     import contextvars
-
 
     def context_partial(func: F, *args: Any, **kwargs: Any) -> Any:
         context = contextvars.copy_context()
@@ -350,6 +349,7 @@ def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:
         )
 
     return wrap
+
 
 class CoroutineWaiter:
     def __init__(
