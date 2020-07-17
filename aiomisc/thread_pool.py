@@ -45,7 +45,7 @@ WorkItemBase = NamedTuple(
         ("func", typing.Callable[..., Any]),
         ("args", typing.Tuple[Any, ...]),
         ("kwargs", typing.Dict[str, Any]),
-        ("future", asyncio.Future[Any]),
+        ("future", asyncio.Future),
         ("loop", asyncio.AbstractEventLoop),
     ),
 )
@@ -54,7 +54,7 @@ WorkItemBase = NamedTuple(
 class WorkItem(WorkItemBase):
     @staticmethod
     def set_result(
-        future: Future[Any], result: Any, exception: Exception
+        future: Future, result: Any, exception: Exception
     ) -> None:
         if future.done():
             return
@@ -155,7 +155,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
     def submit(  # type: ignore
         self, fn: F, *args: Any, **kwargs: Any
-    ) -> Future[Any]:
+    ) -> Future:
 
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
@@ -204,7 +204,7 @@ def run_in_executor(
     executor: ThreadPoolExecutorBase = None,
     args: Any = (),
     kwargs: Any = MappingProxyType({}),
-) -> Future[Any]:
+) -> Future:
     loop = get_event_loop()
     # noinspection PyTypeChecker
     return loop.run_in_executor(  # type: ignore
@@ -212,7 +212,7 @@ def run_in_executor(
     )
 
 
-async def _awaiter(future: Future[T]) -> T:
+async def _awaiter(future: Future) -> T:
     try:
         result = await future
         return result
@@ -244,7 +244,7 @@ def run_in_new_thread(
     kwargs: Any = MappingProxyType({}),
     detouch: bool = True,
     no_return: bool = False,
-) -> asyncio.Future[F]:
+) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()
 
@@ -367,7 +367,7 @@ class CoroutineWaiter:
         self.__result = None
         self.__exception = None  # type: Optional[BaseException]
 
-    def _on_result(self, task: asyncio.Task[Any]) -> None:
+    def _on_result(self, task: asyncio.Task) -> None:
         self.__exception = task.exception()
         if self.__exception is None:
             self.__result = task.result()
@@ -391,7 +391,7 @@ def sync_wait_coroutine(
     loop: AbstractEventLoop,
     coro_func: F,
     *args: Any,
-    **kwargs: Any,
+    **kwargs: Any
 ) -> Any:
     waiter = CoroutineWaiter(loop, coro_func, *args, **kwargs)
     waiter.start()
