@@ -5,13 +5,13 @@ import threading
 import time
 import typing
 import warnings
-from asyncio import Future, AbstractEventLoop, Task
+from asyncio import Future, AbstractEventLoop, Task  # noqa
 from asyncio.events import get_event_loop
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
-from typing import NamedTuple, Any, Optional, TypeVar, Callable  # ignore
+from typing import NamedTuple, Any, Optional, TypeVar, Callable  # noqa
 
 from .iterator_wrapper import IteratorWrapper
 
