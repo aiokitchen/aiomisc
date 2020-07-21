@@ -1,29 +1,43 @@
 import asyncio
-from concurrent.futures._base import Executor
+from concurrent.futures._base import Executor, Future
 from multiprocessing import Pool, cpu_count
+import typing
+
+from .typehints import T
+
+
+CallbackType = typing.Callable[[T], None]
+ResultType = typing.Any
+CreateFutureResult = typing.Tuple[
+    CallbackType[ResultType],
+    CallbackType[BaseException],
+    Future,
+]
 
 
 class ProcessPoolExecutor(Executor):
-    def __init__(self, max_workers=max((cpu_count(), 4)), **kwargs):
-        self.__futures = set()
+    def __init__(self, max_workers: int = max((cpu_count(), 4)),
+                 **kwargs: typing.Any):
+        self.__futures = set()   # type: typing.Set[Future[ResultType]]
         self.__pool = Pool(processes=max_workers, **kwargs)
 
-    def _create_future(self):
+    def _create_future(self) -> CreateFutureResult:
         loop = asyncio.get_event_loop()
-        future = loop.create_future()  # type: asyncio.Future
+        future = Future()   # type: Future[ResultType]
 
         self.__futures.add(future)
         future.add_done_callback(self.__futures.remove)
 
-        def callback(result):
+        def callback(result: ResultType) -> None:
             loop.call_soon_threadsafe(future.set_result, result)
 
-        def errorback(exc):
+        def errorback(exc: BaseException) -> None:
             loop.call_soon_threadsafe(future.set_exception, exc)
 
         return callback, errorback, future
 
-    def submit(self, fn, *args, **kwargs):
+    def submit(self, fn: typing.Callable[..., typing.Any],
+               *args: typing.Any, **kwargs: typing.Any) -> Future[ResultType]:
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
 
@@ -39,7 +53,7 @@ class ProcessPoolExecutor(Executor):
 
         return future
 
-    def shutdown(self, wait=True):
+    def shutdown(self, wait: bool = True) -> None:
         if not self.__pool:
             return
 
@@ -55,5 +69,5 @@ class ProcessPoolExecutor(Executor):
 
         self.__pool.close()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.shutdown()
