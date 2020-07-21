@@ -27,3 +27,6 @@ develop: clean
 	python3 -m venv env
 	env/bin/pip install -Ue '.'
 	env/bin/pip install -Ue '.[develop]'
+
+mypy:
+	mypy aiomisc/thread_pool.py

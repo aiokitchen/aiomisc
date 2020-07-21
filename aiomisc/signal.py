@@ -5,7 +5,7 @@ class Signal:
 
     __slots__ = ("_receivers", "_is_frozen")
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._receivers = set()
 
     def connect(self, receiver):

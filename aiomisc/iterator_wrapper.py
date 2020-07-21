@@ -50,7 +50,7 @@ class IteratorWrapper(typing.AsyncIterator):
             self.__read_event.set()
         self.loop.call_soon_threadsafe(setter)
 
-    def _in_thread(self):
+    def _in_thread(self) -> None:
         try:
             gen = iter(self.__gen_func())
 
