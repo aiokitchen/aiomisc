@@ -102,7 +102,7 @@ class TCPProxyClient:
     def __init__(
         self, client_reader: asyncio.StreamReader,
         client_writer: asyncio.StreamWriter,
-        chunk_size: int = 64 * 1024, buffered: bool=False,
+        chunk_size: int = 64 * 1024, buffered: bool = False,
     ):
 
         self.loop = asyncio.get_event_loop()
@@ -236,8 +236,8 @@ class TCPProxy:
     )
 
     def __init__(
-        self, target_host: str, target_port: int,
-        listen_host: str = "127.0.0.1", buffered: bool = True,
+            self, target_host: str, target_port: int,
+            listen_host: str = "127.0.0.1", buffered: bool = True,
     ):
         self.target_port = target_port
         self.target_host = target_host
@@ -309,8 +309,8 @@ class TCPProxy:
         self.write_delay = write_delay
 
     def set_content_processors(
-        self, read: t.Optional[ProxyProcessorType],
-        write: t.Optional[ProxyProcessorType],
+            self, read: t.Optional[ProxyProcessorType],
+            write: t.Optional[ProxyProcessorType],
     ):
         log.debug(
             "Setting content processors for %r: read=%r write=%r",
@@ -339,8 +339,8 @@ class TCPProxy:
         )
 
     async def _handle_client(
-        self, reader: asyncio.StreamReader,
-        writer: asyncio.StreamWriter
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter
     ):
         client = TCPProxyClient(reader, writer, buffered=self.buffered)
         self.clients.add(client)
@@ -476,14 +476,19 @@ def localhost():
     raise RuntimeError("localhost unavailable")
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def loop_debug(request):
     return request.config.getoption("--aiomisc-debug")
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def aiomisc_test_timeout(request):
     return request.config.getoption("--aiomisc-test-timeout")
+
+
+@pytest.fixture(autouse=True)
+def aiomisc_func_wrap():
+    return aiomisc.awaitable
 
 
 def pytest_pycollect_makeitem(collector, name, obj):  # type: ignore
@@ -497,6 +502,10 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
         return
 
     event_loop = pyfuncitem.funcargs.get("loop", None)
+    func_wraper = pyfuncitem.funcargs.get(
+        "aiomisc_func_wrap", aiomisc.awaitable
+    )
+
     aiomisc_test_timeout = pyfuncitem.funcargs.get(
         "aiomisc_test_timeout", None,
     )
@@ -509,7 +518,7 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
     @wraps(pyfuncitem.obj)
     async def func():
         return await asyncio.wait_for(
-            pyfuncitem.obj(**kwargs),
+            func_wraper(pyfuncitem.obj)(**kwargs),
             timeout=aiomisc_test_timeout,
         )
 
