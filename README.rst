@@ -373,13 +373,12 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
 CronService
 ***************
 
-``CronService`` runs ``CronCallback`` as a service and waits for
-running callback to complete on stop. You need to use ``CronService``
-as a base class and override ``callback`` async coroutine method.
+``CronService`` runs ``CronCallback``s as a service and waits for
+running callbacks to complete on stop.
 
-Service class accepts required ``spec`` argument - cron like format.
 Based on [croniter](https://github.com/taichino/croniter)
 
+You can register async coroutine method with ``spec`` argument - cron like format:
 .. code-block:: python
 
     import aiomisc
