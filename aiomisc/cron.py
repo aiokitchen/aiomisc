@@ -22,7 +22,7 @@ class CronCallback:
 
     __slots__ = (
         "_cb", "_closed", "_task", "_loop", "_handle", "__name",
-        "_croniter", "_start_loop_time", "_start_timestamp"
+        "_croniter"
     )
 
     def __init__(self, coroutine_func, *args, **kwargs):
@@ -34,8 +34,6 @@ class CronCallback:
         self._task = None
 
         self._croniter = None
-        self._start_loop_time = None
-        self._start_timestamp = None
 
     async def _run(self, suppress_exceptions=()):
         try:
@@ -50,13 +48,12 @@ class CronCallback:
     def get_next(self):
         if not self._loop or not self._croniter:
             raise asyncio.InvalidStateError
+        loop_time = self._loop.time()
+        timestamp = datetime.utcnow().timestamp()
         return (
-                self._start_loop_time +
-                (self.get_next_ts() - self._start_timestamp)
+                loop_time +
+                (self._croniter.get_next(float) - timestamp)
         )
-
-    def get_next_ts(self):
-        return self._croniter.get_next(float)
 
     def start(
             self,
@@ -70,9 +67,9 @@ class CronCallback:
 
         self._loop = loop or asyncio.get_event_loop()
 
-        self._start_loop_time = self._loop.time()
-        self._start_timestamp = datetime.utcnow().timestamp()
-        self._croniter = croniter(spec, start_time=self._start_timestamp)
+        self._croniter = croniter(
+            spec, start_time=datetime.utcnow().timestamp()
+        )
 
         self._closed = False
 
