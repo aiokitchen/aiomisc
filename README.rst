@@ -388,7 +388,7 @@ Based on [croniter](https://github.com/taichino/croniter)
 
     class MyCronService(CronService):
         async def callback(self):
-            log.info('Running periodic callback')
+            log.info('Running cron callback')
             # ...
 
     service = MyCronService("0 * * * *")  # every hour at zero minutes
@@ -1582,7 +1582,7 @@ Runs coroutine function with cron scheduling execution.
     if __name__ == '__main__':
         loop = new_event_loop()
 
-        periodic = CronCallback(periodic_function)
+        periodic = CronCallback(cron_function)
 
         # call it each second after that
         periodic.start(spec="* * * * * *")
