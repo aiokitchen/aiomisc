@@ -386,12 +386,36 @@ Based on [croniter](https://github.com/taichino/croniter)
     from aiomisc.service.cron import CronService
 
 
+    async def callback():
+        log.info('Running cron callback')
+        # ...
+
+    service = CronService()
+    service.register(callback, spec="0 * * * *") # every hour at zero minutes
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
+You can also inherit from ``CronService``, but remember that callback registration
+should be proceeded before start
+
+.. code-block:: python
+
+    import aiomisc
+    from aiomisc.service.cron import CronService
+
+
     class MyCronService(CronService):
         async def callback(self):
             log.info('Running cron callback')
             # ...
 
-    service = MyCronService("0 * * * *")  # every hour at zero minutes
+        async def start(self):
+            self.register(self.callback, spec="0 * * * *")
+            await super().start()
+
+    service = MyCronService()
 
     with entrypoint(service) as loop:
         loop.run_forever()

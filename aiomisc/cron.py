@@ -121,6 +121,9 @@ class CronCallback:
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, self.__name)
 
+    def __str__(self):
+        return "%s(%s)" % (self.__class__.__name__, self._cb.func.__name__)
+
     @property
     def task(self):
         return self._task
