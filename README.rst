@@ -370,6 +370,32 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
         loop.run_forever()
 
 
+CronService
+***************
+
+``CronService`` runs ``CronCallback`` as a service and waits for
+running callback to complete on stop. You need to use ``CronService``
+as a base class and override ``callback`` async coroutine method.
+
+Service class accepts required ``spec`` argument - cron like format.
+Based on [croniter](https://github.com/taichino/croniter)
+
+.. code-block:: python
+
+    import aiomisc
+    from aiomisc.service.cron import CronService
+
+
+    class MyCronService(CronService):
+        async def callback(self):
+            log.info('Running periodic callback')
+            # ...
+
+    service = MyCronService("0 * * * *")  # every hour at zero minutes
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
 Multiple services
 *****************
 
@@ -1536,6 +1562,32 @@ Runs coroutine function periodically with an optional delay of the first executi
 
         loop.run_forever()
 
+
+Cron callback
++++++++++++++++++
+
+Runs coroutine function with cron scheduling execution.
+
+.. code-block:: python
+
+    import asyncio
+    import time
+    from aiomisc import new_event_loop, CronCallback
+
+
+    async def cron_function():
+        print("Hello")
+
+
+    if __name__ == '__main__':
+        loop = new_event_loop()
+
+        periodic = CronCallback(periodic_function)
+
+        # call it each second after that
+        periodic.start(spec="* * * * * *")
+
+        loop.run_forever()
 
 Logging configuration
 +++++++++++++++++++++
