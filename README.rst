@@ -377,8 +377,22 @@ CronService
 running callbacks to complete on stop.
 
 Based on [croniter](https://github.com/taichino/croniter)
-
 You can register async coroutine method with ``spec`` argument - cron like format:
+
+.. warning::
+
+   requires installed croniter:
+
+   .. code-block::
+
+       pip install croniter
+
+   or using extras:
+
+   .. code-block::
+
+       pip install aiomisc[cron]
+
 
 .. code-block:: python
 
