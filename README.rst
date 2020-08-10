@@ -381,7 +381,7 @@ You can register async coroutine method with ``spec`` argument - cron like forma
 
 .. warning::
 
-   requires installed croniter:
+   requires installed [croniter](https://github.com/taichino/croniter):
 
    .. code-block::
 

@@ -12,7 +12,7 @@ from aiomisc.cron import CronCallback
 log = logging.getLogger(__name__)
 
 StoreItem = namedtuple(
-    "StoreItem", "callback spec, shield, suppress_exceptions"
+    "StoreItem", "callback, spec, shield, suppress_exceptions"
 )
 
 
