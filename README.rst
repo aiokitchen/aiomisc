@@ -370,6 +370,71 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
         loop.run_forever()
 
 
+CronService
+***************
+
+``CronService`` runs ``CronCallback's`` as a service and waits for
+running callbacks to complete on stop.
+
+Based on [croniter](https://github.com/taichino/croniter)
+You can register async coroutine method with ``spec`` argument - cron like format:
+
+.. warning::
+
+   requires installed [croniter](https://github.com/taichino/croniter):
+
+   .. code-block::
+
+       pip install croniter
+
+   or using extras:
+
+   .. code-block::
+
+       pip install aiomisc[cron]
+
+
+.. code-block:: python
+
+    import aiomisc
+    from aiomisc.service.cron import CronService
+
+
+    async def callback():
+        log.info('Running cron callback')
+        # ...
+
+    service = CronService()
+    service.register(callback, spec="0 * * * *") # every hour at zero minutes
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
+You can also inherit from ``CronService``, but remember that callback registration
+should be proceeded before start
+
+.. code-block:: python
+
+    import aiomisc
+    from aiomisc.service.cron import CronService
+
+
+    class MyCronService(CronService):
+        async def callback(self):
+            log.info('Running cron callback')
+            # ...
+
+        async def start(self):
+            self.register(self.callback, spec="0 * * * *")
+            await super().start()
+
+    service = MyCronService()
+
+    with entrypoint(service) as loop:
+        loop.run_forever()
+
+
 Multiple services
 *****************
 
@@ -1536,6 +1601,32 @@ Runs coroutine function periodically with an optional delay of the first executi
 
         loop.run_forever()
 
+
+Cron callback
++++++++++++++++++
+
+Runs coroutine function with cron scheduling execution.
+
+.. code-block:: python
+
+    import asyncio
+    import time
+    from aiomisc import new_event_loop, CronCallback
+
+
+    async def cron_function():
+        print("Hello")
+
+
+    if __name__ == '__main__':
+        loop = new_event_loop()
+
+        periodic = CronCallback(cron_function)
+
+        # call it each second after that
+        periodic.start(spec="* * * * * *")
+
+        loop.run_forever()
 
 Logging configuration
 +++++++++++++++++++++

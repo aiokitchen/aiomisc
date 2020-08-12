@@ -62,6 +62,7 @@ setup(
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
+        'cron': ['croniter~=0.3.34'],
         ':python_version < "3.7"': 'async-generator',
     },
     entry_points={
