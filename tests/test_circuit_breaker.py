@@ -32,7 +32,7 @@ class PatchedCircuitBreaper(aiomisc.CircuitBreaker):
 
     @classmethod
     def reset(cls):
-        cls._TIME += 1234567890.0
+        cls._TIME += 1000000000.0
 
     def _get_time(self):
         return float(self._TIME)
@@ -80,8 +80,8 @@ async def test_simple(loop):
 
     responses.clear()
 
-    for _ in range(10):
-        PatchedCircuitBreaper.tick()
+    for _ in range(110):
+        PatchedCircuitBreaper.tick(0.1)
 
         try:
             circuit_breaker.call(ctx)
