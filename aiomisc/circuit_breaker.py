@@ -88,8 +88,11 @@ class CircuitBreaker:
     def state(self) -> CircuitBreakerStates:
         return self._state
 
+    def _get_time(self) -> float:
+        return self._loop.time()
+
     def bucket(self) -> int:
-        ts = self._loop.time() * self.BUCKET_COUNT
+        ts = self._get_time() * self.BUCKET_COUNT
         return int(ts - (ts % self._response_time))
 
     def counter(self) -> Counter:
@@ -121,7 +124,7 @@ class CircuitBreaker:
             yield counter
 
     def get_state_delay(self):
-        delay = self._stuck_until - self._loop.time()
+        delay = self._stuck_until - self._get_time()
         if delay < 0:
             return 0
         return delay
@@ -140,7 +143,7 @@ class CircuitBreaker:
         raise CircuitBroken()
 
     def _on_recover(self, counter):
-        current_time = self._loop.time()
+        current_time = self._get_time()
         condition = (random() + 1) < (
             2 ** ((current_time - self._recovery_at) / self._recovery_time)
         )
@@ -172,7 +175,7 @@ class CircuitBreaker:
         return upper_count / total_count
 
     def _compute_state(self):
-        current_time = self._loop.time()
+        current_time = self._get_time()
 
         if current_time < self._stuck_until:
             # Skip state changing until

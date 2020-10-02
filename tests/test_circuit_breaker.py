@@ -1,6 +1,8 @@
 import asyncio
+from collections import Counter
 
 import pytest
+
 import aiomisc
 from aiomisc.circuit_breaker import (
     CircuitBreakerStates as States,
@@ -21,17 +23,37 @@ class CallContainer:
         return
 
 
+class PatchedCircuitBreaper(aiomisc.CircuitBreaker):
+    _TIME = 0
+
+    @classmethod
+    def tick(cls, second=1.0):
+        cls._TIME += second
+
+    @classmethod
+    def reset(cls):
+        cls._TIME += 1234567890.0
+
+    def _get_time(self):
+        return float(self._TIME)
+
+
 async def test_simple(loop):
-    circuit_breaker = aiomisc.CircuitBreaker(
-        error_ratio=0.5, response_time=0.5
+
+    PatchedCircuitBreaper.reset()
+    circuit_breaker = PatchedCircuitBreaper(
+        error_ratio=0.5, response_time=10
     )
 
     ctx = CallContainer()
+    responses = Counter()
 
     assert circuit_breaker.recovery_ratio == 0
 
+    await asyncio.sleep(0)
+
     for _ in range(10):
-        await asyncio.sleep(0.05)
+        PatchedCircuitBreaper.tick()
         circuit_breaker.call(ctx)
 
     assert circuit_breaker.recovery_ratio == 0
@@ -40,60 +62,68 @@ async def test_simple(loop):
     ctx.failed = True
 
     for _ in range(10):
-        await asyncio.sleep(0.05)
+        PatchedCircuitBreaper.tick()
 
         with pytest.raises(RuntimeError):
             circuit_breaker.call(ctx)
 
-    for _ in range(10):
-        try:
-            circuit_breaker.call(ctx)
-        except (RuntimeError, CircuitBroken):
-            pass
+    with pytest.raises(CircuitBroken):
+        circuit_breaker.call(ctx)
 
     assert circuit_breaker.state == States.BROKEN
 
-    # assert circuit_breaker.state == 0, circuit_breaker
-    #
-    # for _ in range(10):
-    #     with suppress(ZeroDivisionError):
-    #         circuit_breaker.call(lambda a, b: a / b, 1, 0)
-    #
-    # with suppress(aiomisc.CircuitBroken):
-    #     circuit_breaker.call(lambda a, b: a / b, 1, 0)
-    #
-    # assert circuit_breaker.state != 0, circuit_breaker
-    #
-    # with pytest.raises(aiomisc.CircuitBroken):
-    #     circuit_breaker.call(lambda a, b: a / b, 1, 0)
-    #
-    # time.sleep(circuit_breaker.response_time / 10)
-    #
-    # def run(num=1000, delay=0.001):
-    #     ok = 0
-    #     broken = 0
-    #
-    #     for _ in range(num):
-    #         time.sleep(delay)
-    #
-    #         try:
-    #             circuit_breaker.call(lambda a, b: a / b, 1, 1)
-    #         except aiomisc.CircuitBroken:
-    #             broken += 1
-    #         else:
-    #             ok += 1
-    #
-    #     return ok, broken
-    #
-    # ok, broken = run(500, 0.001)
-    # assert ok == 0
-    #
-    # time.sleep(circuit_breaker.response_time / 6)
-    #
-    # ok, broken = run()
-    # assert ok == pytest.approx(broken), circuit_breaker._state
-    #
-    # time.sleep(circuit_breaker.response_time)
-    #
-    # with pytest.raises(ZeroDivisionError):
-    #     circuit_breaker.call(lambda a, b: a / b, 1, 0)
+    for _ in range(10):
+        PatchedCircuitBreaper.tick()
+
+        with pytest.raises(CircuitBroken):
+            circuit_breaker.call(ctx)
+
+    responses.clear()
+
+    for _ in range(10):
+        PatchedCircuitBreaper.tick()
+
+        try:
+            circuit_breaker.call(ctx)
+        except CircuitBroken:
+            responses[CircuitBroken] += 1
+        except RuntimeError:
+            responses[RuntimeError] += 1
+
+    assert responses[CircuitBroken]
+    assert responses[RuntimeError]
+
+    ctx.failed = False
+
+    responses.clear()
+
+    for _ in range(20):
+        PatchedCircuitBreaper.tick()
+
+        try:
+            circuit_breaker.call(ctx)
+            responses[True] += 1
+        except CircuitBroken:
+            responses[CircuitBroken] += 1
+        except RuntimeError:
+            responses[RuntimeError] += 1
+
+    assert not responses.get(RuntimeError)
+    assert responses[CircuitBroken]
+    assert responses[True]
+
+    responses.clear()
+
+    for _ in range(10):
+        PatchedCircuitBreaper.tick()
+
+        try:
+            circuit_breaker.call(ctx)
+            responses[True] += 1
+        except CircuitBroken:
+            responses[CircuitBroken] += 1
+        except RuntimeError:
+            responses[RuntimeError] += 1
+
+    assert not responses.get(CircuitBroken)
+    assert responses[True]
