@@ -4,8 +4,9 @@ from collections import Counter
 import pytest
 
 import aiomisc
-from aiomisc.circuit_breaker import CircuitBreakerStates as States
-from aiomisc.circuit_breaker import CircuitBroken
+from aiomisc.circuit_breaker import (
+    CircuitBreakerStates as States, CircuitBroken
+)
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -22,7 +23,7 @@ class CallContainer:
         return
 
 
-class PatchedCircuitBreaper(aiomisc.CircuitBreaker):
+class PatchedCircuitBreaker(aiomisc.CircuitBreaker):
     _TIME = 0
 
     @classmethod
@@ -39,48 +40,59 @@ class PatchedCircuitBreaper(aiomisc.CircuitBreaker):
 
 async def test_simple(loop):
 
-    PatchedCircuitBreaper.reset()
-    circuit_breaker = PatchedCircuitBreaper(
+    PatchedCircuitBreaker.reset()
+    circuit_breaker = PatchedCircuitBreaker(
         error_ratio=0.5, response_time=10,
     )
 
     ctx = CallContainer()
     responses = Counter()
 
+    # Zero ratio on start
     assert circuit_breaker.recovery_ratio == 0
 
-    await asyncio.sleep(0)
-
+    # PASSING state
     for _ in range(10):
-        PatchedCircuitBreaper.tick()
+        PatchedCircuitBreaker.tick()
         circuit_breaker.call(ctx)
 
     assert circuit_breaker.recovery_ratio == 0
     assert circuit_breaker.state == States.PASSING
 
+    # Now context return exceptions
     ctx.failed = True
 
+    # Errored calls
     for _ in range(10):
-        PatchedCircuitBreaper.tick()
+        PatchedCircuitBreaker.tick()
 
         with pytest.raises(RuntimeError):
             circuit_breaker.call(ctx)
 
+    # Change state to BROKEN
     with pytest.raises(CircuitBroken):
         circuit_breaker.call(ctx)
 
     assert circuit_breaker.state == States.BROKEN
 
+    # Delaying in BROKEN state
+    assert circuit_breaker.get_state_delay() > 0
+
+    # Waiting in BROKEN state
     for _ in range(10):
-        PatchedCircuitBreaper.tick()
+        PatchedCircuitBreaker.tick()
 
         with pytest.raises(CircuitBroken):
             circuit_breaker.call(ctx)
 
     responses.clear()
 
+    # Delay is zero
+    assert circuit_breaker.get_state_delay() == 0
+
+    # Collect statistic in RECOVERY state
     for _ in range(110):
-        PatchedCircuitBreaper.tick(0.1)
+        PatchedCircuitBreaker.tick(0.1)
 
         try:
             circuit_breaker.call(ctx)
@@ -92,12 +104,16 @@ async def test_simple(loop):
     assert responses[CircuitBroken]
     assert responses[RuntimeError]
 
+    # Waiting to switch from BROKEN to RECOVERY
+    PatchedCircuitBreaker.tick(circuit_breaker.get_state_delay())
+
     ctx.failed = False
 
     responses.clear()
 
-    for _ in range(20):
-        PatchedCircuitBreaper.tick()
+    # RECOVERY to PASSING state
+    for _ in range(10):
+        PatchedCircuitBreaker.tick()
 
         try:
             circuit_breaker.call(ctx)
@@ -113,8 +129,9 @@ async def test_simple(loop):
 
     responses.clear()
 
+    # PASSING state
     for _ in range(10):
-        PatchedCircuitBreaper.tick()
+        PatchedCircuitBreaker.tick()
 
         try:
             circuit_breaker.call(ctx)
@@ -126,3 +143,24 @@ async def test_simple(loop):
 
     assert not responses.get(CircuitBroken)
     assert responses[True]
+
+
+async def test_get_time():
+    cb = aiomisc.CircuitBreaker(0.5, 1)
+    assert cb._get_time()
+    time = cb._get_time()
+    await asyncio.sleep(0.02)
+    assert cb._get_time() > time
+
+
+async def test_unknown_state():
+    cb = aiomisc.CircuitBreaker(0.1, 1)
+    cb._state = 44
+
+    with pytest.raises(NotImplementedError):
+        cb.call(lambda: None)
+
+
+async def test_bad_response_time():
+    with pytest.raises(ValueError):
+        aiomisc.CircuitBreaker(0, 0)

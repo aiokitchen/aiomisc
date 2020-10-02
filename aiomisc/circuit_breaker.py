@@ -64,6 +64,8 @@ class CircuitBreaker:
         broken_time: TimeType = None,
         passing_time: TimeType = None
     ):
+        if response_time <= 0:
+            raise ValueError("Response time must be greater then zero")
 
         self._statistic = deque(maxlen=self.BUCKET_COUNT)  # type: StatisticType
         self._lock = threading.RLock()
@@ -225,8 +227,7 @@ class CircuitBreaker:
             return
 
         elif self._state is CircuitBreakerStates.BROKEN:
-            yield from self._on_broken()
-            return
+            return (yield from self._on_broken())
 
         elif self._state is CircuitBreakerStates.RECOVERING:
             yield from self._on_recover(counter)
