@@ -50,7 +50,7 @@ def basic_config(
     level: int = logging.INFO,
     log_format: Union[str, LogFormat] = LogFormat.color,
     buffered: bool = True, buffer_size: int = 1024,
-    flush_interval: float = 0.2, force: bool = False, loop=None, **kwargs
+    flush_interval: float = 0.2, loop=None, **kwargs
 ):
 
     if isinstance(level, str):
@@ -76,5 +76,4 @@ def basic_config(
     logging.basicConfig(
         level=int(level),
         handlers=[handler],
-        force=force,
     )
