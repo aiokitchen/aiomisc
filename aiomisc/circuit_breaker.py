@@ -1,7 +1,7 @@
 import asyncio
 import threading
 import typing
-from collections import deque, Counter
+from collections import Counter, deque
 from contextlib import contextmanager
 from enum import IntEnum, unique
 from functools import wraps
@@ -244,7 +244,7 @@ class CircuitBreaker:
 
     def __repr__(self):
         return "<{}: state={!r} recovery_ratio={!s}>".format(
-            self.__class__.__name__, self._state, self.recovery_ratio
+            self.__class__.__name__, self._state, self.recovery_ratio,
         )
 
 
