@@ -1,2 +1,1 @@
 colorlog
-prettylog~=0.3.0
