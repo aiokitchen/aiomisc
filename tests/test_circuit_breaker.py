@@ -49,7 +49,6 @@ async def test_simple(loop):
     )
 
     ctx = CallContainer()
-    responses = Counter()
 
     # Zero ratio on start
     assert circuit_breaker.recovery_ratio == 0
@@ -88,7 +87,7 @@ async def test_simple(loop):
         with pytest.raises(CircuitBroken):
             circuit_breaker.call(ctx)
 
-    responses.clear()
+    responses = Counter()
 
     # Delay is zero
     assert circuit_breaker.get_state_delay() == 0
