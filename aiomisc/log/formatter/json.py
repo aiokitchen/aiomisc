@@ -100,9 +100,9 @@ class JSONLogFormatter(logging.Formatter):
         return super().formatTime(record, datefmt=datefmt)
 
 
-def json_formatter(stream=None, date_format=None):
+def json_formatter(stream=None, date_format=None, **kwargs):
     stream = stream or sys.stdout
-    formatter = JSONLogFormatter(datefmt=date_format)
+    formatter = JSONLogFormatter(datefmt=date_format, **kwargs)
     handler = logging.StreamHandler(stream)
     handler.setFormatter(formatter)
     return handler
