@@ -107,6 +107,7 @@ class CircuitBreaker:
             current = self.bucket()
 
             if not len(self._statistic):
+                # Empty statistic just return a new counter
                 counter = Counter()
                 self._statistic.append((current, counter))
                 return counter
@@ -114,6 +115,7 @@ class CircuitBreaker:
             bucket, counter = self._statistic[-1]
 
             if current != bucket:
+                # Append Counter to statistic or shift when maxsize reached
                 counter = Counter()
                 self._statistic.append((current, counter))
 
@@ -254,7 +256,7 @@ class CircuitBreaker:
         )
 
 
-def cutoff(ratio, recovery_time, *exceptions):
+def cutout(ratio, recovery_time, *exceptions):
     circuit_breaker = CircuitBreaker(
         error_ratio=ratio, recovery_time=recovery_time, *exceptions
     )

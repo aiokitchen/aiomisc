@@ -955,6 +955,11 @@ otherwise - to **BROKEN**.
 .. image:: /resources/images/cb-flow.svg
 
 
+cutout
+++++++
+
+Decorator for ``CircuitBreaker`` which wrapping functions.
+
 asynchronous file operations
 ++++++++++++++++++++++++++++
 
