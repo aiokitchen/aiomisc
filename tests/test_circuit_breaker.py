@@ -24,6 +24,9 @@ class CallContainer:
 
 
 class PatchedCircuitBreaker(aiomisc.CircuitBreaker):
+    """
+    CircuitBreaker for young time travelers
+    """
     _TIME = 0
 
     @classmethod
