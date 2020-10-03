@@ -163,4 +163,4 @@ async def test_unknown_state():
 
 async def test_bad_response_time():
     with pytest.raises(ValueError):
-        aiomisc.CircuitBreaker(0, 0)
+        aiomisc.CircuitBreaker(0.5, 0)

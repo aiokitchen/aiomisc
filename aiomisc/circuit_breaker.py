@@ -67,8 +67,10 @@ class CircuitBreaker:
         if response_time <= 0:
             raise ValueError("Response time must be greater then zero")
 
-        if 0 < error_ratio <= 1:
-            raise ValueError("Error ratio must be between 0 and 1")
+        if 0. > error_ratio >= 1.:
+            raise ValueError(
+                "Error ratio must be between 0 and 1 not %r" % error_ratio
+            )
 
         self._statistic = deque(
             maxlen=self.BUCKET_COUNT
@@ -122,6 +124,9 @@ class CircuitBreaker:
             return counter
 
     def __gen_statistic(self) -> typing.Generator[Counter, None, None]:
+        """
+        Generator which returns only buckets Counters not before current_time
+        """
         not_before = self.bucket() - (self._response_time * self.BUCKET_COUNT)
 
         for idx in range(len(self._statistic) - 1, -1, -1):
