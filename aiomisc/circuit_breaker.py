@@ -67,6 +67,9 @@ class CircuitBreaker:
         if response_time <= 0:
             raise ValueError("Response time must be greater then zero")
 
+        if 0 < error_ratio <= 1:
+            raise ValueError("Error ratio must be between 0 and 1")
+
         self._statistic = deque(
             maxlen=self.BUCKET_COUNT
         )  # type: StatisticType
