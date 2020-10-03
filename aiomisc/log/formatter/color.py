@@ -5,7 +5,7 @@ from colorlog import ColoredFormatter
 from aiomisc.log.enum import DateFormat
 
 
-def color_formatter(stream=None, date_format=...) -> logging.Handler:
+def color_formatter(stream=None, date_format=..., **_) -> logging.Handler:
 
     date_format = (
         date_format if date_format is not Ellipsis else DateFormat.color.value

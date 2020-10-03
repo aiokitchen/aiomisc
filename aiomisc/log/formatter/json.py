@@ -6,7 +6,13 @@ from types import MappingProxyType
 from typing import Union
 
 
+def _dump_json(*args, **kwargs):
+    return json.dumps(*args, **kwargs, default=repr)
+
+
 class JSONLogFormatter(logging.Formatter):
+    JSON_DUMPS = _dump_json
+
     LEVELS = MappingProxyType({
         logging.CRITICAL: "crit",
         logging.FATAL: "fatal",
@@ -30,11 +36,12 @@ class JSONLogFormatter(logging.Formatter):
         'threadName': ('thread_name', str),
     })
 
-    def __init__(self, fmt=None, datefmt=None, style='%'):
+    def __init__(self, fmt=None, datefmt=None, style='%', dumps=JSON_DUMPS):
         super().__init__(
             datefmt=datefmt if datefmt is not Ellipsis else None,
             fmt=fmt, style=style
         )
+        self.dumps = dumps
 
     def format(self, record: logging.LogRecord):
         record_dict = MappingProxyType(record.__dict__)
@@ -79,7 +86,7 @@ class JSONLogFormatter(logging.Formatter):
         if record.exc_info:
             payload['stackTrace'] = self.formatException(record.exc_info)
 
-        return json.dumps(payload, ensure_ascii=False)
+        return self.dumps(payload, ensure_ascii=False)
 
     def formatMessage(self, record: logging.LogRecord) -> str:
         return record.getMessage()

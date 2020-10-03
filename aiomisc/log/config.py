@@ -11,7 +11,7 @@ DEFAULT_FORMAT = '%(levelname)s:%(name)s:%(message)s'
 
 
 def create_logging_handler(log_format: LogFormat = LogFormat.color,
-                           date_format=None):
+                           date_format=None, **kwargs):
 
     if log_format == LogFormat.stream:
         handler = logging.StreamHandler()
@@ -25,9 +25,9 @@ def create_logging_handler(log_format: LogFormat = LogFormat.color,
         handler.setFormatter(formatter)
         return handler
     elif log_format == LogFormat.json:
-        return json_formatter(date_format=date_format)
+        return json_formatter(date_format=date_format, **kwargs)
     elif log_format == LogFormat.color:
-        return color_formatter(date_format=date_format)
+        return color_formatter(date_format=date_format, **kwargs)
     elif log_format == LogFormat.syslog:
         if date_format:
             sys.stderr.write("Can not apply \"date_format\" for syslog\n")
