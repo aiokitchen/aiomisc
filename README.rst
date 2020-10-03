@@ -960,6 +960,21 @@ cutout
 
 Decorator for ``CircuitBreaker`` which wrapping functions.
 
+.. code-block:: python
+
+    import aiomisc
+    import aiopg
+
+    dsn = "postrgresql://localhost"
+
+    @cutout(0.5, 5)
+    def breaking_function():
+        async with aiopg.create_pool(dsn) as pool:
+           async with pool.acquire() as conn:
+               async with conn.cursor() as cur:
+                   await cur.execute("SELECT 1")
+
+
 asynchronous file operations
 ++++++++++++++++++++++++++++
 
