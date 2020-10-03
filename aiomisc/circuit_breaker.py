@@ -67,7 +67,9 @@ class CircuitBreaker:
         if response_time <= 0:
             raise ValueError("Response time must be greater then zero")
 
-        self._statistic = deque(maxlen=self.BUCKET_COUNT)  # type: StatisticType
+        self._statistic = deque(
+            maxlen=self.BUCKET_COUNT
+        )  # type: StatisticType
         self._lock = threading.RLock()
         self._loop = asyncio.get_event_loop()
         self._error_ratio = error_ratio
