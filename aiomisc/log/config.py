@@ -1,9 +1,10 @@
+import asyncio
 import logging
 import os
 import sys
-from typing import Union
+from typing import Union, Optional
 
-from .enum import LogFormat
+from .enum import LogFormat, LogLevel
 from .formatter import json_formatter, color_formatter
 from .wrap import wrap_logging_handler
 
@@ -50,11 +51,13 @@ def basic_config(
     level: int = logging.INFO,
     log_format: Union[str, LogFormat] = LogFormat.color,
     buffered: bool = True, buffer_size: int = 1024,
-    flush_interval: float = 0.2, loop=None, **kwargs
+    flush_interval: Union[int, float] = 0.2,
+    loop: Optional[asyncio.AbstractEventLoop] = None,
+    **kwargs
 ):
 
     if isinstance(level, str):
-        level = LogFormat[level]
+        level = LogLevel[level]
 
     logging.basicConfig()
     logger = logging.getLogger()

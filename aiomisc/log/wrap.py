@@ -3,7 +3,7 @@ import logging
 import logging.handlers
 import time
 from contextlib import suppress
-from typing import Union
+from typing import Union, Optional
 
 from ..thread_pool import run_in_new_thread
 
@@ -34,9 +34,9 @@ def _thread_flusher(
 
 def wrap_logging_handler(
     handler: logging.Handler,
-    loop: asyncio.AbstractEventLoop = None,
+    loop: Optional[asyncio.AbstractEventLoop] = None,
     buffer_size: int = 1024,
-    flush_interval: float = 0.1,
+    flush_interval: Union[float, int] = 0.1,
 ):
     loop = loop or asyncio.get_event_loop()
 

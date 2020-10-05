@@ -18,7 +18,6 @@ class JSONLogFormatter(logging.Formatter):
         logging.FATAL: "fatal",
         logging.ERROR: "error",
         logging.WARNING: "warn",
-        logging.WARN: "warn",
         logging.INFO: "info",
         logging.DEBUG: "debug",
         logging.NOTSET: None,
