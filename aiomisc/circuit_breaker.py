@@ -65,7 +65,7 @@ class CircuitBreaker:
         self,
         error_ratio: float,
         response_time: TimeType,
-        *exceptions: typing.Type[Exception],
+        exceptions: typing.Iterable[typing.Type[Exception]] = (Exception,),
         recovery_time: TimeType = None,
         broken_time: TimeType = None,
         passing_time: TimeType = None
@@ -119,7 +119,7 @@ class CircuitBreaker:
         self._stuck_until = 0
         self._recovery_at = 0
 
-        self._exceptions = tuple(frozenset(exceptions)) or (Exception,)
+        self._exceptions = tuple(frozenset(exceptions))
 
         self._passing_time = passing_time or self._response_time
         self._broken_time = broken_time or self._response_time
@@ -268,7 +268,7 @@ class CircuitBreaker:
             return
 
     @contextmanager
-    def _exec(self):
+    def context(self):
         counter = self.counter()
         self._compute_state()
 
@@ -286,11 +286,11 @@ class CircuitBreaker:
         raise NotImplementedError(self._state)
 
     def call(self, func, *args, **kwargs):
-        with self._exec():
+        with self.context():
             return func(*args, **kwargs)
 
     async def call_async(self, func, *args, **kwargs):
-        with self._exec():
+        with self.context():
             return await awaitable(func)(*args, **kwargs)
 
     def __repr__(self):
@@ -300,20 +300,23 @@ class CircuitBreaker:
 
 
 def cutout(ratio: float, recovery_time: typing.Union[int, float],
-           *exceptions: Exception, **kwargs):
+           *exceptions: typing.Type[Exception], **kwargs):
 
     circuit_breaker = CircuitBreaker(
-        error_ratio=ratio, recovery_time=recovery_time, *exceptions, **kwargs
+        error_ratio=ratio,
+        recovery_time=recovery_time,
+        exceptions=exceptions,
+        **kwargs
     )
 
     async def decorator(func):
         @wraps(func)
-        async def async_wrap(*args, **kwargs):
-            return await circuit_breaker.call_async(func, *args, **kwargs)
+        async def async_wrap(*args, **kw):
+            return await circuit_breaker.call_async(func, *args, **kw)
 
         @wraps(func)
-        def wrap(*args, **kwargs):
-            return circuit_breaker.call(func, *args, **kwargs)
+        def wrap(*args, **kw):
+            return circuit_breaker.call(func, *args, **kw)
 
         if asyncio.iscoroutinefunction(func):
             return async_wrap
