@@ -50,9 +50,15 @@ class CircuitBreaker:
     )
 
     BUCKET_COUNT = 10
+    # Thresholds when state will be changed
 
-    # Ratio of
-    RECOVER_BROKEN_THRESHOLD = 0.2
+    # * RECOVER state will be changed to BROKEN
+    #   when error ratio will be greater or equal then
+    #   RECOVER_BROKEN_THRESHOLD
+    RECOVER_BROKEN_THRESHOLD = 0.5
+    # * PASSING state will be changed to BROKEN
+    #   when error ratio will be greater or equal then
+    #   PASSING_BROKEN_THRESHOLD
     PASSING_BROKEN_THRESHOLD = 1
 
     def __init__(
@@ -64,6 +70,36 @@ class CircuitBreaker:
         broken_time: TimeType = None,
         passing_time: TimeType = None
     ):
+        """
+        Circuit Breaker pattern implementation. The class instance collects
+        call statistics through the ``call`` or ``call async`` methods.
+
+        The state machine has three states:
+        * ``CircuitBreakerStates.PASSING``
+        * ``CircuitBreakerStates.BROKEN``
+        * ``CircuitBreakerStates.RECOVERING``
+
+        In passing mode all results or exceptions will be returned as is.
+        Statistic collects for each call.
+
+        In broken mode returns exception ``CircuitBroken`` for each call.
+        Statistic doesn't collecting.
+
+        In recovering mode the part of calls is real function calls and
+        remainings raises ``CircuitBroken``. The count of real calls grows
+        exponentially in this case but when 20% (by default) will be failed
+        the state returns to broken state.
+
+        :param error_ratio: Failed to success calls ratio. The state might be
+                            changed if ratio will reach given value within
+                            ``response time`` (in seconds).
+        :param response_time: Time window to collect statistics
+        :param exceptions: Only this exceptions will affect ratio.
+                           Base class  ``Exception`` used by default.
+        :param recovery_time: minimal time in recovery state
+        :param broken_time: minimal time in broken state
+        :param passing_time: minimum time in passing state
+        """
         if response_time <= 0:
             raise ValueError("Response time must be greater then zero")
 
@@ -139,9 +175,7 @@ class CircuitBreaker:
 
     def get_state_delay(self):
         delay = self._stuck_until - self._get_time()
-        if delay < 0:
-            return 0
-        return delay
+        return max(delay, 0)
 
     def _on_passing(self, counter):
         try:
@@ -162,10 +196,10 @@ class CircuitBreaker:
             2 ** ((current_time - self._recovery_at) / self._recovery_time)
         )
 
-        if condition:
-            yield from self._on_passing(counter)
-        else:
+        if not condition:
             raise CircuitBroken()
+
+        yield from self._on_passing(counter)
 
     @property
     def recovery_ratio(self):
@@ -216,18 +250,22 @@ class CircuitBreaker:
                 self._statistic.clear()
             return
 
-        if self._state is CircuitBreakerStates.RECOVERING:
-            if recovery_ratio >= self.RECOVER_BROKEN_THRESHOLD:
-                self._stuck_until = current_time + self._broken_time
-                self._state = CircuitBreakerStates.BROKEN
-                self._statistic.clear()
-                return
+        if self._state is not CircuitBreakerStates.RECOVERING:
+            return
 
-            recovery_length = current_time - self._recovery_at
-            if recovery_length >= self._recovery_time:
-                self._stuck_until = current_time + self._passing_time
-                self._state = CircuitBreakerStates.PASSING
-                return
+        if recovery_ratio >= (
+            self.RECOVER_BROKEN_THRESHOLD * self._error_ratio
+        ):
+            self._stuck_until = current_time + self._broken_time
+            self._state = CircuitBreakerStates.BROKEN
+            self._statistic.clear()
+            return
+
+        recovery_length = current_time - self._recovery_at
+        if recovery_length >= self._recovery_time:
+            self._stuck_until = current_time + self._passing_time
+            self._state = CircuitBreakerStates.PASSING
+            return
 
     @contextmanager
     def _exec(self):
@@ -261,9 +299,11 @@ class CircuitBreaker:
         )
 
 
-def cutout(ratio, recovery_time, *exceptions):
+def cutout(ratio: float, recovery_time: typing.Union[int, float],
+           *exceptions: Exception, **kwargs):
+
     circuit_breaker = CircuitBreaker(
-        error_ratio=ratio, recovery_time=recovery_time, *exceptions
+        error_ratio=ratio, recovery_time=recovery_time, *exceptions, **kwargs
     )
 
     async def decorator(func):
@@ -277,7 +317,6 @@ def cutout(ratio, recovery_time, *exceptions):
 
         if asyncio.iscoroutinefunction(func):
             return async_wrap
-        else:
-            return wrap
+        return wrap
 
     return decorator
