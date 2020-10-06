@@ -155,14 +155,6 @@ async def test_get_time():
     assert cb._get_time() > time
 
 
-async def test_unknown_state():
-    cb = aiomisc.CircuitBreaker(0.1, 1)
-    cb._state = 44
-
-    with pytest.raises(NotImplementedError):
-        cb.call(lambda: None)
-
-
 async def test_bad_response_time():
     with pytest.raises(ValueError):
         aiomisc.CircuitBreaker(0.5, 0)

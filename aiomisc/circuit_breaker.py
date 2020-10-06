@@ -93,12 +93,13 @@ class CircuitBreaker:
         :param error_ratio: Failed to success calls ratio. The state might be
                             changed if ratio will reach given value within
                             ``response time`` (in seconds).
-        :param response_time: Time window to collect statistics
+                            Value between 0.0 and 1.0.
+        :param response_time: Time window to collect statistics (seconds)
         :param exceptions: Only this exceptions will affect ratio.
                            Base class  ``Exception`` used by default.
-        :param recovery_time: minimal time in recovery state
-        :param broken_time: minimal time in broken state
-        :param passing_time: minimum time in passing state
+        :param recovery_time: minimal time in recovery state (seconds)
+        :param broken_time: minimal time in broken state (seconds)
+        :param passing_time: minimum time in passing state (seconds)
         """
         if response_time <= 0:
             raise ValueError("Response time must be greater then zero")
@@ -144,7 +145,7 @@ class CircuitBreaker:
         with self._lock:
             current = self.bucket()
 
-            if not len(self._statistic):
+            if not self._statistic:
                 # Empty statistic just return a new counter
                 counter = Counter()
                 self._statistic.append((current, counter))

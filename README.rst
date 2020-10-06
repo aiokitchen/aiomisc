@@ -884,7 +884,7 @@ Keyword arguments notation:
 Circuit Breaker
 +++++++++++++++
 
-`Circuit breaker is a design pattern`_ used in modern software development.
+`Circuit breaker is a design pattern`_ used in software development.
 It is used to detect failures and encapsulates the logic of preventing a
 failure from constantly recurring, during maintenance, temporary external
 system failure or unexpected system difficulties.
@@ -925,8 +925,8 @@ Usage example:
             app = web.Application()
             app.add_routes([web.get('/', public_gists)])
 
-            # When 30% errors of 20 seconds
-            # Will broke on 5 seconds
+            # When 30% errors in 20 seconds
+            # Will be broken for 5 seconds
             app["github_cb"] = aiomisc.CircuitBreaker(
                 error_ratio=0.2,
                 response_time=20,
@@ -945,7 +945,7 @@ Usage example:
 .. _Circuit breaker is a design pattern: http://bit.ly/aimcbwiki
 
 
-The `CircuitBreaker` object might be in three states:
+The `CircuitBreaker` object might be one of three states:
 
     * **PASSING**
     * **BROKEN**
@@ -959,13 +959,13 @@ Next state will be determined after collecting statistics for
 than `error_ratio` then the next state will be set to **BROKEN**, otherwise
 it will remain unchanged.
 
-**BROKEN** means the wrapped function will never be called and ``CircuitBroken``
+**BROKEN** means the wrapped function wont be called and ``CircuitBroken``
 exception will be raised instead. **BROKEN** state will be kept
 for ``broken_time`` seconds.
 
 .. note::
 
-    ``CircuitBroken`` exception is a consequence of **BROKEN** or *RECOVERY*
+    ``CircuitBroken`` exception is a consequence of **BROKEN** or **RECOVERY**
     state and never be accounted for in the statistic.
 
 After that, it changes to **RECOVERING** state. While in that state, small sample
@@ -991,8 +991,8 @@ Decorator for ``CircuitBreaker`` which wrapping functions.
     import aiomisc
 
 
-    # When 20% errors of 30 seconds
-    # Will broke on 30 seconds
+    # When 20% errors in 30 seconds
+    # Will be broken on 30 seconds
     @aiomisc.cutout(0.2, 30, aiohttp.ClientError)
     async def fetch(session, url):
         async with session.get(url) as response:
