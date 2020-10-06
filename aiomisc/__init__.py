@@ -5,6 +5,7 @@ import pkg_resources
 from . import io, log
 from .backoff import asyncbackoff
 from .context import Context, get_context
+from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .entrypoint import entrypoint
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
@@ -50,9 +51,12 @@ __all__ = (
     "awaitable",
     "bind_socket",
     "cancel_tasks",
+    "CircuitBreaker",
+    "CircuitBroken",
     "chunk_list",
     "Context",
     "context_partial",
+    "cutout",
     "entrypoint",
     "get_context",
     "io",

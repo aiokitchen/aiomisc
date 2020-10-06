@@ -6,7 +6,15 @@ VERSION:=$(shell python3 setup.py --version | sed 's/+/-/g')
 bump:
 	python3 bump.py aiomisc/version.py
 
-sdist: bump
+uml:
+	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
+		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
+		-tsvg -o /mnt/resources/images/ '/mnt/resources/uml/*/**.puml'
+	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
+		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
+		-tpng -o /mnt/resources/images/ '/mnt/resources/uml/*/**.puml'
+
+sdist: bump uml
 	rm -fr dist
 	python3 setup.py sdist bdist_wheel
 
