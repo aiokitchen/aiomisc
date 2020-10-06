@@ -299,27 +299,28 @@ class CircuitBreaker:
         )
 
 
-def cutout(ratio: float, recovery_time: typing.Union[int, float],
+def cutout(ratio: float, response_time: typing.Union[int, float],
            *exceptions: typing.Type[Exception], **kwargs):
 
     circuit_breaker = CircuitBreaker(
         error_ratio=ratio,
-        recovery_time=recovery_time,
+        response_time=response_time,
         exceptions=exceptions,
         **kwargs
     )
 
-    async def decorator(func):
+    def decorator(func):
         @wraps(func)
-        async def async_wrap(*args, **kw):
+        async def async_wrapper(*args, **kw):
             return await circuit_breaker.call_async(func, *args, **kw)
 
         @wraps(func)
-        def wrap(*args, **kw):
+        def wrapper(*args, **kw):
             return circuit_breaker.call(func, *args, **kw)
 
         if asyncio.iscoroutinefunction(func):
-            return async_wrap
-        return wrap
+            return async_wrapper
+
+        return wrapper
 
     return decorator

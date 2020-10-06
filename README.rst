@@ -900,32 +900,46 @@ Usage example:
 
 .. code-block:: python
 
+    from aiohttp import web
+    from aiomisc.service.aiohttp import AIOHTTPService
     import aiohttp
     import aiomisc
-    import asyncio
 
 
-    async def main():
-        # When 30% errors of 20 seconds
-        # Will broke on 5 seconds
-        circuit_breaker = aiomisc.CircuitBreaker(
-            0.2, 20,
-            exceptions=[aiohttp.ClientError],
-            broken_time=5
+    async def public_gists(request):
+        async with aiohttp.ClientSession() as session:
+            # Using as context manager
+            with request.app["github_cb"].context():
+                url = 'https://api.github.com/gists/public'
+                async with session.get(url) as response:
+                    data = await response.text()
+
+        return web.Response(
+            text=data,
+            headers={"Content-Type": "application/json"}
         )
 
-        async def fetch(session, url):
-            async with session.get(url) as response:
-                return response.status
 
-        async with aiohttp.ClientSession() as session:
-            html = await fetch(session, 'http://python.org')
-            print(html)
+    class API(AIOHTTPService):
+        async def create_application(self):
+            app = web.Application()
+            app.add_routes([web.get('/', public_gists)])
+
+            # When 30% errors of 20 seconds
+            # Will broke on 5 seconds
+            app["github_cb"] = aiomisc.CircuitBreaker(
+                error_ratio=0.2,
+                response_time=20,
+                exceptions=[aiohttp.ClientError],
+                broken_time=5
+            )
+
+            return app
 
 
     if __name__ == '__main__':
-        with aiomisc.entrypoint() as loop:
-            loop.run_until_complete(main())
+        with aiomisc.entrypoint(API(port=8080)) as loop:
+            loop.run_forever()
 
 
 .. _Circuit breaker is a design pattern: http://bit.ly/aimcbwiki
@@ -971,32 +985,43 @@ Decorator for ``CircuitBreaker`` which wrapping functions.
 
 .. code-block:: python
 
+    from aiohttp import web
+    from aiomisc.service.aiohttp import AIOHTTPService
     import aiohttp
     import aiomisc
-    import asyncio
+
 
     # When 20% errors of 30 seconds
     # Will broke on 30 seconds
-    @cutout(0.2, 30, aiohttp.ClientError)
+    @aiomisc.cutout(0.2, 30, aiohttp.ClientError)
     async def fetch(session, url):
         async with session.get(url) as response:
-            return response.status
+            return await response.text()
 
 
-    async def main():
+    async def public_gists(request):
         async with aiohttp.ClientSession() as session:
-            while True:
-                html = await fetch(
-                    session,
-                    'https://google.com'
-                )
-                print(status)
-                await asyncio.sleep(0.2)
+            data = await fetch(
+                session,
+                'https://api.github.com/gists/public'
+            )
+
+        return web.Response(
+            text=data,
+            headers={"Content-Type": "application/json"}
+        )
+
+
+    class API(AIOHTTPService):
+        async def create_application(self):
+            app = web.Application()
+            app.add_routes([web.get('/', public_gists)])
+            return app
 
 
     if __name__ == '__main__':
-        with aiomisc.entrypoint() as loop:
-            loop.run_until_complete(main())
+        with aiomisc.entrypoint(API(port=8080)) as loop:
+            loop.run_forever()
 
 
 asynchronous file operations
