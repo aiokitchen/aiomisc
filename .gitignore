@@ -137,7 +137,6 @@ fabric.properties
 /temp
 .DS_Store
 
-/*/version.py
 
 .pytest_cache
 
