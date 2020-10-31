@@ -26,6 +26,7 @@ msgid ""
 "You can register async callback functions for specific events of an "
 "entrypoint."
 msgstr ""
+"Позволяет зарегистрировать асинхронный callback для определенных событий entrypoint."
 
 #: ../../source/signal.rst:7
 msgid "pre_start"
@@ -36,6 +37,8 @@ msgid ""
 "``pre_start`` signal occurs on entrypoint start up before any service "
 "have started."
 msgstr ""
+"``pre_start`` сигнал происходящий когда entrypoint запусается но до "
+"запуска всех сервисов."
 
 #: ../../source/signal.rst:24
 msgid "post_stop"
@@ -46,4 +49,5 @@ msgid ""
 "``post_stop`` signal occurs on entrypoint shutdown after all services "
 "have been stopped."
 msgstr ""
-
+"``post_stop`` сигнал происходящий когда entrypoint завершается запусается "
+"после остановки всех сервисов."

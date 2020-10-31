@@ -19,7 +19,7 @@ msgstr ""
 
 #: ../../source/services.rst:2
 msgid "Services"
-msgstr ""
+msgstr "Сервисы"
 
 #: ../../source/services.rst:4
 msgid ""
