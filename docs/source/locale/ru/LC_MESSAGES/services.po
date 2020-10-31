@@ -1,0 +1,212 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 00:23+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/services.rst:2
+msgid "Services"
+msgstr "Сервисы"
+
+#: ../../source/services.rst:4
+msgid ""
+"``Services`` is abstraction to help organize lots of different tasks in "
+"one process. Each service must implement ``start()`` method and can "
+"implement ``stop()`` method."
+msgstr ""
+
+#: ../../source/services.rst:8
+msgid ""
+"Service instance should be passed to the ``entrypoint``, and will be "
+"started after event loop has been created."
+msgstr ""
+
+#: ../../source/services.rst:13
+msgid ""
+"Current event-loop will be set before ``start()`` method called. The "
+"event loop will be set as current for this thread."
+msgstr ""
+
+#: ../../source/services.rst:16
+msgid ""
+"Please avoid using ``asyncio.get_event_loop()`` explicitly inside "
+"``start()`` method. Use ``self.loop`` instead:"
+msgstr ""
+
+#: ../../source/services.rst:37
+msgid ""
+"Method ``start()`` creates as a separate task that can run forever. But "
+"in this case ``self.start_event.set()`` should be called for notifying "
+"``entrypoint``."
+msgstr ""
+
+#: ../../source/services.rst:41
+msgid ""
+"During graceful shutdown method ``stop()`` will be called first, and "
+"after that all running tasks will be cancelled (including ``start()``)."
+msgstr ""
+
+#: ../../source/services.rst:45
+msgid ""
+"This package contains some useful base classes for simple services "
+"writing."
+msgstr ""
+
+#: ../../source/services.rst:48
+msgid "TCPServer"
+msgstr ""
+
+#: ../../source/services.rst:50
+msgid ""
+"``TCPServer`` - it's a base class for writing TCP servers. Just implement"
+" ``handle_client(reader, writer)`` to use it."
+msgstr ""
+
+#: ../../source/services.rst:67
+msgid "UDPServer"
+msgstr ""
+
+#: ../../source/services.rst:69
+msgid ""
+"``UDPServer`` - it's a base class for writing UDP servers. Just implement"
+" ``handle_datagram(data, addr)`` to use it."
+msgstr ""
+
+#: ../../source/services.rst:84
+msgid "TLSServer"
+msgstr ""
+
+#: ../../source/services.rst:86
+msgid ""
+"``TLSServer`` - it's a base class for writing TCP servers with TLS. Just "
+"implement ``handle_client(reader, writer)`` to use it."
+msgstr ""
+
+#: ../../source/services.rst:111
+msgid "PeriodicService"
+msgstr ""
+
+#: ../../source/services.rst:113
+msgid ""
+"``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for "
+"running callback to complete on stop. You need to use ``PeriodicService``"
+" as a base class and override ``callback`` async coroutine method."
+msgstr ""
+
+#: ../../source/services.rst:117
+msgid ""
+"Service class accepts required ``interval`` argument - periodic interval "
+"in seconds and optional ``delay`` argument - periodic execution delay in "
+"seconds (0 by default)."
+msgstr ""
+
+#: ../../source/services.rst:139
+msgid "CronService"
+msgstr ""
+
+#: ../../source/services.rst:141
+msgid ""
+"``CronService`` runs ``CronCallback's`` as a service and waits for "
+"running callbacks to complete on stop."
+msgstr ""
+
+#: ../../source/services.rst:144
+msgid ""
+"Based on [croniter](https://github.com/taichino/croniter) You can "
+"register async coroutine method with ``spec`` argument - cron like "
+"format:"
+msgstr ""
+
+#: ../../source/services.rst:149
+msgid "requires installed [croniter](https://github.com/taichino/croniter):"
+msgstr ""
+
+#: ../../source/services.rst:155 ../../source/services.rst:295
+msgid "or using extras:"
+msgstr ""
+
+#: ../../source/services.rst:179
+msgid ""
+"You can also inherit from ``CronService``, but remember that callback "
+"registration should be proceeded before start"
+msgstr ""
+
+#: ../../source/services.rst:204
+msgid "Multiple services"
+msgstr ""
+
+#: ../../source/services.rst:206
+msgid ""
+"Pass several service instances to the ``entrypoint`` to run all of them. "
+"After exiting the entrypoint service instances will be gracefully shut "
+"down."
+msgstr ""
+
+#: ../../source/services.rst:245
+msgid "Configuration"
+msgstr ""
+
+#: ../../source/services.rst:247
+msgid ""
+"``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
+"attributes."
+msgstr ""
+
+#: ../../source/services.rst:285
+msgid "aiohttp service"
+msgstr ""
+
+#: ../../source/services.rst:289
+msgid "requires installed aiohttp:"
+msgstr ""
+
+#: ../../source/services.rst:302
+msgid "aiohttp application can be started as a service:"
+msgstr ""
+
+#: ../../source/services.rst:344
+msgid ""
+"Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
+"HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
+"class)."
+msgstr ""
+
+#: ../../source/services.rst:348
+msgid "Memory Tracer"
+msgstr ""
+
+#: ../../source/services.rst:350
+msgid ""
+"Simple and useful service for logging large python objects allocated in "
+"memory."
+msgstr ""
+
+#: ../../source/services.rst:374 ../../source/services.rst:421
+msgid "Output example:"
+msgstr ""
+
+#: ../../source/services.rst:396
+msgid "Profiler"
+msgstr ""
+
+#: ../../source/services.rst:398
+msgid ""
+"Simple service for profiling. Optional `path` argument can be provided to"
+" dump complete profiling data, which can be later used by, for example, "
+"snakeviz. Also can change ordering with `order` argument (\"cumulative\" "
+"by default)."
+msgstr ""
+

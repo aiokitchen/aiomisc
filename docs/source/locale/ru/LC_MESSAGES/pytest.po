@@ -1,0 +1,103 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 00:23+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/pytest.rst:2
+msgid "Pytest plugin"
+msgstr ""
+
+#: ../../source/pytest.rst:4
+msgid "This package contains plugin for pytest."
+msgstr ""
+
+#: ../../source/pytest.rst:7
+msgid "Basic usage"
+msgstr ""
+
+#: ../../source/pytest.rst:9
+msgid "Simple usage example:"
+msgstr ""
+
+#: ../../source/pytest.rst:24
+msgid "asynchronous fuxture example:"
+msgstr ""
+
+#: ../../source/pytest.rst:42
+msgid "pytest markers"
+msgstr ""
+
+#: ../../source/pytest.rst:44
+msgid "Package contains some useful markers for pytest:"
+msgstr ""
+
+#: ../../source/pytest.rst:46
+msgid ""
+"``catch_loop_exceptions`` - uncaught event loop exceptions will failling "
+"test."
+msgstr ""
+
+#: ../../source/pytest.rst:47
+msgid ""
+"``forbid_get_event_loop`` - forbids call ``asyncio.get_event_loop`` "
+"during test case."
+msgstr ""
+
+#: ../../source/pytest.rst:82
+msgid "Passing default context"
+msgstr ""
+
+#: ../../source/pytest.rst:98
+msgid "Testing services"
+msgstr ""
+
+#: ../../source/pytest.rst:100
+msgid "Redefine ``services`` fixture in your test module:"
+msgstr ""
+
+#: ../../source/pytest.rst:116
+msgid "Event loop policy overriding"
+msgstr ""
+
+#: ../../source/pytest.rst:134
+msgid "Thread pool overriding"
+msgstr ""
+
+#: ../../source/pytest.rst:149
+msgid "entrypoint arguments"
+msgstr ""
+
+#: ../../source/pytest.rst:161
+msgid "aiohttp test client"
+msgstr ""
+
+#: ../../source/pytest.rst:197
+msgid "TCPProxy"
+msgstr ""
+
+#: ../../source/pytest.rst:199
+msgid "Simple TCP proxy for emulate network problems."
+msgstr ""
+
+#: ../../source/pytest.rst:201
+msgid "Awailable as fixture `tcp_proxy`"
+msgstr ""
+
+#: ../../source/pytest.rst:205
+msgid "Examples:"
+msgstr ""
+

@@ -219,3 +219,6 @@ html_logo = "_static/logo.svg"
 html_favicon = "_static/icon.png"
 
 html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
+
+locale_dirs = ['locale/']   # path is example but recommended.
+gettext_compact = False     # optional.
