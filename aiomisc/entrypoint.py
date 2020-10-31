@@ -43,6 +43,7 @@ class Entrypoint:
         pool_size: int = None,
         log_level: t.Union[int, str] = logging.INFO,
         log_format: t.Union[str, LogFormat] = "color",
+        log_handler: t.Optional[logging.Handler] = None,
         log_buffer_size: int = 1024,
         log_flush_interval: float = 0.2,
         log_config: bool = True,
@@ -72,6 +73,7 @@ class Entrypoint:
         self.log_config = log_config
         self.log_flush_interval = log_flush_interval
         self.log_format = log_format
+        self.log_handler = log_handler
         self.log_level = log_level
         self.policy = policy
         self.pool_size = pool_size
@@ -134,6 +136,7 @@ class Entrypoint:
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
+                log_handler=self.log_handler,
                 loop=self.loop,
                 buffered=False,
             )
