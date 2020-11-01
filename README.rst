@@ -26,6 +26,7 @@ aiomisc - miscellaneous utils for asyncio
 Miscellaneous utils for asyncio.
 
 The complete documentation is available in the following languages:
+
 * `English documentation`_
 * `Russian documentation`_
 
