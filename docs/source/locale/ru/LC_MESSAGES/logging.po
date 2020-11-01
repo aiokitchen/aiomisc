@@ -19,41 +19,44 @@ msgstr ""
 
 #: ../../source/logging.rst:2
 msgid "Logging configuration"
-msgstr ""
+msgstr "Конфигурация логирования"
 
 #: ../../source/logging.rst:5
 msgid "Color"
-msgstr ""
+msgstr "Colo"
 
 #: ../../source/logging.rst:7
 msgid "Setting up colorized logs:"
-msgstr ""
+msgstr "Настройка цветных логов:"
 
 #: ../../source/logging.rst:19
 msgid "JSON"
-msgstr ""
+msgstr "JSON"
 
 #: ../../source/logging.rst:21
 msgid "Setting up json logs:"
-msgstr ""
+msgstr "Настройка json логов:"
 
 #: ../../source/logging.rst:34
 msgid "Buffered log handler"
-msgstr ""
+msgstr "Буфферизирующий лог-хендлер"
 
 #: ../../source/logging.rst:36
 msgid ""
 "Parameter `buffered=True` enables memory buffer that flushes logs in a "
 "thread."
 msgstr ""
+"Параметр `buffered=True` включает буферизацию логов в памяти, отдельный "
+"поток переодически сбрасывает логи в поток."
 
 #: ../../source/logging.rst:71
 msgid "``entrypoint`` accepts ``log_format`` parameter for configure it."
-msgstr ""
+msgstr "``entrypoint`` принимает аргумент ``log_format`` через который можно это настроить."
 
 #: ../../source/logging.rst:73
 msgid ""
 "List of all supported log formats is available from "
 "``aiomisc.log.LogFormat.choices()``"
 msgstr ""
-
+"Список всех поддерживаемых форматов журналов доступен "
+"через ``aiomisc.log.LogFormat.choices()``"

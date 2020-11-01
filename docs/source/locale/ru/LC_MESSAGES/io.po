@@ -19,9 +19,9 @@ msgstr ""
 
 #: ../../source/io.rst:2
 msgid "asynchronous file operations"
-msgstr ""
+msgstr "асинхронные операции с файлами"
 
 #: ../../source/io.rst:4
 msgid "Asynchronous files operations. Based on thread-pool under the hood."
-msgstr ""
+msgstr "Асинхронные файловые операции запускающиеся в пуле потоков \"под капотом\"."
 
