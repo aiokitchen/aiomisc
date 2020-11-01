@@ -26,7 +26,8 @@ msgid ""
 "Wraps blocking function and runs it in the different thread or thread "
 "pool."
 msgstr ""
-"Оборачивает блокирующую функцию и запускает ее в отдельном потоке или пуле потоков."
+"Можно обернуть блокирующую функцию и запустить ее в отдельном потоке "
+"или пуле потоков."
 
 #: ../../source/threads.rst:8
 msgid "contextvars support"
@@ -44,7 +45,7 @@ msgstr ""
 
 #: ../../source/threads.rst:57
 msgid "Example output:"
-msgstr ""
+msgstr "Пример вывода"
 
 #: ../../source/threads.rst:70
 msgid ""
@@ -55,11 +56,11 @@ msgid ""
 "allows it because do not copying context variables."
 msgstr ""
 "``contextvars`` нужны для другого случая нежели класс ``Context``. "
-"``contextvars`` хорошо применимы для передачи ктонекстных переменных сквозь "
-"стек выховов, однако дочерние задачи не смогут модифицировать контекстные "
+"``contextvars`` хорошо применимы для передачи контекстных переменных сквозь "
+"стек вызовов, однако дочерние задачи не смогут модифицировать контекстные "
 "переменные родительских задач потому, что ``contextvars`` "
 "делает их \"легкие копии\" перед запуском новой задачи. Класс ``Context`` "
-"наоборот позволяет так делать потому что не копирует ничего."
+"наоборот позволяет модификацию отовсюду так как не копирует ничего."
 
 #: ../../source/threads.rst:78
 msgid "@threaded"
@@ -112,7 +113,7 @@ msgstr ""
 
 #: ../../source/threads.rst:199
 msgid "Run ``netcat`` listener in the terminal and run this example"
-msgstr "Запустим ``netcat`` TCP сервер в терминале и запустим этот пример."
+msgstr "Запустим TCP сервер с помощью ``netcat`` в терминале, и после запустим этот пример."
 
 #: ../../source/threads.rst:237
 msgid ""
@@ -122,7 +123,7 @@ msgid ""
 msgstr ""
 "Придется использовать асинхронный контекст-менеджер в случае если генератор "
 "бесконечный или придется явно вызвать и дождаться метода ``.close()`` если вы "
-"избегаете использовать асинхронные контекст-менеджеры."
+"избегаете использование асинхронных контекст-менеджеров."
 
 #: ../../source/threads.rst:300
 msgid "aiomisc.IteratorWrapper"
@@ -130,7 +131,7 @@ msgstr ""
 
 #: ../../source/threads.rst:302
 msgid "Run iterables on dedicated thread pool:"
-msgstr "Запускает итераторы в пуле потоков:"
+msgstr "Запускает блокирующий итератор в пуле потоков:"
 
 #: ../../source/threads.rst:345
 msgid "aiomisc.IteratorWrapperSeparate"
@@ -138,7 +139,7 @@ msgstr ""
 
 #: ../../source/threads.rst:347
 msgid "Run iterables on separate thread:"
-msgstr "Запускает итераторы в отдельном новом потоке:"
+msgstr "Запускает блокирующий итераторы в отдельном новом потоке:"
 
 #: ../../source/threads.rst:388
 msgid "aiomisc.ThreadPoolExecutor"

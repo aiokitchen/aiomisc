@@ -19,15 +19,17 @@ msgstr ""
 
 #: ../../source/pool.rst:2
 msgid "Abstract connection pool"
-msgstr ""
+msgstr "Абстрактный пул соединений"
 
 #: ../../source/pool.rst:4
 msgid ""
 "``aiomisc.PoolBase`` is an abstract class for implementation user defined"
 " connection pool."
 msgstr ""
+"``Aiomisc.PoolBase`` - абстрактный класс для реализации определяемого "
+"пользователем пула соединений."
 
 #: ../../source/pool.rst:8
 msgid "Example for ``aioredis``:"
-msgstr ""
+msgstr "Пример для ``aioredis``:"
 

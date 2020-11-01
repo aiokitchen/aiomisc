@@ -71,7 +71,7 @@ msgstr "Версионирование"
 
 #: ../../source/index.rst:191
 msgid "This software follows `Semantic Versioning`_"
-msgstr "Это программное обеспечение следует методологиии `Semantic Versioning`_"
+msgstr "Это программное обеспечение следует методологиии `Семантического Версионирования`_"
 
 #: ../../source/index.rst:195
 msgid "How to develop?"

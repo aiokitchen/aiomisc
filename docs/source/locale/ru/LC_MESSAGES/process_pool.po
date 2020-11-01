@@ -19,13 +19,13 @@ msgstr ""
 
 #: ../../source/process_pool.rst:2
 msgid "aiomisc.ProcessPoolExecutor"
-msgstr ""
+msgstr "aiomisc.ProcessPoolExecutor"
 
 #: ../../source/process_pool.rst:4
 msgid "This is a simple process pool executor implementation."
-msgstr ""
+msgstr "Это простая реализация пула процессов."
 
 #: ../../source/process_pool.rst:6
 msgid "Example:"
-msgstr ""
+msgstr "Пример:"
 

@@ -25,7 +25,7 @@ msgstr "Точка входа (`entrypoint`)"
 msgid ""
 "In generic case the entrypoint helper creates event loop and cancels "
 "already running coroutines on exit."
-msgstr "В общем случае точка входа это сущьность помогающая создать event "
+msgstr "В общем случае точка входа это сущность помогающая создать event "
 "loop и закрыть все еще запущенные корутины при выходе."
 
 #: ../../source/entrypoint.rst:19

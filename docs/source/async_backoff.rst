@@ -1,7 +1,7 @@
 Async backoff
 =============
 
-Abstraction:
+Arguments description:
 
 * ``attempt_timeout`` is maximum execution time for one execution attempt.
 * ``deadline`` is maximum execution time for all execution attempts.

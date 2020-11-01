@@ -26,6 +26,8 @@ msgid ""
 "aiomisc can be extended with plugins as separate packages. Plugins can "
 "enhance aiomisc by mean of signals_."
 msgstr ""
+"aiomisc можно расширить с помощью плагинов в виде отдельных python пакетов. "
+"Плагины взаимодействуют с aiomisc с помощью signals_."
 
 #: ../../source/plugins.rst:9
 msgid ""
@@ -33,6 +35,9 @@ msgid ""
 "``aiomisc.plugins`` entry to entry to ``entry_points`` argument of "
 "``setup`` call in ``setup.py`` of a plugin."
 msgstr ""
+"Чтобы сделать ваш плагин доступным для обнаружения с помощью aiomisc, "
+"вы должны добавить запись ``aiomisc.plugins`` к записи аргумента "
+"``entry_points`` вызова ``setup`` в ``setup.py`` вашего python пакета."
 
 #: ../../source/plugins.rst:26
 msgid ""
@@ -40,4 +45,5 @@ msgid ""
 "function. This functions would be called by aiomisc and must contain "
 "signals connecting."
 msgstr ""
-
+"Модули, представленные в `entry_points``, должны иметь функцию ``setup``. "
+"Эти функции будут вызываться aiomisc и должны поддерживать сигналы."
