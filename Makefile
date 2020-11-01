@@ -9,10 +9,7 @@ bump:
 uml:
 	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
 		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
-		-tsvg -o /mnt/resources/images/ '/mnt/resources/uml/*/**.puml'
-	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
-		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
-		-tpng -o /mnt/resources/images/ '/mnt/resources/uml/*/**.puml'
+		-tsvg -o /mnt/docs/source/_static '/mnt/resources/uml/*/**.puml'
 
 sdist: bump uml
 	rm -fr dist
@@ -38,3 +35,7 @@ develop: clean
 
 mypy:
 	mypy aiomisc/thread_pool.py
+
+translate:
+	make -C docs/ gettext
+	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale

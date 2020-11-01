@@ -138,15 +138,16 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
 CronService
 +++++++++++
 
+.. _croniter: https://github.com/taichino/croniter
+
 ``CronService`` runs ``CronCallback's`` as a service and waits for
 running callbacks to complete on stop.
 
-Based on [croniter](https://github.com/taichino/croniter)
-You can register async coroutine method with ``spec`` argument - cron like format:
+It's based on croniter_. You can register async coroutine method with ``spec`` argument - cron like format:
 
 .. warning::
 
-   requires installed [croniter](https://github.com/taichino/croniter):
+   requires installed croniter_:
 
    .. code-block::
 
