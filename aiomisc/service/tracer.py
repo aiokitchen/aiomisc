@@ -1,6 +1,7 @@
 import logging
 import tracemalloc
 from enum import Enum
+from typing import Any, List, Union
 
 from ..periodic import PeriodicCallback
 from ..service import Service
@@ -36,7 +37,7 @@ class MemoryTracer(Service):
         "%(traceback)s\n"
     )
 
-    async def start(self):
+    async def start(self) -> None:
         log.warning("Start memory tracer")
         tracemalloc.start()
 
@@ -47,7 +48,7 @@ class MemoryTracer(Service):
         self._tracer.start(self.interval)
 
     @staticmethod
-    def humanize(num, suffix="B"):
+    def humanize(num: Union[int, float], suffix: str = "B") -> str:
         for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
             if abs(num) < 1024.0:
                 return "%3.1f%s%s" % (num, unit, suffix)
@@ -61,10 +62,10 @@ class MemoryTracer(Service):
     def compare_snapshot(
         self, snapshot_from: tracemalloc.Snapshot,
         snapshot_to: tracemalloc.Snapshot,
-    ):
+    ) -> List[tracemalloc.StatisticDiff]:
         return snapshot_to.compare_to(snapshot_from, self.group_by.value)
 
-    def log_diff(self, diff):
+    def log_diff(self, diff: List[tracemalloc.StatisticDiff]) -> None:
         results = self.STAT_FORMAT % {
             "count": "Objects",
             "count_diff": "Obj.Diff",
@@ -84,7 +85,10 @@ class MemoryTracer(Service):
         self.logger("Top memory usage:\n%s", results)
 
     @threaded
-    def show_stats(self):
+    def show_stats(self) -> Any:
+        if self._snapshot_on_start is None:
+            raise RuntimeError
+
         differences = self.compare_snapshot(
             self._snapshot_on_start,
             self.take_snapshot(),
@@ -92,5 +96,5 @@ class MemoryTracer(Service):
 
         return self.log_diff(differences)
 
-    async def stop(self, exception: Exception = None):
+    async def stop(self, exception: Exception = None) -> None:
         tracemalloc.stop()

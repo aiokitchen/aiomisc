@@ -1,6 +1,7 @@
 import asyncio
 import logging
-import typing
+import typing as t
+from concurrent.futures._base import Executor
 
 from .context import Context, get_context
 from .log import LogFormat, basic_config
@@ -9,12 +10,15 @@ from .signal import Signal
 from .utils import create_default_event_loop, event_loop_policy
 
 
+ExecutorType = Executor
+
+
 class Entrypoint:
 
     PRE_START = Signal()
     POST_STOP = Signal()
 
-    async def _start(self):
+    async def _start(self) -> None:
         if self.log_config:
             basic_config(
                 level=self.log_level,
@@ -35,14 +39,14 @@ class Entrypoint:
         )
 
     def __init__(
-        self, *services, loop: asyncio.AbstractEventLoop = None,
+        self, *services: Service, loop: asyncio.AbstractEventLoop = None,
         pool_size: int = None,
-        log_level: typing.Union[int, str] = logging.INFO,
-        log_format: typing.Union[str, LogFormat] = "color",
+        log_level: t.Union[int, str] = logging.INFO,
+        log_format: t.Union[str, LogFormat] = "color",
         log_buffer_size: int = 1024,
         log_flush_interval: float = 0.2,
         log_config: bool = True,
-        policy=event_loop_policy,
+        policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
         debug: bool = False
     ):
 
@@ -62,8 +66,8 @@ class Entrypoint:
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
-        self._thread_pool = None
-        self.ctx = None
+        self._thread_pool = None    # type: t.Optional[ExecutorType]
+        self.ctx = None             # type: t.Optional[Context]
         self.log_buffer_size = log_buffer_size
         self.log_config = log_config
         self.log_flush_interval = log_flush_interval
@@ -76,9 +80,9 @@ class Entrypoint:
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
 
-        self._closing = None
+        self._closing = None    # type: t.Optional[asyncio.Event]
 
-    async def closing(self):
+    async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
         if self._closing is None:
             self._closing = asyncio.Event()
@@ -97,18 +101,20 @@ class Entrypoint:
 
         return self._loop
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self._loop and self._loop.is_closed():
             return
 
-        if self._loop_owner:
+        if self._loop_owner and self._loop is not None:
             self._loop.close()
 
     def __enter__(self) -> asyncio.AbstractEventLoop:
         self.loop.run_until_complete(self.__aenter__())
         return self.loop
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any,
+    ) -> None:
         if self.loop.is_closed():
             return
 
@@ -116,7 +122,7 @@ class Entrypoint:
             self.__aexit__(exc_type, exc_val, exc_tb),
         )
 
-        if self._loop_owner:
+        if self._loop_owner and self._loop is not None:
             self._loop.close()
 
     async def __aenter__(self) -> "Entrypoint":
@@ -136,7 +142,9 @@ class Entrypoint:
         await self._start()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any
+    ) -> None:
         try:
             if self.loop.is_closed():
                 return
@@ -144,16 +152,21 @@ class Entrypoint:
             await self.graceful_shutdown(exc_val)
             self.shutting_down = True
         finally:
-            self.ctx.close()
+            if self.ctx is not None:
+                self.ctx.close()
 
             if self._thread_pool:
                 self._thread_pool.shutdown()
 
-    async def _start_service(self, svc: Service):
+    async def _start_service(
+        self, svc: Service
+    ) -> None:
         svc.set_loop(self.loop)
 
         start_task, ev_task = map(
-            asyncio.ensure_future, (svc.start(), svc.start_event.wait()),
+            asyncio.ensure_future, (
+                svc.start(), svc.start_event.wait(),
+            ),
         )
 
         await asyncio.wait(
@@ -165,9 +178,12 @@ class Entrypoint:
         await ev_task
 
         if start_task.done():
-            return await start_task
+            await start_task
+            return
 
-    async def graceful_shutdown(self, exception):
+        return None
+
+    async def graceful_shutdown(self, exception: Exception) -> None:
         if self._closing:
             self._closing.set()
 

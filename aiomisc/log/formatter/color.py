@@ -1,14 +1,17 @@
 import logging
 import sys
 
-from colorlog import ColoredFormatter
+import typing as t
+
+from colorlog import ColoredFormatter       # type: ignore
 from aiomisc.log.enum import DateFormat
 
 
-def color_formatter(stream=None, date_format=..., **_) -> logging.Handler:
+def color_formatter(stream: t.IO[str] = None,
+                    date_format: str = None, **_: t.Any) -> logging.Handler:
 
     date_format = (
-        date_format if date_format is not Ellipsis else DateFormat.color.value
+        date_format if date_format is not None else DateFormat.color.value
     )
 
     stream = stream or sys.stderr

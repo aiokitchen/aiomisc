@@ -1,50 +1,52 @@
 import asyncio
 import inspect
 import threading
-import typing
+import typing as t
 from collections import deque
+from concurrent.futures._base import Executor
 
 
-T = typing.TypeVar("T")
-R = typing.TypeVar("R")
+T = t.TypeVar("T")
+R = t.TypeVar("R")
 
-GenType = typing.Generator[T, R, None]
-FuncType = typing.Callable[[], GenType]
+GenType = t.Generator[T, R, None]
+FuncType = t.Callable[[], GenType]
 
 
-class IteratorWrapper(typing.AsyncIterator):
+class IteratorWrapper(t.AsyncIterator):
     __slots__ = (
         "__close_event", "__closed", "__gen_func", "__gen_task", "__queue",
         "__queue_maxsize", "__read_event", "__write_event", "executor", "loop",
     )
 
     def __init__(
-        self, gen_func: FuncType, loop=None,
-        max_size=0, executor=None,
+        self, gen_func: FuncType, loop: asyncio.AbstractEventLoop = None,
+        max_size: int = 0, executor: Executor = None,
     ):
 
-        self.loop = loop or asyncio.get_event_loop()
+        current_loop = loop or asyncio.get_event_loop()
+        self.loop = current_loop    # type: asyncio.AbstractEventLoop
         self.executor = executor
 
         self.__closed = False
         self.__close_event = asyncio.Event()
-        self.__queue = deque()
+        self.__queue = deque()      # type: t.Deque[t.Any]
         self.__queue_maxsize = max_size
-        self.__gen_task = None      # type: asyncio.Task
-        self.__gen_func = gen_func  # type: typing.Callable
+        self.__gen_task = None      # type: t.Optional[asyncio.Task]
+        self.__gen_func = gen_func  # type: t.Callable
         self.__write_event = threading.Event()
         self.__read_event = asyncio.Event()
 
     @property
-    def closed(self):
+    def closed(self) -> bool:
         return self.__closed
 
     @staticmethod
-    def __throw(_):
+    def __throw(_: t.Any) -> t.NoReturn:
         pass
 
-    def _set_read_event(self):
-        def setter():
+    def _set_read_event(self) -> None:
+        def setter() -> None:
             if self.__read_event.is_set():
                 return
             self.__read_event.set()
@@ -56,7 +58,7 @@ class IteratorWrapper(typing.AsyncIterator):
 
             throw = self.__throw
             if inspect.isgenerator(gen):
-                throw = gen.throw
+                throw = gen.throw   # type: ignore
 
             while not self.closed:
                 item = next(gen)
@@ -87,12 +89,15 @@ class IteratorWrapper(typing.AsyncIterator):
             self._set_read_event()
             self.loop.call_soon_threadsafe(self.__close_event.set)
 
-    async def _run(self):
-        return await self.loop.run_in_executor(self.executor, self._in_thread)
+    def _run(self) -> t.Any:
+        return self.loop.run_in_executor(self.executor, self._in_thread)
 
-    async def close(self):
+    async def close(self) -> None:
         self.__closed = True
         self.__queue.clear()
+
+        if self.__gen_task is None:
+            return
 
         if not self.__gen_task.done():
             self.__gen_task.cancel()
@@ -103,14 +108,14 @@ class IteratorWrapper(typing.AsyncIterator):
         )
         del self.__queue
 
-    def __aiter__(self):
+    def __aiter__(self) -> t.AsyncIterator[t.Any]:
         if self.__gen_task is not None:
             return self
 
         self.__gen_task = self.loop.create_task(self._run())
         return self
 
-    async def __anext__(self) -> typing.Awaitable[T]:
+    async def __anext__(self) -> t.Awaitable[T]:
         while len(self.__queue) == 0:
             await self.__read_event.wait()
 
@@ -129,10 +134,13 @@ class IteratorWrapper(typing.AsyncIterator):
 
         return item
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "IteratorWrapper":
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self, exc_type: t.Any, exc_val: t.Any,
+        exc_tb: t.Any
+    ) -> None:
         if self.closed:
             return
 

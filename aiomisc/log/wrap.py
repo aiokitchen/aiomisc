@@ -12,12 +12,12 @@ def _thread_flusher(
     handler: logging.handlers.MemoryHandler,
     flush_interval: Union[float, int],
     loop: asyncio.AbstractEventLoop,
-):
-    def has_no_target():
+) -> None:
+    def has_no_target() -> bool:
         return True
 
-    def has_target():
-        return bool(handler.target)
+    def has_target() -> bool:
+        return bool(handler.target)     # type: ignore
 
     is_target = has_no_target
 
@@ -37,7 +37,7 @@ def wrap_logging_handler(
     loop: Optional[asyncio.AbstractEventLoop] = None,
     buffer_size: int = 1024,
     flush_interval: Union[float, int] = 0.1,
-):
+) -> logging.Handler:
     loop = loop or asyncio.get_event_loop()
 
     buffered_handler = logging.handlers.MemoryHandler(

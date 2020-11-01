@@ -1,21 +1,24 @@
 import asyncio
 import logging
+import logging.handlers
 import os
 import sys
-from typing import Union, Optional
+import typing as t
 
 from .enum import LogFormat, LogLevel
-from .formatter import json_formatter, color_formatter
+from .formatter import json_handler, color_formatter
 from .wrap import wrap_logging_handler
 
 DEFAULT_FORMAT = '%(levelname)s:%(name)s:%(message)s'
 
 
-def create_logging_handler(log_format: LogFormat = LogFormat.color,
-                           date_format=None, **kwargs):
+def create_logging_handler(
+    log_format: LogFormat = LogFormat.color,
+    date_format: str = None, **kwargs: t.Any
+) -> logging.Handler:
 
     if log_format == LogFormat.stream:
-        handler = logging.StreamHandler()
+        handler = logging.StreamHandler()   # type: logging.Handler
         if date_format and date_format is not Ellipsis:
             formatter = logging.Formatter(
                 "%(asctime)s " + DEFAULT_FORMAT, datefmt=date_format
@@ -26,7 +29,7 @@ def create_logging_handler(log_format: LogFormat = LogFormat.color,
         handler.setFormatter(formatter)
         return handler
     elif log_format == LogFormat.json:
-        return json_formatter(date_format=date_format, **kwargs)
+        return json_handler(date_format=date_format, **kwargs)
     elif log_format == LogFormat.color:
         return color_formatter(date_format=date_format, **kwargs)
     elif log_format == LogFormat.syslog:
@@ -48,13 +51,13 @@ def create_logging_handler(log_format: LogFormat = LogFormat.color,
 
 
 def basic_config(
-    level: int = logging.INFO,
-    log_format: Union[str, LogFormat] = LogFormat.color,
+    level: t.Union[int, str] = logging.INFO,
+    log_format: t.Union[str, LogFormat] = LogFormat.color,
     buffered: bool = True, buffer_size: int = 1024,
-    flush_interval: Union[int, float] = 0.2,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
-    **kwargs
-):
+    flush_interval: t.Union[int, float] = 0.2,
+    loop: asyncio.AbstractEventLoop = None,
+    **kwargs: t.Any
+) -> None:
 
     if isinstance(level, str):
         level = LogLevel[level]
@@ -76,6 +79,7 @@ def basic_config(
             loop=loop,
         )
 
+    # noinspection PyArgumentList
     logging.basicConfig(
         level=int(level),
         handlers=[handler],

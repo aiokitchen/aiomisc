@@ -1,13 +1,13 @@
 import logging
 import re
 from types import MappingProxyType
-from typing import List  # NOQA
+import typing as t                                  # noqa
 
-from aiocarbon.protocol.pickle import PickleClient
-from aiocarbon.protocol.tcp import TCPClient
-from aiocarbon.protocol.udp import UDPClient
-from aiocarbon.setup import set_client
-from aiocarbon.storage import TotalStorage
+from aiocarbon.protocol.pickle import PickleClient  # type: ignore
+from aiocarbon.protocol.tcp import TCPClient        # type: ignore
+from aiocarbon.protocol.udp import UDPClient        # type: ignore
+from aiocarbon.setup import set_client              # type: ignore
+from aiocarbon.storage import TotalStorage          # type: ignore
 from aiomisc.periodic import PeriodicCallback
 from aiomisc.service import Service
 
@@ -15,7 +15,7 @@ from aiomisc.service import Service
 log = logging.getLogger(__name__)
 
 
-def strip_carbon_ns(string):
+def strip_carbon_ns(string: str) -> str:
     return re.sub(r"[^\w\d\-]+", "_", string).strip("_").lower()
 
 
@@ -31,11 +31,11 @@ class CarbonSender(Service):
     port = 2003                 # type: int
     send_interval = 5           # type: int
     protocol = "udp"            # type: str
-    namespace = ""              # type: List[str]
+    namespace = ("",)           # type: t.Iterable[str]
     storage = TotalStorage
     _handle = None              # type: PeriodicCallback
 
-    async def start(self):
+    async def start(self) -> None:
         namespace = ".".join(
             strip_carbon_ns(item) for item in self.namespace
         )
@@ -57,5 +57,5 @@ class CarbonSender(Service):
             self.send_interval,
         )
 
-    async def stop(self, *_):
+    async def stop(self, exc: Exception = None) -> None:
         self._handle.stop()

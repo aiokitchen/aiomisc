@@ -32,7 +32,7 @@ plugins = {
 }
 
 
-def setup_plugins():
+def setup_plugins() -> None:
     logger = logging.getLogger(__name__)
     for name, plugin in plugins.items():
         try:

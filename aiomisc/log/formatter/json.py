@@ -3,15 +3,20 @@ import logging
 import sys
 import traceback
 from types import MappingProxyType
-from typing import Union
+import typing as t
 
 
-def _dump_json(*args, **kwargs):
-    return json.dumps(*args, **kwargs, default=repr)
+JSONObjType = t.Dict[str, t.Any]
+DumpsType = t.Callable[[JSONObjType, t.Any], str]
+
+
+def _dump_json(obj: JSONObjType, *args: t.Any, **kwargs: t.Any) -> str:
+    kwargs['default'] = repr
+    kwargs['ensure_ascii'] = False
+    return json.dumps(obj, *args, **kwargs)
 
 
 class JSONLogFormatter(logging.Formatter):
-    JSON_DUMPS = _dump_json
 
     LEVELS = MappingProxyType({
         logging.CRITICAL: "crit",
@@ -35,17 +40,20 @@ class JSONLogFormatter(logging.Formatter):
         'threadName': ('thread_name', str),
     })
 
-    def __init__(self, fmt=None, datefmt=None, style='%', dumps=JSON_DUMPS):
+    def __init__(self, fmt: str = None, datefmt: str = None,
+                 style: str = '%', dumps: DumpsType = _dump_json):
         super().__init__(
             datefmt=datefmt if datefmt is not Ellipsis else None,
             fmt=fmt, style=style
         )
         self.dumps = dumps
 
-    def format(self, record: logging.LogRecord):
+    def format(self, record: logging.LogRecord) -> str:
         record_dict = MappingProxyType(record.__dict__)
 
-        data = dict(errno=0 if not record.exc_info else 255)
+        data = dict(
+            errno=0 if not record.exc_info else 255
+        )    # type: t.Dict[str, t.Any]
 
         for key, value in self.FIELD_MAPPING.items():
             mapping, field_type = value
@@ -63,21 +71,23 @@ class JSONLogFormatter(logging.Formatter):
             elif key[0] == "_":
                 continue
 
-            value = record_dict[key]
+            record_value = record_dict[key]    # type: t.Any
 
-            if value is None:
+            if record_value is None:
                 continue
 
-            data[key] = value
+            data[key] = record_value
 
-        for idx, item in enumerate(data.pop('args', [])):
+        args = data.pop('args', [])     # type: t.List[t.Any]
+
+        for idx, item in enumerate(args):
             data['argument_%d' % idx] = str(item)
 
         payload = {
             '@fields': data,
             'msg': self.formatMessage(record),
             'level': self.LEVELS[record.levelno],
-        }
+        }   # type: JSONObjType
 
         if self.datefmt:
             payload['@timestamp'] = self.formatTime(record, self.datefmt)
@@ -85,23 +95,29 @@ class JSONLogFormatter(logging.Formatter):
         if record.exc_info:
             payload['stackTrace'] = self.formatException(record.exc_info)
 
-        return self.dumps(payload, ensure_ascii=False)
+        return self.dumps(payload)      # type: ignore
 
     def formatMessage(self, record: logging.LogRecord) -> str:
         return record.getMessage()
 
-    def formatException(self, exc_info) -> str:
+    def formatException(self, exc_info: t.Any) -> str:
         return "\n".join(traceback.format_exception(*exc_info))
 
-    def formatTime(self, record, datefmt=None) -> Union[int, str]:
+    def formatTime(     # type: ignore
+        self, record: logging.LogRecord, datefmt: str = None
+    ) -> t.Union[int, str]:
         if datefmt == '%s':
             return record.created
         return super().formatTime(record, datefmt=datefmt)
 
 
-def json_formatter(stream=None, date_format=None, **kwargs):
-    stream = stream or sys.stdout
+def json_handler(
+    stream: t.IO[str] = None,
+    date_format: str = None,
+    **kwargs: t.Any
+) -> logging.Handler:
+    log_stream = stream or sys.stdout       # type: t.IO[str]
     formatter = JSONLogFormatter(datefmt=date_format, **kwargs)
-    handler = logging.StreamHandler(stream)
+    handler = logging.StreamHandler(log_stream)
     handler.setFormatter(formatter)
     return handler

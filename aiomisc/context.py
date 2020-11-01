@@ -1,28 +1,35 @@
 import asyncio
+import typing as t
 from collections import defaultdict
+
+
+_StorageType = t.DefaultDict[t.Any, asyncio.Future]
+_EventObjectStoreType = t.Dict[
+    asyncio.AbstractEventLoop, "Context",
+]
 
 
 class Context:
     __slots__ = ("_storage", "_loop")
 
-    _EVENT_OBJECTS = dict()
+    _EVENT_OBJECTS = dict()     # type: _EventObjectStoreType
 
-    def close(self):
+    def close(self) -> None:
         self._storage.clear()
         self._EVENT_OBJECTS.pop(self._loop, None)
 
     def __init__(self, loop: asyncio.AbstractEventLoop):
         self._loop = loop
-        self._storage = defaultdict(loop.create_future)
+        self._storage = defaultdict(loop.create_future)  # type: _StorageType
         self._EVENT_OBJECTS[loop] = self
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: t.Any) -> t.Any:
         return self._storage[item]
 
-    def __setitem__(self, item, value):
+    def __setitem__(self, item: t.Any, value: t.Any) -> None:
         self._loop.call_soon_threadsafe(self.__setter, item, value)
 
-    def __setter(self, item, value):
+    def __setter(self, item: t.Any, value: t.Any) -> None:
         if self._storage[item].done():
             del self._storage[item]
 
