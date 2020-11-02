@@ -20,6 +20,22 @@ def asyncbackoff(
     max_tries: int = None,
     giveup: Callable[[Exception], bool] = None
 ) -> Any:
+    """
+    Patametric decorator that ensures that ``attempt_timeout`` and
+    ``deadline`` time limits are met by decorated function.
+
+    In case of exception function will be called again with similar arguments after
+    ``pause`` seconds.
+
+    :param attempt_timeout: is maximum execution time for one
+                            execution attempt.
+    :param deadline: is maximum execution time for all execution attempts.
+    :param pause: is time gap between execution attempts.
+    :param exc: retrying when this exceptions was raised.
+    :param exceptions: similar as exc but keyword only.
+    :param max_tries: is maximum count of execution attempts (>= 1).
+    :param giveup: is a predicate function which can decide by a given
+    """
 
     exceptions = exc + tuple(exceptions)
 

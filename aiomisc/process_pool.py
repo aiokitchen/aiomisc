@@ -39,6 +39,9 @@ class ProcessPoolExecutor(Executor):
         self, fn: Callable[..., T],
         *args: Any, **kwargs: Any
     ) -> asyncio.Future:
+        """
+        Submit blocking function to the pool
+        """
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
 

@@ -97,10 +97,10 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     )
 
     def __init__(
-        self,
-        max_workers: int = max((cpu_count(), 4)),
+        self, max_workers: int = max((cpu_count(), 4)),
         loop: AbstractEventLoop = None,
     ) -> None:
+        """"""
         if loop:
             warnings.warn(DeprecationWarning("loop argument is obsolete"))
 
@@ -158,7 +158,9 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     def submit(  # type: ignore
         self, fn: F, *args: Any, **kwargs: Any
     ) -> Future:
-
+        """
+        Submit blocking function to the pool
+        """
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
 
