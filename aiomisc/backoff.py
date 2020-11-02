@@ -24,8 +24,8 @@ def asyncbackoff(
     Patametric decorator that ensures that ``attempt_timeout`` and
     ``deadline`` time limits are met by decorated function.
 
-    In case of exception function will be called again with similar arguments after
-    ``pause`` seconds.
+    In case of exception function will be called again with similar
+    arguments after ``pause`` seconds.
 
     :param attempt_timeout: is maximum execution time for one
                             execution attempt.

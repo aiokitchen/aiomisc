@@ -152,7 +152,7 @@ class Entrypoint:
             await self.graceful_shutdown(exc_val)
             self.shutting_down = True
         finally:
-            if self.ctx is not None:
+            if self.ctx:
                 self.ctx.close()
 
             if self._thread_pool:

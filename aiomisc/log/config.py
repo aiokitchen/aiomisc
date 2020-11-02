@@ -6,10 +6,11 @@ import sys
 import typing as t
 
 from .enum import LogFormat, LogLevel
-from .formatter import json_handler, color_formatter
+from .formatter import color_formatter, json_handler
 from .wrap import wrap_logging_handler
 
-DEFAULT_FORMAT = '%(levelname)s:%(name)s:%(message)s'
+
+DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 
 def create_logging_handler(
@@ -21,7 +22,7 @@ def create_logging_handler(
         handler = logging.StreamHandler()   # type: logging.Handler
         if date_format and date_format is not Ellipsis:
             formatter = logging.Formatter(
-                "%(asctime)s " + DEFAULT_FORMAT, datefmt=date_format
+                "%(asctime)s " + DEFAULT_FORMAT, datefmt=date_format,
             )
         else:
             formatter = logging.Formatter(DEFAULT_FORMAT)
@@ -39,8 +40,8 @@ def create_logging_handler(
 
         formatter = logging.Formatter("%(message)s")
 
-        if os.path.exists('/dev/log'):
-            handler = logging.handlers.SysLogHandler(address='/dev/log')
+        if os.path.exists("/dev/log"):
+            handler = logging.handlers.SysLogHandler(address="/dev/log")
         else:
             handler = logging.handlers.SysLogHandler()
 

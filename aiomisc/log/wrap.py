@@ -3,7 +3,7 @@ import logging
 import logging.handlers
 import time
 from contextlib import suppress
-from typing import Union, Optional
+from typing import Optional, Union
 
 from ..thread_pool import run_in_new_thread
 
@@ -43,7 +43,7 @@ def wrap_logging_handler(
     buffered_handler = logging.handlers.MemoryHandler(
         buffer_size,
         target=handler,
-        flushLevel=logging.CRITICAL
+        flushLevel=logging.CRITICAL,
     )
 
     run_in_new_thread(

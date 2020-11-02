@@ -4,8 +4,8 @@ import pkg_resources
 
 from . import io, log
 from .backoff import asyncbackoff
-from .context import Context, get_context
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
+from .context import Context, get_context
 from .entrypoint import entrypoint
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback

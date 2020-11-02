@@ -1,12 +1,13 @@
 import asyncio
 import logging
-from asyncio import iscoroutinefunction
 import typing as t
+from asyncio import iscoroutinefunction
 
 from croniter import croniter
 
 from aiomisc import Service
 from aiomisc.cron import CronCallback
+
 
 log = logging.getLogger(__name__)
 ExceptionsType = t.Tuple[t.Type[Exception], ...]
@@ -16,8 +17,8 @@ StoreItem = t.NamedTuple(
         ("callback", CronCallback),
         ("spec", str),
         ("shield", bool),
-        ("suppress_exceptions", ExceptionsType)
-    )
+        ("suppress_exceptions", ExceptionsType),
+    ),
 )
 
 
@@ -31,7 +32,7 @@ class CronService(Service):
         function: t.Callable,
         spec: str,
         shield: bool = False,
-        suppress_exceptions: ExceptionsType = ()
+        suppress_exceptions: ExceptionsType = (),
     ) -> None:
         if not iscoroutinefunction(function):
             raise TypeError("function should be a coroutine %r" % function)
@@ -40,8 +41,8 @@ class CronService(Service):
 
         self._callbacks_storage.add(
             StoreItem(
-                CronCallback(function), spec, shield, suppress_exceptions
-            )
+                CronCallback(function), spec, shield, suppress_exceptions,
+            ),
         )
 
     async def start(self) -> None:
@@ -50,7 +51,7 @@ class CronService(Service):
                 spec=item.spec,
                 loop=self.loop,
                 shield=item.shield,
-                suppress_exceptions=item.suppress_exceptions
+                suppress_exceptions=item.suppress_exceptions,
             )
         log.info("Cron service %s started", self)
 

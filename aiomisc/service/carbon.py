@@ -1,13 +1,14 @@
 import logging
 import re
+import typing as t  # noqa
 from types import MappingProxyType
-import typing as t                                  # noqa
 
 from aiocarbon.protocol.pickle import PickleClient  # type: ignore
-from aiocarbon.protocol.tcp import TCPClient        # type: ignore
-from aiocarbon.protocol.udp import UDPClient        # type: ignore
-from aiocarbon.setup import set_client              # type: ignore
-from aiocarbon.storage import TotalStorage          # type: ignore
+from aiocarbon.protocol.tcp import TCPClient  # type: ignore
+from aiocarbon.protocol.udp import UDPClient  # type: ignore
+from aiocarbon.setup import set_client  # type: ignore
+from aiocarbon.storage import TotalStorage  # type: ignore
+
 from aiomisc.periodic import PeriodicCallback
 from aiomisc.service import Service
 

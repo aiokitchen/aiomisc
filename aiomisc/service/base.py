@@ -1,5 +1,4 @@
 import asyncio
-
 import typing as t
 
 from ..context import Context, get_context
@@ -11,7 +10,7 @@ class ServiceMeta(type):
         cls, name: str, bases: t.Tuple, namespace: t.Dict, **kwds: t.Any
     ) -> t.Any:
         instance = type.__new__(
-            cls, name, bases, dict(namespace)
+            cls, name, bases, dict(namespace),
         )
 
         for key in ("__async_required__", "__required__"):

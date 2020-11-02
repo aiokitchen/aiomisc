@@ -1,9 +1,9 @@
 import asyncio
 import socket
 import ssl
+import typing as t
 from functools import partial
 from pathlib import Path
-import typing as t
 
 from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
@@ -13,7 +13,7 @@ PathOrStr = t.Union[Path, str]
 
 
 def get_ssl_context(
-    cert: str, key: str, ca: str, verify: bool, require_client_cert: bool
+    cert: str, key: str, ca: str, verify: bool, require_client_cert: bool,
 ) -> ssl.SSLContext:
     cert, key, ca = map(str, (cert, key, ca))
 

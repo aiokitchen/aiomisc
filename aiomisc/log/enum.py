@@ -1,6 +1,6 @@
 import logging
 import typing as t
-from enum import IntEnum, Enum, unique
+from enum import Enum, IntEnum, unique
 
 
 @unique
@@ -29,10 +29,10 @@ class LogLevel(IntEnum):
 
 
 class DateFormat(Enum):
-    color = '%Y-%m-%d %H:%M:%S'
-    stream = '[%Y-%m-%d %H:%M:%S]'
+    color = "%Y-%m-%d %H:%M:%S"
+    stream = "[%Y-%m-%d %H:%M:%S]"
 
     # Optimization: special value ``%s`` date will
     # not formatted just returns record created time
-    json = '%s'
+    json = "%s"
     syslog = None

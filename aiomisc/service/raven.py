@@ -2,17 +2,17 @@ import asyncio
 import inspect
 import logging
 import socket
-from types import MappingProxyType
 import typing as t
+from types import MappingProxyType
 
 import yarl
 from aiohttp import ClientSession, TCPConnector
+from raven import Client  # type: ignore
+from raven.handlers.logging import SentryHandler  # type: ignore
+from raven.transport import Transport  # type: ignore
+from raven_aiohttp import QueuedAioHttpTransport  # type: ignore
 
 from aiomisc.service import Service
-from raven import Client                            # type: ignore
-from raven.handlers.logging import SentryHandler    # type: ignore
-from raven.transport import Transport               # type: ignore
-from raven_aiohttp import QueuedAioHttpTransport    # type: ignore
 
 
 log = logging.getLogger(__name__)

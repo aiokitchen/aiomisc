@@ -1,6 +1,7 @@
 import socket
 import typing as t
-from aiohttp.web import Application, AppRunner, SockSite, BaseRunner    # noqa
+
+from aiohttp.web import Application, AppRunner, BaseRunner, SockSite  # noqa
 
 from aiomisc.service.tls import PathOrStr, get_ssl_context
 
@@ -11,7 +12,7 @@ from .base import Service
 try:
     from aiohttp.web_log import AccessLogger
 except ImportError:         # pragma: nocover
-    from aiohttp.helpers import AccessLogger    # type: ignore
+    from aiohttp.helpers import AccessLogger  # type: ignore
 
 
 class AIOHTTPService(Service):
