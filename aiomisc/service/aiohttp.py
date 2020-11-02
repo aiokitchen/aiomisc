@@ -63,8 +63,8 @@ class AIOHTTPService(Service):
         )
 
     async def start(self) -> None:
-        if self.runner is None:
-            raise RuntimeError
+        if self.runner is not None:
+            raise RuntimeError("Can not start twice")
 
         self.runner = AppRunner(
             await self.create_application(),
