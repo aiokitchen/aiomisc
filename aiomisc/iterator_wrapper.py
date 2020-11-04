@@ -89,8 +89,8 @@ class IteratorWrapper(t.AsyncIterator):
             self._set_read_event()
             self.loop.call_soon_threadsafe(self.__close_event.set)
 
-    def _run(self) -> t.Any:
-        return self.loop.run_in_executor(self.executor, self._in_thread)
+    async def _run(self) -> t.Any:
+        return await self.loop.run_in_executor(self.executor, self._in_thread)
 
     async def close(self) -> None:
         self.__closed = True

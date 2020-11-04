@@ -334,9 +334,8 @@ def threaded_iterable(
 
 
 class IteratorWrapperSeparate(IteratorWrapper):
-    @threaded_separate
-    def _run(self) -> Any:
-        return self._in_thread()
+    async def _run(self) -> Any:
+        return await run_in_new_thread(self._in_thread)
 
 
 def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:
