@@ -22,7 +22,7 @@ class Profiler(Service):
     top_results = 10        # type: int
     log = logging.getLogger(__name__)   # type: logging.Logger
 
-    async def start(self):
+    async def start(self) -> None:
         self.logger = self.log.getChild(str(id(self)))
 
         self.profiler = cProfile.Profile()
@@ -31,7 +31,7 @@ class Profiler(Service):
         self.profiler.enable()
         self.periodic.start(self.interval)
 
-    def save_stats(self):
+    def save_stats(self) -> None:
         with io.StringIO() as stream:
             stats = Stats(
                 self.profiler, stream=stream,
@@ -46,7 +46,7 @@ class Profiler(Service):
             finally:
                 self.profiler.enable()
 
-    async def stop(self, exception: Exception = None):
+    async def stop(self, exception: Exception = None) -> None:
         self.logger.info("Stop profiler")
 
         task = self.periodic.stop()

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 11.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-01 00:23+0300\n"
+"POT-Creation-Date: 2020-11-02 22:21+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,188 +21,410 @@ msgstr ""
 msgid "API Reference"
 msgstr "Описание API"
 
-#: aiomisc.circuit_breaker.CircuitBreakerStates:1
-#: aiomisc.circuit_breaker.CounterKey:1 of
-msgid "An enumeration."
-msgstr "Перечисление"
-
-#: aiomisc.cron.CronCallback:3 of
-msgid ""
-"When the cron function executes longer then execution interval a next "
-"call will be skipping and warning will be logged."
-msgstr ""
-"Когда функция cron выполняется дольше, чем интервал выполнения, следующий "
-"вызов будет пропущен и будет залогировано предупреждение."
-
-#: aiomisc.periodic.PeriodicCallback:3 of
+#: aiomisc.PeriodicCallback:3 of
 msgid ""
 "When the periodic function executes longer then execution interval a next"
 " call will be skipping and warning will be logged."
 msgstr ""
-"Когда периодическая функция выполняется дольше, чем интервал выполнения, "
-"следующий вызов будет пропущен и будет залогировано предупреждение."
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
+#: aiomisc.ProcessPoolExecutor.shutdown:1 aiomisc.ThreadPoolExecutor.shutdown:1
+#: of
 msgid "Clean-up the resources associated with the Executor."
-msgstr "Очищает ресурсы, связанные с Executor."
+msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:3
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:3 of
+#: aiomisc.ProcessPoolExecutor.shutdown:3 aiomisc.ThreadPoolExecutor.shutdown:3
+#: of
 msgid ""
 "It is safe to call this method several times. Otherwise, no other methods"
 " can be called after this one."
 msgstr ""
-"Этот метод можно безопасно вызывать несколько раз. "
-"В противном случае после этого нельзя будет вызывать "
-"никакие другие методы."
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
-#: aiomisc.thread_pool.ThreadPoolExecutor:9
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+#: aiomisc.ProcessPoolExecutor.shutdown:8 aiomisc.ThreadPoolExecutor.shutdown:8
+#: of
 msgid "Args:"
-msgstr "Аргументы:"
+msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+#: aiomisc.ProcessPoolExecutor.shutdown:8 aiomisc.ThreadPoolExecutor.shutdown:8
+#: of
 msgid "wait: If True then shutdown will not return until all running"
 msgstr ""
-"wait: Если True тогда shutdown заблокируется до тех пор "
-"пока все не остановится"
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+#: aiomisc.ProcessPoolExecutor.shutdown:8 aiomisc.ThreadPoolExecutor.shutdown:8
+#: of
 msgid ""
 "futures have finished executing and the resources used by the executor "
 "have been reclaimed."
 msgstr ""
-"Future завершили выполнение, и ресурсы, используемые "
-"executor', были возвращены."
 
-#: aiomisc.process_pool.ProcessPoolExecutor.submit:1
-#: aiomisc.thread_pool.ThreadPoolExecutor.submit:1 of
-msgid "Submits a callable to be executed with the given arguments."
-msgstr "Отправляет вызываемый объект на выполнение с заданными аргументами."
+#: aiomisc.ProcessPoolExecutor.submit:1 aiomisc.ThreadPoolExecutor.submit:1 of
+msgid "Submit blocking function to the pool"
+msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.submit:3
-#: aiomisc.thread_pool.ThreadPoolExecutor.submit:3 of
+#: aiomisc.asyncbackoff:1 of
 msgid ""
-"Schedules the callable to be executed as fn(*args, **kwargs) and returns "
-"a Future instance representing the execution of the callable."
+"Decorator that ensures that ``attempt_timeout`` and ``deadline`` time "
+"limits are met by decorated function."
 msgstr ""
-"Планирует выполнение вызываемого объекта как ``fn(*args, **kwargs)`` "
-"и возвращает экземпляр Future, представляющий выполнение вызываемого объекта."
 
-#: aiomisc.process_pool.ProcessPoolExecutor.submit:6
-#: aiomisc.thread_pool.ThreadPoolExecutor.submit:6 of
-msgid "Returns:"
-msgstr "Возвращаемое значение"
-
-#: aiomisc.process_pool.ProcessPoolExecutor.submit:7
-#: aiomisc.thread_pool.ThreadPoolExecutor.submit:7 of
-msgid "A Future representing the given call."
-msgstr ""
-"Future в кторою будет помещен результат или "
-"исключение от данного вызова."
-
-#: aiomisc.thread_pool.ThreadPoolExecutor:1 of
-msgid "Initializes a new ThreadPoolExecutor instance."
-msgstr "Инициализирует новый экземпляр ThreadPoolExecutor."
-
-#: aiomisc.thread_pool.ThreadPoolExecutor:4 of
-msgid "max_workers: The maximum number of threads that can be used to"
-msgstr "max_workers: максимальное количество потоков которое создаст пул"
-
-#: aiomisc.thread_pool.ThreadPoolExecutor:5 of
-msgid "execute the given calls."
-msgstr "выполняет полученный вызов."
-
-#: aiomisc.thread_pool.ThreadPoolExecutor:6 of
+#: aiomisc.asyncbackoff:4 of
 msgid ""
-"thread_name_prefix: An optional name prefix to give our threads. "
-"initializer: A callable used to initialize worker threads. initargs: A "
-"tuple of arguments to pass to the initializer."
+"In case of exception function will be called again with similar arguments"
+" after ``pause`` seconds."
 msgstr ""
-"thread_name_prefix: необязательный префикс имени для наших потоков. "
-"инициализатор: вызываемый объект, используемый для инициализации "
-"рабочих потоков. initargs: кортеж аргументов для передачи инициализатору."
 
-#: aiomisc.thread_pool.WorkItem:1 aiomisc.thread_pool.WorkItemBase:1 of
-msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
-msgstr "Создает новый экземпляр WorkItemBase(func, args, kwargs, future, loop)"
-
-#: aiomisc.thread_pool.WorkItemBase.args:1 of
-msgid "Alias for field number 1"
-msgstr "Алиас для поля номер 1"
-
-#: aiomisc.thread_pool.WorkItemBase.func:1 of
-msgid "Alias for field number 0"
-msgstr "Алиас для поля номер 0"
-
-#: aiomisc.thread_pool.WorkItemBase.future:1 of
-msgid "Alias for field number 3"
-msgstr "Алиас для поля номер 3"
-
-#: aiomisc.thread_pool.WorkItemBase.kwargs:1 of
-msgid "Alias for field number 2"
-msgstr "Алиас для поля номер 2"
-
-#: aiomisc.thread_pool.WorkItemBase.loop:1 of
-msgid "Alias for field number 4"
-msgstr "Алиас для поля номер 4"
-
-#: aiomisc.utils.bind_socket of
+#: aiomisc.asyncbackoff aiomisc.bind_socket aiomisc.cancel_tasks aiomisc.select
+#: of
 msgid "Parameters"
-msgstr "Параметры"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:1 of
+#: aiomisc.asyncbackoff:7 of
+msgid "is maximum execution time for one execution attempt."
+msgstr ""
+
+#: aiomisc.asyncbackoff:9 of
+msgid "is maximum execution time for all execution attempts."
+msgstr ""
+
+#: aiomisc.asyncbackoff:10 of
+msgid "is time gap between execution attempts."
+msgstr ""
+
+#: aiomisc.asyncbackoff:11 of
+msgid "retrying when this exceptions was raised."
+msgstr ""
+
+#: aiomisc.asyncbackoff:12 of
+msgid "similar as exc but keyword only."
+msgstr ""
+
+#: aiomisc.asyncbackoff:13 of
+msgid "is maximum count of execution attempts (>= 1)."
+msgstr ""
+
+#: aiomisc.asyncbackoff:14 of
+msgid "is a predicate function which can decide by a given"
+msgstr ""
+
+#: aiomisc.awaitable:1 of
+msgid ""
+"Decorator wraps function and returns a function which returns awaitable "
+"object. In case than a function returns a future, the original future "
+"will be returned. In case then the function returns a coroutine, the "
+"original coroutine will be returned. In case than function returns non-"
+"awaitable object, it's will be wrapped to a new coroutine which just "
+"returns this object. It's useful when you don't want to check function "
+"result before use it in ``await`` expression."
+msgstr ""
+
+#: aiomisc.bind_socket:1 of
+msgid ""
+"Bind socket and set ``setblocking(False)`` for just created socket. This "
+"detects ``address`` format and select socket family automatically."
+msgstr ""
+
+#: aiomisc.bind_socket:4 of
 msgid "which will be passed to stdlib's socket constructor (optional)"
-msgstr "который будет передан конструктору сокета stdlib (необязательно)"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:2 of
+#: aiomisc.bind_socket:5 of
 msgid "bind address"
-msgstr "биндит сокет на этот адрес"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:3 of
+#: aiomisc.bind_socket:6 of
 msgid "bind port"
-msgstr "биндит сокет на этот порт"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:4 of
+#: aiomisc.bind_socket:7 of
 msgid "Tuple of pairs which contain socket option to set and the option value."
 msgstr ""
-"Кортэж пар, содержащих дополнительные параметры сокета, "
-"первое знаяение это параметр который необходимо установить, "
-"а второй его значение."
 
-#: aiomisc.utils.bind_socket:6 of
+#: aiomisc.bind_socket:9 of
 msgid "set socket.SO_REUSEADDR"
-msgstr "устанавливает socket.SO_REUSEADDR"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:7 of
+#: aiomisc.bind_socket:10 of
 msgid "set socket.SO_REUSEPORT"
-msgstr "Устанавливает socket.SO_REUSEPORT"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:8 of
+#: aiomisc.bind_socket:11 of
 msgid "protocol name which will be logged after binding"
-msgstr "имя протокола, которое будет залогирован после биндинга"
+msgstr ""
 
-#: aiomisc.utils.bind_socket of
+#: aiomisc.bind_socket of
 msgid "Returns"
-msgstr "Возвращаемое значение"
+msgstr ""
 
-#: aiomisc.utils.bind_socket:9 of
+#: aiomisc.bind_socket:12 of
 msgid "socket.socket"
-msgstr "socket.socket"
+msgstr ""
 
-#: aiomisc.utils.chunk_list:1 of
+#: aiomisc.cancel_tasks:1 of
+msgid "All passed tasks will be cancelled and a new task will be returned."
+msgstr ""
+
+#: aiomisc.cancel_tasks:3 of
+msgid "tasks which will be cancelled"
+msgstr ""
+
+#: aiomisc.chunk_list:1 of
 msgid "Split list or generator by chunks with fixed maximum size."
 msgstr ""
-"Разделить список или генератор на куски с фиксированным "
-"максимальным размером."
 
-#: aiomisc.utils.shield:1 of
+#: aiomisc.select:1 of
+msgid "aswaitable objects"
+msgstr ""
+
+#: aiomisc.select:2 of
+msgid "if True exception will not be raised just returned as result"
+msgstr ""
+
+#: aiomisc.select:4 of
+msgid "cancel unfinished coroutines (default True)"
+msgstr ""
+
+#: aiomisc.select:5 of
+msgid "execution timeout"
+msgstr ""
+
+#: aiomisc.select:6 of
+msgid ""
+"when False and ``cancel=True``, unfinished coroutines will be cancelled "
+"in the background."
+msgstr ""
+
+#: aiomisc.select:8 of
+msgid "event loop"
+msgstr ""
+
+#: aiomisc.shield:1 of
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
-"Простой и полезный декоратор для оборачивания сопрограммы "
-"в ``asyncio.shield``."
+
+#~ msgid "Submits a callable to be executed with the given arguments."
+#~ msgstr "Отправляет вызываемый объект на выполнение с заданными аргументами."
+
+#~ msgid ""
+#~ "Schedules the callable to be executed"
+#~ " as fn(*args, **kwargs) and returns a"
+#~ " Future instance representing the execution"
+#~ " of the callable."
+#~ msgstr ""
+#~ "Планирует выполнение вызываемого объекта как"
+#~ " ``fn(*args, **kwargs)`` и возвращает "
+#~ "экземпляр Future, представляющий выполнение "
+#~ "вызываемого объекта."
+
+#~ msgid "Returns:"
+#~ msgstr "Возвращаемое значение"
+
+#~ msgid "A Future representing the given call."
+#~ msgstr ""
+#~ "Future в кторою будет помещен результат"
+#~ " или исключение от данного вызова."
+
+#~ msgid "Initializes a new ThreadPoolExecutor instance."
+#~ msgstr "Инициализирует новый экземпляр ThreadPoolExecutor."
+
+#~ msgid "max_workers: The maximum number of threads that can be used to"
+#~ msgstr "max_workers: максимальное количество потоков которое создаст пул"
+
+#~ msgid "execute the given calls."
+#~ msgstr "выполняет полученный вызов."
+
+#~ msgid ""
+#~ "thread_name_prefix: An optional name prefix"
+#~ " to give our threads. initializer: A"
+#~ " callable used to initialize worker "
+#~ "threads. initargs: A tuple of arguments"
+#~ " to pass to the initializer."
+#~ msgstr ""
+#~ "thread_name_prefix: необязательный префикс имени "
+#~ "для наших потоков. инициализатор: вызываемый"
+#~ " объект, используемый для инициализации "
+#~ "рабочих потоков. initargs: кортеж аргументов"
+#~ " для передачи инициализатору."
+
+#~ msgid "An enumeration."
+#~ msgstr "Перечисление"
+
+#~ msgid ""
+#~ "When the cron function executes longer"
+#~ " then execution interval a next call"
+#~ " will be skipping and warning will"
+#~ " be logged."
+#~ msgstr ""
+#~ "Когда функция cron выполняется дольше, "
+#~ "чем интервал выполнения, следующий вызов "
+#~ "будет пропущен и будет залогировано "
+#~ "предупреждение."
+
+#~ msgid ""
+#~ "When the periodic function executes "
+#~ "longer then execution interval a next"
+#~ " call will be skipping and warning"
+#~ " will be logged."
+#~ msgstr ""
+#~ "Когда периодическая функция выполняется "
+#~ "дольше, чем интервал выполнения, следующий "
+#~ "вызов будет пропущен и будет "
+#~ "залогировано предупреждение."
+
+#~ msgid "Clean-up the resources associated with the Executor."
+#~ msgstr "Очищает ресурсы, связанные с Executor."
+
+#~ msgid ""
+#~ "It is safe to call this method "
+#~ "several times. Otherwise, no other "
+#~ "methods can be called after this "
+#~ "one."
+#~ msgstr ""
+#~ "Этот метод можно безопасно вызывать "
+#~ "несколько раз. В противном случае после"
+#~ " этого нельзя будет вызывать никакие "
+#~ "другие методы."
+
+#~ msgid "Args:"
+#~ msgstr "Аргументы:"
+
+#~ msgid "wait: If True then shutdown will not return until all running"
+#~ msgstr ""
+#~ "wait: Если True тогда shutdown "
+#~ "заблокируется до тех пор пока все "
+#~ "не остановится"
+
+#~ msgid ""
+#~ "futures have finished executing and the"
+#~ " resources used by the executor have"
+#~ " been reclaimed."
+#~ msgstr ""
+#~ "Future завершили выполнение, и ресурсы, "
+#~ "используемые executor', были возвращены."
+
+#~ msgid "Submit blocking function to the pool"
+#~ msgstr ""
+
+#~ msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
+#~ msgstr "Создает новый экземпляр WorkItemBase(func, args, kwargs, future, loop)"
+
+#~ msgid "Alias for field number 1"
+#~ msgstr "Алиас для поля номер 1"
+
+#~ msgid "Alias for field number 0"
+#~ msgstr "Алиас для поля номер 0"
+
+#~ msgid "Alias for field number 3"
+#~ msgstr "Алиас для поля номер 3"
+
+#~ msgid "Alias for field number 2"
+#~ msgstr "Алиас для поля номер 2"
+
+#~ msgid "Alias for field number 4"
+#~ msgstr "Алиас для поля номер 4"
+
+#~ msgid ""
+#~ "Decorator wraps function and returns a"
+#~ " function which returns awaitable object."
+#~ " In case than a function returns "
+#~ "a future, the original future will "
+#~ "be returned. In case then the "
+#~ "function returns a coroutine, the "
+#~ "original coroutine will be returned. In"
+#~ " case than function returns non-"
+#~ "awaitable object, it's will be wrapped"
+#~ " to a new coroutine which just "
+#~ "returns this object. It's useful when"
+#~ " you don't want to check function "
+#~ "result before use it in ``await`` "
+#~ "expression."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bind socket and set ``setblocking(False)`` "
+#~ "for just created socket. This detects"
+#~ " ``address`` format and select socket "
+#~ "family automatically."
+#~ msgstr ""
+
+#~ msgid "Parameters"
+#~ msgstr "Параметры"
+
+#~ msgid "which will be passed to stdlib's socket constructor (optional)"
+#~ msgstr "который будет передан конструктору сокета stdlib (необязательно)"
+
+#~ msgid "bind address"
+#~ msgstr "биндит сокет на этот адрес"
+
+#~ msgid "bind port"
+#~ msgstr "биндит сокет на этот порт"
+
+#~ msgid "Tuple of pairs which contain socket option to set and the option value."
+#~ msgstr ""
+#~ "Кортэж пар, содержащих дополнительные "
+#~ "параметры сокета, первое знаяение это "
+#~ "параметр который необходимо установить, а "
+#~ "второй его значение."
+
+#~ msgid "set socket.SO_REUSEADDR"
+#~ msgstr "устанавливает socket.SO_REUSEADDR"
+
+#~ msgid "set socket.SO_REUSEPORT"
+#~ msgstr "Устанавливает socket.SO_REUSEPORT"
+
+#~ msgid "protocol name which will be logged after binding"
+#~ msgstr "имя протокола, которое будет залогирован после биндинга"
+
+#~ msgid "Returns"
+#~ msgstr "Возвращаемое значение"
+
+#~ msgid "socket.socket"
+#~ msgstr "socket.socket"
+
+#~ msgid "All passed tasks will be cancelled and a new task will be returned."
+#~ msgstr ""
+
+#~ msgid "tasks which will be cancelled"
+#~ msgstr ""
+
+#~ msgid "Split list or generator by chunks with fixed maximum size."
+#~ msgstr ""
+#~ "Разделить список или генератор на куски"
+#~ " с фиксированным максимальным размером."
+
+#~ msgid "Creates an event loop and thread pool executor"
+#~ msgstr ""
+
+#~ msgid "thread pool maximal size"
+#~ msgstr ""
+
+#~ msgid "event loop policy"
+#~ msgstr ""
+
+#~ msgid "set ``loop.set_debug(True)`` if True"
+#~ msgstr ""
+
+#~ msgid "aswaitable objects"
+#~ msgstr ""
+
+#~ msgid "if True exception will not be raised just returned as result"
+#~ msgstr ""
+
+#~ msgid "cancel unfinished coroutines (default True)"
+#~ msgstr ""
+
+#~ msgid "execution timeout"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "when False and ``cancel=True``, unfinished "
+#~ "coroutines will be cancelled in the "
+#~ "background."
+#~ msgstr ""
+
+#~ msgid "event loop"
+#~ msgstr ""
+
+#~ msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
+#~ msgstr ""
+#~ "Простой и полезный декоратор для "
+#~ "оборачивания сопрограммы в ``asyncio.shield``."
 

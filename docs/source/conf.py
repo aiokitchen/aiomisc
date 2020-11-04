@@ -121,7 +121,7 @@ html_theme_options = {
     "github_button": True,
     "github_repo": "aiomisc",
     "github_type": "star",
-    "github_user": "mosquito",
+    "github_user": "aiokitchen",
     "travis_button": True,
 }
 

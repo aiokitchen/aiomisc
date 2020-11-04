@@ -1,29 +1,47 @@
 import asyncio
 from concurrent.futures._base import Executor
 from multiprocessing import Pool, cpu_count
+from typing import Any, Callable, Set, Tuple, TypeVar
+
+
+T = TypeVar("T")
+FuturesSet = Set[asyncio.Future]
+_CreateFutureType = Tuple[
+    Callable[[T], None],
+    Callable[[T], None],
+    asyncio.Future,
+]
 
 
 class ProcessPoolExecutor(Executor):
-    def __init__(self, max_workers=max((cpu_count(), 4)), **kwargs):
-        self.__futures = set()
+    DEFAULT_MAX_WORKERS = max((cpu_count(), 4))
+
+    def __init__(self, max_workers: int = DEFAULT_MAX_WORKERS, **kwargs: Any):
+        self.__futures = set()      # type: FuturesSet
         self.__pool = Pool(processes=max_workers, **kwargs)
 
-    def _create_future(self):
+    def _create_future(self) -> _CreateFutureType:
         loop = asyncio.get_event_loop()
         future = loop.create_future()  # type: asyncio.Future
 
         self.__futures.add(future)
         future.add_done_callback(self.__futures.remove)
 
-        def callback(result):
+        def callback(result: T) -> None:
             loop.call_soon_threadsafe(future.set_result, result)
 
-        def errorback(exc):
+        def errorback(exc: T) -> None:
             loop.call_soon_threadsafe(future.set_exception, exc)
 
         return callback, errorback, future
 
-    def submit(self, fn, *args, **kwargs):
+    def submit(           # type: ignore
+        self, fn: Callable[..., T],
+        *args: Any, **kwargs: Any
+    ) -> asyncio.Future:
+        """
+        Submit blocking function to the pool
+        """
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
 
@@ -39,7 +57,7 @@ class ProcessPoolExecutor(Executor):
 
         return future
 
-    def shutdown(self, wait=True):
+    def shutdown(self, wait: bool = True) -> None:
         if not self.__pool:
             return
 
@@ -55,5 +73,5 @@ class ProcessPoolExecutor(Executor):
 
         self.__pool.close()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.shutdown()

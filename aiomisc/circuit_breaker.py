@@ -1,6 +1,6 @@
 import asyncio
 import threading
-import typing
+import typing as t
 from collections import Counter, deque
 from contextlib import contextmanager
 from enum import IntEnum, unique
@@ -10,8 +10,9 @@ from random import random
 from aiomisc.utils import awaitable
 
 
-TimeType = typing.Union[int, float]
-StatisticType = typing.Deque[typing.Tuple[int, Counter]]
+Number = t.Union[int, float]
+StatisticType = t.Deque[t.Tuple[int, Counter]]
+T = t.TypeVar("T")
 
 
 @unique
@@ -64,11 +65,11 @@ class CircuitBreaker:
     def __init__(
         self,
         error_ratio: float,
-        response_time: TimeType,
-        exceptions: typing.Iterable[typing.Type[Exception]] = (Exception,),
-        recovery_time: TimeType = None,
-        broken_time: TimeType = None,
-        passing_time: TimeType = None
+        response_time: Number,
+        exceptions: t.Iterable[t.Type[Exception]] = (Exception,),
+        recovery_time: Number = None,
+        broken_time: Number = None,
+        passing_time: Number = None,
     ):
         """
         Circuit Breaker pattern implementation. The class instance collects
@@ -106,19 +107,19 @@ class CircuitBreaker:
 
         if 0. > error_ratio >= 1.:
             raise ValueError(
-                "Error ratio must be between 0 and 1 not %r" % error_ratio
+                "Error ratio must be between 0 and 1 not %r" % error_ratio,
             )
 
         self._statistic = deque(
-            maxlen=self.BUCKET_COUNT
+            maxlen=self.BUCKET_COUNT,
         )  # type: StatisticType
         self._lock = threading.RLock()
         self._loop = asyncio.get_event_loop()
         self._error_ratio = error_ratio
         self._state = CircuitBreakerStates.PASSING
         self._response_time = response_time
-        self._stuck_until = 0
-        self._recovery_at = 0
+        self._stuck_until = 0   # type: Number
+        self._recovery_at = 0   # type: Number
 
         self._exceptions = tuple(frozenset(exceptions))
 
@@ -127,7 +128,7 @@ class CircuitBreaker:
         self._recovery_time = recovery_time or self._response_time
 
     @property
-    def response_time(self) -> TimeType:
+    def response_time(self) -> Number:
         return self._response_time
 
     @property
@@ -147,7 +148,7 @@ class CircuitBreaker:
 
             if not self._statistic:
                 # Empty statistic just return a new counter
-                counter = Counter()
+                counter = Counter()     # type: t.Counter[int]
                 self._statistic.append((current, counter))
                 return counter
 
@@ -160,7 +161,7 @@ class CircuitBreaker:
 
             return counter
 
-    def __gen_statistic(self) -> typing.Generator[Counter, None, None]:
+    def __gen_statistic(self) -> t.Generator[Counter, None, None]:
         """
         Generator which returns only buckets Counters not before current_time
         """
@@ -174,11 +175,13 @@ class CircuitBreaker:
 
             yield counter
 
-    def get_state_delay(self):
+    def get_state_delay(self) -> Number:
         delay = self._stuck_until - self._get_time()
         return max(delay, 0)
 
-    def _on_passing(self, counter):
+    def _on_passing(
+        self, counter: t.Counter[int],
+    ) -> t.Generator[t.Any, t.Any, t.Any]:
         try:
             yield
             counter[CounterKey.OK] += 1
@@ -188,10 +191,9 @@ class CircuitBreaker:
         finally:
             counter[CounterKey.TOTAL] += 1
 
-    def _on_broken(self):
-        raise CircuitBroken()
-
-    def _on_recover(self, counter):
+    def _on_recover(
+        self, counter: t.Counter[int],
+    ) -> t.Generator[t.Any, t.Any, t.Any]:
         current_time = self._get_time()
         condition = (random() + 1) < (
             2 ** ((current_time - self._recovery_at) / self._recovery_time)
@@ -203,7 +205,7 @@ class CircuitBreaker:
         yield from self._on_passing(counter)
 
     @property
-    def recovery_ratio(self):
+    def recovery_ratio(self) -> Number:
         total_count = 0
         upper_count = 0
 
@@ -223,7 +225,7 @@ class CircuitBreaker:
 
         return upper_count / total_count
 
-    def _compute_state(self):
+    def _compute_state(self) -> None:
         current_time = self._get_time()
 
         if current_time < self._stuck_until:
@@ -269,7 +271,7 @@ class CircuitBreaker:
             return
 
     @contextmanager
-    def context(self):
+    def context(self) -> t.Generator[t.Any, t.Any, t.Any]:
         counter = self.counter()
         self._compute_state()
 
@@ -278,7 +280,7 @@ class CircuitBreaker:
             return
 
         elif self._state is CircuitBreakerStates.BROKEN:
-            return (yield from self._on_broken())
+            raise CircuitBroken()
 
         elif self._state is CircuitBreakerStates.RECOVERING:
             yield from self._on_recover(counter)
@@ -286,23 +288,32 @@ class CircuitBreaker:
 
         raise NotImplementedError(self._state)
 
-    def call(self, func, *args, **kwargs):
+    def call(
+        self, func: t.Callable[..., T], *args: t.Any, **kwargs: t.Any
+    ) -> T:
         with self.context():
             return func(*args, **kwargs)
 
-    async def call_async(self, func, *args, **kwargs):
+    async def call_async(
+        self, func: t.Callable[..., t.Awaitable[t.Any]],
+        *args: t.Any, **kwargs: t.Any
+    ) -> T:
         with self.context():
             return await awaitable(func)(*args, **kwargs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{}: state={!r} recovery_ratio={!s}>".format(
             self.__class__.__name__, self._state, self.recovery_ratio,
         )
 
 
-def cutout(ratio: float, response_time: typing.Union[int, float],
-           *exceptions: typing.Type[Exception], **kwargs):
+CutoutFuncType = t.Union[t.Callable[..., T], t.Callable[..., t.Awaitable[T]]]
 
+
+def cutout(
+    ratio: float, response_time: t.Union[int, float],
+    *exceptions: t.Type[Exception], **kwargs: t.Any
+) -> t.Callable[..., t.Callable[..., t.Any]]:
     circuit_breaker = CircuitBreaker(
         error_ratio=ratio,
         response_time=response_time,
@@ -310,13 +321,15 @@ def cutout(ratio: float, response_time: typing.Union[int, float],
         **kwargs
     )
 
-    def decorator(func):
+    def decorator(func: CutoutFuncType) -> t.Callable[..., T]:
         @wraps(func)
-        async def async_wrapper(*args, **kw):
+        async def async_wrapper(
+            *args: t.Any, **kw: t.Any
+        ) -> t.Awaitable[t.Any]:
             return await circuit_breaker.call_async(func, *args, **kw)
 
         @wraps(func)
-        def wrapper(*args, **kw):
+        def wrapper(*args: t.Any, **kw: t.Any) -> t.Any:
             return circuit_breaker.call(func, *args, **kw)
 
         if asyncio.iscoroutinefunction(func):

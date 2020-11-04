@@ -1,18 +1,20 @@
 import asyncio
 import socket
 import ssl
+import typing as t
 from functools import partial
 from pathlib import Path
-from typing import Union
 
 from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
 
-PathOrStr = Union[Path, str]
+PathOrStr = t.Union[Path, str]
 
 
-def get_ssl_context(cert, key, ca, verify, require_client_cert):
+def get_ssl_context(
+    cert: str, key: str, ca: str, verify: bool, require_client_cert: bool,
+) -> ssl.SSLContext:
     cert, key, ca = map(str, (cert, key, ca))
 
     context = ssl.create_default_context(
@@ -44,7 +46,7 @@ class TLSServer(SimpleServer):
         self, *, address: str = None, port: int = None,
         cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
         require_client_cert: bool = False, verify: bool = True,
-        options: OptionsType = (), sock=None, **kwargs
+        options: OptionsType = (), sock: socket.socket = None, **kwargs: t.Any
     ):
 
         self.__ssl_options = cert, key, ca, verify, require_client_cert
@@ -65,25 +67,25 @@ class TLSServer(SimpleServer):
         elif not isinstance(sock, socket.socket):
             raise ValueError("sock must be socket instance")
         else:
-            self.make_socket = lambda: sock
+            self.make_socket = lambda: sock     # type: ignore
 
-        self.socket = None
+        self.socket = None      # type: t.Optional[socket.socket]
 
         super().__init__(**kwargs)
 
     def make_client_handler(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
-    ):
+    ) -> asyncio.Task:
         return self.create_task(awaitable(self.handle_client)(reader, writer))
 
     async def handle_client(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter
-    ):
+    ) -> t.Any:
         raise NotImplementedError
 
-    async def start(self):
+    async def start(self) -> None:
         ssl_context = await self.loop.run_in_executor(
             None, get_ssl_context, *self.__ssl_options
         )
@@ -96,6 +98,8 @@ class TLSServer(SimpleServer):
             ssl=ssl_context,
         )
 
-    async def stop(self, exc: Exception = None):
+    async def stop(self, exc: Exception = None) -> None:
         await super().stop(exc)
-        await self.server.wait_closed()
+
+        if self.server:
+            await self.server.wait_closed()

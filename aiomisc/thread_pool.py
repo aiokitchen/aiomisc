@@ -5,18 +5,19 @@ import threading
 import time
 import typing
 import warnings
-from asyncio import Future, AbstractEventLoop, Task  # noqa
+from asyncio import AbstractEventLoop, Future, Task  # noqa
 from asyncio.events import get_event_loop
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
-from typing import NamedTuple, Any, Optional, TypeVar, Callable  # noqa
+from typing import Any, Callable, NamedTuple, Optional, TypeVar  # noqa
 
 from .iterator_wrapper import IteratorWrapper
 
-T = typing.TypeVar('T')
-F = TypeVar('F', bound=Callable[..., Any])
+
+T = typing.TypeVar("T")
+F = TypeVar("F", bound=Callable[..., Any])
 
 try:
     from queue import SimpleQueue
@@ -54,7 +55,7 @@ WorkItemBase = NamedTuple(
 class WorkItem(WorkItemBase):
     @staticmethod
     def set_result(
-        future: Future, result: Any, exception: Exception
+        future: Future, result: Any, exception: Exception,
     ) -> None:
         if future.done():
             return
@@ -96,10 +97,10 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     )
 
     def __init__(
-        self,
-        max_workers: int = max((cpu_count(), 4)),
-        loop: AbstractEventLoop = None
+        self, max_workers: int = max((cpu_count(), 4)),
+        loop: AbstractEventLoop = None,
     ) -> None:
+        """"""
         if loop:
             warnings.warn(DeprecationWarning("loop argument is obsolete"))
 
@@ -114,7 +115,8 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
             pools.add(self._start_thread(idx))
 
         self.__pool = frozenset(
-            pools)  # type: typing.FrozenSet[threading.Thread]
+            pools,
+        )  # type: typing.FrozenSet[threading.Thread]
 
     def _start_thread(self, idx: int) -> threading.Thread:
         event = threading.Event()
@@ -156,7 +158,9 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     def submit(  # type: ignore
         self, fn: F, *args: Any, **kwargs: Any
     ) -> Future:
-
+        """
+        Submit blocking function to the pool
+        """
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
 
@@ -291,7 +295,7 @@ def run_in_new_thread(
 
 def threaded_separate(
     func: F,
-    detouch: bool = True
+    detouch: bool = True,
 ) -> Callable[..., typing.Awaitable[Any]]:
     if isinstance(func, bool):
         return partial(threaded_separate, detouch=detouch)
@@ -312,7 +316,7 @@ def threaded_separate(
 
 def threaded_iterable(
     func: F = None,
-    max_size: int = 0
+    max_size: int = 0,
 ) -> Any:
     if isinstance(func, int):
         return partial(threaded_iterable, max_size=func)
@@ -330,9 +334,8 @@ def threaded_iterable(
 
 
 class IteratorWrapperSeparate(IteratorWrapper):
-    @threaded_separate
-    def _run(self) -> None:
-        return self._in_thread()
+    async def _run(self) -> Any:
+        return await run_in_new_thread(self._in_thread)
 
 
 def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:

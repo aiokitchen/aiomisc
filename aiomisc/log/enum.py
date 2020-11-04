@@ -1,5 +1,6 @@
 import logging
-from enum import IntEnum, Enum, unique
+import typing as t
+from enum import Enum, IntEnum, unique
 
 
 @unique
@@ -10,8 +11,8 @@ class LogFormat(IntEnum):
     syslog = 3
 
     @classmethod
-    def choices(cls):
-        return tuple(cls._member_names_)
+    def choices(cls) -> t.Tuple[str, ...]:
+        return tuple(cls._member_names_)    # type: ignore
 
 
 class LogLevel(IntEnum):
@@ -23,13 +24,15 @@ class LogLevel(IntEnum):
     notset = logging.NOTSET
 
     @classmethod
-    def choices(cls):
-        return tuple(cls._member_names_)
+    def choices(cls) -> t.Tuple[str, ...]:
+        return tuple(cls._member_names_)    # type: ignore
 
 
 class DateFormat(Enum):
-    color = '%Y-%m-%d %H:%M:%S'
-    stream = '[%Y-%m-%d %H:%M:%S]'
-    # Optimization: float value will be returned
-    json = '%s'
+    color = "%Y-%m-%d %H:%M:%S"
+    stream = "[%Y-%m-%d %H:%M:%S]"
+
+    # Optimization: special value ``%s`` date will
+    # not formatted just returns record created time
+    json = "%s"
     syslog = None
