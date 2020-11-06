@@ -58,6 +58,7 @@ setup(
     install_requires=load_requirements('requirements.txt'),
     extras_require={
         'aiohttp': ['aiohttp'],
+        'asgi': ['aiohttp-asgi'],
         'carbon': ['aiocarbon~=0.15'],
         'contextvars': ['contextvars~=2.4'],
         'develop': load_requirements('requirements.dev.txt'),

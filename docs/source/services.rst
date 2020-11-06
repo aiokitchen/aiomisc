@@ -345,6 +345,68 @@ aiohttp application can be started as a service:
 Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates HTTPS
 server. You must pass SSL-required options (see ``TLSServer`` class).
 
+
+asgi service
+++++++++++++
+
+.. warning::
+
+   requires installed aiohttp-asgi:
+
+   .. code-block::
+
+       pip install aiohttp-asgi
+
+   or using extras:
+
+   .. code-block::
+
+       pip install aiomisc[asgi]
+
+
+Any ASGI-like application can be started as a service:
+
+.. code-block:: python
+
+   import argparse
+
+   from fastapi import FastAPI
+
+   from aiomisc import entrypoint
+   from aiomisc.service.asgi import ASGIHTTPService, ASGIApplicationType
+
+   parser = argparse.ArgumentParser()
+   group = parser.add_argument_group('HTTP options')
+
+   group.add_argument("-l", "--address", default="::",
+                      help="Listen HTTP address")
+   group.add_argument("-p", "--port", type=int, default=8080,
+                      help="Listen HTTP port")
+
+
+   app = FastAPI()
+
+
+   @app.get("/")
+   async def root():
+       return {"message": "Hello World"}
+
+
+   class REST(ASGIHTTPService):
+       async def create_asgi_app(self) -> ASGIApplicationType:
+           return app
+
+
+   arguments = parser.parse_args()
+   service = REST(address=arguments.address, port=arguments.port)
+
+   with entrypoint(service) as loop:
+       loop.run_forever()
+
+
+Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but creates
+HTTPS server. You must pass SSL-required options (see ``TLSServer`` class).
+
 Memory Tracer
 +++++++++++++
 
