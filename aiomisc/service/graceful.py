@@ -1,7 +1,7 @@
 import asyncio
 from asyncio import Task, get_event_loop
 from contextlib import suppress
-from typing import Coroutine
+from typing import Coroutine, Dict
 
 from . import Service
 from ..timeout import timeout
@@ -9,18 +9,18 @@ from ..timeout import timeout
 
 class GracefulMixin:
 
-    __tasks = {}
+    __tasks: Dict[Task, bool] = {}
 
-    def create_graceful_task(self, coro: Coroutine, *, cancel: bool):
+    def create_graceful_task(self, coro: Coroutine, *, cancel: bool) -> Task:
         task = get_event_loop().create_task(coro)
         task.add_done_callback(self.__pop_task)
         self.__tasks[task] = cancel
         return task
 
-    def __pop_task(self, task: Task):
+    def __pop_task(self, task: Task) -> None:
         self.__tasks.pop(task)
 
-    async def graceful_shutdown(self, *, wait_timeout: float = None):
+    async def graceful_shutdown(self, *, wait_timeout: float = None) -> None:
         if self.__tasks:
             items = list(self.__tasks.items())
             to_cancel = [task for task, cancel in items if cancel]
@@ -29,16 +29,19 @@ class GracefulMixin:
             waiter = self.__wait_tasks(*to_cancel, cancel=True)
             await waiter
 
-            waiter = timeout(wait_timeout)(self.__wait_tasks)(
-                *to_wait, cancel=False,
-            )
+            if wait_timeout is None:
+                waiter = self.__wait_tasks
+            else:
+                waiter = timeout(wait_timeout)(self.__wait_tasks)
+            waiter = waiter(*to_wait, cancel=False)
+
             with suppress(asyncio.TimeoutError):
                 await waiter
 
             self.__tasks.clear()
 
     @staticmethod
-    async def __wait_tasks(*tasks: Task, cancel: bool):
+    async def __wait_tasks(*tasks: Task, cancel: bool) -> None:
         if not tasks:
             return
 
@@ -63,8 +66,8 @@ class GracefulService(Service, GracefulMixin):
 
     graceful_wait_timeout = None  # type: float # in seconds
 
-    async def start(self):
+    async def start(self) -> None:
         raise NotImplementedError
 
-    async def stop(self, exception: Exception = None):
+    async def stop(self, exception: Exception = None) -> None:
         await self.graceful_shutdown(wait_timeout=self.graceful_wait_timeout)
