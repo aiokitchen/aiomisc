@@ -6,7 +6,12 @@ VERSION:=$(shell python3 setup.py --version | sed 's/+/-/g')
 bump:
 	python3 bump.py aiomisc/version.py
 
-sdist: bump
+uml:
+	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
+		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
+		-tsvg -o /mnt/docs/source/_static '/mnt/resources/uml/*/**.puml'
+
+sdist: bump uml
 	rm -fr dist
 	python3 setup.py sdist bdist_wheel
 
@@ -27,3 +32,15 @@ develop: clean
 	python3 -m venv env
 	env/bin/pip install -Ue '.'
 	env/bin/pip install -Ue '.[develop]'
+
+mypy:
+	mypy aiomisc/thread_pool.py
+
+translate:
+	make -C docs/ gettext
+	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
+
+docs: translate
+	make -C docs/ html
+	make -C docs/ -e SPHINXOPTS="-D language='ru'" html
+	python -m webbrowser -t "file://$(shell pwd)/docs/build/html/index.html"

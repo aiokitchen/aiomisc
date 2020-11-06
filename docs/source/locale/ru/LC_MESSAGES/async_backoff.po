@@ -1,0 +1,83 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 10:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/async_backoff.rst:2
+msgid "Async backoff"
+msgstr "Async backoff"
+
+#: ../../source/async_backoff.rst:4
+msgid "Arguments description:"
+msgstr "Описание аргументов:"
+
+#: ../../source/async_backoff.rst:6
+msgid "``attempt_timeout`` is maximum execution time for one execution attempt."
+msgstr "``attempt_timeout`` максимально допустимое время выполнения одной попытки."
+
+#: ../../source/async_backoff.rst:7
+msgid "``deadline`` is maximum execution time for all execution attempts."
+msgstr "``deadline`` максимально допустимое время выполнения всех попыток."
+
+#: ../../source/async_backoff.rst:8
+msgid "``pause`` is time gap between execution attempts."
+msgstr "``pause`` промежуток времени между попытками."
+
+#: ../../source/async_backoff.rst:9
+msgid "``exceptions`` retrying when this exceptions was raised."
+msgstr ""
+"``exceptions`` делает последующие попытки только если эти "
+"будут брошены эти исключения."
+
+#: ../../source/async_backoff.rst:10
+msgid ""
+"``giveup`` (keyword only) is a predicate function which can decide by a "
+"given exception if we should continue to do retries."
+msgstr ""
+"``giveup`` (именовынный аргумент) это функция-предикат, которая может решить "
+"по данному исключению, следует ли нам продолжать повторять попытки."
+
+#: ../../source/async_backoff.rst:12
+msgid ""
+"``max_tries`` (keyword only) is maximum count of execution attempts (>= "
+"1)."
+msgstr ""
+"``max_tries`` (именовынный аргумент) - максимальное количество попыток (> = 1)."
+
+#: ../../source/async_backoff.rst:14
+msgid ""
+"Decorator that ensures that ``attempt_timeout`` and ``deadline`` time "
+"limits are met by decorated function."
+msgstr ""
+"Декоратор, обеспечивающий соблюдение временных ограничений \"attempt_timeout\" "
+"и \"deadline\" декорированной функцией."
+
+#: ../../source/async_backoff.rst:17
+msgid ""
+"In case of exception function will be called again with similar arguments"
+" after ``pause`` seconds."
+msgstr ""
+"В случае возникновения исключения функция будет вызвана снова с аналогичными "
+"аргументами через кол-во секунд переданное в аргументе \"pause\"."
+
+#: ../../source/async_backoff.rst:21
+msgid "Position arguments notation:"
+msgstr "Объявление через позиционные аргументы:"
+
+#: ../../source/async_backoff.rst:47
+msgid "Keyword arguments notation:"
+msgstr "Объявление через именованные аргументы"

@@ -1,0 +1,99 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 00:23+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/index.rst:2
+msgid "aiomisc - miscellaneous utils for asyncio"
+msgstr "aiomisc - это библиотека с различными утилитами для asyncio"
+
+#: ../../source/index.rst:26
+msgid "Miscellaneous utils for asyncio."
+msgstr "Различные утилиты для asyncio"
+
+#: ../../source/index.rst:30
+msgid "Installation"
+msgstr "Установка"
+
+#: ../../source/index.rst:32
+msgid "Installing from pypi:"
+msgstr "Установка с pypi"
+
+#: ../../source/index.rst:38
+msgid "With uvloop_:"
+msgstr "Вместе с uvloop_"
+
+#: ../../source/index.rst:45
+msgid "With aiohttp_:"
+msgstr "Вместе с aiohttp_:"
+
+#: ../../source/index.rst:52
+msgid "Installing from github.com:"
+msgstr "Установка с github.com:"
+
+#: ../../source/index.rst:64
+msgid "Quick Start"
+msgstr "Быстрый старт"
+
+#: ../../source/index.rst:66
+msgid "Async entrypoint with logging and useful arguments:"
+msgstr "Асинхронная точка входа (entrypoint) с логированием и полезными аргументами"
+
+#: ../../source/index.rst:125
+msgid "Install event loop on program start:"
+msgstr "Установка event loop на старте программы:"
+
+#: ../../source/index.rst:148
+msgid "Close current event loop and install a new one:"
+msgstr "Закрываем текущий event loop и устанавлиаем новый:"
+
+#: ../../source/index.rst:165
+msgid "Table Of Contents"
+msgstr "Содержание"
+
+#: ../../source/index.rst:189
+msgid "Versioning"
+msgstr "Версионирование"
+
+#: ../../source/index.rst:191
+msgid "This software follows `Semantic Versioning`_"
+msgstr "Это программное обеспечение следует методологиии `Семантического Версионирования`_"
+
+#: ../../source/index.rst:195
+msgid "How to develop?"
+msgstr "Как начать разработку?"
+
+#: ../../source/index.rst:197
+msgid "Should be installed:"
+msgstr "Должно быть установлено"
+
+#: ../../source/index.rst:199
+msgid "`virtualenv`"
+msgstr "`virtualenv`"
+
+#: ../../source/index.rst:200
+msgid "GNU Make as `make`"
+msgstr "GNU Make как `make`"
+
+#: ../../source/index.rst:201
+msgid "Python 3.5+ as `python3`"
+msgstr "Python 3.5+ как `python3`"
+
+#: ../../source/index.rst:204
+msgid "For setting up developer environment just type"
+msgstr "Для настройки окружения разработчика просто наберите"
+

@@ -4,37 +4,28 @@ name: default
 
 
 steps:
-  - name: linter
-    image: snakepacker/python:pylava
-    pull: always
-    commands:
-      - pylava -o pylava.ini .
-
-  - name: prepare toxenv
+  - name: pylava
     image: snakepacker/python:all
-    group: tests
     pull: always
     commands:
-      - tox --notest
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
+      - tox
+    environment:
+      TOXENV: pylava
 
   - name: checkdoc
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
     environment:
       TOXENV: checkdoc
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.5
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
@@ -42,13 +33,11 @@ steps:
       TOXENV: py35
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.6
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
@@ -56,13 +45,11 @@ steps:
       TOXENV: py36
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.7
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
@@ -70,27 +57,71 @@ steps:
       TOXENV: py37
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: python 3.7 uvloop
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
     environment:
-      TOXENV: uvloop
+      TOXENV: uvloop37
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
+
+  - name: python 3.8
+    image: snakepacker/python:all
+    depends_on:
+      - linter
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: py38
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+
+  - name: python 3.8 uvloop
+    image: snakepacker/python:all
+    depends_on:
+      - linter
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: uvloop38
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+
+  - name: python 3.9
+    image: snakepacker/python:all
+    depends_on:
+      - linter
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: py39
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
+
+  - name: python 3.9 uvloop
+    image: snakepacker/python:all
+    depends_on:
+      - linter
+    pull: always
+    commands:
+      - tox
+    environment:
+      TOXENV: uvloop39
+      COVERALLS_REPO_TOKEN:
+        from_secret: COVERALLS_TOKEN
 
   - name: python 3.6 contextvars
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
@@ -98,13 +129,11 @@ steps:
       TOXENV: contextvars36
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
 
   - name: RPC example
     image: snakepacker/python:all
-    group: tests
+    depends_on:
+      - linter
     pull: always
     commands:
       - tox
@@ -112,32 +141,9 @@ steps:
       TOXENV: rpc
       COVERALLS_REPO_TOKEN:
         from_secret: COVERALLS_TOKEN
-    volumes:
-      - name: cache
-        path: /drone/src/.tox
-
-  - name: notify
-    image: drillster/drone-email
-    settings:
-      host:
-        from_secret: SMTP_HOST
-      username:
-        from_secret: SMTP_USERNAME
-      password:
-        from_secret: SMTP_PASSWORD
-      from:
-        from_secret: SMTP_USERNAME
-      when:
-        status:
-          - changed
-          - failure
-
-volumes:
-  - name: cache
-    temp: {}
 
 ---
 kind: signature
-hmac: 226cb7a3d3028149644cce8d3bd23b0655208fd26adab1b8d25aa68d488d7483
+hmac: ad7b3be9cc94ae4ac82a5c28c1a48bc82dab11a51d502d66d150e2fe76cc9680
 
 ...

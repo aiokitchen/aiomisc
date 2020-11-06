@@ -2,7 +2,8 @@ import asyncio
 import logging
 
 import pytest
-from async_generator import yield_, async_generator
+
+from async_generator import async_generator, yield_
 
 
 @pytest.fixture

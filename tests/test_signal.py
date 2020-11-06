@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from aiomisc import entrypoint, Service, Signal, receiver
+from aiomisc import Service, Signal, entrypoint, receiver
 
 
 @pytest.fixture
@@ -98,11 +98,13 @@ def test_connect_to_frozen_signal(signal):
         signal.connect(cb)
 
 
-@pytest.mark.parametrize('callback', [
-    None,
-    max,
-    lambda x: x
-])
+@pytest.mark.parametrize(
+    "callback", [
+        None,
+        max,
+        lambda x: x,
+    ],
+)
 def test_wrong_callback(signal, callback):
     with pytest.raises(RuntimeError):
         signal.connect(callback)
@@ -128,9 +130,9 @@ async def test_call_arguments(signal):
         nonlocal received_args, received_kwargs
         received_args, received_kwargs = args, kwargs
 
-    await signal.call('foo', 'bar', spam='spam')
-    assert received_args == ('foo', 'bar')
-    assert received_kwargs == {'spam': 'spam'}
+    await signal.call("foo", "bar", spam="spam")
+    assert received_args == ("foo", "bar")
+    assert received_kwargs == {"spam": "spam"}
 
 
 async def multiple_receivers(signal):

@@ -1,0 +1,176 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 00:23+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/threads.rst:2
+msgid "Working with threads"
+msgstr "Работа с потоками"
+
+#: ../../source/threads.rst:4
+msgid ""
+"Wraps blocking function and runs it in the different thread or thread "
+"pool."
+msgstr ""
+"Можно обернуть блокирующую функцию и запустить ее в отдельном потоке "
+"или пуле потоков."
+
+#: ../../source/threads.rst:8
+msgid "contextvars support"
+msgstr "Поддержка contextvars"
+
+#: ../../source/threads.rst:10
+msgid ""
+"All following decorators and functions support ``contextvars`` module, "
+"from PyPI for python earlier 3.7 and builtin standard library for python "
+"3.7."
+msgstr ""
+"Все нижеописанные декоратоы и функции поддерживают модуль ``contextvars``, "
+"из PyPI для python моложе 3.7 так и встроенный в стандартную библиотеку "
+"модуль для python 3.7."
+
+#: ../../source/threads.rst:57
+msgid "Example output:"
+msgstr "Пример вывода"
+
+#: ../../source/threads.rst:70
+msgid ""
+"``contextvars`` has different use cases then ``Context`` class. "
+"``contextvars`` applicable for passing context variables through the "
+"execution stack but created task can not change parent context variables "
+"because ``contextvars`` creates lightweight copy. ``Context`` class "
+"allows it because do not copying context variables."
+msgstr ""
+"``contextvars`` нужны для другого случая нежели класс ``Context``. "
+"``contextvars`` хорошо применимы для передачи контекстных переменных сквозь "
+"стек вызовов, однако дочерние задачи не смогут модифицировать контекстные "
+"переменные родительских задач потому, что ``contextvars`` "
+"делает их \"легкие копии\" перед запуском новой задачи. Класс ``Context`` "
+"наоборот позволяет модификацию отовсюду так как не копирует ничего."
+
+#: ../../source/threads.rst:78
+msgid "@threaded"
+msgstr ""
+
+#: ../../source/threads.rst:80
+msgid "Wraps blocking function and runs it in the current thread pool."
+msgstr "Оборачивает блокирующую функцию и запускает ее в пуле потоков."
+
+#: ../../source/threads.rst:107
+msgid ""
+"In case function is a generator function ``@threaded`` decorator will "
+"return ``IteratorWrapper`` (see Threaded generator decorator)."
+msgstr ""
+"В случае если функция это генератор тогда декоратор ``@threaded`` "
+"вернет ``IteratorWrapper`` (см Threaded generator decorator)."
+
+#: ../../source/threads.rst:112
+msgid "@threaded_separate"
+msgstr ""
+
+#: ../../source/threads.rst:114
+msgid ""
+"Wraps blocking function and runs it in a new separate thread. Highly "
+"recommended for long background tasks:"
+msgstr ""
+"Оборачивает блокирующую функцию и запускает ее в отдельном новом потоке."
+"Крайне рекомендовано для длительных фоновых задач:"
+
+#: ../../source/threads.rst:157
+msgid "Threaded iterator decorator"
+msgstr ""
+
+#: ../../source/threads.rst:159
+msgid ""
+"Wraps blocking generator function and runs it in the current thread pool "
+"or on a new separate thread."
+msgstr ""
+"Оборачивает блокирующую функцию-генератор и запусакет ее в текущем пуле "
+"потоков или новом отдельном потоке."
+
+#: ../../source/threads.rst:162
+msgid ""
+"Following example reads itself file, chains hashes of every line with "
+"hash of previous line and sends hash and content via TCP:"
+msgstr ""
+"Следующий пример читает свой собственный код, и обновляет хеш для каждой "
+"следующей строки от предидущих строк, и отправляет все это по TCP:"
+
+
+#: ../../source/threads.rst:199
+msgid "Run ``netcat`` listener in the terminal and run this example"
+msgstr "Запустим TCP сервер с помощью ``netcat`` в терминале, и после запустим этот пример."
+
+#: ../../source/threads.rst:237
+msgid ""
+"You should use async context managers in case when your generator works "
+"infinity, or you have to await the ``.close()`` method when you avoid "
+"context managers."
+msgstr ""
+"Придется использовать асинхронный контекст-менеджер в случае если генератор "
+"бесконечный или придется явно вызвать и дождаться метода ``.close()`` если вы "
+"избегаете использование асинхронных контекст-менеджеров."
+
+#: ../../source/threads.rst:300
+msgid "aiomisc.IteratorWrapper"
+msgstr ""
+
+#: ../../source/threads.rst:302
+msgid "Run iterables on dedicated thread pool:"
+msgstr "Запускает блокирующий итератор в пуле потоков:"
+
+#: ../../source/threads.rst:345
+msgid "aiomisc.IteratorWrapperSeparate"
+msgstr ""
+
+#: ../../source/threads.rst:347
+msgid "Run iterables on separate thread:"
+msgstr "Запускает блокирующий итераторы в отдельном новом потоке:"
+
+#: ../../source/threads.rst:388
+msgid "aiomisc.ThreadPoolExecutor"
+msgstr ""
+
+#: ../../source/threads.rst:390
+msgid "This is a fast thread pool implementation."
+msgstr "Реализация быстрого и простого пула потоков."
+
+#: ../../source/threads.rst:392
+msgid "Setting as a default thread pool:"
+msgstr "Устанавливаем как пул потоков по умолчанию:"
+
+#: ../../source/threads.rst:406
+msgid "``entrypoint`` context manager will set it by default."
+msgstr "``entrypoint`` установит это по умолчанию."
+
+#: ../../source/threads.rst:408
+msgid "``entrypoint``'s argument ``pool_size`` limits thread pool size."
+msgstr "Аргумент ``pool_size`` в ``entrypoint`` ограничивает кол-во потоков п пуле."
+
+#: ../../source/threads.rst:412
+msgid "aiomisc.sync_wait_coroutine"
+msgstr ""
+
+#: ../../source/threads.rst:414
+msgid ""
+"Functions running in thread can't call and wait result from coroutines by"
+" default. This function is helper for send coroutine to event loop and "
+"wait it in current thread."
+msgstr ""
+"Функции запущенные в потоке не могут вызывать и дожидаться сопрограмм по "
+"умолчанию. Эта функция это хелпер позволяет отправить сопрограмму в event loop "
+"и дождаться ее результата из текущего потока."

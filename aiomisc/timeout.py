@@ -1,25 +1,25 @@
 import asyncio
 from functools import wraps
-from typing import Union, TypeVar
+from typing import Any, Awaitable, Callable, TypeVar, Union
 
 
+T = TypeVar("T")
 Number = Union[int, float]
-T = TypeVar('T')
+FuncType = Callable[..., Awaitable[T]]
 
 
-def timeout(value):
-    def decorator(func):
+def timeout(value: Number) -> Callable[[FuncType], FuncType]:
+    def decorator(
+        func: FuncType,
+    ) -> FuncType:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function is not a coroutine function")
 
         @wraps(func)
-        async def wrap(*args, **kwargs):
-            loop = asyncio.get_event_loop()
-
+        async def wrap(*args: Any, **kwargs: Any) -> T:
             return await asyncio.wait_for(
                 func(*args, **kwargs),
                 timeout=value,
-                loop=loop,
             )
         return wrap
     return decorator

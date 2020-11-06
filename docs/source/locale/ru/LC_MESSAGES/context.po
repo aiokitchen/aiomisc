@@ -1,0 +1,67 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 00:23+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/context.rst:2
+msgid "Context"
+msgstr "Контекст"
+
+#: ../../source/context.rst:4
+msgid ""
+"Services can require each others data. In this case you should use "
+"``Context``."
+msgstr ""
+"Иногда сервисы должны запрашивать данные друг друга. "
+"В этом случае вам следует использовать «Контекст»."
+
+#: ../../source/context.rst:6
+msgid "``Context`` is a repository associated with the running ``entrypoint``."
+msgstr "``Context`` по своей сути это репозиторий ассоциированный с запущенным ``entrypoint``."
+
+#: ../../source/context.rst:8
+msgid ""
+"``Context``-object will be created when ``entrypoint`` starts and linked "
+"to the running event loop."
+msgstr ""
+"Экземпляр класса ``Context`` создается в ``entrypoint`` запускается и "
+"ассоциируется с запущенным event loop."
+
+#: ../../source/context.rst:11
+msgid ""
+"Cross dependent services might await or set each others data via the "
+"context."
+msgstr ""
+"Взаимозависимые сервисы могут ожидать или устанавливать данные друг "
+"друга через контекст."
+
+#: ../../source/context.rst:13
+msgid ""
+"For service instances ``self.context`` is available since ``entrypoint`` "
+"started. In other cases ``get_context()`` function returns current "
+"context."
+msgstr ""
+"Для сервисов контекст доступн как ``self.context`` с момента запуска "
+"Entrypoint. В других случаях функция ``get_context()`` возвращает текущий контекст."
+
+#: ../../source/context.rst:58
+msgid ""
+"It's not a silver bullet. In base case services can be configured by "
+"passing kwargs to the service ``__init__`` method."
+msgstr ""
+"Это не панацея. В простом случае службы можно настроить, передав "
+"kwargs в ``__init__``."

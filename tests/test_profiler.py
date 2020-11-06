@@ -23,7 +23,7 @@ async def test_profiler_dump():
     try:
         profiler = Profiler(
             interval=0.1, top_results=10,
-            path=path
+            path=path,
         )
         await profiler.start()
 

@@ -1,0 +1,68 @@
+@startuml
+title: State transition flow
+
+legend
+CircuitBereaker(error_rate=0.5, recovery_time=10)
+end legend
+
+robust "Actual error rate" as err
+robust "Call result" as cr
+concise "Effective state" as es
+
+@0
+es is PASSING #ccffcc: passing_time
+cr is OK
+err is 0.0
+
+@+5
+err is 0.4
+cr is {OK,ERROR}
+@+5
+err is 0.5
+es is BROKEN #ffcccc: broken_time
+cr is CircuitBroken
+
+@+10
+es is RECOVERING #ffffcc: recovery_time
+cr is {OK,CircuitBroken}
+
+@+5
+err is 0.4
+cr is OK
+
+@+5
+es is PASSING #ccffcc
+cr is OK
+
+@+5
+err is 0.6
+cr is {OK,ERROR}
+
+@+5
+es is BROKEN #ffcccc
+cr is CircuitBroken
+
+@+10
+es is RECOVERING #ffffcc
+cr is {ERROR,CircuitBroken}
+
+@+5
+err is 0.7
+
+@+5
+es is BROKEN #ffcccc
+
+@+10
+es is RECOVERING #ffffcc
+cr is {OK,CircuitBroken}
+
+@+5
+err is 0.4
+cr is OK
+
+@+5
+es is PASSING #ccffcc
+
+@+5
+
+@enduml

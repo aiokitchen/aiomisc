@@ -2,11 +2,11 @@ import asyncio
 import concurrent.futures
 import os
 import ssl
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
-import time
 
 import aiomisc
 
@@ -45,8 +45,8 @@ thread_pool_implementation = (
 
 
 thread_pool_ids = (
-    'aiomisc pool',
-    'default pool',
+    "aiomisc pool",
+    "default pool",
 )
 
 
@@ -56,11 +56,11 @@ def thread_pool_executor(request):
 
 
 policies = (asyncio.DefaultEventLoopPolicy(),)
-policy_ids = ('asyncio',)
+policy_ids = ("asyncio",)
 
 if uvloop:
     policies = (uvloop.EventLoopPolicy(),) + policies
-    policy_ids = ('uvloop',) + policy_ids
+    policy_ids = ("uvloop",) + policy_ids
 
 
 @pytest.fixture(params=policies, ids=policy_ids)
@@ -70,14 +70,14 @@ def event_loop_policy(request):
 
 @pytest.fixture()
 def certs():
-    return Path(os.path.dirname(os.path.abspath(__file__))) / 'certs'
+    return Path(os.path.dirname(os.path.abspath(__file__))) / "certs"
 
 
 @pytest.fixture(params=(ssl.Purpose.SERVER_AUTH, ssl.Purpose.CLIENT_AUTH))
 def ssl_client_context(request, certs):
-    ca = str(certs / 'ca.pem')
-    key = str(certs / 'client.key')
-    cert = str(certs / 'client.pem')
+    ca = str(certs / "ca.pem")
+    key = str(certs / "client.key")
+    cert = str(certs / "client.pem")
 
     context = ssl.create_default_context(request.param, capath=ca)
 

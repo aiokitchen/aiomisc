@@ -2,31 +2,29 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
-from functools import wraps, partial
+from functools import wraps
 from multiprocessing import cpu_count
-from types import CoroutineType
-from typing import Any, Iterable, Tuple
+from typing import (
+    Any, Awaitable, Callable, Iterable, List, Optional, Tuple, TypeVar, Union,
+)
+
+from .thread_pool import ThreadPoolExecutor
+
+
+T = TypeVar("T")
+TimeoutType = Union[int, float]
 
 try:
-    from typing import Coroutine
-except ImportError:
-    Coroutine = CoroutineType
-
-
-try:
-    import uvloop
+    import uvloop  # type: ignore
     event_loop_policy = uvloop.EventLoopPolicy()
 except ImportError:
     event_loop_policy = asyncio.DefaultEventLoopPolicy()
 
 
-from .thread_pool import ThreadPoolExecutor
-
-
 log = logging.getLogger(__name__)
 
 
-def chunk_list(iterable: Iterable[Any], size: int):
+def chunk_list(iterable: Iterable[T], size: int) -> Iterable[List[T]]:
     """
     Split list or generator by chunks with fixed maximum size.
     """
@@ -42,10 +40,15 @@ def chunk_list(iterable: Iterable[Any], size: int):
 OptionsType = Iterable[Tuple[int, int, int]]
 
 
-def bind_socket(*args, address: str, port: int, options: OptionsType = (),
-                reuse_addr: bool = True, reuse_port: bool = False,
-                proto_name: str = 'tcp'):
+def bind_socket(
+    *args: Any, address: str, port: int, options: OptionsType = (),
+    reuse_addr: bool = True, reuse_port: bool = False,
+    proto_name: str = "tcp"
+) -> socket.socket:
     """
+
+    Bind socket and set ``setblocking(False)`` for just created socket.
+    This detects ``address`` format and select socket family automatically.
 
     :param args: which will be passed to stdlib's socket constructor (optional)
     :param address: bind address
@@ -59,7 +62,7 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     """
 
     if not args:
-        if ':' in address:
+        if ":" in address:
             args = (socket.AF_INET6, socket.SOCK_STREAM)
         else:
             args = (socket.AF_INET, socket.SOCK_STREAM)
@@ -68,10 +71,10 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     sock.setblocking(False)
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
-    if hasattr(socket, 'SO_REUSEPORT'):
+    if hasattr(socket, "SO_REUSEPORT"):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
     else:
-        log.warning('SO_REUSEPORT is not implemented by underlying library.')
+        log.warning("SO_REUSEPORT is not implemented by underlying library.")
 
     for level, option, value in options:
         sock.setsockopt(level, option, value)
@@ -80,15 +83,25 @@ def bind_socket(*args, address: str, port: int, options: OptionsType = (),
     sock_addr = sock.getsockname()[:2]
 
     if sock.family == socket.AF_INET6:
-        log.info('Listening %s://[%s]:%s', proto_name, *sock_addr)
+        log.info("Listening %s://[%s]:%s", proto_name, *sock_addr)
     else:
-        log.info('Listening %s://%s:%s', proto_name, *sock_addr)
+        log.info("Listening %s://%s:%s", proto_name, *sock_addr)
 
     return sock
 
 
-def create_default_event_loop(pool_size=None, policy=event_loop_policy,
-                              debug=False):
+def create_default_event_loop(
+    pool_size: Optional[int] = None,
+    policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
+    debug: bool = False,
+) -> Tuple[asyncio.AbstractEventLoop, ThreadPoolExecutor]:
+    """
+    Creates an event loop and thread pool executor
+
+    :param pool_size: thread pool maximal size
+    :param policy: event loop policy
+    :param debug: set ``loop.set_debug(True)`` if True
+    """
     try:
         asyncio.get_event_loop().close()
     except RuntimeError:
@@ -101,19 +114,21 @@ def create_default_event_loop(pool_size=None, policy=event_loop_policy,
     asyncio.set_event_loop(loop)
 
     pool_size = pool_size or cpu_count()
-    thread_pool = ThreadPoolExecutor(pool_size, loop=loop)
+    thread_pool = ThreadPoolExecutor(pool_size)
     loop.set_default_executor(thread_pool)
 
     return loop, thread_pool
 
 
-def new_event_loop(pool_size=None,
-                   policy=event_loop_policy) -> asyncio.AbstractEventLoop:
+def new_event_loop(
+    pool_size: Optional[int] = None,
+    policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
+) -> asyncio.AbstractEventLoop:
     loop, thread_pool = create_default_event_loop(pool_size, policy)
     return loop
 
 
-def shield(func):
+def shield(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
     """
     Simple and useful decorator for wrap the coroutine to `asyncio.shield`.
 
@@ -123,24 +138,24 @@ def shield(func):
 
     """
 
-    async def awaiter(future):
+    async def awaiter(future: Awaitable[Any]) -> Any:
         return await future
 
     @wraps(func)
-    def wrap(*args, **kwargs):
+    def wrap(*args: Any, **kwargs: Any) -> Awaitable[Any]:
         return wraps(func)(awaiter)(asyncio.shield(func(*args, **kwargs)))
 
     return wrap
 
 
 class SelectResult:
-    def __init__(self, length):
+    def __init__(self, length: int):
         self.length = length
-        self.result_idx = None
-        self.is_exception = None
-        self.value = None
+        self.result_idx = None      # type: Optional[int]
+        self.is_exception = None    # type: Optional[bool]
+        self.value = None           # type: Any
 
-    def set_result(self, idx, value, is_exception):
+    def set_result(self, idx: int, value: Any, is_exception: bool) -> None:
         if self.result_idx is not None:
             return
 
@@ -148,32 +163,70 @@ class SelectResult:
         self.result_idx = idx
         self.is_exception = is_exception
 
-    def result(self):
+    def result(self) -> T:
         if self.is_exception:
             raise self.value
         return self.value
 
-    def done(self):
+    def done(self) -> bool:
         return self.result_idx is not None
 
-    def __iter__(self):
-        for i in range(self.length - 1):
+    def __iter__(self) -> Iterable[Optional[T]]:
+        for i in range(self.length):
             if i == self.result_idx:
                 yield self.value
-            yield None
+            else:
+                yield None
 
 
-def cancel_tasks(tasks: Iterable[asyncio.Task]) -> Iterable[asyncio.Task]:
+def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
+    """
+    All passed tasks will be cancelled and a new task will be returned.
+
+    :param tasks: tasks which will be cancelled
+    """
+
+    future = asyncio.get_event_loop().create_future()
+    future.set_result(None)
+
     if not tasks:
-        return []
+        return future
+
+    cancelled_tasks = []
+    exc = asyncio.CancelledError()
 
     for task in tasks:
-        task.cancel()
+        if task.done():
+            continue
 
-    return tasks
+        if isinstance(task, asyncio.Task):
+            task.cancel()
+            cancelled_tasks.append(task)
+
+        elif isinstance(task, asyncio.Future):
+            task.set_exception(exc)
+
+        else:
+            log.warning(
+                "Skipping object %r because it's not a Task or Future", task,
+            )
+
+    if not cancelled_tasks:
+        return future
+
+    waiter = asyncio.ensure_future(
+        asyncio.gather(
+            *cancelled_tasks, return_exceptions=True
+        ),
+    )
+
+    return waiter
 
 
-async def _select_waiter(idx, awaitable, result):
+async def _select_waiter(
+    idx: int, awaitable: Awaitable[T],
+    result: SelectResult
+) -> None:
     try:
         ret = await awaitable
     except asyncio.CancelledError:
@@ -184,24 +237,36 @@ async def _select_waiter(idx, awaitable, result):
     result.set_result(idx, ret, is_exception=False)
 
 
-async def select(*awaitables, return_exceptions=False, cancel=True,
-                 timeout=None, wait=True, loop=None) -> SelectResult:
+async def select(
+    *awaitables: Awaitable[Any],
+    return_exceptions: bool = False, cancel: bool = True,
+    timeout: Optional[TimeoutType] = None,
+    wait: bool = True, loop: Optional[asyncio.AbstractEventLoop] = None
+) -> SelectResult:
+    """
+
+    :param awaitables: aswaitable objects
+    :param return_exceptions: if True exception will not be raised
+                              just returned as result
+    :param cancel: cancel unfinished coroutines (default True)
+    :param timeout: execution timeout
+    :param wait: when False and ``cancel=True``, unfinished coroutines will
+                 be cancelled in the background.
+    :param loop: event loop
+    """
 
     loop = loop or asyncio.get_event_loop()
     result = SelectResult(len(awaitables))
 
-    def waiter(args):
-        return _select_waiter(*args, result=result)
-
-    ensure_future = partial(asyncio.ensure_future, loop=loop)
+    coroutines = [
+        loop.create_task(_select_waiter(idx, coroutine, result))
+        for idx, coroutine in enumerate(awaitables)
+    ]
 
     _, pending = await loop.create_task(
         asyncio.wait(
-            map(
-                loop.create_task,
-                map(waiter, enumerate(map(ensure_future, awaitables)))
-            ),
-            timeout=timeout, loop=loop,
+            coroutines,
+            timeout=timeout,
             return_when=asyncio.FIRST_COMPLETED,
         ),
     )
@@ -209,17 +274,46 @@ async def select(*awaitables, return_exceptions=False, cancel=True,
     if cancel:
         cancelling = cancel_tasks(pending)
 
-        cancel_task = asyncio.ensure_future(
-            asyncio.gather(
-                *cancelling, loop=loop, return_exceptions=True
-            ),
-            loop=loop
-        )
-
         if wait:
-            await cancel_task
+            await cancelling
 
     if result.is_exception and not return_exceptions:
         result.result()
 
     return result
+
+
+def awaitable(
+    func: Callable[..., Union[T, Awaitable[T]]],
+) -> Callable[..., Awaitable[T]]:
+    """
+
+    Decorator wraps function and returns a function which returns
+    awaitable object. In case than a function returns a future,
+    the original future will be returned. In case then the function
+    returns a coroutine, the original coroutine will be returned.
+    In case than function returns non-awaitable object, it's will
+    be wrapped to a new coroutine which just returns this object.
+    It's useful when you don't want to check function result before
+    use it in ``await`` expression.
+    """
+
+    # Avoid python 3.8+ warning
+    if asyncio.iscoroutinefunction(func):
+        return func     # type: ignore
+
+    async def awaiter(obj: T) -> T:
+        return obj
+
+    @wraps(func)
+    def wrap(*args: Any, **kwargs: Any) -> Awaitable[T]:
+        result = func(*args, **kwargs)
+
+        if hasattr(result, "__await__"):
+            return result       # type: ignore
+        if asyncio.iscoroutine(result) or asyncio.isfuture(result):
+            return result       # type: ignore
+
+        return awaiter(result)  # type: ignore
+
+    return wrap

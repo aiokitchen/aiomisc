@@ -137,7 +137,6 @@ fabric.properties
 /temp
 .DS_Store
 
-/*/version.py
 
 .pytest_cache
 
@@ -164,3 +163,4 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/vim
+.mypy_cache

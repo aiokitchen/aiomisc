@@ -17,7 +17,7 @@ async def test_kwargs(loop):
         attempt_timeout=0.5,
         deadline=0.5,
         pause=0,
-        exceptions=(Exception,)
+        exceptions=(Exception,),
     )
     async def test():
         nonlocal mana
@@ -170,7 +170,7 @@ async def test_no_waterline(loop):
     assert mana == 5
 
 
-@pytest.mark.parametrize('max_sleep', (0.5, 1))
+@pytest.mark.parametrize("max_sleep", (0.5, 1))
 async def test_no_deadline(loop, max_sleep):
     mana = 0
 
@@ -227,7 +227,7 @@ async def test_too_long_multiple(loop):
     assert mana < 3.8
 
 
-@pytest.mark.parametrize('max_tries', (1, 2, 5))
+@pytest.mark.parametrize("max_tries", (1, 2, 5))
 async def test_max_tries(loop, max_tries):
     mana = 0
 
@@ -243,7 +243,7 @@ async def test_max_tries(loop, max_tries):
     assert mana == max_tries
 
 
-@pytest.mark.parametrize('max_mana', (1, 2, 5))
+@pytest.mark.parametrize("max_mana", (1, 2, 5))
 async def test_giveup(loop, max_mana):
     mana = 0
     giveup_exception = None
@@ -264,3 +264,23 @@ async def test_giveup(loop, max_mana):
 
     assert giveup_exception is e.value
     assert mana == max_mana
+
+
+async def test_last_exception_is_last(loop):
+    mana = 0
+
+    class TestExc(Exception):
+        pass
+
+    @aiomisc.asyncbackoff(1, 2, 0)
+    async def test():
+        nonlocal mana
+
+        if mana == 0:
+            mana += 1
+            await asyncio.sleep(1.5)  # causes TimeoutError on first try
+
+        raise TestExc  # this is last exception actually
+
+    with pytest.raises(TestExc):
+        await test()

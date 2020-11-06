@@ -1,0 +1,264 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 11.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-01 14:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/services.rst:2
+msgid "Services"
+msgstr "Сервисы"
+
+#: ../../source/services.rst:4
+msgid ""
+"``Services`` is abstraction to help organize lots of different tasks in "
+"one process. Each service must implement ``start()`` method and can "
+"implement ``stop()`` method."
+msgstr ""
+"``Сервисы`` - это абстракция, помогающая организовать множество различных"
+" задач в одном процессе. Каждый сервис должен реализовывать обязательный "
+"метод ``start()`` и опционально метод stop ()."
+
+#: ../../source/services.rst:8
+msgid ""
+"Service instance should be passed to the ``entrypoint``, and will be "
+"started after event loop has been created."
+msgstr ""
+"Экземпляр сервиса должен быть передан в «точку входа» (entrypoint) и "
+"будет запущен после создания event loop."
+
+#: ../../source/services.rst:13
+msgid ""
+"Current event-loop will be set before ``start()`` method called. The "
+"event loop will be set as current for this thread."
+msgstr ""
+"Текущий event-loop будет установлен до вызова метода `start()`. Event "
+"loop будет установлен для этого потока."
+
+#: ../../source/services.rst:16
+msgid ""
+"Please avoid using ``asyncio.get_event_loop()`` explicitly inside "
+"``start()`` method. Use ``self.loop`` instead:"
+msgstr ""
+"Пожалуйста, избегайте использования ``asyncio.get_event_loop()`` явно "
+"внутри метода ``start()``. Вместо этого используйте атрибут сервиса "
+"``self.loop``:"
+
+#: ../../source/services.rst:37
+msgid ""
+"Method ``start()`` creates as a separate task that can run forever. But "
+"in this case ``self.start_event.set()`` should be called for notifying "
+"``entrypoint``."
+msgstr ""
+"Метод ``start()`` создается как отдельная задача, которая может "
+"выполняться бесконечно. Но в этом случае необходимо утановить событие "
+"вызовом ``self.start_event.set()`` для уведомления entrypoint об "
+"окончании запуска."
+
+#: ../../source/services.rst:41
+msgid ""
+"During graceful shutdown method ``stop()`` will be called first, and "
+"after that all running tasks will be cancelled (including ``start()``)."
+msgstr ""
+"Во время завершения работы сначала будет вызван метод ``stop()``, а после"
+" этого все запущенные задачи будут отменены (включая ``start()``)."
+
+#: ../../source/services.rst:45
+msgid ""
+"This package contains some useful base classes for simple services "
+"writing."
+msgstr ""
+"Этот пакет содержит несколько полезных базовых классов для написания "
+"простых сервисов."
+
+#: ../../source/services.rst:48
+msgid "TCPServer"
+msgstr "Класс TCPServer"
+
+#: ../../source/services.rst:50
+msgid ""
+"``TCPServer`` - it's a base class for writing TCP servers. Just implement"
+" ``handle_client(reader, writer)`` to use it."
+msgstr ""
+"``TCPServer`` - это базовый класс для реализации TCP сервера. Просто "
+"реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
+"соединения."
+
+#: ../../source/services.rst:67
+msgid "UDPServer"
+msgstr "Класс UDPServer"
+
+#: ../../source/services.rst:69
+msgid ""
+"``UDPServer`` - it's a base class for writing UDP servers. Just implement"
+" ``handle_datagram(data, addr)`` to use it."
+msgstr ""
+"``UDPServer`` - это базовый класс для реализации UDP сервера. Просто "
+"реализуйте ``handle_datagram(data, addr)``, чтобы принимать UDP "
+"соединения."
+
+#: ../../source/services.rst:84
+msgid "TLSServer"
+msgstr "Класс TLSServer"
+
+#: ../../source/services.rst:86
+msgid ""
+"``TLSServer`` - it's a base class for writing TCP servers with TLS. Just "
+"implement ``handle_client(reader, writer)`` to use it."
+msgstr ""
+"TLSServer - это базовый класс для написания TCP-серверов с использованием"
+" TLS. Просто реализуйте ``handle_client(reader, writer)``."
+
+#: ../../source/services.rst:111
+msgid "PeriodicService"
+msgstr "Класс PeriodicService"
+
+#: ../../source/services.rst:113
+msgid ""
+"``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for "
+"running callback to complete on stop. You need to use ``PeriodicService``"
+" as a base class and override ``callback`` async coroutine method."
+msgstr ""
+"PeriodicService запускает PeriodicCallback как сервис и ожидает "
+"завершения обратного вызова при остановке. Вам необходимо использовать "
+"PeriodicService в качестве базового класса и переопределить асинхронный "
+"метод callback."
+
+#: ../../source/services.rst:117
+msgid ""
+"Service class accepts required ``interval`` argument - periodic interval "
+"in seconds and optional ``delay`` argument - periodic execution delay in "
+"seconds (0 by default)."
+msgstr ""
+"Сервисный класс принимает обязательный аргумент ``interval`` - интервал "
+"запуска в секундах и необязательный аргумент ``delay`` - задержку первого"
+" выполнения в секундах (по умолчанию 0)."
+
+#: ../../source/services.rst:139
+msgid "CronService"
+msgstr "Класс CronService"
+
+#: ../../source/services.rst:143
+msgid ""
+"``CronService`` runs ``CronCallback's`` as a service and waits for "
+"running callbacks to complete on stop."
+msgstr ""
+"``CronService`` запускает ``CronCallback`` в качестве сервиса и ожидает "
+"завершения выполнения обратных вызовов при остановке."
+
+#: ../../source/services.rst:146
+msgid ""
+"It's based on croniter_. You can register async coroutine method with "
+"``spec`` argument - cron like format:"
+msgstr ""
+"Основан на croniter_. Вы можете зарегистрировать асинхронный метод с "
+"аргументом ``spec`` - формат, подобный cron:"
+
+#: ../../source/services.rst:150
+msgid "requires installed croniter_:"
+msgstr "необходимо установить библиотеку croniter_:"
+
+#: ../../source/services.rst:156 ../../source/services.rst:296
+msgid "or using extras:"
+msgstr "или как дополнительную зависимость"
+
+#: ../../source/services.rst:180
+msgid ""
+"You can also inherit from ``CronService``, but remember that callback "
+"registration should be proceeded before start"
+msgstr ""
+"Вы также можете наследовать от ``CronService``, но помните, что регистрация "
+"обратного вызова должна выполняться до запуска"
+
+#: ../../source/services.rst:205
+msgid "Multiple services"
+msgstr "Несколько сервисов"
+
+#: ../../source/services.rst:207
+msgid ""
+"Pass several service instances to the ``entrypoint`` to run all of them. "
+"After exiting the entrypoint service instances will be gracefully shut "
+"down."
+msgstr ""
+"Передайте несколько экземпляров сервиса в ``entrypoint``, чтобы запустить "
+"их все сразу. После выхода экземпляры сервиса точки входа будут "
+"корректно закрыты вызовом метода ``stop()`` или через "
+"отмену метода ``start()``."
+
+#: ../../source/services.rst:246
+msgid "Configuration"
+msgstr "Конфигурация"
+
+#: ../../source/services.rst:248
+msgid ""
+"``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
+"attributes."
+msgstr ""
+"Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
+"и устанавливает из как атрибуты в ``self``."
+
+#: ../../source/services.rst:286
+msgid "aiohttp service"
+msgstr "aiohttp сервис"
+
+#: ../../source/services.rst:290
+msgid "requires installed aiohttp:"
+msgstr "требуется установленная библиоткеа aiohttp"
+
+#: ../../source/services.rst:303
+msgid "aiohttp application can be started as a service:"
+msgstr "Приложение aiohttp может быть запущено как сервис:"
+
+#: ../../source/services.rst:345
+msgid ""
+"Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
+"HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
+"class)."
+msgstr ""
+"Класс ``AIOHTTPSSLService`` похож на ``AIOHTTPService``, "
+"но создает HTTPS сервер. Вы должны передать требуемые для "
+"SSL параметры (см. Класс TLSServer)."
+
+#: ../../source/services.rst:349
+msgid "Memory Tracer"
+msgstr "Трассировщик памяти"
+
+#: ../../source/services.rst:351
+msgid ""
+"Simple and useful service for logging large python objects allocated in "
+"memory."
+msgstr ""
+"Простой и полезный сервис для логирования больших "
+"объектов Python, размещенных в памяти."
+
+#: ../../source/services.rst:375 ../../source/services.rst:422
+msgid "Output example:"
+msgstr "Пример вывода:"
+
+#: ../../source/services.rst:397
+msgid "Profiler"
+msgstr "Профилировщик"
+
+#: ../../source/services.rst:399
+msgid ""
+"Simple service for profiling. Optional `path` argument can be provided to"
+" dump complete profiling data, which can be later used by, for example, "
+"snakeviz. Also can change ordering with `order` argument (\"cumulative\" "
+"by default)."
+msgstr ""
+"Простой сервис для профилирования. Необязательный аргумент `path` может быть "
+"предоставлен для выгрузки полных данных профилирования, которые позже могут "
+"быть использованы, например, snakeviz. Также можно изменить порядок с "
+"аргументом ``order`` (по умолчанию \"cumulative\")."

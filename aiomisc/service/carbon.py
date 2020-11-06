@@ -1,13 +1,13 @@
-import re
 import logging
+import re
+import typing as t  # noqa
 from types import MappingProxyType
-from typing import List     # NOQA
 
-from aiocarbon.protocol.pickle import PickleClient
-from aiocarbon.protocol.tcp import TCPClient
-from aiocarbon.protocol.udp import UDPClient
-from aiocarbon.storage import TotalStorage
-from aiocarbon.setup import set_client
+from aiocarbon.protocol.pickle import PickleClient  # type: ignore
+from aiocarbon.protocol.tcp import TCPClient  # type: ignore
+from aiocarbon.protocol.udp import UDPClient  # type: ignore
+from aiocarbon.setup import set_client  # type: ignore
+from aiocarbon.storage import TotalStorage  # type: ignore
 
 from aiomisc.periodic import PeriodicCallback
 from aiomisc.service import Service
@@ -16,8 +16,8 @@ from aiomisc.service import Service
 log = logging.getLogger(__name__)
 
 
-def strip_carbon_ns(string):
-    return re.sub(r'[^\w\d\-]+', '_', string).strip("_").lower()
+def strip_carbon_ns(string: str) -> str:
+    return re.sub(r"[^\w\d\-]+", "_", string).strip("_").lower()
 
 
 PROTOCOLS = MappingProxyType({
@@ -28,15 +28,15 @@ PROTOCOLS = MappingProxyType({
 
 
 class CarbonSender(Service):
-    host = '127.0.0.1'          # type: str
+    host = "127.0.0.1"          # type: str
     port = 2003                 # type: int
     send_interval = 5           # type: int
-    protocol = 'udp'            # type: str
-    namespace = ''              # type: List[str]
+    protocol = "udp"            # type: str
+    namespace = ("",)           # type: t.Iterable[str]
     storage = TotalStorage
     _handle = None              # type: PeriodicCallback
 
-    async def start(self):
+    async def start(self) -> None:
         namespace = ".".join(
             strip_carbon_ns(item) for item in self.namespace
         )
@@ -46,7 +46,6 @@ class CarbonSender(Service):
             self.port,
             namespace=namespace,
             storage=self.storage(),
-            loop=self.loop
         )
 
         set_client(client)
@@ -54,9 +53,10 @@ class CarbonSender(Service):
         self._handle = PeriodicCallback(client.send)
         self._handle.start(self.send_interval, loop=self.loop)
         log.info(
-            'Periodic carbon metrics sender started. Send to %s://%s:%d with '
-            'interval %rs', self.protocol, self.host, self.port,
-            self.send_interval)
+            "Periodic carbon metrics sender started. Send to %s://%s:%d with "
+            "interval %rs", self.protocol, self.host, self.port,
+            self.send_interval,
+        )
 
-    async def stop(self, *_):
+    async def stop(self, exc: Exception = None) -> None:
         self._handle.stop()

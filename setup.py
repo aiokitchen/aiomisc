@@ -49,9 +49,12 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
     packages=find_packages(exclude=['tests']),
+    package_data={"aiomisc": ["py.typed"]},
     install_requires=load_requirements('requirements.txt'),
     extras_require={
         'aiohttp': ['aiohttp'],
@@ -59,7 +62,8 @@ setup(
         'contextvars': ['contextvars~=2.4'],
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
-        'uvloop': ['uvloop<1'],
+        'uvloop': ['uvloop>=0.14,<1'],
+        'cron': ['croniter~=0.3.34'],
         ':python_version < "3.7"': 'async-generator',
     },
     entry_points={

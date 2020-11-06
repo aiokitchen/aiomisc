@@ -1,21 +1,24 @@
 import asyncio
 import socket
+import typing as t
 from functools import partial
 
+from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
-from ..utils import OptionsType, bind_socket
 
 
 class TCPServer(SimpleServer):
-    PROTO_NAME = 'tcp'
+    PROTO_NAME = "tcp"
 
-    def __init__(self, address: str = None, port: int = None,
-                 options: OptionsType = (), sock=None, **kwargs):
+    def __init__(
+        self, address: str = None, port: int = None,
+        options: OptionsType = (), sock: socket.socket = None, **kwargs: t.Any
+    ):
         if not sock:
             if not (address and port):
                 raise RuntimeError(
-                    'You should pass socket instance or '
-                    '"address" and "port" couple'
+                    "You should pass socket instance or "
+                    '"address" and "port" couple',
                 )
 
             self.make_socket = partial(
@@ -25,26 +28,35 @@ class TCPServer(SimpleServer):
                 options=options,
             )
         elif not isinstance(sock, socket.socket):
-            raise ValueError('sock must be socket instance')
+            raise ValueError("sock must be socket instance")
         else:
-            self.make_socket = lambda: sock
+            self.make_socket = lambda: sock     # type: ignore
 
-        self.socket = None
+        self.socket = None      # type: t.Optional[socket.socket]
 
         super().__init__(**kwargs)
 
-    async def handle_client(self, reader: asyncio.StreamReader,
-                            writer: asyncio.StreamWriter):
+    async def handle_client(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter
+    ) -> t.Any:
         raise NotImplementedError
 
-    async def start(self):
+    def make_client_handler(
+        self, reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
+    ) -> t.Any:
+        return self.create_task(awaitable(self.handle_client)(reader, writer))
+
+    async def start(self) -> None:
         self.socket = self.make_socket()
         self.server = await asyncio.start_server(
-            self.handle_client,
+            self.make_client_handler,
             sock=self.socket,
-            loop=self.loop,
         )
 
-    async def stop(self, exc: Exception = None):
+    async def stop(self, exc: Exception = None) -> None:
         await super().stop(exc)
-        await self.server.wait_closed()
+
+        if self.server:
+            await self.server.wait_closed()
