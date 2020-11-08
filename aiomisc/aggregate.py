@@ -1,17 +1,18 @@
+import asyncio
 import inspect
-from asyncio import Future, wait
+from asyncio import Future, wait, Event
 from inspect import Parameter
 from time import monotonic
-from typing import List, Optional, Callable, Any, Awaitable
+from typing import List, Optional, Callable, Any, Awaitable, Iterable
 
-AggFunc = Callable[[...], Awaitable]
+AggFunc = Callable[[Any], Awaitable[Iterable]]
 
 
 class Aggregator:
 
     def __init__(
             self, func: AggFunc, *,
-            max_count: int, leeway_ms: float,
+            leeway_ms: float, max_count: int = None,
     ):
         has_variadic_positional = any((
             parameter.kind == Parameter.VAR_POSITIONAL
@@ -19,24 +20,25 @@ class Aggregator:
         ))
         if not has_variadic_positional:
             raise ValueError(
-                'Function must accept variadic positional arguments',
+                "Function must accept variadic positional arguments",
             )
 
-        if max_count <= 0:
-            raise ValueError('max_count must be positive int')
+        if max_count is not None and max_count <= 0:
+            raise ValueError("max_count must be positive int or None")
 
-        if leeway_ms < 0:
-            raise ValueError('leeway_ms must be non-negative float')
+        if leeway_ms <= 0:
+            raise ValueError("leeway_ms must be positive float")
 
         self._func = func
         self._max_count = max_count
         self._leeway = leeway_ms / 1000
-        self._t = None      # type: Optional[float]
-        self._args = []     # type: list
-        self._futures = []  # type: List[Future]
+        self._t = None          # type: Optional[float]
+        self._args = []         # type: list
+        self._futures = []      # type: List[Future]
+        self._event = Event()   # type: Event
 
     @property
-    def max_count(self) -> int:
+    def max_count(self) -> Optional[int]:
         return self._max_count
 
     @property
@@ -51,48 +53,80 @@ class Aggregator:
         self._t = None
         self._args = []
         self._futures = []
+        self._event.clear()
 
-    async def _execute(self) -> None:
-        futures, args = self._futures, self._args
-        self._clear()
+    async def _execute(self, *, args: list, futures: List[Future]) -> None:
         try:
             results = await self._func(*args)
         except Exception as e:
-            for future in futures:
-                future.set_exception(e)
+            self._set_exception(e, futures)
             return
 
+        self._set_results(results, futures)
+
+    def _set_results(self, results: Iterable, futures: List[Future]) -> None:
         for future, result in zip(futures, results):
             future.set_result(result)
+
+    def _set_exception(
+            self, exc: Exception, futures: List[Future],
+    ) -> None:
+        for future in futures:
+            future.set_exception(exc)
 
     async def aggregate(self, arg: Any) -> Any:
         if not self._t:
             self._t = monotonic()
+        t = self._t
 
         self._args.append(arg)
-        future = Future()
+        future = Future()   # type: Future
         first = not self._futures
         self._futures.append(future)
 
         if self.count == self.max_count:
-            await self._execute()
+            self._event.set()
+            self._clear()
 
+        # TODO: fix
+        # If first cancelled, then, all will be cancelled.
+        # Need to make sure that each can execute aggregated function
         if first:
-            timeout = self._t + self._leeway - monotonic()
-            done, pending = await wait([future], timeout=timeout)
-            if pending:
-                await self._execute()
+            futures, args = self._futures, self._args
+            timeout = t + self._leeway - monotonic()
+            try:
+                await wait([self._event.wait()], timeout=timeout)
+                self._clear()
+                await self._execute(args=args, futures=futures)
+            except asyncio.TimeoutError:
+                self._clear()
+                raise
 
         await future
         return future.result()
 
 
-def aggregate(max_count: int, leeway_ms: float):
-    def outer(func: AggFunc) -> Any:
+def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
+    """
+    Parametric decorator that aggregates multiple
+    (but no more than ``max_count``) single-argument executions
+    (``res1 = func(arg1)``, ``res2 = func(arg2)``, ...)
+    of the function with variadic positional arguments
+    (``def func(*args, pho=1, bo=2) -> Iterable``)
+    into its single execution with multiple positional arguments
+    (``res1, res2, ... = func(arg1, arg2, ...)``) collected within a time
+    window ``leeway_ms``.
+    :param leeway_ms: The maximum approximate delay between the first
+    collected argument and the aggregated execution.
+    :param max_count: The maximum number of arguments to call decorated
+    function with. Default ``None``.
+    :return:
+    """
+    def decorator(func: AggFunc) -> Any:
         aggregator = Aggregator(func, max_count=max_count, leeway_ms=leeway_ms)
 
-        async def inner(arg: Any) -> Any:
+        async def wrap(arg: Any) -> Any:
             return await aggregator.aggregate(arg)
-        return inner
+        return wrap
 
-    return outer
+    return decorator
