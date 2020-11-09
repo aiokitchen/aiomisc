@@ -1,15 +1,11 @@
-from typing import Callable, Any
-
 from aiohttp.web import Application
 from aiohttp_asgi import ASGIResource
+from aiohttp_asgi.resource import ASGIApplicationType
 
-from aiomisc.service.aiohttp import AIOHTTPService, AIOHTTPSSLService
-
-
-ASGIApplicationType = Callable[..., Any]
+from .aiohttp import AIOHTTPService, AIOHTTPSSLService
 
 
-def _create_app(asgi_app) -> Application:
+def _create_app(asgi_app: ASGIApplicationType) -> Application:
     app = Application()
     asgi_resource = ASGIResource(asgi_app, root_path="/")
     app.router.register_resource(asgi_resource)
