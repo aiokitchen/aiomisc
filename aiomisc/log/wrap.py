@@ -3,7 +3,6 @@ import logging
 import logging.handlers
 import sys
 import time
-from contextlib import suppress
 from typing import Optional, Union
 
 from ..thread_pool import run_in_new_thread
