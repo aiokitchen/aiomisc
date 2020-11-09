@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import logging.handlers
+import sys
 import time
 from contextlib import suppress
 from typing import Optional, Union
@@ -25,9 +26,15 @@ def _thread_flusher(
         is_target = has_target
 
     while not loop.is_closed() and is_target():
-        with suppress(Exception):
+        try:
             if handler.buffer:
                 handler.flush()
+        except Exception as e:
+            sys.stderr.write(
+                "Error while flushing logs to %r: %s" % (handler, e)
+            )
+            sys.stderr.write("\n")
+            sys.stderr.flush()
 
         time.sleep(flush_interval)
 

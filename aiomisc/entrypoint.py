@@ -19,16 +19,6 @@ class Entrypoint:
     POST_STOP = Signal()
 
     async def _start(self) -> None:
-        if self.log_config:
-            basic_config(
-                level=self.log_level,
-                log_format=self.log_format,
-                buffered=True,
-                loop=self.loop,
-                buffer_size=self.log_buffer_size,
-                flush_interval=self.log_flush_interval,
-            )
-
         for signal in (self.pre_start, self.post_stop):
             signal.freeze()
 
@@ -133,12 +123,14 @@ class Entrypoint:
             self._loop = asyncio.get_event_loop()
 
         if self.log_config:
+            # First configuration without buffering
+            # will be reconfigured in self._start()
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
                 log_handler=self.log_handler,
                 loop=self.loop,
-                buffered=False,
+                buffered=True,
             )
 
         self.ctx = Context(loop=self.loop)
