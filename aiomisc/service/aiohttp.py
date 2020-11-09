@@ -16,7 +16,9 @@ except ImportError:         # pragma: nocover
 
 
 class AIOHTTPService(Service):
-    __async_required__ = "start", "create_application"
+    __async_required__ = (
+        "start", "create_application"
+    )   # type: t.Tuple[str, ...]
 
     def __init__(
         self, address: t.Optional[str] = "localhost", port: int = None,
