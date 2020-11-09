@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 11.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-01 14:18+0300\n"
+"POT-Creation-Date: 2020-11-09 21:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -171,6 +171,7 @@ msgid "requires installed croniter_:"
 msgstr "необходимо установить библиотеку croniter_:"
 
 #: ../../source/services.rst:156 ../../source/services.rst:296
+#: ../../source/services.rst:360
 msgid "or using extras:"
 msgstr "или как дополнительную зависимость"
 
@@ -179,8 +180,8 @@ msgid ""
 "You can also inherit from ``CronService``, but remember that callback "
 "registration should be proceeded before start"
 msgstr ""
-"Вы также можете наследовать от ``CronService``, но помните, что регистрация "
-"обратного вызова должна выполняться до запуска"
+"Вы также можете наследовать от ``CronService``, но помните, что "
+"регистрация обратного вызова должна выполняться до запуска"
 
 #: ../../source/services.rst:205
 msgid "Multiple services"
@@ -192,10 +193,10 @@ msgid ""
 "After exiting the entrypoint service instances will be gracefully shut "
 "down."
 msgstr ""
-"Передайте несколько экземпляров сервиса в ``entrypoint``, чтобы запустить "
-"их все сразу. После выхода экземпляры сервиса точки входа будут "
-"корректно закрыты вызовом метода ``stop()`` или через "
-"отмену метода ``start()``."
+"Передайте несколько экземпляров сервиса в ``entrypoint``, чтобы запустить"
+" их все сразу. После выхода экземпляры сервиса точки входа будут "
+"корректно закрыты вызовом метода ``stop()`` или через отмену метода "
+"``start()``."
 
 #: ../../source/services.rst:246
 msgid "Configuration"
@@ -227,38 +228,65 @@ msgid ""
 "HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
 "class)."
 msgstr ""
-"Класс ``AIOHTTPSSLService`` похож на ``AIOHTTPService``, "
-"но создает HTTPS сервер. Вы должны передать требуемые для "
-"SSL параметры (см. Класс TLSServer)."
+"Класс ``AIOHTTPSSLService`` похож на ``AIOHTTPService``, но создает HTTPS"
+" сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
+"TLSServer)."
 
-#: ../../source/services.rst:349
+#: ../../source/services.rst:350
+#, fuzzy
+msgid "asgi service"
+msgstr "asgi сервис"
+
+#: ../../source/services.rst:354
+#, fuzzy
+msgid "requires installed aiohttp-asgi:"
+msgstr "требуется установленная библиоткеа aiohttp-asgi:"
+
+#: ../../source/services.rst:367
+#, fuzzy
+msgid "Any ASGI-like application can be started as a service:"
+msgstr "Любое ASGI совместимое приложение может быть запущено как сервис:"
+
+#: ../../source/services.rst:407
+#, fuzzy
+msgid ""
+"Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
+"creates HTTPS server. You must pass SSL-required options (see "
+"``TLSServer`` class)."
+msgstr ""
+"Класс ``ASGIHTTPSSLService`` похож на ``ASGIHTTPService``, но создает HTTPS"
+" сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
+"``TLSServer``)."
+
+#: ../../source/services.rst:411
 msgid "Memory Tracer"
 msgstr "Трассировщик памяти"
 
-#: ../../source/services.rst:351
+#: ../../source/services.rst:413
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
 msgstr ""
-"Простой и полезный сервис для логирования больших "
-"объектов Python, размещенных в памяти."
+"Простой и полезный сервис для логирования больших объектов Python, "
+"размещенных в памяти."
 
-#: ../../source/services.rst:375 ../../source/services.rst:422
+#: ../../source/services.rst:437 ../../source/services.rst:484
 msgid "Output example:"
 msgstr "Пример вывода:"
 
-#: ../../source/services.rst:397
+#: ../../source/services.rst:459
 msgid "Profiler"
 msgstr "Профилировщик"
 
-#: ../../source/services.rst:399
+#: ../../source/services.rst:461
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "
 "snakeviz. Also can change ordering with `order` argument (\"cumulative\" "
 "by default)."
 msgstr ""
-"Простой сервис для профилирования. Необязательный аргумент `path` может быть "
-"предоставлен для выгрузки полных данных профилирования, которые позже могут "
-"быть использованы, например, snakeviz. Также можно изменить порядок с "
-"аргументом ``order`` (по умолчанию \"cumulative\")."
+"Простой сервис для профилирования. Необязательный аргумент `path` может "
+"быть предоставлен для выгрузки полных данных профилирования, которые "
+"позже могут быть использованы, например, snakeviz. Также можно изменить "
+"порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
+
