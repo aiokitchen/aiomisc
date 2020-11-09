@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the aiomisc package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 11.0.0\n"
@@ -233,22 +232,18 @@ msgstr ""
 "TLSServer)."
 
 #: ../../source/services.rst:350
-#, fuzzy
 msgid "asgi service"
 msgstr "asgi сервис"
 
 #: ../../source/services.rst:354
-#, fuzzy
 msgid "requires installed aiohttp-asgi:"
 msgstr "требуется установленная библиоткеа aiohttp-asgi:"
 
 #: ../../source/services.rst:367
-#, fuzzy
 msgid "Any ASGI-like application can be started as a service:"
 msgstr "Любое ASGI совместимое приложение может быть запущено как сервис:"
 
 #: ../../source/services.rst:407
-#, fuzzy
 msgid ""
 "Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
 "creates HTTPS server. You must pass SSL-required options (see "
