@@ -1,4 +1,5 @@
 aiohttp<4
+aiohttp-asgi
 async-generator
 async-timeout
 coverage==4.5.1
