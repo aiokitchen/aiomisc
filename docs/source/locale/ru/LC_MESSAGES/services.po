@@ -182,11 +182,53 @@ msgstr ""
 "Вы также можете наследовать от ``CronService``, но помните, что регистрация "
 "обратного вызова должна выполняться до запуска"
 
-#: ../../source/services.rst:205
+#: ../../source/services.rst:207
+msgid ""
+"``GracefulService`` allows creation of tasks that will be either awaited "
+"with an optional timeout or cancelled and awaited upon service stop."
+msgstr ""
+"``GracefulService`` позволяет запускать задачи, завершение которых "
+"(либо отмену с завершением) сервис выждет при остановке."
+
+#: ../../source/services.rst:210
+msgid ""
+"Optional service parameter ``graceful_wait_timeout`` (default ``None``) "
+"specifies the allowed wait time in seconds for tasks created with "
+"``create_graceful_task(coro, cancel=False)``."
+msgstr ""
+"Необязательный параметр сервиса ``graceful_wait_timeout`` "
+"(по умолчанию ``None``) указывает время выжидания завершения (в секундах) "
+"для задач, запущенных с ``create_graceful_task(coro, cancel=False)``."
+
+#: ../../source/services.rst:214
+msgid ""
+"Optional service parameter ``cancel_on_timeout`` (default ``True``) "
+"specifies whether to cancel tasks (without further waiting) that didn't "
+"complete within ``graceful_wait_timeout``."
+msgstr ""
+"Необязательный параметр сервиса ``cancel_on_timeout`` (по умолчанию ``True``) "
+"указывает отменять ли задачи (без последующего ожидания), которые не "
+"успели завершиться в течение ``graceful_wait_timeout``."
+
+#: ../../source/services.rst:218
+msgid ""
+"Tasks created with ``create_graceful_task(coro, cancel=True)`` are cancelled "
+"and awaited when service stops."
+msgstr ""
+"При остановке сервиса, задачи, запущенные с помощью "
+"``create_graceful_task(coro, cancel=True)`` отменяются, и производится "
+"ожидание их завершения."
+
+#: ../../source/services.rst:247
+# ../../source/services.rst:425 ../../source/services.rst:472
+msgid "Output example:"
+msgstr "Пример вывода:"
+
+#: ../../source/services.rst:254
 msgid "Multiple services"
 msgstr "Несколько сервисов"
 
-#: ../../source/services.rst:207
+#: ../../source/services.rst:257
 msgid ""
 "Pass several service instances to the ``entrypoint`` to run all of them. "
 "After exiting the entrypoint service instances will be gracefully shut "
@@ -197,11 +239,11 @@ msgstr ""
 "корректно закрыты вызовом метода ``stop()`` или через "
 "отмену метода ``start()``."
 
-#: ../../source/services.rst:246
+#: ../../source/services.rst:295
 msgid "Configuration"
 msgstr "Конфигурация"
 
-#: ../../source/services.rst:248
+#: ../../source/services.rst:298
 msgid ""
 "``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
 "attributes."
@@ -209,19 +251,19 @@ msgstr ""
 "Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
 "и устанавливает из как атрибуты в ``self``."
 
-#: ../../source/services.rst:286
+#: ../../source/services.rst:335
 msgid "aiohttp service"
 msgstr "aiohttp сервис"
 
-#: ../../source/services.rst:290
+#: ../../source/services.rst:340
 msgid "requires installed aiohttp:"
 msgstr "требуется установленная библиоткеа aiohttp"
 
-#: ../../source/services.rst:303
+#: ../../source/services.rst:353
 msgid "aiohttp application can be started as a service:"
 msgstr "Приложение aiohttp может быть запущено как сервис:"
 
-#: ../../source/services.rst:345
+#: ../../source/services.rst:395
 msgid ""
 "Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
 "HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
@@ -231,11 +273,11 @@ msgstr ""
 "но создает HTTPS сервер. Вы должны передать требуемые для "
 "SSL параметры (см. Класс TLSServer)."
 
-#: ../../source/services.rst:349
+#: ../../source/services.rst:398
 msgid "Memory Tracer"
 msgstr "Трассировщик памяти"
 
-#: ../../source/services.rst:351
+#: ../../source/services.rst:401
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
@@ -243,15 +285,11 @@ msgstr ""
 "Простой и полезный сервис для логирования больших "
 "объектов Python, размещенных в памяти."
 
-#: ../../source/services.rst:375 ../../source/services.rst:422
-msgid "Output example:"
-msgstr "Пример вывода:"
-
-#: ../../source/services.rst:397
+#: ../../source/services.rst:446
 msgid "Profiler"
 msgstr "Профилировщик"
 
-#: ../../source/services.rst:399
+#: ../../source/services.rst:449
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "

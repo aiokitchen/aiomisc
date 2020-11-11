@@ -204,17 +204,19 @@ should be proceeded before start
 GracefulService
 +++++++++++++++
 
-``GracefulService`` allows creation of tasks that will be either awaited with
-optional timeout or cancelled and awaited upon service stop.
+``GracefulService`` allows creation of tasks that will be either awaited
+with an optional timeout or cancelled and awaited upon service stop.
 
-Optional service parameter ``graceful_wait_timeout`` (default ``None``) specifies the allowed
-wait time in seconds for tasks created with ``create_graceful_task(coro, cancel=False)``.
+Optional service parameter ``graceful_wait_timeout`` (default ``None``)
+specifies the allowed wait time in seconds for tasks created with
+``create_graceful_task(coro, cancel=False)``.
 
-Optional service parameter ``cancel_on_timeout`` (default ``True``) specifies whether
-to cancel tasks (without further waiting) that didn't complete within ``graceful_wait_timeout``.
+Optional service parameter ``cancel_on_timeout`` (default ``True``)
+specifies whether to cancel tasks (without further waiting) that didn't
+complete within ``graceful_wait_timeout``.
 
 Tasks created with ``create_graceful_task(coro, cancel=True)`` are cancelled
-and awaited when service stops.
+and awaited when the service stops.
 
 .. code-block:: python
 
