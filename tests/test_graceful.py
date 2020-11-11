@@ -93,10 +93,10 @@ async def test_graceful_service():
 
         async def start(self):
             self.task_wait = self.create_graceful_task(
-                self.pho(), cancel=False
+                self.pho(), cancel=False,
             )
             self.task_cancel = self.create_graceful_task(
-                self.pho(), cancel=True
+                self.pho(), cancel=True,
             )
 
         async def pho(self):
@@ -117,7 +117,7 @@ async def test_graceful_service():
     assert not service._GracefulMixin__tasks
 
 
-async def test_graceful_service_with_timeout():
+async def test_graceful_service_with_timeout_cancel():
     class TestService(GracefulService):
 
         graceful_wait_timeout = 0.1
@@ -126,7 +126,7 @@ async def test_graceful_service_with_timeout():
 
         async def start(self):
             self.task_wait = self.create_graceful_task(
-                self.pho(), cancel=False
+                self.pho(), cancel=False,
             )
 
         async def pho(self):
@@ -137,9 +137,36 @@ async def test_graceful_service_with_timeout():
     await service.start()
     await service.stop()
 
-    assert service.task_wait.done()
-
-    with pytest.raises(CancelledError):
-        service.task_wait.exception()
-
+    assert service.task_wait.cancelled()
     assert not service._GracefulMixin__tasks
+
+
+async def test_graceful_service_with_timeout_no_cancel():
+    class TestService(GracefulService):
+
+        graceful_wait_timeout = 0.1
+        cancel_on_timeout = False
+
+        task_wait = None
+
+        async def start(self):
+            self.task_wait = self.create_graceful_task(
+                self.pho(), cancel=False,
+            )
+
+        async def pho(self):
+            await asyncio.sleep(0.2)
+            return 123
+
+    service = TestService()
+
+    await service.start()
+    await service.stop()
+
+    assert not service.task_wait.done()
+    assert not service._GracefulMixin__tasks
+
+    await asyncio.sleep(0.1)
+
+    assert service.task_wait.done()
+    assert service.task_wait.result() == 123
