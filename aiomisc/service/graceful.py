@@ -18,12 +18,15 @@ class GracefulMixin:
 
     __tasks: Dict[Task, bool] = {}
 
-    def create_graceful_task(self, coro: Coroutine, *, cancel: bool) -> Task:
+    def create_graceful_task(
+            self, coro: Coroutine, *, cancel: bool = False,
+    ) -> Task:
         """
         Creates a task that will either be awaited or cancelled and awaited
         upon service stop.
         :param coro:
         :param cancel: whether to cancel or await the task on service stop
+        (default `False`)
         :return: created task
         """
         task = create_task(coro)

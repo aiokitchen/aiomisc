@@ -1,7 +1,7 @@
 The MIT License (MIT)
 =====================
 
-Copyright © `2019` `Dmitry Orlov <me@mosquito.su>`
+Copyright © `2020` `Dmitry Orlov <me@mosquito.su>`
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

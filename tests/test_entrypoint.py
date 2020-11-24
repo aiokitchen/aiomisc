@@ -5,12 +5,13 @@ from contextlib import ExitStack
 from tempfile import mktemp
 
 import aiohttp.web
+import fastapi
 import pytest
 
 import aiomisc
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
-
+from aiomisc.service.asgi import ASGIHTTPService, ASGIApplicationType
 
 try:
     import uvloop
@@ -340,11 +341,6 @@ class AIOHTTPTestApp(AIOHTTPService):
         return aiohttp.web.Application()
 
 
-def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
-    with pytest.raises(RuntimeError):
-        AIOHTTPService()
-
-
 def test_aiohttp_service(aiomisc_unused_port):
     async def http_client():
         session = aiohttp.ClientSession()
@@ -381,6 +377,73 @@ def test_aiohttp_service_sock(unix_socket_tcp):
         )
 
     assert response == 404
+
+
+def test_asgi_service_create_app():
+    with pytest.raises(TypeError):
+        class _(ASGIHTTPService):
+            def create_asgi_app(self) -> ASGIApplicationType:
+                return lambda: None
+
+    class _(ASGIHTTPService):
+        async def create_asgi_app(self) -> ASGIApplicationType:
+            return fastapi.FastAPI()
+
+
+class ASGIHTTPTestApp(ASGIHTTPService):
+    async def create_asgi_app(self) -> ASGIApplicationType:
+        app = fastapi.FastAPI()
+
+        @app.get("/")
+        async def root():
+            return {"message": "Hello World"}
+
+        return app
+
+
+def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
+    with pytest.raises(RuntimeError):
+        ASGIHTTPTestApp()
+
+
+def test_asgi_service(aiomisc_unused_port):
+    async def http_client():
+        session = aiohttp.ClientSession()
+        url = "http://localhost:{}".format(aiomisc_unused_port)
+
+        async with session:
+            async with session.get(url) as response:
+                return response.status, await response.json()
+
+    service = ASGIHTTPTestApp(address="127.0.0.1", port=aiomisc_unused_port)
+
+    with aiomisc.entrypoint(service) as loop:
+        response, body = loop.run_until_complete(
+            asyncio.wait_for(http_client(), timeout=10),
+        )
+
+    assert body == {"message": "Hello World"}
+    assert response == 200
+
+
+def test_asgi_service_sock(unix_socket_tcp):
+    async def http_client():
+        conn = aiohttp.UnixConnector(path=unix_socket_tcp.getsockname())
+        session = aiohttp.ClientSession(connector=conn)
+
+        async with session:
+            async with session.get("http://unix/") as response:
+                return response.status, await response.json()
+
+    service = ASGIHTTPTestApp(sock=unix_socket_tcp)
+
+    with aiomisc.entrypoint(service) as loop:
+        response, body = loop.run_until_complete(
+            asyncio.wait_for(http_client(), timeout=10000),
+        )
+
+    assert body == {"message": "Hello World"}
+    assert response == 200
 
 
 def test_service_events():

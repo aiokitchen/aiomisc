@@ -1,9 +1,11 @@
 aiohttp<4
+aiohttp-asgi
 async-generator
 async-timeout
 coverage==4.5.1
 coveralls
 croniter~=0.3.34
+fastapi
 mypy~=0.782
 pylava
 pytest

@@ -201,56 +201,6 @@ should be proceeded before start
         loop.run_forever()
 
 
-GracefulService
-+++++++++++++++
-
-``GracefulService`` allows creation of tasks that will be either awaited
-with an optional timeout or cancelled and awaited upon service stop.
-
-Optional service parameter ``graceful_wait_timeout`` (default ``None``)
-specifies the allowed wait time in seconds for tasks created with
-``create_graceful_task(coro, cancel=False)``.
-
-Optional service parameter ``cancel_on_timeout`` (default ``True``)
-specifies whether to cancel tasks (without further waiting) that didn't
-complete within ``graceful_wait_timeout``.
-
-Tasks created with ``create_graceful_task(coro, cancel=True)`` are cancelled
-and awaited when the service stops.
-
-.. code-block:: python
-
-    import asyncio
-    from aiomisc.service import GracefulService
-
-    class SwanService(GracefulService):
-
-        graceful_wait_timeout = 10
-        cancel_on_timeout = False
-
-        async def fly(self):
-            await asyncio.sleep(1)
-            print('Flew to a lake')
-
-        async def duckify(self):
-            await asyncio.sleep(1)
-            print('Became ugly duck')
-
-        async def start(self):
-            self.create_graceful_task(self.fly(), cancel=False)
-            self.create_graceful_task(self.duckify(), cancel=True)
-
-    service = SwanService()
-    await service.start()
-    await service.stop()
-
-Output example:
-
-.. code-block::
-
-   Flew to a lake
-
-
 Multiple services
 +++++++++++++++++
 
@@ -395,6 +345,68 @@ aiohttp application can be started as a service:
 Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates HTTPS
 server. You must pass SSL-required options (see ``TLSServer`` class).
 
+
+asgi service
+++++++++++++
+
+.. warning::
+
+   requires installed aiohttp-asgi:
+
+   .. code-block::
+
+       pip install aiohttp-asgi
+
+   or using extras:
+
+   .. code-block::
+
+       pip install aiomisc[asgi]
+
+
+Any ASGI-like application can be started as a service:
+
+.. code-block:: python
+
+   import argparse
+
+   from fastapi import FastAPI
+
+   from aiomisc import entrypoint
+   from aiomisc.service.asgi import ASGIHTTPService, ASGIApplicationType
+
+   parser = argparse.ArgumentParser()
+   group = parser.add_argument_group('HTTP options')
+
+   group.add_argument("-l", "--address", default="::",
+                      help="Listen HTTP address")
+   group.add_argument("-p", "--port", type=int, default=8080,
+                      help="Listen HTTP port")
+
+
+   app = FastAPI()
+
+
+   @app.get("/")
+   async def root():
+       return {"message": "Hello World"}
+
+
+   class REST(ASGIHTTPService):
+       async def create_asgi_app(self) -> ASGIApplicationType:
+           return app
+
+
+   arguments = parser.parse_args()
+   service = REST(address=arguments.address, port=arguments.port)
+
+   with entrypoint(service) as loop:
+       loop.run_forever()
+
+
+Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but creates
+HTTPS server. You must pass SSL-required options (see ``TLSServer`` class).
+
 Memory Tracer
 +++++++++++++
 
@@ -483,3 +495,169 @@ Output example:
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/pstats.py:99(init)
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/pstats.py:118(load_stats)
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/cProfile.py:50(create_stats)
+
+
+Raven service
++++++++++++++
+
+Simple service for sending unhandled exceptions to the `sentry`_
+service instance.
+
+.. _sentry: https://sentry.io
+
+Simple example:
+
+.. code-block:: python
+
+   import asyncio
+   import logging
+   import sys
+
+   from aiomisc import entrypoint
+   from aiomisc.version import __version__
+   from aiomisc.service.raven import RavenSender
+
+
+   async def main():
+       while True:
+           await asyncio.sleep(1)
+
+           try:
+               1 / 0
+           except ZeroDivisionError:
+               logging.exception("Exception")
+
+
+   raven_sender = RavenSender(
+       sentry_dsn=(
+           "https://583ca3b555054f80873e751e8139e22a@o429974.ingest.sentry.io/"
+           "5530251"
+       ),
+       client_options=dict(
+           # Got environment variable SENTRY_NAME by default
+           name="example-from-aiomisc",
+           # Got environment variable SENTRY_ENVIRONMENT by default
+           environment="simple_example",
+           # Got environment variable SENTRY_RELEASE by default
+           release=__version__,
+       )
+   )
+
+
+   with entrypoint(raven_sender) as loop:
+       loop.run_until_complete(main())
+
+Full configuration:
+
+.. code-block:: python
+
+   import asyncio
+   import logging
+   import sys
+
+   from aiomisc import entrypoint
+   from aiomisc.version import __version__
+   from aiomisc.service.raven import RavenSender
+
+
+   async def main():
+       while True:
+           await asyncio.sleep(1)
+
+           try:
+               1 / 0
+           except ZeroDivisionError:
+               logging.exception("Exception")
+
+
+   raven_sender = RavenSender(
+       sentry_dsn=(
+           "https://583ca3b555054f80873e751e8139e22a@o429974.ingest.sentry.io/"
+           "5530251"
+       ),
+       client_options=dict(
+           # Got environment variable SENTRY_NAME by default
+           name="",
+           # Got environment variable SENTRY_ENVIRONMENT by default
+           environment="full_example",
+           # Got environment variable SENTRY_RELEASE by default
+           release=__version__,
+
+           # Default options values
+           include_paths=set(),
+           exclude_paths=set(),
+           auto_log_stacks=True,
+           capture_locals=True,
+           string_max_length=400,
+           list_max_length=50,
+           site=None,
+           include_versions=True,
+           processors=(
+               'raven.processors.SanitizePasswordsProcessor',
+           ),
+           sanitize_keys=None,
+           context={'sys.argv': getattr(sys, 'argv', [])[:]},
+           tags={},
+           sample_rate=1,
+           ignore_exceptions=(),
+       )
+   )
+
+
+   with entrypoint(raven_sender) as loop:
+       loop.run_until_complete(main())
+
+You will find full specification of options in the `Raven documentation`_.
+
+.. _Raven documentation: https://docs.sentry.io/clients/python/advanced/#client-arguments
+
+
+GracefulService
++++++++++++++++
+
+``GracefulService`` allows creation of tasks with `create_graceful_task(coro)`
+that will be either awaited (default) with an optional timeout or cancelled and
+awaited upon service stop.
+
+Optional service parameter ``graceful_wait_timeout`` (default ``None``)
+specifies the allowed wait time in seconds for tasks created with
+``create_graceful_task(coro, cancel=False)``.
+
+Optional service parameter ``cancel_on_timeout`` (default ``True``)
+specifies whether to cancel tasks (without further waiting) that didn't
+complete within ``graceful_wait_timeout``.
+
+Tasks created with ``create_graceful_task(coro, cancel=True)`` are cancelled
+and awaited when the service stops.
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc.service import GracefulService
+
+    class SwanService(GracefulService):
+
+        graceful_wait_timeout = 10
+        cancel_on_timeout = False
+
+        async def fly(self):
+            await asyncio.sleep(1)
+            print('Flew to a lake')
+
+        async def duckify(self):
+            await asyncio.sleep(1)
+            print('Became ugly duck')
+
+        async def start(self):
+            self.create_graceful_task(self.fly())
+            self.create_graceful_task(self.duckify(), cancel=True)
+
+    service = SwanService()
+    await service.start()
+    await service.stop()
+
+Output example:
+
+.. code-block::
+
+   Flew to a lake

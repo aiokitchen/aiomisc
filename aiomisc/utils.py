@@ -245,7 +245,7 @@ async def select(
 ) -> SelectResult:
     """
 
-    :param awaitables: aswaitable objects
+    :param awaitables: awaitable objects
     :param return_exceptions: if True exception will not be raised
                               just returned as result
     :param cancel: cancel unfinished coroutines (default True)

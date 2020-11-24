@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the aiomisc package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 11.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-01 14:18+0300\n"
+"POT-Creation-Date: 2020-11-24 13:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -171,6 +170,7 @@ msgid "requires installed croniter_:"
 msgstr "необходимо установить библиотеку croniter_:"
 
 #: ../../source/services.rst:156 ../../source/services.rst:296
+#: ../../source/services.rst:360
 msgid "or using extras:"
 msgstr "или как дополнительную зависимость"
 
@@ -179,18 +179,144 @@ msgid ""
 "You can also inherit from ``CronService``, but remember that callback "
 "registration should be proceeded before start"
 msgstr ""
-"Вы также можете наследовать от ``CronService``, но помните, что регистрация "
-"обратного вызова должна выполняться до запуска"
+"Вы также можете наследовать от ``CronService``, но помните, что "
+"регистрация обратного вызова должна выполняться до запуска"
+
+#: ../../source/services.rst:205
+msgid "Multiple services"
+msgstr "Несколько сервисов"
 
 #: ../../source/services.rst:207
 msgid ""
-"``GracefulService`` allows creation of tasks that will be either awaited "
-"with an optional timeout or cancelled and awaited upon service stop."
+"Pass several service instances to the ``entrypoint`` to run all of them. "
+"After exiting the entrypoint service instances will be gracefully shut "
+"down."
 msgstr ""
-"``GracefulService`` позволяет запускать задачи, завершение которых "
-"(либо отмену с завершением) сервис выждет при остановке."
+"Передайте несколько экземпляров сервиса в ``entrypoint``, чтобы запустить"
+" их все сразу. После выхода экземпляры сервиса точки входа будут "
+"корректно закрыты вызовом метода ``stop()`` или через отмену метода "
+"``start()``."
 
-#: ../../source/services.rst:210
+#: ../../source/services.rst:246
+msgid "Configuration"
+msgstr "Конфигурация"
+
+#: ../../source/services.rst:248
+msgid ""
+"``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
+"attributes."
+msgstr ""
+"Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
+"и устанавливает из как атрибуты в ``self``."
+
+#: ../../source/services.rst:286
+msgid "aiohttp service"
+msgstr "aiohttp сервис"
+
+#: ../../source/services.rst:290
+msgid "requires installed aiohttp:"
+msgstr "требуется установленная библиоткеа aiohttp"
+
+#: ../../source/services.rst:303
+msgid "aiohttp application can be started as a service:"
+msgstr "Приложение aiohttp может быть запущено как сервис:"
+
+#: ../../source/services.rst:345
+msgid ""
+"Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
+"HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
+"class)."
+msgstr ""
+"Класс ``AIOHTTPSSLService`` похож на ``AIOHTTPService``, но создает HTTPS"
+" сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
+"TLSServer)."
+
+#: ../../source/services.rst:350
+msgid "asgi service"
+msgstr "asgi сервис"
+
+#: ../../source/services.rst:354
+msgid "requires installed aiohttp-asgi:"
+msgstr "требуется установленная библиоткеа aiohttp-asgi:"
+
+#: ../../source/services.rst:367
+msgid "Any ASGI-like application can be started as a service:"
+msgstr "Любое ASGI совместимое приложение может быть запущено как сервис:"
+
+#: ../../source/services.rst:407
+msgid ""
+"Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
+"creates HTTPS server. You must pass SSL-required options (see "
+"``TLSServer`` class)."
+msgstr ""
+"Класс ``ASGIHTTPSSLService`` похож на ``ASGIHTTPService``, но создает "
+"HTTPS сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
+"``TLSServer``)."
+
+#: ../../source/services.rst:411
+msgid "Memory Tracer"
+msgstr "Трассировщик памяти"
+
+#: ../../source/services.rst:413
+msgid ""
+"Simple and useful service for logging large python objects allocated in "
+"memory."
+msgstr ""
+"Простой и полезный сервис для логирования больших объектов Python, "
+"размещенных в памяти."
+
+#: ../../source/services.rst:437 ../../source/services.rst:484
+msgid "Output example:"
+msgstr "Пример вывода:"
+
+#: ../../source/services.rst:459
+msgid "Profiler"
+msgstr "Профилировщик"
+
+#: ../../source/services.rst:461
+msgid ""
+"Simple service for profiling. Optional `path` argument can be provided to"
+" dump complete profiling data, which can be later used by, for example, "
+"snakeviz. Also can change ordering with `order` argument (\"cumulative\" "
+"by default)."
+msgstr ""
+"Простой сервис для профилирования. Необязательный аргумент `path` может "
+"быть предоставлен для выгрузки полных данных профилирования, которые "
+"позже могут быть использованы, например, snakeviz. Также можно изменить "
+"порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
+
+#: ../../source/services.rst:501
+msgid "Raven service"
+msgstr "Raven сервис"
+
+#: ../../source/services.rst:503
+msgid ""
+"Simple service for sending unhandled exceptions to the `sentry`_ service "
+"instance."
+msgstr "Простой сервис для отправки необработанных исключений в сервис `sentry`_."
+
+#: ../../source/services.rst:508
+msgid "Simple example:"
+msgstr "Простой пример:"
+
+#: ../../source/services.rst:550
+msgid "Full configuration:"
+msgstr "Все опции для клиента:"
+
+#: ../../source/services.rst:610
+msgid "You will find full specification of options in the `Raven documentation`_."
+msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
+
+#: ../../source/services.rst:618
+msgid ""
+"``GracefulService`` allows creation of tasks with `create_graceful_task(coro)` "
+"that will be either awaited (default) with an optional timeout or cancelled and "
+"awaited upon service stop."
+msgstr ""
+"``GracefulService`` позволяет запускать задачи c помощью `create_graceful_task(coro)`, "
+"завершение которых (либо отмену с завершением) сервис выждет при остановке."
+
+#: ../../source/services.rst:622
 msgid ""
 "Optional service parameter ``graceful_wait_timeout`` (default ``None``) "
 "specifies the allowed wait time in seconds for tasks created with "
@@ -200,7 +326,7 @@ msgstr ""
 "(по умолчанию ``None``) указывает время выжидания завершения (в секундах) "
 "для задач, запущенных с ``create_graceful_task(coro, cancel=False)``."
 
-#: ../../source/services.rst:214
+#: ../../source/services.rst:626
 msgid ""
 "Optional service parameter ``cancel_on_timeout`` (default ``True``) "
 "specifies whether to cancel tasks (without further waiting) that didn't "
@@ -210,7 +336,7 @@ msgstr ""
 "указывает отменять ли задачи (без последующего ожидания), которые не "
 "успели завершиться в течение ``graceful_wait_timeout``."
 
-#: ../../source/services.rst:218
+#: ../../source/services.rst:630
 msgid ""
 "Tasks created with ``create_graceful_task(coro, cancel=True)`` are cancelled "
 "and awaited when service stops."
@@ -218,85 +344,3 @@ msgstr ""
 "При остановке сервиса, задачи, запущенные с помощью "
 "``create_graceful_task(coro, cancel=True)`` отменяются, и производится "
 "ожидание их завершения."
-
-#: ../../source/services.rst:247
-# ../../source/services.rst:425 ../../source/services.rst:472
-msgid "Output example:"
-msgstr "Пример вывода:"
-
-#: ../../source/services.rst:254
-msgid "Multiple services"
-msgstr "Несколько сервисов"
-
-#: ../../source/services.rst:257
-msgid ""
-"Pass several service instances to the ``entrypoint`` to run all of them. "
-"After exiting the entrypoint service instances will be gracefully shut "
-"down."
-msgstr ""
-"Передайте несколько экземпляров сервиса в ``entrypoint``, чтобы запустить "
-"их все сразу. После выхода экземпляры сервиса точки входа будут "
-"корректно закрыты вызовом метода ``stop()`` или через "
-"отмену метода ``start()``."
-
-#: ../../source/services.rst:295
-msgid "Configuration"
-msgstr "Конфигурация"
-
-#: ../../source/services.rst:298
-msgid ""
-"``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
-"attributes."
-msgstr ""
-"Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
-"и устанавливает из как атрибуты в ``self``."
-
-#: ../../source/services.rst:335
-msgid "aiohttp service"
-msgstr "aiohttp сервис"
-
-#: ../../source/services.rst:340
-msgid "requires installed aiohttp:"
-msgstr "требуется установленная библиоткеа aiohttp"
-
-#: ../../source/services.rst:353
-msgid "aiohttp application can be started as a service:"
-msgstr "Приложение aiohttp может быть запущено как сервис:"
-
-#: ../../source/services.rst:395
-msgid ""
-"Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
-"HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
-"class)."
-msgstr ""
-"Класс ``AIOHTTPSSLService`` похож на ``AIOHTTPService``, "
-"но создает HTTPS сервер. Вы должны передать требуемые для "
-"SSL параметры (см. Класс TLSServer)."
-
-#: ../../source/services.rst:398
-msgid "Memory Tracer"
-msgstr "Трассировщик памяти"
-
-#: ../../source/services.rst:401
-msgid ""
-"Simple and useful service for logging large python objects allocated in "
-"memory."
-msgstr ""
-"Простой и полезный сервис для логирования больших "
-"объектов Python, размещенных в памяти."
-
-#: ../../source/services.rst:446
-msgid "Profiler"
-msgstr "Профилировщик"
-
-#: ../../source/services.rst:449
-msgid ""
-"Simple service for profiling. Optional `path` argument can be provided to"
-" dump complete profiling data, which can be later used by, for example, "
-"snakeviz. Also can change ordering with `order` argument (\"cumulative\" "
-"by default)."
-msgstr ""
-"Простой сервис для профилирования. Необязательный аргумент `path` может быть "
-"предоставлен для выгрузки полных данных профилирования, которые позже могут "
-"быть использованы, например, snakeviz. Также можно изменить порядок с "
-"аргументом ``order`` (по умолчанию \"cumulative\")."
