@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 11.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-09 21:30+0300\n"
+"POT-Creation-Date: 2020-11-24 12:26+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -249,8 +249,8 @@ msgid ""
 "creates HTTPS server. You must pass SSL-required options (see "
 "``TLSServer`` class)."
 msgstr ""
-"Класс ``ASGIHTTPSSLService`` похож на ``ASGIHTTPService``, но создает HTTPS"
-" сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
+"Класс ``ASGIHTTPSSLService`` похож на ``ASGIHTTPService``, но создает "
+"HTTPS сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
 "``TLSServer``)."
 
 #: ../../source/services.rst:411
@@ -284,4 +284,23 @@ msgstr ""
 "быть предоставлен для выгрузки полных данных профилирования, которые "
 "позже могут быть использованы, например, snakeviz. Также можно изменить "
 "порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
+
+#: ../../source/services.rst:501
+msgid "Raven service"
+msgstr "Raven сервис"
+
+#: ../../source/services.rst:503
+msgid ""
+"Simple service for sending unhandled exceptions to the `sentry`_ service "
+"instance."
+msgstr ""
+"Простой сервис для отправки необработанных исключений в сервис `sentry`_."
+
+#: ../../source/services.rst:508
+msgid "Simple example:"
+msgstr "Простой пример:"
+
+#: ../../source/services.rst:550
+msgid "Full configuration:"
+msgstr "Все опции для клиента:"
 

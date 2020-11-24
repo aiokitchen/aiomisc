@@ -495,3 +495,114 @@ Output example:
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/pstats.py:99(init)
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/pstats.py:118(load_stats)
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/cProfile.py:50(create_stats)
+
+
+Raven service
++++++++++++++
+
+Simple service for sending unhandled exceptions to the `sentry`_
+service instance.
+
+.. _sentry: https://sentry.io
+
+Simple example:
+
+.. code-block:: python
+
+   import asyncio
+   import logging
+   import sys
+
+   from aiomisc import entrypoint
+   from aiomisc.version import __version__
+   from aiomisc.service.raven import RavenSender
+
+
+   async def main():
+       while True:
+           await asyncio.sleep(1)
+
+           try:
+               1 / 0
+           except ZeroDivisionError:
+               logging.exception("Exception")
+
+
+   raven_sender = RavenSender(
+       sentry_dsn=(
+           "https://583ca3b555054f80873e751e8139e22a@o429974.ingest.sentry.io/"
+           "5530251"
+       ),
+       client_options=dict(
+           # Got environment variable SENTRY_NAME by default
+           name="example-from-aiomisc",
+           # Got environment variable SENTRY_ENVIRONMENT by default
+           environment="simple_example",
+           # Got environment variable SENTRY_RELEASE by default
+           release=__version__,
+       )
+   )
+
+
+   with entrypoint(raven_sender) as loop:
+       loop.run_until_complete(main())
+
+Full configuration:
+
+.. code-block:: python
+
+   import asyncio
+   import logging
+   import sys
+
+   from aiomisc import entrypoint
+   from aiomisc.version import __version__
+   from aiomisc.service.raven import RavenSender
+
+
+   async def main():
+       while True:
+           await asyncio.sleep(1)
+
+           try:
+               1 / 0
+           except ZeroDivisionError:
+               logging.exception("Exception")
+
+
+   raven_sender = RavenSender(
+       sentry_dsn=(
+           "https://583ca3b555054f80873e751e8139e22a@o429974.ingest.sentry.io/"
+           "5530251"
+       ),
+       client_options=dict(
+           # Got environment variable SENTRY_NAME by default
+           name="",
+           # Got environment variable SENTRY_ENVIRONMENT by default
+           environment="full_example",
+           # Got environment variable SENTRY_RELEASE by default
+           release=__version__,
+
+           # Default options values
+           include_paths=set(),
+           exclude_paths=set(),
+           auto_log_stacks=True,
+           capture_locals=True,
+           string_max_length=400,
+           list_max_length=50,
+           site=None,
+           include_versions=True,
+           processors=(
+               'raven.processors.SanitizePasswordsProcessor',
+           ),
+           sanitize_keys=None,
+           context={'sys.argv': getattr(sys, 'argv', [])[:]},
+           tags={},
+           sample_rate=1,
+           ignore_exceptions=(),
+       )
+   )
+
+
+   with entrypoint(raven_sender) as loop:
+       loop.run_until_complete(main())
