@@ -606,3 +606,7 @@ Full configuration:
 
    with entrypoint(raven_sender) as loop:
        loop.run_until_complete(main())
+
+You will find full specification of options in the `Raven documentation`_.
+
+.. _Raven documentation: https://docs.sentry.io/clients/python/advanced/#client-arguments
