@@ -15,7 +15,7 @@ async def test_graceful():
 
     graceful = Graceful()
 
-    task = graceful.create_graceful_task(pho(), cancel=False)
+    task = graceful.create_graceful_task(pho())
     assert isinstance(task, Task)
 
     await asyncio.sleep(0.1)
@@ -40,7 +40,7 @@ async def test_graceful_timeout(sleep, timeout, error):
 
     graceful = Graceful()
 
-    task = graceful.create_graceful_task(pho(), cancel=False)
+    task = graceful.create_graceful_task(pho())
     assert isinstance(task, Task)
 
     await graceful.graceful_shutdown(wait_timeout=timeout)
@@ -92,9 +92,7 @@ async def test_graceful_service():
         task_cancel = None
 
         async def start(self):
-            self.task_wait = self.create_graceful_task(
-                self.pho(), cancel=False,
-            )
+            self.task_wait = self.create_graceful_task(self.pho())
             self.task_cancel = self.create_graceful_task(
                 self.pho(), cancel=True,
             )
@@ -125,9 +123,7 @@ async def test_graceful_service_with_timeout_cancel():
         task_wait = None
 
         async def start(self):
-            self.task_wait = self.create_graceful_task(
-                self.pho(), cancel=False,
-            )
+            self.task_wait = self.create_graceful_task(self.pho())
 
         async def pho(self):
             await asyncio.sleep(0.2)
@@ -150,9 +146,7 @@ async def test_graceful_service_with_timeout_no_cancel():
         task_wait = None
 
         async def start(self):
-            self.task_wait = self.create_graceful_task(
-                self.pho(), cancel=False,
-            )
+            self.task_wait = self.create_graceful_task(self.pho())
 
         async def pho(self):
             await asyncio.sleep(0.2)
