@@ -121,12 +121,12 @@ class Aggregator:
 def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     """
     Parametric decorator that aggregates multiple
-    (but no more than ``max_count``) single-argument executions
-    (``res1 = func(arg1)``, ``res2 = func(arg2)``, ...)
-    of the function with variadic positional arguments
-    (``def func(*args, pho=1, bo=2) -> Iterable``)
-    into its single execution with multiple positional arguments
-    (``res1, res2, ... = func(arg1, arg2, ...)``) collected within a time
+    (but no more than ``max_count`` defaulting to ``None``) single-argument
+    executions (``res1 = await func(arg1)``, ``res2 = await func(arg2)``, ...)
+    of an asynchronous function with variadic positional arguments
+    (``async def func(*args, pho=1, bo=2) -> Iterable``) into its single
+    execution with multiple positional arguments
+    (``res1, res2, ... = await func(arg1, arg2, ...)``) collected within a time
     window ``leeway_ms``.
     :param leeway_ms: The maximum approximate delay between the first
     collected argument and the aggregated execution.
