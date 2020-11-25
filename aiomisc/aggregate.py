@@ -1,6 +1,7 @@
 import asyncio
 import inspect
-from asyncio import Future, wait, Event
+from asyncio import Future, Event, Lock, CancelledError, wait_for
+from contextlib import suppress
 from inspect import Parameter
 from time import monotonic
 from typing import List, Optional, Callable, Any, Awaitable, Iterable
@@ -36,6 +37,7 @@ class Aggregator:
         self._args = []         # type: list
         self._futures = []      # type: List[Future]
         self._event = Event()   # type: Event
+        self._lock = Lock()     # type: Lock
 
     @property
     def max_count(self) -> Optional[int]:
@@ -53,11 +55,15 @@ class Aggregator:
         self._t = None
         self._args = []
         self._futures = []
-        self._event.clear()
+        self._event = Event()
+        self._lock = Lock()
 
     async def _execute(self, *, args: list, futures: List[Future]) -> None:
         try:
             results = await self._func(*args)
+        except CancelledError:
+            # Other waiting tasks can try to finish the job instead.
+            raise
         except Exception as e:
             self._set_exception(e, futures)
             return
@@ -66,42 +72,48 @@ class Aggregator:
 
     def _set_results(self, results: Iterable, futures: List[Future]) -> None:
         for future, result in zip(futures, results):
-            future.set_result(result)
+            if not future.done():
+                future.set_result(result)
 
     def _set_exception(
             self, exc: Exception, futures: List[Future],
     ) -> None:
         for future in futures:
-            future.set_exception(exc)
+            if not future.done():
+                future.set_exception(exc)
 
     async def aggregate(self, arg: Any) -> Any:
         if not self._t:
             self._t = monotonic()
         t = self._t
 
-        self._args.append(arg)
-        future = Future()   # type: Future
-        first = not self._futures
-        self._futures.append(future)
+        args = self._args           # type: List
+        futures = self._futures     # type: List
+        event = self._event         # type: Event
+        lock = self._lock           # type: Lock
+        args.append(arg)
+        future = Future()           # type: Future
+        futures.append(future)
 
         if self.count == self.max_count:
-            self._event.set()
+            event.set()
+            self._clear()
+        else:
+            # Waiting for max_count requests or a timeout
+            with suppress(asyncio.TimeoutError):
+                await wait_for(
+                    event.wait(),
+                    timeout=t + self._leeway - monotonic(),
+                )
+
+        # Clear only if not cleared already
+        if args is self._args:
             self._clear()
 
-        # TODO: fix
-        # If first cancelled, then, all will be cancelled.
-        # Need to make sure that each can execute aggregated function
-        if first:
-            futures, args = self._futures, self._args
-            timeout = t + self._leeway - monotonic()
-            try:
-                await wait([self._event.wait()], timeout=timeout)
-                self._clear()
+        # Trying to acquire the lock to execute the aggregated function
+        async with lock:
+            if not future.done():
                 await self._execute(args=args, futures=futures)
-            except asyncio.TimeoutError:
-                self._clear()
-                raise
-
         await future
         return future.result()
 
