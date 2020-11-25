@@ -69,7 +69,6 @@ async def test_leeway_ok(loop):
         return [math.pow(num, power) for num in args]
 
     tasks = []
-    now = monotonic()
     for i in range(9):
         tasks.append(loop.create_task(pow(i)))
         await asyncio.sleep(leeway / 10 * 0.9)
