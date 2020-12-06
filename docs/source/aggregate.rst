@@ -1,5 +1,5 @@
 Aggregate decorator
-=================
+===================
 
 Parametric decorator that aggregates multiple
 (but no more than ``max_count`` defaulting to ``None``) single-argument
@@ -22,8 +22,10 @@ record and the load is 1000 RPS, then, with a 10% increase of the delay
 (to 110 ms), it may decrease the number of requests to the database by
 10 times (to 100 QPS).
 
+.. image:: /_static/aggregate-flow.svg
 
 .. code-block:: python
+
     import asyncio
     from aiomisc import aggregate
 
