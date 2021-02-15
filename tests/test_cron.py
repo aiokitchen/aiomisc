@@ -131,6 +131,6 @@ async def test_restart(loop):
 async def test_tz_next(loop, now):
     cron = CronCallback(lambda: True)
     with freeze_time(now):
-        handle = cron.start("*/10 * * * *", loop)
+        cron.start("*/10 * * * *", loop)
         expected = timedelta(minutes=10).total_seconds()
-        assert 0 <= handle.when() - loop.time() <= expected
+        assert 0 <= cron.get_current() - loop.time() <= expected

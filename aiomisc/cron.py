@@ -63,13 +63,23 @@ class CronCallback:
             raise asyncio.InvalidStateError
         return loop_time + interval
 
+    def get_current(self) -> float:
+        if not self._loop or not self._croniter:
+            raise asyncio.InvalidStateError
+        loop_time = self._loop.time()
+        timestamp = datetime.now(pytz.utc).timestamp()
+        interval = self._croniter.get_current(float) - timestamp
+        if interval < 0:
+            raise asyncio.InvalidStateError
+        return loop_time + interval
+
     def start(
         self,
         spec: str,
         loop: asyncio.AbstractEventLoop = None,
         *, shield: bool = False,
         suppress_exceptions: t.Tuple[t.Type[Exception], ...] = ()
-    ) -> asyncio.TimerHandle:
+    ) -> None:
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError
 
@@ -115,8 +125,7 @@ class CronCallback:
                 del self._handle
 
             self._handle = self._loop.call_at(self.get_next(), cron)
-
-        return self._loop.call_at(
+        self._loop.call_at(
             self.get_next(), self._loop.call_soon_threadsafe, cron,
         )
 
