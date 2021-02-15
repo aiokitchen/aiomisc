@@ -1,6 +1,8 @@
 import asyncio
+from datetime import timedelta
 
 import pytest
+from freezegun import freeze_time
 
 from aiomisc.cron import CronCallback
 
@@ -114,3 +116,21 @@ async def test_restart(loop):
     await asyncio.sleep(2)
 
     assert counter == 4
+
+
+@pytest.mark.parametrize(
+    "now",
+    [
+        "2021-02-14T07:30:00.532766+00:00",
+        "2021-02-14T07:00:00.532766+01:00",
+        "2021-02-14T07:00:00.532766+02:00",
+        "2021-02-14T07:00:00.532766+03:00",
+        "2021-02-14T07:00:00.532766+04:00",
+    ],
+)
+async def test_tz_next(loop, now):
+    cron = CronCallback(lambda: True)
+    with freeze_time(now):
+        handle = cron.start("*/10 * * * *", loop)
+        expected = timedelta(minutes=10).total_seconds()
+        assert 0 <= handle.when() - loop.time() <= expected
