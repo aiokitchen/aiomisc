@@ -1,9 +1,8 @@
 import asyncio
 import logging
 import typing as t
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
-import pytz
 
 from croniter import croniter
 
@@ -57,7 +56,7 @@ class CronCallback:
         if not self._loop or not self._croniter:
             raise asyncio.InvalidStateError
         loop_time = self._loop.time()
-        timestamp = datetime.now(pytz.utc).timestamp()
+        timestamp = datetime.now(timezone.utc).timestamp()
         interval = self._croniter.get_next(float) - timestamp
         if interval < 0:
             raise asyncio.InvalidStateError
@@ -67,7 +66,7 @@ class CronCallback:
         if not self._loop or not self._croniter:
             raise asyncio.InvalidStateError
         loop_time = self._loop.time()
-        timestamp = datetime.now(pytz.utc).timestamp()
+        timestamp = datetime.now(timezone.utc).timestamp()
         interval = self._croniter.get_current(float) - timestamp
         if interval < 0:
             raise asyncio.InvalidStateError
@@ -89,7 +88,7 @@ class CronCallback:
 
         # noinspection PyAttributeOutsideInit
         self._croniter = croniter(
-            spec, start_time=datetime.now(pytz.utc).timestamp(),
+            spec, start_time=datetime.now(timezone.utc).timestamp(),
         )
 
         self._closed = False

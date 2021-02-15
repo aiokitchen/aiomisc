@@ -12,7 +12,6 @@ pylava
 pytest
 pytest-cov~=2.5.1
 pytest-freezegun~=0.4.2
-pytz
 sphinx
 sphinx-autobuild
 sphinx-intl
