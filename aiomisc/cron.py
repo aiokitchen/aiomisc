@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import typing as t
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 
 from croniter import croniter
@@ -27,7 +27,8 @@ class CronCallback:
     )
 
     def __init__(
-        self, coroutine_func: t.Callable[..., t.Awaitable[t.Any]],
+        self,
+        coroutine_func: t.Callable[..., t.Union[t.Any, t.Awaitable[t.Any]]],
         *args: t.Any, **kwargs: t.Any
     ):
         self.__name = repr(coroutine_func)
@@ -55,10 +56,21 @@ class CronCallback:
         if not self._loop or not self._croniter:
             raise asyncio.InvalidStateError
         loop_time = self._loop.time()
-        timestamp = datetime.utcnow().timestamp()
-        return (
-            loop_time + (self._croniter.get_next(float) - timestamp)
-        )
+        timestamp = datetime.now(timezone.utc).timestamp()
+        interval = self._croniter.get_next(float) - timestamp
+        if interval < 0:
+            raise asyncio.InvalidStateError
+        return loop_time + interval
+
+    def get_current(self) -> float:
+        if not self._loop or not self._croniter:
+            raise asyncio.InvalidStateError
+        loop_time = self._loop.time()
+        timestamp = datetime.now(timezone.utc).timestamp()
+        interval = self._croniter.get_current(float) - timestamp
+        if interval < 0:
+            raise asyncio.InvalidStateError
+        return loop_time + interval
 
     def start(
         self,
@@ -76,7 +88,7 @@ class CronCallback:
 
         # noinspection PyAttributeOutsideInit
         self._croniter = croniter(
-            spec, start_time=datetime.utcnow().timestamp(),
+            spec, start_time=datetime.now(timezone.utc).timestamp(),
         )
 
         self._closed = False
@@ -112,7 +124,6 @@ class CronCallback:
                 del self._handle
 
             self._handle = self._loop.call_at(self.get_next(), cron)
-
         self._loop.call_at(
             self.get_next(), self._loop.call_soon_threadsafe, cron,
         )

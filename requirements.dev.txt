@@ -6,10 +6,12 @@ coverage==4.5.1
 coveralls
 croniter~=0.3.34
 fastapi
+freezegun<1.1
 mypy~=0.782
 pylava
 pytest
 pytest-cov~=2.5.1
+pytest-freezegun~=0.4.2
 sphinx
 sphinx-autobuild
 sphinx-intl
