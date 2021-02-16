@@ -34,7 +34,7 @@ class CronCallback:
         self.__name = repr(coroutine_func)
         self._cb = partial(
             utils.awaitable(coroutine_func), *args, **kwargs
-        )    # type: ignore
+        )
         self._closed = False
         self._handle = None     # type: t.Optional[asyncio.Handle]
         self._task = None       # type: t.Optional[asyncio.Future]

@@ -11,6 +11,10 @@ Number = Union[int, float]
 T = TypeVar("T")
 
 
+WrapReturnType = Callable[[Callable[..., T]], T]
+ReturnType = Callable[[Callable[..., T]], WrapReturnType]
+
+
 # noinspection SpellCheckingInspection
 def asyncbackoff(
     attempt_timeout: Optional[Number],
@@ -19,7 +23,7 @@ def asyncbackoff(
     *exc: Type[Exception], exceptions: Tuple[Type[Exception], ...] = (),
     max_tries: int = None,
     giveup: Callable[[Exception], bool] = None
-) -> Any:
+) -> ReturnType:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
     ``deadline`` time limits are met by decorated function.
@@ -61,7 +65,7 @@ def asyncbackoff(
 
     def decorator(
         func: Callable[..., Awaitable[T]],
-    ) -> Callable[..., Awaitable[T]]:
+    ) -> WrapReturnType:
         if attempt_timeout is not None:
             func = timeout(attempt_timeout)(func)
 
