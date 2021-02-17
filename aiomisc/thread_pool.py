@@ -246,7 +246,7 @@ def run_in_new_thread(
     func: F,
     args: Any = (),
     kwargs: Any = MappingProxyType({}),
-    detouch: bool = True,
+    detach: bool = True,
     no_return: bool = False,
 ) -> asyncio.Future:
     loop = asyncio.get_event_loop()
@@ -287,7 +287,7 @@ def run_in_new_thread(
         ),
     )
 
-    thread.daemon = detouch
+    thread.daemon = detach
 
     thread.start()
     return future
@@ -295,10 +295,10 @@ def run_in_new_thread(
 
 def threaded_separate(
     func: F,
-    detouch: bool = True,
+    detach: bool = True,
 ) -> Callable[..., typing.Awaitable[Any]]:
     if isinstance(func, bool):
-        return partial(threaded_separate, detouch=detouch)
+        return partial(threaded_separate, detach=detach)
 
     if asyncio.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")
@@ -306,7 +306,7 @@ def threaded_separate(
     @wraps(func)
     def wrap(*args: Any, **kwargs: Any) -> Any:
         future = run_in_new_thread(
-            func, args=args, kwargs=kwargs, detouch=detouch,
+            func, args=args, kwargs=kwargs, detach=detach,
         )
 
         return _awaiter(future)
