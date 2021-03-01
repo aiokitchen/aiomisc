@@ -4,9 +4,11 @@ import struct
 import asyncio
 from time import monotonic
 
-import msgpack
+import msgspec
 
 from aiomisc.entrypoint import entrypoint
+
+from spec import Request, Error, Response
 
 
 log = logging.getLogger('client')
@@ -21,8 +23,8 @@ class RPCClient:
 
         self.reader = reader
         self.writer = writer
-        self.packer = msgpack.Packer(use_bin_type=True)
-        self.unpacker = msgpack.Unpacker(raw=False)
+        self.encoder = msgspec.Encoder()
+        self.decoder = msgspec.Decoder(Response)
         self.serial = 0
         self.futures = {}
         self.loop = loop or asyncio.get_event_loop()
@@ -35,25 +37,23 @@ class RPCClient:
                     await self.reader.readexactly(self.HEADER.size)
                 )[0]
 
-                self.unpacker.feed(
+                response = self.decoder.decode(
                     await self.reader.readexactly(body_size)
                 )
 
-                body = self.unpacker.unpack()
-
-                future = self.futures.pop(body['id'], None)
+                future = self.futures.pop(response.id, None)
 
                 if future is None:
                     continue
 
-                if 'error' in body:
+                if response.error is not None:
                     future.set_exception(Exception(
-                        body['error']['type'],
-                        *body['error']['args']
+                        response.error.type,
+                        *response.error.args
                     ))
                     continue
 
-                future.set_result(body['result'])
+                future.set_result(response.result)
         finally:
             while self.futures:
                 _, future = self.futures.popitem()
@@ -79,11 +79,9 @@ class RPCClient:
         self.futures[self.serial] = self.loop.create_future()
 
         with io.BytesIO() as f:
-            body = self.packer.pack({
-                'id': self.serial,
-                'method': method,
-                'params': kwargs,
-            })
+            body = self.encoder.encode(
+                Request(id=self.serial, method=method, params=kwargs)
+            )
 
             f.write(self.HEADER.pack(len(body)))
             f.write(body)

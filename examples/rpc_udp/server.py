@@ -4,11 +4,11 @@ import struct
 import typing
 from types import MappingProxyType
 
-import msgpack
+import msgspec
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.service import UDPServer
-
+from spec import Request, Response, Error
 
 log = logging.getLogger()
 
@@ -21,31 +21,25 @@ class RPCServer(UDPServer):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.unpacker = msgpack.Unpacker(raw=False)
-        self.packer = msgpack.Packer(use_bin_type=True)
+        self.decoder = msgspec.Decoder(Response)
+        self.encoder = msgspec.Encoder()
 
     async def handle_datagram(self, data: bytes, addr):
         body_bytes = data
-        self.unpacker.feed(body_bytes)
-        body = self.unpacker.unpack()
-
-        # "method": "subtract", "params": [42, 23], "id": 1}
-        req_id = body["id"]
-        meth = body["method"]
-        kw = body["params"]
+        request: Request = self.decoder.decode(body_bytes)
 
         try:
-            result = {
-                "id": req_id,
-                "result": await self.execute(meth, kw),
-            }
+            response = Response(
+                id=request.id,
+                result=await self.execute(request.method, request.params)
+            )
         except Exception as e:
-            result = {
-                "id": req_id,
-                "error": {"type": str(type(e)), "args": e.args},
-            }
+            response = Response(
+                id=request.id,
+                result=Error(type=str(type(e)), args=e.args)
+            )
 
-        self.sendto(self.packer.pack(result), addr)
+        self.sendto(self.encoder.encode(response), addr)
 
     async def execute(self, method: str, kwargs: dict):
         func = self.handlers[method]
