@@ -4,8 +4,8 @@ from functools import reduce
 
 import pytest
 
-from .server import RPCServer
-from .client import RPCClient
+from rpc.server import RPCServer
+from rpc.client import RPCClient
 
 
 @pytest.fixture

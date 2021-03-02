@@ -8,7 +8,7 @@ import msgspec
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.service import UDPServer
-from spec import Request, Response, Error
+from .spec import Request, Response, Error
 
 log = logging.getLogger()
 
@@ -21,7 +21,7 @@ class RPCServer(UDPServer):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.decoder = msgspec.Decoder(Response)
+        self.decoder = msgspec.Decoder(Request)
         self.encoder = msgspec.Encoder()
 
     async def handle_datagram(self, data: bytes, addr):
@@ -36,7 +36,7 @@ class RPCServer(UDPServer):
         except Exception as e:
             response = Response(
                 id=request.id,
-                result=Error(type=str(type(e)), args=e.args)
+                error=Error(type=str(type(e)), args=e.args)
             )
 
         self.sendto(self.encoder.encode(response), addr)

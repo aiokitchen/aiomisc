@@ -8,7 +8,7 @@ import msgspec
 
 from aiomisc.entrypoint import entrypoint
 
-from spec import Response, Request
+from .spec import Response, Request
 
 
 log = logging.getLogger("client")

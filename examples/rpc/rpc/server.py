@@ -9,7 +9,8 @@ import msgspec
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.service import TCPServer
-from spec import Request, Error, Response
+
+from .spec import Request, Error, Response
 
 
 log = logging.getLogger()

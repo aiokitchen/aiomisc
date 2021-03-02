@@ -4,8 +4,8 @@ from functools import partial, reduce
 
 import pytest
 
-from .client import RPCClientUDPProtocol
-from .server import RPCServer
+from rpc.client import RPCClientUDPProtocol
+from rpc.server import RPCServer
 
 
 @pytest.fixture
