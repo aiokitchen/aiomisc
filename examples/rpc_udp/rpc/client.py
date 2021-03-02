@@ -4,9 +4,11 @@ import socket
 from collections import defaultdict
 from time import monotonic
 
-import msgpack
+import msgspec
 
 from aiomisc.entrypoint import entrypoint
+
+from .spec import Response, Request
 
 
 log = logging.getLogger("client")
@@ -30,8 +32,8 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
         self.transport = None
         self.last_id = 1
         self.waiting = defaultdict(dict)
-        self.unpacker = msgpack.Unpacker(raw=False)
-        self.packer = msgpack.Packer(use_bin_type=True)
+        self.encoder = msgspec.Encoder()
+        self.decoder = msgspec.Decoder(Response)
 
     def _get_id(self):
         self.last_id += 1
@@ -41,27 +43,21 @@ class RPCClientUDPProtocol(asyncio.BaseProtocol):
         self.transport = transport
 
     def datagram_received(self, data, addr):
-        self.unpacker.feed(data)
-        payload = self.unpacker.unpack()
-        future = self.waiting[addr[:2]][payload["id"]]
+        response: Response = self.decoder.decode(data)
+        future = self.waiting[addr[:2]][response.id]
 
-        if "error" in payload:
-            future.set_exception(RPCCallError(payload["error"], payload))
+        if response.error:
+            future.set_exception(RPCCallError(response.error, response))
         else:
-            future.set_result(payload["result"])
+            future.set_result(response.result)
 
     def rpc(self, addr, method, **kwargs):
         call_id = self._get_id()
         future = self.loop.create_future()
         self.waiting[addr][call_id] = future
 
-        payload = {
-            "id": call_id,
-            "method": method,
-            "params": kwargs,
-        }
-
-        self.transport.sendto(self.packer.pack(payload), addr)
+        payload = Request(id=call_id, method=method, params=kwargs)
+        self.transport.sendto(self.encoder.encode(payload), addr)
         return future
 
     def connection_lost(self, exc):
