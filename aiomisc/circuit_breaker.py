@@ -30,7 +30,13 @@ class CircuitBreakerStates(IntEnum):
 
 
 class CircuitBroken(Exception):
-    pass
+    __slots__ = ("last_exception",)
+
+    def __init__(self, last_exception: t.Optional[Exception]):
+        self.last_exception = last_exception
+
+    def __repr__(self) -> str:
+        return "<{!r}: {!r}>".format(self, self.last_exception)
 
 
 class CircuitBreaker:
@@ -38,6 +44,7 @@ class CircuitBreaker:
         "_broken_time",
         "_error_ratio",
         "_exceptions",
+        "_last_exception",
         "_lock",
         "_loop",
         "_passing_time",
@@ -126,6 +133,7 @@ class CircuitBreaker:
         self._passing_time = passing_time or self._response_time
         self._broken_time = broken_time or self._response_time
         self._recovery_time = recovery_time or self._response_time
+        self._last_exception = None     # type: t.Optional[Exception]
 
     @property
     def response_time(self) -> Number:
@@ -185,7 +193,9 @@ class CircuitBreaker:
         try:
             yield
             counter[CounterKey.OK] += 1
-        except self._exceptions:
+            self._last_exception = None
+        except self._exceptions as e:
+            self._last_exception = e
             counter[CounterKey.FAIL] += 1
             raise
         finally:
@@ -200,7 +210,7 @@ class CircuitBreaker:
         )
 
         if not condition:
-            raise CircuitBroken()
+            raise CircuitBroken(self._last_exception)
 
         yield from self._on_passing(counter)
 
@@ -280,7 +290,7 @@ class CircuitBreaker:
             return
 
         elif self._state is CircuitBreakerStates.BROKEN:
-            raise CircuitBroken()
+            raise CircuitBroken(self._last_exception)
 
         elif self._state is CircuitBreakerStates.RECOVERING:
             yield from self._on_recover(counter)
