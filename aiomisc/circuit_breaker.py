@@ -32,10 +32,10 @@ class CircuitBreakerStates(IntEnum):
 class CircuitBroken(Exception):
     __slots__ = ("last_exception",)
 
-    def __init__(self, last_exception: Exception):
+    def __init__(self, last_exception: t.Optional[Exception]):
         self.last_exception = last_exception
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{!r}: {!r}>".format(self, self.last_exception)
 
 
@@ -210,7 +210,7 @@ class CircuitBreaker:
         )
 
         if not condition:
-            raise CircuitBroken()
+            raise CircuitBroken(self._last_exception)
 
         yield from self._on_passing(counter)
 
