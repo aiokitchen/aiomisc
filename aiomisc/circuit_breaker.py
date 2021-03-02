@@ -32,7 +32,7 @@ class CircuitBreakerStates(IntEnum):
 class CircuitBroken(Exception):
     __slots__ = ("last_exception",)
 
-    def __init__(self, last_exception):
+    def __init__(self, last_exception: Exception):
         self.last_exception = last_exception
 
     def __repr__(self):
@@ -133,7 +133,7 @@ class CircuitBreaker:
         self._passing_time = passing_time or self._response_time
         self._broken_time = broken_time or self._response_time
         self._recovery_time = recovery_time or self._response_time
-        self._last_exception = None
+        self._last_exception = None     # type: t.Optional[Exception]
 
     @property
     def response_time(self) -> Number:
