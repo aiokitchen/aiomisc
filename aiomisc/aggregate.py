@@ -1,10 +1,10 @@
 import asyncio
 import inspect
-from asyncio import Future, Event, Lock, CancelledError, wait_for
+from asyncio import CancelledError, Event, Future, Lock, wait_for
 from contextlib import suppress
 from inspect import Parameter
 from time import monotonic
-from typing import List, Optional, Callable, Any, Awaitable, Iterable
+from typing import Any, Awaitable, Callable, Iterable, List, Optional
 
 AggFunc = Callable[[Any], Awaitable[Iterable]]
 
