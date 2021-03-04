@@ -56,11 +56,12 @@ async def test_error(loop):
     async def pho(num: int):
         return await pow(float(num))
 
+    t = monotonic()
+
     tasks = []
     for i in range(10):
         tasks.append(loop.create_task(pho(i)))
 
-    t = monotonic()
     await event.wait()
     elapsed = t_exec - t
     assert leeway < elapsed < leeway * 2
@@ -84,11 +85,12 @@ async def test_leeway_ok(loop):
 
         return [math.pow(num, power) for num in args]
 
+    t = monotonic()
+
     tasks = []
     for i in range(9):
         tasks.append(loop.create_task(pow(i)))
 
-    t = monotonic()
     await asyncio.sleep(leeway * 0.1)
     assert all(not task.done() for task in tasks)
 
@@ -116,11 +118,12 @@ async def test_max_count(loop):
 
         return [math.pow(num, power) for num in args]
 
+    t = monotonic()
+
     tasks = []
     for i in range(5):
         tasks.append(loop.create_task(pow(i)))
 
-    t = monotonic()
     await event.wait()
     elapsed = t_exec - t
     assert 0 < elapsed < leeway
@@ -145,12 +148,13 @@ async def test_max_count_multiple_batches(loop):
 
         return [math.pow(num, power) for num in args]
 
+    t = monotonic()
+
     tasks = []
     for i in range(9):
         tasks.append(loop.create_task(pow(i)))
 
     # Wait for the first batch
-    t = monotonic()
     await event.wait()
     event.clear()
     elapsed = t_exec - t
@@ -198,11 +202,12 @@ async def test_leeway_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
+    t = monotonic()
+
     for i in range(9):
         tasks.append(loop.create_task(pho(i)))
 
     # Execution must have started
-    t = monotonic()
     await event.wait()
     event.clear()
     elapsed = t_exec - t
@@ -256,12 +261,13 @@ async def test_max_count_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
+    t = monotonic()
+
     tasks = []
     for i in range(5):
         tasks.append(loop.create_task(pho(i)))
 
     # Execution must have started
-    t = monotonic()
     await event.wait()
     event.clear()
     elapsed = t_exec - t
@@ -316,11 +322,11 @@ async def test_max_count_multiple_batches_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
+    t = monotonic()
+
     tasks = []
     for i in range(9):
         tasks.append(loop.create_task(pho(i)))
-
-    t = monotonic()
 
     # Execution of the first batch must have started
     await event.wait()
