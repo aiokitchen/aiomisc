@@ -64,7 +64,7 @@ async def test_error(loop):
 
     await event.wait()
     elapsed = t_exec - t
-    assert leeway < elapsed < leeway * 2
+    assert leeway * 0.9 < elapsed < leeway * 2
 
     await wait(tasks)
     for task in tasks:
@@ -96,7 +96,7 @@ async def test_leeway_ok(loop):
 
     await event.wait()
     elapsed = t_exec - t
-    assert leeway < elapsed < leeway * 2
+    assert leeway * 0.9 < elapsed < leeway * 2
 
     await wait(tasks)
     for i, task in enumerate(tasks):
@@ -169,7 +169,7 @@ async def test_max_count_multiple_batches(loop):
     # Wait for the second batch
     await event.wait()
     elapsed = t_exec - t
-    assert leeway < elapsed < leeway * 2
+    assert leeway * 0.9 < elapsed < leeway * 2
 
     await wait(tasks[5:])
     for i, task in enumerate(tasks):
@@ -211,7 +211,7 @@ async def test_leeway_cancel(loop):
     await event.wait()
     event.clear()
     elapsed = t_exec - t
-    assert leeway < elapsed < leeway * 2
+    assert leeway * 0.9 < elapsed < leeway * 2
     assert executions == 1
     first_executing_task = executing_task
     first_executing_task.cancel()
@@ -358,7 +358,7 @@ async def test_max_count_multiple_batches_cancel(loop):
     # Second batch must have started execution
     await event.wait()
     elapsed = t_exec - t
-    assert leeway < elapsed < leeway * 2
+    assert leeway * 0.9 < elapsed < leeway * 2
     assert all(not task.done() for task in tasks[5:])
     assert executions == 3
 
