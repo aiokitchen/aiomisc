@@ -70,6 +70,8 @@ class JSONLogFormatter(logging.Formatter):
         for key in record_dict:
             if key in data:
                 continue
+            elif key in self.FIELD_MAPPING:
+                continue
             elif key[0] == "_":
                 continue
 

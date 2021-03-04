@@ -41,6 +41,7 @@ translate:
 	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
 
 docs: translate
-	make -C docs/ html
-	make -C docs/ -e SPHINXOPTS="-D language='ru'" html
-	python -m webbrowser -t "file://$(shell pwd)/docs/build/html/index.html"
+	make -C docs/ -e BUILDDIR="build/en" html
+	make -C docs/ -e SPHINXOPTS="-D language='ru'" -e BUILDDIR="build/ru" html
+	python -m webbrowser -t "file://$(shell pwd)/docs/build/en/html/index.html"
+	python -m webbrowser -t "file://$(shell pwd)/docs/build/ru/html/index.html"

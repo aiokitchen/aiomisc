@@ -81,7 +81,7 @@ class AsyncFileIOBase:
     opener = staticmethod(threaded(open))
 
     def __init__(
-        self, fname: Union[str, Path], mode: str="r",
+        self, fname: Union[str, Path], mode: str = "r",
         executor: Executor = None, *args: Any, **kwargs: Any
     ):
         self.loop = kwargs.pop("loop", asyncio.get_event_loop())
@@ -213,6 +213,6 @@ def async_open(
 ) -> AsyncFileT:
     if "b" in mode:
         return AsyncBytesFileIO(
-            fname, mode=mode, *args, **kwargs
-        )  # type: ignore
-    return AsyncTextFileIO(fname, mode=mode, *args, **kwargs)   # type: ignore
+            fname, mode, *args, **kwargs
+        )
+    return AsyncTextFileIO(fname, mode, *args, **kwargs)

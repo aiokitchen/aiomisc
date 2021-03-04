@@ -5,10 +5,12 @@ import asyncio
 from types import MappingProxyType
 from typing import Callable, Dict
 
-import msgpack
+import msgspec
 
 from aiomisc.entrypoint import entrypoint
 from aiomisc.service import TCPServer
+
+from .spec import Request, Error, Response
 
 
 log = logging.getLogger()
@@ -23,8 +25,8 @@ class RPCServer(TCPServer):
     async def handle_client(self, reader: asyncio.StreamReader,
                             writer: asyncio.StreamWriter):
 
-        unpacker = msgpack.Unpacker(raw=False)
-        packer = msgpack.Packer(use_bin_type=True)
+        decoder = msgspec.Decoder(Request)
+        encoder = msgspec.Encoder()
 
         try:
             while True:
@@ -39,27 +41,25 @@ class RPCServer(TCPServer):
 
                 body_bytes = await reader.readexactly(body_size)
 
-                unpacker.feed(body_bytes)
-                body = unpacker.unpack()
-
-                # "method": "subtract", "params": [42, 23], "id": 1}
-                req_id = body['id']
-                meth = body['method']
-                kw = body['params']
+                request = decoder.decode(body_bytes)
 
                 try:
-                    result = {"id": req_id,
-                              "result": await self.execute(meth, kw)}
+                    response = Response(
+                        id=request.id,
+                        result=await self.execute(
+                            request.method, request.params
+                        )
+                    )
                 except Exception as e:
-                    result = {
-                        'id': req_id,
-                        'error': {'type': str(type(e)), 'args': e.args}
-                    }
+                    response = Response(
+                        id=request.id,
+                        error=Error(type=str(type(e)), args=e.args)
+                    )
 
                 with io.BytesIO() as f:
-                    response = packer.pack(result)
-                    f.write(self.HEADER.pack(len(response)))
-                    f.write(response)
+                    response_bytes = encoder.encode(response)
+                    f.write(self.HEADER.pack(len(response_bytes)))
+                    f.write(response_bytes)
 
                     payload = f.getvalue()
 

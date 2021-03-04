@@ -122,7 +122,7 @@ html_theme_options = {
     "github_repo": "aiomisc",
     "github_type": "star",
     "github_user": "aiokitchen",
-    "travis_button": True,
+    "travis_button": False,
 }
 
 
