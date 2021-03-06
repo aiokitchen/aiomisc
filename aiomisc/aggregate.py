@@ -5,10 +5,8 @@ from contextlib import suppress
 from inspect import Parameter
 from time import monotonic
 from typing import (
-    Any, Awaitable, Callable, Iterable, List, Optional, NamedTuple,
+    Any, Awaitable, Callable, Iterable, List, Optional, NamedTuple, Union,
 )
-
-AggFunc = Callable[[Any], Awaitable[Iterable]]
 
 
 class Arg(NamedTuple):
@@ -20,8 +18,16 @@ class ResultNotSet(Exception):
     pass
 
 
+AggFuncHighLevel = Callable[[Any], Awaitable[Iterable]]
+AggFuncLowLevel = Callable[[Arg], Awaitable]
+AggFunc = Union[AggFuncHighLevel, AggFuncLowLevel]
+
+
 class Aggregator:
 
+    _func: AggFunc
+    _max_count: Optional[int]
+    _leeway: float
     _first_call_at: Optional[float]
     _args: list
     _futures: List[Future]
@@ -47,9 +53,9 @@ class Aggregator:
         if leeway_ms <= 0:
             raise ValueError("leeway_ms must be positive float")
 
-        self._func: AggFunc = func
-        self._max_count: Optional[int] = max_count
-        self._leeway: float = leeway_ms / 1000
+        self._func = func
+        self._max_count = max_count
+        self._leeway = leeway_ms / 1000
         self._clear()
 
     def _clear(self) -> None:
@@ -173,7 +179,7 @@ def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     function with. Default ``None``.
     :return:
     """
-    def _(func: AggFunc) -> Any:
+    def _(func: AggFuncHighLevel) -> Callable[[Any], Awaitable]:
         aggregator = Aggregator(
             func, max_count=max_count, leeway_ms=leeway_ms,
         )
@@ -191,7 +197,7 @@ def aggregate_ll(leeway_ms: float, max_count: int = None) -> Callable:
     future, then, ``ResultNotSet`` exception is set.
     :return:
     """
-    def _(func: AggFunc) -> Any:
+    def _(func: AggFuncLowLevel) -> Callable[[Any], Awaitable]:
         aggregator = AggregatorLowLevel(
             func, max_count=max_count, leeway_ms=leeway_ms,
         )
