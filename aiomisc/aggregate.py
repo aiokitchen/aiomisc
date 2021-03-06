@@ -4,12 +4,29 @@ from asyncio import CancelledError, Event, Future, Lock, wait_for
 from contextlib import suppress
 from inspect import Parameter
 from time import monotonic
-from typing import Any, Awaitable, Callable, Iterable, List, Optional
+from typing import (
+    Any, Awaitable, Callable, Iterable, List, Optional, NamedTuple,
+)
 
 AggFunc = Callable[[Any], Awaitable[Iterable]]
 
 
+class Arg(NamedTuple):
+    value: Any
+    future: Future
+
+
+class ResultNotSet(Exception):
+    pass
+
+
 class Aggregator:
+
+    _first_call_at: Optional[float]
+    _args: list
+    _futures: List[Future]
+    _event: Event
+    _lock: Lock
 
     def __init__(
             self, func: AggFunc, *,
@@ -30,14 +47,17 @@ class Aggregator:
         if leeway_ms <= 0:
             raise ValueError("leeway_ms must be positive float")
 
-        self._func = func
-        self._max_count = max_count
-        self._leeway = leeway_ms / 1000
-        self._t = None          # type: Optional[float]
-        self._args = []         # type: list
-        self._futures = []      # type: List[Future]
-        self._event = Event()   # type: Event
-        self._lock = Lock()     # type: Lock
+        self._func: AggFunc = func
+        self._max_count: Optional[int] = max_count
+        self._leeway: float = leeway_ms / 1000
+        self._clear()
+
+    def _clear(self) -> None:
+        self._first_call_at = None
+        self._args = []
+        self._futures = []
+        self._event = Event()
+        self._lock = Lock()
 
     @property
     def max_count(self) -> Optional[int]:
@@ -50,13 +70,6 @@ class Aggregator:
     @property
     def count(self) -> int:
         return len(self._args)
-
-    def _clear(self) -> None:
-        self._t = None
-        self._args = []
-        self._futures = []
-        self._event = Event()
-        self._lock = Lock()
 
     async def _execute(self, *, args: list, futures: List[Future]) -> None:
         try:
@@ -83,16 +96,16 @@ class Aggregator:
                 future.set_exception(exc)
 
     async def aggregate(self, arg: Any) -> Any:
-        if not self._t:
-            self._t = monotonic()
-        t = self._t
+        if self._first_call_at is None:
+            self._first_call_at = monotonic()
+        first_call_at = self._first_call_at
 
-        args = self._args           # type: List
-        futures = self._futures     # type: List
-        event = self._event         # type: Event
-        lock = self._lock           # type: Lock
+        args: list = self._args
+        futures: List[Future] = self._futures
+        event: Event = self._event
+        lock: Lock = self._lock
         args.append(arg)
-        future = Future()           # type: Future
+        future: Future = Future()
         futures.append(future)
 
         if self.count == self.max_count:
@@ -103,7 +116,7 @@ class Aggregator:
             with suppress(asyncio.TimeoutError):
                 await wait_for(
                     event.wait(),
-                    timeout=t + self._leeway - monotonic(),
+                    timeout=first_call_at + self._leeway - monotonic(),
                 )
 
         # Clear only if not cleared already
@@ -118,6 +131,28 @@ class Aggregator:
         return future.result()
 
 
+class AggregatorLowLevel(Aggregator):
+
+    async def _execute(self, *, args: list, futures: List[Future]) -> None:
+        args = [
+            Arg(value=arg, future=future)
+            for arg, future in zip(args, futures)
+        ]
+        try:
+            await self._func(*args)
+        except CancelledError:
+            # Other waiting tasks can try to finish the job instead.
+            raise
+        except Exception as e:
+            self._set_exception(e, futures)
+            return
+
+        # Validate that all results/exceptions are set by the func
+        for future in futures:
+            if not future.done():
+                future.set_exception(ResultNotSet)
+
+
 def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     """
     Parametric decorator that aggregates multiple
@@ -127,18 +162,38 @@ def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     (``async def func(*args, pho=1, bo=2) -> Iterable``) into its single
     execution with multiple positional arguments
     (``res1, res2, ... = await func(arg1, arg2, ...)``) collected within a time
-    window ``leeway_ms``.
+    window ``leeway_ms``. Note 1: ``func`` must return a sequence of values
+    of length equal to the number of arguments (and in the same order).
+    Note 2: if some unexpected error occurs, exception is propagated to each
+    future; to set an individual error for each aggregated call refer
+    to ``aggregate_ll``.
     :param leeway_ms: The maximum approximate delay between the first
     collected argument and the aggregated execution.
     :param max_count: The maximum number of arguments to call decorated
     function with. Default ``None``.
     :return:
     """
-    def decorator(func: AggFunc) -> Any:
-        aggregator = Aggregator(func, max_count=max_count, leeway_ms=leeway_ms)
+    def _(func: AggFunc) -> Any:
+        aggregator = Aggregator(
+            func, max_count=max_count, leeway_ms=leeway_ms,
+        )
+        return aggregator.aggregate
+    return _
 
-        async def wrap(arg: Any) -> Any:
-            return await aggregator.aggregate(arg)
-        return wrap
 
-    return decorator
+def aggregate_ll(leeway_ms: float, max_count: int = None) -> Callable:
+    """
+    Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
+    containing ``value`` and ``future`` attributes instead. In this setting
+    ``func`` is responsible for setting individual results/exceptions for all
+    of the futures or throwing an exception (it will propagate to futures
+    automatically). If ``func`` mistakenly does not set a result of some
+    future, then, ``ResultNotSet`` exception is set.
+    :return:
+    """
+    def _(func: AggFunc) -> Any:
+        aggregator = AggregatorLowLevel(
+            func, max_count=max_count, leeway_ms=leeway_ms,
+        )
+        return aggregator.aggregate
+    return _
