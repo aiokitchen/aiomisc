@@ -7,7 +7,7 @@ from typing import List
 from aiocontextvars import ContextVar
 import pytest
 
-from aiomisc.aggregate import aggregate
+from aiomisc.aggregate import aggregate, aggregate_ll, Arg, ResultNotSet
 
 
 async def test_invalid_func():
@@ -367,3 +367,62 @@ async def test_max_count_multiple_batches_cancel(loop):
     for i, task in enumerate(tasks[5:], start=5):
         assert task.done()
         assert task.result() == math.pow(i, 2)
+
+
+async def test_low_level_sloppy(loop):
+    leeway = 0.1
+    max_count = 2
+
+    @aggregate_ll(leeway * 1000, max_count=max_count)
+    async def pho(*args: Arg):
+        for arg in args:
+            if arg.value:
+                arg.future.set_result(True)
+
+    task1 = loop.create_task(pho(True))
+    task2 = loop.create_task(pho(False))
+    await wait([task1, task2])
+
+    assert task1.done()
+    assert await task1
+    assert task2.done()
+    assert isinstance(task2.exception(), ResultNotSet)
+
+
+async def test_low_level_ok(loop):
+    leeway = 0.1
+
+    @aggregate_ll(leeway * 1000)
+    async def pow(*args: Arg, power: float = 2):
+        for arg in args:
+            arg.future.set_result(math.pow(arg.value, power))
+
+    tasks = []
+    for i in range(5):
+        tasks.append(loop.create_task(pow(i)))
+
+    await wait(tasks)
+    for i, task in enumerate(tasks):
+        assert tasks[i].done()
+        assert task.result() == math.pow(i, 2)
+
+
+async def test_low_level_error(loop):
+    leeway = 0.1
+
+    @aggregate_ll(leeway * 1000)
+    async def pho(*args: Arg):
+        for arg in args:
+            if arg.value:
+                arg.future.set_result(True)
+            else:
+                arg.future.set_exception(ValueError)
+
+    task1 = loop.create_task(pho(True))
+    task2 = loop.create_task(pho(False))
+    await wait([task1, task2])
+
+    assert task1.done()
+    assert task1.result()
+    assert task2.done()
+    assert isinstance(task2.exception(), ValueError)
