@@ -1,13 +1,18 @@
 from dataclasses import dataclass
 from threading import RLock
-from typing import Any, Hashable, Optional
+from typing import Any, Hashable, Optional, Set
 
-from llist import dllistnode, dllist
+
+@dataclass(unsafe_hash=True)
+class Node:
+    prev: Optional["Node"]
+    next: Optional["Node"]
+    items: Set["Item"]
 
 
 @dataclass(frozen=True)
-class FrequencyItem:
-    node: dllistnode
+class Item:
+    node: Node
     key: Hashable
     value: Any
 
@@ -28,15 +33,17 @@ class LFUCache:
 
     def __init__(self, max_size: int = 0):
         self.cache = dict()
-        self.usages = dllist()
+        self.usages: Node = Node(prev=None, next=None, items=set())
         self.lock = RLock()
         self.size = 0
         self.max_size = max_size
 
-    def _create_node(self) -> dllistnode:
-        return self.usages.append(set([]))
+    def _create_node(self) -> Node:
+        node = Node(prev=self.usages, next=None, items=set())
+        self.usages.next = node
+        return node
 
-    def _update_usage(self, item: FrequencyItem):
+    def _update_usage(self, item: Item):
         with self.lock:
             old_node = item.node
             new_node = item.node.next
@@ -44,32 +51,35 @@ class LFUCache:
             if new_node is None:
                 new_node = self._create_node()
 
-            old_node.value.remove(item)
-            item = FrequencyItem(
+            old_node.items.remove(item)
+            item = Item(
                 node=new_node,
                 key=item.key,
                 value=item.value,
             )
-            new_node.value.add(item)
+            new_node.items.add(item)
             self.cache[item.key] = item
 
-            if not old_node.value:
-                self.usages.remove(old_node)
+            if not old_node.items:
+                old_node.next = None
+                old_node.prev = None
+                self.usages = new_node
+                self.usages.prev = None
 
     def get(self, key: Hashable):
-        item: FrequencyItem = self.cache[key]
+        item: Item = self.cache[key]
         self._update_usage(item)
         return item.value
 
     def set(self, key: Hashable, value: Any):
         with self.lock:
-            node: Optional[dllistnode] = self.usages.first
+            node: Optional[Node] = self.usages
 
             if node is None:
                 node = self._create_node()
 
-            item = FrequencyItem(node=node, key=key, value=value)
-            node.value.add(item)
+            item = Item(node=node, key=key, value=value)
+            node.items.add(item)
             self.cache[key] = item
 
     def __contains__(self, key) -> Any:
