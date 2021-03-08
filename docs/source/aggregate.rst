@@ -8,7 +8,7 @@ of an asynchronous function with variadic positional arguments
 (``async def func(*args, pho=1, bo=2) -> Iterable``) into its single execution
 with multiple positional arguments
 (``res1, res2, ... = await func(arg1, arg2, ...)``) collected within a time
-window ``leeway_ms``.
+window ``leeway_ms``. It offers a trade-off between latency and throughput.
 
 If ``func`` raises an exception, then, all of the aggregated calls will
 propagate the same exception. If one of the aggregated calls gets cancelled
