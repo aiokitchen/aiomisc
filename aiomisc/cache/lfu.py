@@ -3,11 +3,14 @@ from threading import RLock
 from typing import Any, Hashable, Optional, Set
 
 
-@dataclass(unsafe_hash=True)
 class Node:
-    prev: Optional["Node"]
-    next: Optional["Node"]
-    items: Set["Item"]
+    __slots__ = ('prev', 'next', 'items')
+
+    def __init__(self, prev: "Node" = None, next: "Node" = None,
+                 items: Optional[Set["Item"]] = None):
+        self.prev = prev
+        self.next = next
+        self.items = items or set()
 
 
 @dataclass(frozen=True)
