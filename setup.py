@@ -65,6 +65,7 @@ setup(
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
         'cron': ['croniter~=0.3.34'],
+        'lfu': ['llist==0.6'],
         ':python_version < "3.7"': 'async-generator',
     },
     entry_points={
