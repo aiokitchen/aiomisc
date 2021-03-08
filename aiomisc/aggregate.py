@@ -1,12 +1,15 @@
 import asyncio
 import inspect
+import logging
 from asyncio import CancelledError, Event, Future, Lock, wait_for
-from contextlib import suppress
 from inspect import Parameter
 from time import monotonic
 from typing import (
     Any, Awaitable, Callable, Iterable, List, Optional, NamedTuple, Union,
 )
+
+
+log = logging.getLogger(__name__)
 
 
 class Arg(NamedTuple):
@@ -119,10 +122,17 @@ class Aggregator:
             self._clear()
         else:
             # Waiting for max_count requests or a timeout
-            with suppress(asyncio.TimeoutError):
+            try:
                 await wait_for(
                     event.wait(),
                     timeout=first_call_at + self._leeway - monotonic(),
+                )
+            except asyncio.TimeoutError:
+                log.debug(
+                    'Aggregation timeout of %s for batch started at %.4f '
+                    'with %d calls after %.2f ms',
+                    self._func.__name__, first_call_at, len(futures),
+                    (monotonic() - first_call_at) * 1000,
                 )
 
         # Clear only if not cleared already
