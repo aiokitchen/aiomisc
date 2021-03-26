@@ -79,7 +79,12 @@ def bind_socket(
     for level, option, value in options:
         sock.setsockopt(level, option, value)
 
-    sock.bind((address, port))
+    unix_address_family = getattr(socket, 'AF_UNIX', None)
+    if sock.family == unix_address_family:
+        sock.bind(address)
+    else:
+        sock.bind((address, port))
+
     sock_addr = sock.getsockname()[:2]
 
     if sock.family == socket.AF_INET6:

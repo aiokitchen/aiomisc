@@ -12,6 +12,7 @@ import aiomisc
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIHTTPService, ASGIApplicationType
+from tests import unix_only
 
 try:
     import uvloop
@@ -267,6 +268,7 @@ def test_tcp_without_port_or_socket():
         TestService()
 
 
+@unix_only
 def test_udp_socket_server(unix_socket_udp):
     class TestService(UDPServer):
         DATA = []
@@ -297,6 +299,7 @@ def test_udp_socket_server(unix_socket_udp):
     assert TestService.DATA == [b"hello server\n"]
 
 
+@unix_only
 def test_tcp_server_unix(unix_socket_tcp):
     class TestService(TCPServer):
         DATA = []
@@ -360,6 +363,7 @@ def test_aiohttp_service(aiomisc_unused_port):
     assert response == 404
 
 
+@unix_only
 def test_aiohttp_service_sock(unix_socket_tcp):
     async def http_client():
         conn = aiohttp.UnixConnector(path=unix_socket_tcp.getsockname())
@@ -426,6 +430,7 @@ def test_asgi_service(aiomisc_unused_port):
     assert response == 200
 
 
+@unix_only
 def test_asgi_service_sock(unix_socket_tcp):
     async def http_client():
         conn = aiohttp.UnixConnector(path=unix_socket_tcp.getsockname())
