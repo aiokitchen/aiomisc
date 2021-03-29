@@ -76,6 +76,7 @@ def _inner(address: AddressType, cookie: bytes) -> None:
         hasher.update(cookie)
         sock.send(hasher.digest())
 
+        del cookie
         log.debug("Worker ready")
         try:
             while not step():
