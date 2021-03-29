@@ -4,14 +4,19 @@ import logging
 import pickle
 import socket
 from enum import IntEnum
+from inspect import Traceback
 from multiprocessing import Process, ProcessError, AuthenticationError
 from os import chmod, urandom
 from struct import Struct
 from tempfile import mktemp
-from typing import Tuple, Set, Callable, Any, Dict, Optional, Union
+from typing import Tuple, Set, Callable, Any, Dict, Optional, Union, TypeVar, \
+    Type
 
 from aiomisc.utils import bind_socket
 
+
+T = TypeVar("T")
+AddressType = Union[str, Tuple[str, int]]
 
 log = logging.getLogger(__name__)
 Header = Struct("!BI")
@@ -27,7 +32,7 @@ class PacketTypes(IntEnum):
     RESULT = 2
 
 
-def _inner(address: Union[str, Tuple[str, int]], cookie: bytes):
+def _inner(address: AddressType, cookie: bytes) -> None:
     def step() -> Optional[bool]:
         header = sock.recv(Header.size)
         if not header:
@@ -50,6 +55,7 @@ def _inner(address: Union[str, Tuple[str, int]], cookie: bytes):
         header = Header.pack(response_type.value, len(payload))
         sock.send(header)
         sock.send(payload)
+        return None
 
     family = (
         socket.AF_UNIX
@@ -81,11 +87,10 @@ def _inner(address: Union[str, Tuple[str, int]], cookie: bytes):
 class WorkerPool:
     tasks: asyncio.Queue
     server: asyncio.AbstractServer
-    socket: socket.socket
-    address: Union[Tuple[str, int], str]
+    address: AddressType
 
     if hasattr(socket, "AF_UNIX"):
-        def _create_socket(self):
+        def _create_socket(self) -> None:
             path = mktemp(suffix=".sock", prefix="worker-")
             self.socket = bind_socket(
                 socket.AF_UNIX,
@@ -95,7 +100,7 @@ class WorkerPool:
             self.address = path
             chmod(path, 0o600)
     else:
-        def _create_socket(self):
+        def _create_socket(self) -> None:
             self.socket = bind_socket(
                 socket.AF_UNSPEC,
                 address='localhost',
@@ -108,9 +113,9 @@ class WorkerPool:
         process.start()
         return process
 
-    def __init__(self, workers, max_overflow: int = 0):
+    def __init__(self, workers: int, max_overflow: int = 0):
         self.__cookie = urandom(COOKIE_SIZE)
-        self.__loop = None
+        self.__loop: Optional[asyncio.AbstractEventLoop] = None
         self._create_socket()
         self.tasks = asyncio.Queue(maxsize=max_overflow)
         self.workers = workers
@@ -127,10 +132,13 @@ class WorkerPool:
             self.__loop = asyncio.get_event_loop()
         return self.__loop
 
-    async def handle_client(
+    async def _handle_client(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
-    ):
-        if self._current_process is None:
+    ) -> None:
+        if (
+            self._current_process is None or
+            self._current_process_event is None
+        ):
             raise RuntimeError("No process found")
 
         process = self._current_process
@@ -138,7 +146,7 @@ class WorkerPool:
         async def step(
             func: Callable, args: Tuple[Any, ...],
             kwargs: Dict[str, Any], result_future: asyncio.Future
-        ):
+        ) -> None:
             payload = pickle.dumps((func, args, kwargs))
             header = Header.pack(PacketTypes.REQUEST.value, len(payload))
             writer.write(header)
@@ -151,15 +159,15 @@ class WorkerPool:
 
             if packet_type == PacketTypes.RESULT:
                 result_future.set_result(pickle.loads(payload))
-                return
+                return None
 
             if packet_type == PacketTypes.EXCEPTION:
                 result_future.set_exception(pickle.loads(payload))
-                return
+                return None
 
             raise ValueError("Unknown packet type")
 
-        async def handler():
+        async def handler() -> None:
             log.debug("Starting to handle client")
             salt = await reader.readexactly(SALT_SIZE)
             digest = await reader.readexactly(HASH_SIZE)
@@ -206,9 +214,9 @@ class WorkerPool:
         self._current_process_event.set()
         await task
 
-    async def start_server(self):
+    async def start_server(self) -> None:
         self.server = await asyncio.start_server(
-            self.handle_client,
+            self._handle_client,
             sock=self.socket
         )
 
@@ -218,15 +226,15 @@ class WorkerPool:
 
         self.task_store.add(self.loop.create_task(self.supervise()))
 
-    async def _respawn_process(self):
+    async def _respawn_process(self) -> None:
         log.debug("Spawning new process")
         async with self._create_process_lock:
             self._current_process_event = asyncio.Event()
-            self._current_process: Process = self._create_process()
+            self._current_process = self._create_process()
             self.processes.add(self._current_process)
             await self._current_process_event.wait()
 
-    async def supervise(self):
+    async def supervise(self) -> None:
         while True:
             for process in tuple(self.processes):
                 if not process.is_alive():
@@ -242,7 +250,7 @@ class WorkerPool:
 
             await asyncio.sleep(0.1)
 
-    async def _cancel_tasks(self):
+    async def _cancel_tasks(self) -> None:
         tasks = set()
 
         for task in tuple(self.task_store):
@@ -253,13 +261,13 @@ class WorkerPool:
 
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    def _create_future(self):
+    def _create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
         self._futures.add(future)
         future.add_done_callback(self._futures.remove)
         return future
 
-    async def _reject_futures(self):
+    async def _reject_futures(self) -> None:
         while self._futures:
             future = self._futures.pop()
             if future.done():
@@ -268,7 +276,7 @@ class WorkerPool:
             future.set_exception(RuntimeError("Pool closed"))
             await asyncio.sleep(0)
 
-    async def close(self):
+    async def close(self) -> None:
         await asyncio.gather(
             self._cancel_tasks(),
             self._reject_futures(),
@@ -278,14 +286,16 @@ class WorkerPool:
             process = self.processes.pop()
             process.kill()
 
-    async def create_task(self, func, *args, **kwargs):
+    async def create_task(self, func: Callable[..., T],
+                          *args: Any, **kwargs: Any) -> T:
         future = self._create_future()
         await self.tasks.put((func, args, kwargs, future))
         return await future
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "WorkerPool":
         await self.start_server()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Type[Exception],
+                        exc_val: Exception, exc_tb: Traceback) -> None:
         await self.close()
