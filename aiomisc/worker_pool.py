@@ -138,11 +138,13 @@ class WorkerPool:
     if hasattr(Process, "kill"):
         @staticmethod
         def _kill_process(process: Process) -> None:
-            process.kill()
+            if process.is_alive():
+                process.kill()
     else:
         @staticmethod
         def _kill_process(process: Process) -> None:
-            process.terminate()
+            if process.is_alive():
+                process.terminate()
 
     def __create_process(self, identity: str) -> Process:
         process = Process(

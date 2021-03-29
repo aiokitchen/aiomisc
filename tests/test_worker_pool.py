@@ -15,15 +15,6 @@ async def worker_pool(loop) -> WorkerPool:
         yield pool
 
 
-async def test_simple(worker_pool):
-    pids = set(await asyncio.gather(
-        *[worker_pool.create_task(getpid)
-          for _ in range(worker_pool.workers * 4)]
-    ))
-
-    assert len(pids) == worker_pool.workers
-
-
 async def test_success(worker_pool):
     results = await asyncio.gather(*[
         worker_pool.create_task(operator.mul, i, i)
