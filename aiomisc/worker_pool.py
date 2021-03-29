@@ -188,26 +188,30 @@ class WorkerPool:
                 func: Callable
                 args: Tuple[Any, ...]
                 kwargs: Dict[str, Any]
-                result_fut: asyncio.Future
-                func, args, kwargs, result_fut, prc = await self.tasks.get()
+                result_future: asyncio.Future
+                process_future: asyncio.Future
 
-                prc.set_result(process)
+                (
+                    func, args, kwargs, result_future, process_future
+                ) = await self.tasks.get()
+
+                process_future.set_result(process)
 
                 try:
-                    if result_fut.done():
+                    if result_future.done():
                         continue
 
-                    await step(func, args, kwargs, result_fut)
+                    await step(func, args, kwargs, result_future)
                 except asyncio.IncompleteReadError:
-                    result_fut.set_exception(ProcessError(
+                    result_future.set_exception(ProcessError(
                         "Process %r exited with code %r" % (
                             process, process.exitcode
                         )
                     ))
                     break
                 except Exception as e:
-                    if not result_fut.done():
-                        result_fut.set_exception(e)
+                    if not result_future.done():
+                        result_future.set_exception(e)
 
                     if not writer.is_closing():
                         self.loop.call_soon(writer.close)
@@ -297,15 +301,17 @@ class WorkerPool:
 
     async def create_task(self, func: Callable[..., T],
                           *args: Any, **kwargs: Any) -> T:
-        future = self._create_future()
+        result_future = self._create_future()
         process_future = self._create_future()
 
-        await self.tasks.put((func, args, kwargs, future, process_future))
+        await self.tasks.put((
+            func, args, kwargs, result_future, process_future
+        ))
 
         process: Process = await process_future
 
         try:
-            return await future
+            return await result_future
         except asyncio.CancelledError:
             process.kill()
 
