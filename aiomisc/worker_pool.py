@@ -3,6 +3,7 @@ import hashlib
 import logging
 import pickle
 import socket
+import uuid
 from enum import IntEnum
 from inspect import Traceback
 from multiprocessing import Process, ProcessError, AuthenticationError

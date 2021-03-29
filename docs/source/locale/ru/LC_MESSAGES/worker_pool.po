@@ -1,0 +1,51 @@
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <me@mosquito.su>, 2021.
+
+#: ../../source/worker_pool.rst:2
+msgid "Worker Pool"
+msgstr "Worker Pool"
+
+#: ../../source/worker_pool.rst:4
+msgid ""
+"Python has multiprocessing module with Pool class which implements "
+"multiprocess worker pool. The IPC in this case use completely synchronous"
+" communication method. This module reimplement the process based worker "
+"pool but IPC is completely asynchronous on callee side, but workers in "
+"separate processes no asynchronous."
+msgstr ""
+"В Python есть модуль multiprocessing с классом Pool, который реализует "
+"многопроцессорный пул воркеров. Межпроцессное взаимодействие, в этом "
+"случае,полностью синхронное. Этот модуль реализует пул воркер процессов "
+"так-же на основе процессов, но IPC при этом полностью асинхроное на "
+"вызывающей стороне,воркер процессы при этом не асинхронны, так-же как и в"
+" multiprocessing."
+
+#: ../../source/worker_pool.rst:11
+msgid "Example"
+msgstr "Пример"
+
+#: ../../source/worker_pool.rst:13
+msgid ""
+"This very be useful when you want to process data in separate process but"
+" the input and result data are not big. For example parallel image "
+"processing. Lets write the program which accepts JPEG images and creates "
+"thumbnails for this. In this case you have the file with original image "
+"and you have to generate the output path for ``thumbnail`` function."
+msgstr ""
+"Это очень полезно, если вы хотите обрабатывать данные в отдельном "
+"процессе, но входные и результирующие данные невелики. Например "
+"параллельная обработка изображений. Давайте напишем программу, которая "
+"принимает изображения в формате JPEG и создает для этого эскизы. В этом "
+"случае у вас есть файл с исходным изображением, и вам нужно сгенерировать"
+" выходной путь для функции ``thumbnail``."
+
+#: ../../source/worker_pool.rst:21
+msgid "You have to install Pollow image processing library for run this example."
+msgstr "Придется установить библиотеку обработки изображений Pillow."
+
+#: ../../source/worker_pool.rst:23
+msgid "Installing pillow with pip:"
+msgstr "Установка Pillow через pip"
+
