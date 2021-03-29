@@ -6,12 +6,13 @@ import socket
 import uuid
 from enum import IntEnum
 from inspect import Traceback
-from multiprocessing import Process, ProcessError, AuthenticationError
+from multiprocessing import AuthenticationError, Process, ProcessError
 from os import chmod, urandom
 from struct import Struct
 from tempfile import mktemp
-from typing import Tuple, Set, Callable, Any, Dict, Optional, Union, TypeVar, \
-    Type
+from typing import (
+    Any, Callable, Dict, Optional, Set, Tuple, Type, TypeVar, Union,
+)
 
 from aiomisc.utils import bind_socket
 
@@ -21,10 +22,10 @@ AddressType = Union[str, Tuple[str, int]]
 
 log = logging.getLogger(__name__)
 Header = Struct("!BI")
+
 SALT_SIZE = 64
 COOKIE_SIZE = 128
 HASHER = hashlib.sha256
-HASH_SIZE = len(HASHER(b'').digest())
 
 
 class PacketTypes(IntEnum):
@@ -78,7 +79,7 @@ def _inner(address: AddressType, cookie: bytes, identity: str) -> None:
 
             raise RuntimeError(PacketTypes(packet_type), value)
 
-        def step() -> Optional[bool]:
+        def step() -> bool:
             try:
                 packet_type, (func, args, kwargs) = receive()
             except ValueError:
@@ -94,7 +95,7 @@ def _inner(address: AddressType, cookie: bytes, identity: str) -> None:
                     logging.exception("Exception when processing request")
 
                 send(response_type, result)
-            return None
+            return False
 
         log.debug("Starting authorization")
         auth(cookie)
@@ -120,7 +121,7 @@ class WorkerPool:
             self.socket = bind_socket(
                 socket.AF_UNIX,
                 socket.SOCK_STREAM,
-                address=path, port=0
+                address=path, port=0,
             )
             self.address = path
             chmod(path, 0o600)
@@ -129,41 +130,42 @@ class WorkerPool:
             self.socket = bind_socket(
                 INET_AF,
                 socket.SOCK_STREAM,
-                address='localhost',
-                port=0
+                address="localhost",
+                port=0,
             )
             self.address = self.socket.getsockname()[:2]
 
-    if hasattr(Process, 'kill'):
+    if hasattr(Process, "kill"):
         @staticmethod
-        def _kill_process(process: Process):
+        def _kill_process(process: Process) -> None:
             process.kill()
     else:
         @staticmethod
-        def _kill_process(process: Process):
+        def _kill_process(process: Process) -> None:
             process.terminate()
 
     def __create_process(self, identity: str) -> Process:
         process = Process(
             target=_inner,
-            args=(self.address, self.__cookie, identity)
+            args=(self.address, self.__cookie, identity),
         )
         self.loop.call_soon(process.start)
         return process
 
-    def __init__(self, workers: int, max_overflow: int = 0):
+    def __init__(
+        self, workers: int, max_overflow: int = 0,
+        process_poll_time: float = 0.1
+    ):
+        self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
         self.__loop: Optional[asyncio.AbstractEventLoop] = None
-        self._create_socket()
-        self.tasks = asyncio.Queue(maxsize=max_overflow)
-        self.workers = workers
-        self._futures: Set[asyncio.Future] = set()
-        self.processes: Set[Process] = set()
-        self.task_store: Set[asyncio.Task] = set()
-        self._create_process_lock = asyncio.Lock()
-        self._current_process: Optional[Process] = None
-        self._current_process_event: Optional[asyncio.Event] = None
+        self.__futures: Set[asyncio.Future] = set()
         self.__spawning: Dict[str, Process] = dict()
+        self.__task_store: Set[asyncio.Task] = set()
+        self.processes: Set[Process] = set()
+        self.workers = workers
+        self.tasks = asyncio.Queue(maxsize=max_overflow)
+        self.process_poll_time = process_poll_time
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -241,7 +243,7 @@ class WorkerPool:
                 process_future: asyncio.Future
 
                 (
-                    func, args, kwargs, result_future, process_future
+                    func, args, kwargs, result_future, process_future,
                 ) = await self.tasks.get()
 
                 process_future.set_result(process)
@@ -252,11 +254,13 @@ class WorkerPool:
 
                     await step(func, args, kwargs, result_future)
                 except asyncio.IncompleteReadError:
-                    result_future.set_exception(ProcessError(
-                        "Process %r exited with code %r" % (
-                            process, process.exitcode
-                        )
-                    ))
+                    result_future.set_exception(
+                        ProcessError(
+                            "Process {!r} exited with code {!r}".format(
+                                process, process.exitcode,
+                            ),
+                        ),
+                    )
                     break
                 except Exception as e:
                     if not result_future.done():
@@ -268,21 +272,21 @@ class WorkerPool:
                     raise
 
         task = self.loop.create_task(handler())
-        task.add_done_callback(self.task_store.remove)
-        self.task_store.add(task)
+        task.add_done_callback(self.__task_store.remove)
+        self.__task_store.add(task)
         await task
 
     async def start_server(self) -> None:
         self.server = await asyncio.start_server(
             self.__handle_client,
-            sock=self.socket
+            sock=self.socket,
         )
 
         for n in range(self.workers):
             log.debug("Starting worker %d", n)
             self.__spawn_process()
 
-        self.task_store.add(self.loop.create_task(self.supervise()))
+        self.__task_store.add(self.loop.create_task(self.supervise()))
 
     def __spawn_process(self) -> None:
         log.debug("Spawning new process")
@@ -299,33 +303,33 @@ class WorkerPool:
 
                 log.debug(
                     "Process %r[%d] dead with exitcode %r, respawning",
-                    process, process.pid, process.exitcode
+                    process, process.pid, process.exitcode,
                 )
                 self.processes.remove(process)
                 self.loop.call_soon(self.__spawn_process)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(self.process_poll_time)
 
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
-        self._futures.add(future)
-        future.add_done_callback(self._futures.remove)
+        self.__futures.add(future)
+        future.add_done_callback(self.__futures.remove)
         return future
 
     async def __cancel_tasks(self) -> None:
         tasks = set()
 
-        for task in tuple(self.task_store):
+        for task in tuple(self.__task_store):
             if task.done():
                 continue
             task.cancel()
             tasks.add(task)
 
         await asyncio.gather(*tasks, return_exceptions=True)
-        self.task_store.clear()
+        self.__task_store.clear()
 
     async def __reject_futures(self) -> None:
-        while self._futures:
-            future = self._futures.pop()
+        while self.__futures:
+            future = self.__futures.pop()
             if future.done():
                 continue
 
@@ -336,18 +340,20 @@ class WorkerPool:
         await asyncio.gather(
             self.__cancel_tasks(),
             self.__reject_futures(),
-            return_exceptions=True
+            return_exceptions=True,
         )
         while self.processes:
             self._kill_process(self.processes.pop())
 
-    async def create_task(self, func: Callable[..., T],
-                          *args: Any, **kwargs: Any) -> T:
+    async def create_task(
+        self, func: Callable[..., T],
+        *args: Any, **kwargs: Any
+    ) -> T:
         result_future = self.__create_future()
         process_future = self.__create_future()
 
         await self.tasks.put((
-            func, args, kwargs, result_future, process_future
+            func, args, kwargs, result_future, process_future,
         ))
 
         process: Process = await process_future
@@ -362,6 +368,8 @@ class WorkerPool:
         await self.start_server()
         return self
 
-    async def __aexit__(self, exc_type: Type[Exception],
-                        exc_val: Exception, exc_tb: Traceback) -> None:
+    async def __aexit__(
+        self, exc_type: Type[Exception],
+        exc_val: Exception, exc_tb: Traceback
+    ) -> None:
         await self.close()
