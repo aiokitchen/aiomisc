@@ -297,7 +297,7 @@ class WorkerPool:
         )
         while self.processes:
             process = self.processes.pop()
-            process.kill()
+            getattr(process, 'kill', process.terminate)()
 
     async def create_task(self, func: Callable[..., T],
                           *args: Any, **kwargs: Any) -> T:
@@ -313,7 +313,8 @@ class WorkerPool:
         try:
             return await result_future
         except asyncio.CancelledError:
-            process.kill()
+            getattr(process, 'kill', process.terminate)()
+            raise
 
     async def __aenter__(self) -> "WorkerPool":
         await self.start_server()
