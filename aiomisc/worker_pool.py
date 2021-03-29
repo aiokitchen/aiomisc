@@ -31,37 +31,16 @@ class PacketTypes(IntEnum):
     REQUEST = 0
     EXCEPTION = 1
     RESULT = 2
+    AUTH_SALT = 50
+    AUTH_DIGEST = 51
+    AUTH_OK = 59
+    IDENTITY = 60
 
 
 INET_AF = socket.AF_INET6
 
 
-def _inner(address: AddressType, cookie: bytes) -> None:
-    def step() -> Optional[bool]:
-        header = sock.recv(Header.size)
-
-        if not header:
-            return True
-
-        packet_type, payload_length = Header.unpack(header)
-        payload = sock.recv(payload_length)
-
-        func, args, kwargs = pickle.loads(payload)
-
-        response_type = PacketTypes.RESULT
-        try:
-            result = func(*args, **kwargs)
-        except Exception as e:
-            response_type = PacketTypes.EXCEPTION
-            result = e
-            logging.exception("Exception when processing request")
-
-        payload = pickle.dumps(result)
-        header = Header.pack(response_type.value, len(payload))
-        sock.send(header)
-        sock.send(payload)
-        return None
-
+def _inner(address: AddressType, cookie: bytes, identity: str) -> None:
     family = (
         socket.AF_UNIX if isinstance(address, str) else INET_AF
     )
@@ -70,16 +49,58 @@ def _inner(address: AddressType, cookie: bytes) -> None:
         log.debug("Connecting...")
         sock.connect(address)
 
+        def send(packet_type: PacketTypes, data: Any) -> None:
+            payload = pickle.dumps(data)
+            sock.send(Header.pack(packet_type.value, len(payload)))
+            sock.send(payload)
+
+        def receive() -> Tuple[PacketTypes, Any]:
+            header = sock.recv(Header.size)
+
+            if not header:
+                raise ValueError("No data")
+
+            packet_type, payload_length = Header.unpack(header)
+            payload = sock.recv(payload_length)
+            return PacketTypes(packet_type), pickle.loads(payload)
+
+        def auth(cookie: bytes) -> None:
+            hasher = HASHER()
+            salt = urandom(SALT_SIZE)
+            send(PacketTypes.AUTH_SALT, salt)
+            hasher.update(salt)
+            hasher.update(cookie)
+            send(PacketTypes.AUTH_DIGEST, hasher.digest())
+
+            packet_type, value = receive()
+            if packet_type == PacketTypes.AUTH_OK:
+                return value
+
+            raise RuntimeError(PacketTypes(packet_type), value)
+
+        def step() -> Optional[bool]:
+            try:
+                packet_type, (func, args, kwargs) = receive()
+            except ValueError:
+                return True
+
+            if packet_type == packet_type.REQUEST:
+                response_type = PacketTypes.RESULT
+                try:
+                    result = func(*args, **kwargs)
+                except Exception as e:
+                    response_type = PacketTypes.EXCEPTION
+                    result = e
+                    logging.exception("Exception when processing request")
+
+                send(response_type, result)
+            return None
+
         log.debug("Starting authorization")
-        hasher = HASHER()
-        salt = urandom(SALT_SIZE)
-        sock.send(salt)
-
-        hasher.update(salt)
-        hasher.update(cookie)
-        sock.send(hasher.digest())
-
+        auth(cookie)
         del cookie
+
+        send(PacketTypes.IDENTITY, identity)
         log.debug("Worker ready")
         try:
             while not step():
@@ -113,9 +134,21 @@ class WorkerPool:
             )
             self.address = self.socket.getsockname()[:2]
 
-    def _create_process(self) -> Process:
-        process = Process(target=_inner, args=(self.address, self.__cookie))
-        process.start()
+    if hasattr(Process, 'kill'):
+        @staticmethod
+        def _kill_process(process: Process):
+            process.kill()
+    else:
+        @staticmethod
+        def _kill_process(process: Process):
+            process.terminate()
+
+    def __create_process(self, identity: str) -> Process:
+        process = Process(
+            target=_inner,
+            args=(self.address, self.__cookie, identity)
+        )
+        self.loop.call_soon(process.start)
         return process
 
     def __init__(self, workers: int, max_overflow: int = 0):
@@ -130,6 +163,7 @@ class WorkerPool:
         self._create_process_lock = asyncio.Lock()
         self._current_process: Optional[Process] = None
         self._current_process_event: Optional[asyncio.Event] = None
+        self.__spawning: Dict[str, Process] = dict()
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -137,53 +171,67 @@ class WorkerPool:
             self.__loop = asyncio.get_event_loop()
         return self.__loop
 
-    async def _handle_client(
+    async def __handle_client(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ) -> None:
-        if (
-            self._current_process is None or
-            self._current_process_event is None
-        ):
-            raise RuntimeError("No process found")
+        async def receive() -> Tuple[PacketTypes, Any]:
+            header = await reader.readexactly(Header.size)
+            packet_type, payload_length = Header.unpack(header)
+            payload = await reader.readexactly(payload_length)
+            data = pickle.loads(payload)
+            return PacketTypes(packet_type), data
 
-        process = self._current_process
+        async def send(packet_type: PacketTypes, data: Any) -> None:
+            payload = pickle.dumps(data)
+            header = Header.pack(packet_type.value, len(payload))
+            writer.write(header)
+            writer.write(payload)
+            await writer.drain()
 
         async def step(
             func: Callable, args: Tuple[Any, ...],
             kwargs: Dict[str, Any], result_future: asyncio.Future
         ) -> None:
-            payload = pickle.dumps((func, args, kwargs))
-            header = Header.pack(PacketTypes.REQUEST.value, len(payload))
-            writer.write(header)
-            writer.write(payload)
-            await writer.drain()
+            await send(PacketTypes.REQUEST, (func, args, kwargs))
 
-            header = await reader.readexactly(Header.size)
-            packet_type, payload_length = Header.unpack(header)
-            payload = await reader.readexactly(payload_length)
+            packet_type, result = await receive()
 
             if packet_type == PacketTypes.RESULT:
-                result_future.set_result(pickle.loads(payload))
+                result_future.set_result(result)
                 return None
 
             if packet_type == PacketTypes.EXCEPTION:
-                result_future.set_exception(pickle.loads(payload))
+                result_future.set_exception(result)
                 return None
 
             raise ValueError("Unknown packet type")
 
         async def handler() -> None:
             log.debug("Starting to handle client")
-            salt = await reader.readexactly(SALT_SIZE)
-            digest = await reader.readexactly(HASH_SIZE)
+
+            packet_type, salt = await receive()
+            assert packet_type == PacketTypes.AUTH_SALT
+
+            packet_type, digest = await receive()
+            assert packet_type == PacketTypes.AUTH_DIGEST
 
             hasher = HASHER()
             hasher.update(salt)
             hasher.update(self.__cookie)
 
             if digest != hasher.digest():
-                raise AuthenticationError("Invalid cookie")
+                exc = AuthenticationError("Invalid cookie")
+                await send(PacketTypes.EXCEPTION, exc)
+                raise exc
+
+            await send(PacketTypes.AUTH_OK, True)
+
             log.debug("Client authorized")
+
+            packet_type, identity = await receive()
+            assert packet_type == PacketTypes.IDENTITY
+
+            process = self.__spawning.pop(identity)
 
             while True:
                 func: Callable
@@ -222,54 +270,48 @@ class WorkerPool:
         task = self.loop.create_task(handler())
         task.add_done_callback(self.task_store.remove)
         self.task_store.add(task)
-
-        self._current_process_event.set()
         await task
 
     async def start_server(self) -> None:
         self.server = await asyncio.start_server(
-            self._handle_client,
+            self.__handle_client,
             sock=self.socket
         )
 
         for n in range(self.workers):
             log.debug("Starting worker %d", n)
-            await self._respawn_process()
+            self.__spawn_process()
 
         self.task_store.add(self.loop.create_task(self.supervise()))
 
-    async def _respawn_process(self) -> None:
+    def __spawn_process(self) -> None:
         log.debug("Spawning new process")
-        async with self._create_process_lock:
-            self._current_process_event = asyncio.Event()
-            self._current_process = self._create_process()
-            self.processes.add(self._current_process)
-            await self._current_process_event.wait()
-            self._current_process_event = None
-            self._current_process = None
+        identity = uuid.uuid4().hex
+        process = self.__create_process(identity)
+        self.processes.add(process)
+        self.__spawning[identity] = process
 
     async def supervise(self) -> None:
         while True:
             for process in tuple(self.processes):
-                if not process.is_alive():
-                    log.debug(
-                        "Process %r[%d] dead with exitcode %r, respawning",
-                        process, process.pid, process.exitcode
-                    )
-                    self.processes.remove(process)
-                    task = self.loop.create_task(self._respawn_process())
-                    self.task_store.add(task)
-                    task.add_done_callback(self.task_store.remove)
+                if process.is_alive():
+                    continue
 
+                log.debug(
+                    "Process %r[%d] dead with exitcode %r, respawning",
+                    process, process.pid, process.exitcode
+                )
+                self.processes.remove(process)
+                self.loop.call_soon(self.__spawn_process)
             await asyncio.sleep(0.1)
 
-    def _create_future(self) -> asyncio.Future:
+    def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
         self._futures.add(future)
         future.add_done_callback(self._futures.remove)
         return future
 
-    async def _cancel_tasks(self) -> None:
+    async def __cancel_tasks(self) -> None:
         tasks = set()
 
         for task in tuple(self.task_store):
@@ -281,7 +323,7 @@ class WorkerPool:
         await asyncio.gather(*tasks, return_exceptions=True)
         self.task_store.clear()
 
-    async def _reject_futures(self) -> None:
+    async def __reject_futures(self) -> None:
         while self._futures:
             future = self._futures.pop()
             if future.done():
@@ -292,18 +334,17 @@ class WorkerPool:
 
     async def close(self) -> None:
         await asyncio.gather(
-            self._cancel_tasks(),
-            self._reject_futures(),
+            self.__cancel_tasks(),
+            self.__reject_futures(),
             return_exceptions=True
         )
         while self.processes:
-            process = self.processes.pop()
-            getattr(process, 'kill', process.terminate)()
+            self._kill_process(self.processes.pop())
 
     async def create_task(self, func: Callable[..., T],
                           *args: Any, **kwargs: Any) -> T:
-        result_future = self._create_future()
-        process_future = self._create_future()
+        result_future = self.__create_future()
+        process_future = self.__create_future()
 
         await self.tasks.put((
             func, args, kwargs, result_future, process_future
@@ -314,7 +355,7 @@ class WorkerPool:
         try:
             return await result_future
         except asyncio.CancelledError:
-            getattr(process, 'kill', process.terminate)()
+            self._kill_process(process)
             raise
 
     async def __aenter__(self) -> "WorkerPool":
