@@ -32,6 +32,9 @@ class PacketTypes(IntEnum):
     RESULT = 2
 
 
+INET_AF = socket.AF_INET6
+
+
 def _inner(address: AddressType, cookie: bytes) -> None:
     def step() -> Optional[bool]:
         header = sock.recv(Header.size)
@@ -58,9 +61,7 @@ def _inner(address: AddressType, cookie: bytes) -> None:
         return None
 
     family = (
-        socket.AF_UNIX
-        if isinstance(address, str) else
-        socket.AF_UNSPEC
+        socket.AF_UNIX if isinstance(address, str) else INET_AF
     )
 
     with socket.socket(family, socket.SOCK_STREAM) as sock:
@@ -103,7 +104,8 @@ class WorkerPool:
     else:
         def _create_socket(self) -> None:
             self.socket = bind_socket(
-                socket.AF_UNSPEC,
+                INET_AF,
+                socket.SOCK_STREAM,
                 address='localhost',
                 port=0
             )
