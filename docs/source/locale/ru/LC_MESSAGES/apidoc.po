@@ -15,44 +15,56 @@ msgstr ""
 "Когда периодическая функция выполняется дольше, чем интервал выполнения, "
 "следующий вызов будет пропущен, и будет залогировано предупреждение."
 
-#: aiomisc.ProcessPoolExecutor.shutdown:1 aiomisc.ThreadPoolExecutor.shutdown:1
-#: of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
 msgid "Clean-up the resources associated with the Executor."
 msgstr "Очищает ресурсы, связанные с Executor."
 
-#: aiomisc.ProcessPoolExecutor.shutdown:3 aiomisc.ThreadPoolExecutor.shutdown:3
-#: of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:3
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:3 of
 msgid ""
 "It is safe to call this method several times. Otherwise, no other methods"
 " can be called after this one."
 msgstr ""
-"Этот метод можно безопасно вызывать несколько раз. "
-"В противном случае после этого нельзя будет вызывать другие методы."
+"Этот метод можно безопасно вызывать несколько раз. В противном случае "
+"после этого нельзя будет вызывать другие методы."
 
-#: aiomisc.ProcessPoolExecutor.shutdown:8 aiomisc.ThreadPoolExecutor.shutdown:8
-#: of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "Args:"
 msgstr "Аргументы:"
 
-#: aiomisc.ProcessPoolExecutor.shutdown:8 aiomisc.ThreadPoolExecutor.shutdown:8
-#: of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
 msgid "wait: If True then shutdown will not return until all running"
 msgstr ""
-"wait: Если True то функция не завершится пока выключение не будет произведено"
+"wait: Если True то функция не завершится пока выключение не будет "
+"произведено"
 
-#: aiomisc.ProcessPoolExecutor.shutdown:8 aiomisc.ThreadPoolExecutor.shutdown:8
-#: of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
 msgid ""
 "futures have finished executing and the resources used by the executor "
 "have been reclaimed."
-msgstr ""
-"исполнение Future завершено, а ресурсы, используемые executor, возвращены."
+msgstr "исполнение Future завершено, а ресурсы, используемые executor, возвращены."
 
-#: aiomisc.ProcessPoolExecutor.submit:1 aiomisc.ThreadPoolExecutor.submit:1 of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "cancel_futures: If True then shutdown will cancel all pending"
+msgstr ""
+"cancel_futures: Если True то все отменяются все не завершенные"
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "futures. Futures that are completed or running will not be cancelled."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.submit:1
+#: aiomisc.thread_pool.ThreadPoolExecutor.submit:1 of
 msgid "Submit blocking function to the pool"
 msgstr "Отправляет блокирующуюся функцию в пул"
 
-#: aiomisc.asyncbackoff:1 of
+#: aiomisc.backoff.asyncbackoff:1 of
 msgid ""
 "Patametric decorator that ensures that ``attempt_timeout`` and "
 "``deadline`` time limits are met by decorated function."
@@ -60,49 +72,50 @@ msgstr ""
 "Параметрический декоратор, который гарантирует, что ограничение "
 "``attempt_timeout`` и ``deadline`` соблюдены декорируемой функцией."
 
-#: aiomisc.asyncbackoff:4 of
+#: aiomisc.backoff.asyncbackoff:4 of
 msgid ""
 "In case of exception function will be called again with similar arguments"
 " after ``pause`` seconds."
 msgstr ""
-"В случае возникновения исключения функция будет вызвана снова с аналогичными "
-"аргументами через ``pause`` секунд."
+"В случае возникновения исключения функция будет вызвана снова с "
+"аналогичными аргументами через ``pause`` секунд."
 
-#: aiomisc.asyncbackoff aiomisc.bind_socket aiomisc.cancel_tasks aiomisc.select
-#: of
+#: aiomisc.backoff.asyncbackoff aiomisc.utils.bind_socket
+#: aiomisc.utils.cancel_tasks aiomisc.utils.select of
 msgid "Parameters"
 msgstr "Параметры"
 
-#: aiomisc.asyncbackoff:7 of
+#: aiomisc.backoff.asyncbackoff:7 of
 msgid "is maximum execution time for one execution attempt."
 msgstr "это максимальное время выполнения для одной попытки выполнения."
 
-#: aiomisc.asyncbackoff:9 of
+#: aiomisc.backoff.asyncbackoff:9 of
 msgid "is maximum execution time for all execution attempts."
 msgstr "это максимальное время выполнения для всех попыток выполнения."
 
-#: aiomisc.asyncbackoff:10 of
+#: aiomisc.backoff.asyncbackoff:10 of
 msgid "is time gap between execution attempts."
 msgstr "это пауза между попытками выполнениями."
 
-#: aiomisc.asyncbackoff:11 of
+#: aiomisc.backoff.asyncbackoff:11 of
 msgid "retrying when this exceptions was raised."
 msgstr "повторять только если брошены перечисленные тут исключения."
 
-#: aiomisc.asyncbackoff:12 of
+#: aiomisc.backoff.asyncbackoff:12 of
 msgid "similar as exc but keyword only."
 msgstr "тоже самое что и exc но это именованный аргумент."
 
-#: aiomisc.asyncbackoff:13 of
+#: aiomisc.backoff.asyncbackoff:13 of
 msgid "is maximum count of execution attempts (>= 1)."
 msgstr "это максимальныое количество попыток исполнения (>= 1)."
 
-#: aiomisc.asyncbackoff:14 of
+#: aiomisc.backoff.asyncbackoff:14 of
 msgid "is a predicate function which can decide by a given"
-msgstr "это функция-предикат, которая может принимать решение "
-"нужно ли продолжать попытки"
+msgstr ""
+"это функция-предикат, которая может принимать решение нужно ли продолжать"
+" попытки"
 
-#: aiomisc.awaitable:1 of
+#: aiomisc.utils.awaitable:1 of
 msgid ""
 "Decorator wraps function and returns a function which returns awaitable "
 "object. In case than a function returns a future, the original future "
@@ -118,95 +131,101 @@ msgstr ""
 "корутину, будет возвращена исходная корутина. В случае, если функция "
 "возвращает не awaitable объект, он будет перенесен в новую корутину, "
 "которая просто возвращает этот объект. Это полезно, когда вы не хотите "
-"проверять результат функции перед использованием его в выражении ``await``."
+"проверять результат функции перед использованием его в выражении "
+"``await``."
 
-#: aiomisc.bind_socket:1 of
+#: aiomisc.utils.bind_socket:1 of
 msgid ""
 "Bind socket and set ``setblocking(False)`` for just created socket. This "
 "detects ``address`` format and select socket family automatically."
 msgstr ""
-"Свяжите сокет и установите ``setblocking (False)`` для только что созданного "
-"сокета. Это определяет формат ``адреса`` и автоматически выбирает "
-"тип сокета (IPv4 или IPv6)."
+"Свяжите сокет и установите ``setblocking (False)`` для только что "
+"созданного сокета. Это определяет формат ``адреса`` и автоматически "
+"выбирает тип сокета (IPv4 или IPv6)."
 
-#: aiomisc.bind_socket:4 of
+#: aiomisc.utils.bind_socket:4 of
 msgid "which will be passed to stdlib's socket constructor (optional)"
 msgstr "который будет передан конструктору сокета stdlib (необязательно)"
 
-#: aiomisc.bind_socket:5 of
+#: aiomisc.utils.bind_socket:5 of
 msgid "bind address"
 msgstr "биндит адрес"
 
-#: aiomisc.bind_socket:6 of
+#: aiomisc.utils.bind_socket:6 of
 msgid "bind port"
 msgstr "биндит порт"
 
-#: aiomisc.bind_socket:7 of
+#: aiomisc.utils.bind_socket:7 of
 msgid "Tuple of pairs which contain socket option to set and the option value."
-msgstr "Кортэж пар, содержащих параметр сокета, который необходимо "
-"установить, и значение этого параметра."
+msgstr ""
+"Кортэж пар, содержащих параметр сокета, который необходимо установить, и "
+"значение этого параметра."
 
-#: aiomisc.bind_socket:9 of
+#: aiomisc.utils.bind_socket:9 of
 msgid "set socket.SO_REUSEADDR"
 msgstr "устанавливает socket.SO_REUSEADDR"
 
-#: aiomisc.bind_socket:10 of
+#: aiomisc.utils.bind_socket:10 of
 msgid "set socket.SO_REUSEPORT"
 msgstr "устанавливает socket.SO_REUSEPORT"
 
-#: aiomisc.bind_socket:11 of
+#: aiomisc.utils.bind_socket:11 of
 msgid "protocol name which will be logged after binding"
 msgstr "название протокола, оно будет залогировано после биндинга"
 
-#: aiomisc.bind_socket of
+#: aiomisc.utils.bind_socket of
 msgid "Returns"
 msgstr "Возвращаемое значение"
 
-#: aiomisc.bind_socket:12 of
+#: aiomisc.utils.bind_socket:12 of
 msgid "socket.socket"
 msgstr "socket.socket"
 
-#: aiomisc.cancel_tasks:1 of
+#: aiomisc.utils.cancel_tasks:1 of
 msgid "All passed tasks will be cancelled and a new task will be returned."
 msgstr "Все переданные задачи будут отменены. Функция вернет новую задачу."
 
-#: aiomisc.cancel_tasks:3 of
+#: aiomisc.utils.cancel_tasks:3 of
 msgid "tasks which will be cancelled"
 msgstr "отменяемые задачи"
 
-#: aiomisc.chunk_list:1 of
+#: aiomisc.utils.chunk_list:1 of
 msgid "Split list or generator by chunks with fixed maximum size."
-msgstr "Разделяет список или генератор по пачкам с "
-"фиксированным максимальным размером."
+msgstr ""
+"Разделяет список или генератор по пачкам с фиксированным максимальным "
+"размером."
 
-#: aiomisc.select:1 of
+#: aiomisc.utils.select:1 of
 msgid "awaitable objects"
 msgstr "awaitable объект"
 
-#: aiomisc.select:2 of
+#: aiomisc.utils.select:2 of
 msgid "if True exception will not be raised just returned as result"
 msgstr "Если True то исключение не боросается а возвращается как результат"
 
-#: aiomisc.select:4 of
+#: aiomisc.utils.select:4 of
 msgid "cancel unfinished coroutines (default True)"
 msgstr "отменять ли незавершенные корутины (по умолчанию True)"
 
-#: aiomisc.select:5 of
+#: aiomisc.utils.select:5 of
 msgid "execution timeout"
 msgstr "таймаут выполнения"
 
-#: aiomisc.select:6 of
+#: aiomisc.utils.select:6 of
 msgid ""
 "when False and ``cancel=True``, unfinished coroutines will be cancelled "
 "in the background."
 msgstr ""
-"Если False и ``cancel=True``, незавершенные корутины будут отменены в фоне."
+"Если False и ``cancel=True``, незавершенные корутины будут отменены в "
+"фоне."
 
-#: aiomisc.select:8 of
+#: aiomisc.utils.select:8 of
 msgid "event loop"
 msgstr "event loop"
 
-#: aiomisc.shield:1 of
+#: aiomisc.utils.shield:1 of
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
-"Простой и полезный декоратор для переноса сопрограммы в ``asyncio.shield``."
+"Простой и полезный декоратор для переноса сопрограммы в "
+"``asyncio.shield``."
+
