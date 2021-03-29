@@ -38,6 +38,7 @@ INET_AF = socket.AF_INET6
 def _inner(address: AddressType, cookie: bytes) -> None:
     def step() -> Optional[bool]:
         header = sock.recv(Header.size)
+
         if not header:
             return True
 
@@ -69,7 +70,7 @@ def _inner(address: AddressType, cookie: bytes) -> None:
         sock.connect(address)
 
         log.debug("Starting authorization")
-        hasher = hashlib.sha256()
+        hasher = HASHER()
         salt = urandom(SALT_SIZE)
         sock.send(salt)
 
@@ -187,23 +188,26 @@ class WorkerPool:
                 func: Callable
                 args: Tuple[Any, ...]
                 kwargs: Dict[str, Any]
-                result_future: asyncio.Future
-                func, args, kwargs, result_future = await self.tasks.get()
+                result_fut: asyncio.Future
+                func, args, kwargs, result_fut, prc = await self.tasks.get()
+
+                prc.set_result(process)
 
                 try:
-                    if result_future.done():
+                    if result_fut.done():
                         continue
-                    await step(func, args, kwargs, result_future)
+
+                    await step(func, args, kwargs, result_fut)
                 except asyncio.IncompleteReadError:
-                    result_future.set_exception(ProcessError(
+                    result_fut.set_exception(ProcessError(
                         "Process %r exited with code %r" % (
                             process, process.exitcode
                         )
                     ))
                     break
                 except Exception as e:
-                    if not result_future.done():
-                        result_future.set_exception(e)
+                    if not result_fut.done():
+                        result_fut.set_exception(e)
 
                     if not writer.is_closing():
                         self.loop.call_soon(writer.close)
@@ -236,6 +240,8 @@ class WorkerPool:
             self._current_process = self._create_process()
             self.processes.add(self._current_process)
             await self._current_process_event.wait()
+            self._current_process_event = None
+            self._current_process = None
 
     async def supervise(self) -> None:
         while True:
@@ -246,12 +252,17 @@ class WorkerPool:
                         process, process.pid, process.exitcode
                     )
                     self.processes.remove(process)
-                    self.loop.call_soon(
-                        self.loop.create_task,
-                        self._respawn_process()
-                    )
+                    task = self.loop.create_task(self._respawn_process())
+                    self.task_store.add(task)
+                    task.add_done_callback(self.task_store.remove)
 
             await asyncio.sleep(0.1)
+
+    def _create_future(self) -> asyncio.Future:
+        future = self.loop.create_future()
+        self._futures.add(future)
+        future.add_done_callback(self._futures.remove)
+        return future
 
     async def _cancel_tasks(self) -> None:
         tasks = set()
@@ -263,12 +274,7 @@ class WorkerPool:
             tasks.add(task)
 
         await asyncio.gather(*tasks, return_exceptions=True)
-
-    def _create_future(self) -> asyncio.Future:
-        future = self.loop.create_future()
-        self._futures.add(future)
-        future.add_done_callback(self._futures.remove)
-        return future
+        self.task_store.clear()
 
     async def _reject_futures(self) -> None:
         while self._futures:
@@ -292,8 +298,16 @@ class WorkerPool:
     async def create_task(self, func: Callable[..., T],
                           *args: Any, **kwargs: Any) -> T:
         future = self._create_future()
-        await self.tasks.put((func, args, kwargs, future))
-        return await future
+        process_future = self._create_future()
+
+        await self.tasks.put((func, args, kwargs, future, process_future))
+
+        process: Process = await process_future
+
+        try:
+            return await future
+        except asyncio.CancelledError:
+            process.kill()
 
     async def __aenter__(self) -> "WorkerPool":
         await self.start_server()

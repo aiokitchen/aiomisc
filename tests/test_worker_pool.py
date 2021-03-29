@@ -1,6 +1,8 @@
 import asyncio
+import operator
 from multiprocessing.context import ProcessError
 from os import getpid
+from time import sleep
 
 import pytest
 
@@ -20,6 +22,51 @@ async def test_simple(worker_pool):
     ))
 
     assert len(pids) == worker_pool.workers
+
+
+async def test_success(worker_pool):
+    results = await asyncio.gather(*[
+        worker_pool.create_task(operator.mul, i, i)
+        for i in range(worker_pool.workers * 2)
+    ])
+
+    results = sorted(results)
+
+    assert results == [i * i for i in range(worker_pool.workers * 2)]
+
+
+async def test_incomplete_task_kill(worker_pool):
+    pids_start = set(await asyncio.gather(
+        *[worker_pool.create_task(getpid)
+          for _ in range(worker_pool.workers * 4)]
+    ))
+
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(
+            asyncio.gather(*[
+                worker_pool.create_task(sleep, 3600)
+                for _ in range(worker_pool.workers)
+            ]), timeout=1
+        )
+
+    pids_end = set(await asyncio.gather(
+        *[worker_pool.create_task(getpid)
+          for _ in range(worker_pool.workers * 4)]
+    ))
+
+    assert list(pids_start) != list(pids_end)
+
+
+async def test_exceptions(worker_pool):
+    results = await asyncio.gather(*[
+        worker_pool.create_task(operator.truediv, i, 0)
+        for i in range(worker_pool.workers * 2)
+    ], return_exceptions=True)
+
+    assert len(results) == worker_pool.workers * 2
+
+    for exc in results:
+        assert isinstance(exc, ZeroDivisionError)
 
 
 async def test_exit(worker_pool):
