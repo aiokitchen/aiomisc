@@ -82,4 +82,5 @@ __all__ = (
     "threaded_separate",
     "ThreadPoolExecutor",
     "timeout",
+    "WorkerPool",
 )
