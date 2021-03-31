@@ -1,4 +1,5 @@
 import asyncio
+import os
 import pickle
 import socket
 import sys
@@ -53,9 +54,12 @@ class WorkerPool:
 
     @threaded
     def __create_process(self, identity: str) -> Popen:
+        if self.__closing:
+            raise RuntimeError("Pool closed")
+
         process = Popen(
             [sys.executable, "-m", "aiomisc.worker_pool.process"],
-            stdin=PIPE
+            stdin=PIPE, env=os.environ
         )
         self.__spawning[identity] = process
 
