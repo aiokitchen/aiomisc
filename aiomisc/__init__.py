@@ -23,8 +23,7 @@ from .utils import (
     SelectResult, awaitable, bind_socket, cancel_tasks, chunk_list,
     new_event_loop, select, shield,
 )
-from .worker_pool import WorkerPool
-
+from .worker_pool.pool import WorkerPool
 
 plugins = {
     entry_point.name: entry_point.load()

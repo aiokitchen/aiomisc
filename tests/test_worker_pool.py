@@ -6,7 +6,7 @@ from time import sleep
 
 import pytest
 
-from aiomisc.worker_pool import WorkerPool
+from aiomisc import WorkerPool
 
 
 @pytest.fixture

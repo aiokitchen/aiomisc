@@ -1,113 +1,22 @@
 import asyncio
-import hashlib
-import logging
 import pickle
 import socket
+import sys
 import uuid
-from enum import IntEnum
+from asyncio.subprocess import Process, PIPE, create_subprocess_exec
+from functools import partial
 from inspect import Traceback
-from multiprocessing import AuthenticationError, Process, ProcessError
+from itertools import chain
+from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
-from struct import Struct
 from tempfile import mktemp
-from typing import (
-    Any, Callable, Dict, Optional, Set, Tuple, Type, TypeVar, Union,
+from typing import Optional, Set, Dict, Tuple, Any, Callable, Type
+
+from aiomisc.utils import bind_socket, cancel_tasks
+from aiomisc.worker_pool.constants import (
+    AddressType, INET_AF, COOKIE_SIZE,
+    PacketTypes, Header, log, HASHER, T
 )
-
-from aiomisc.utils import bind_socket
-
-
-T = TypeVar("T")
-AddressType = Union[str, Tuple[str, int]]
-
-log = logging.getLogger(__name__)
-Header = Struct("!BI")
-
-SALT_SIZE = 64
-COOKIE_SIZE = 128
-HASHER = hashlib.sha256
-
-
-class PacketTypes(IntEnum):
-    REQUEST = 0
-    EXCEPTION = 1
-    RESULT = 2
-    AUTH_SALT = 50
-    AUTH_DIGEST = 51
-    AUTH_OK = 59
-    IDENTITY = 60
-
-
-INET_AF = socket.AF_INET6
-
-
-def _inner(address: AddressType, cookie: bytes, identity: str) -> None:
-    family = (
-        socket.AF_UNIX if isinstance(address, str) else INET_AF
-    )
-
-    with socket.socket(family, socket.SOCK_STREAM) as sock:
-        log.debug("Connecting...")
-        sock.connect(address)
-
-        def send(packet_type: PacketTypes, data: Any) -> None:
-            payload = pickle.dumps(data)
-            sock.send(Header.pack(packet_type.value, len(payload)))
-            sock.send(payload)
-
-        def receive() -> Tuple[PacketTypes, Any]:
-            header = sock.recv(Header.size)
-
-            if not header:
-                raise ValueError("No data")
-
-            packet_type, payload_length = Header.unpack(header)
-            payload = sock.recv(payload_length)
-            return PacketTypes(packet_type), pickle.loads(payload)
-
-        def auth(cookie: bytes) -> None:
-            hasher = HASHER()
-            salt = urandom(SALT_SIZE)
-            send(PacketTypes.AUTH_SALT, salt)
-            hasher.update(salt)
-            hasher.update(cookie)
-            send(PacketTypes.AUTH_DIGEST, hasher.digest())
-
-            packet_type, value = receive()
-            if packet_type == PacketTypes.AUTH_OK:
-                return value
-
-            raise RuntimeError(PacketTypes(packet_type), value)
-
-        def step() -> bool:
-            try:
-                packet_type, (func, args, kwargs) = receive()
-            except ValueError:
-                return True
-
-            if packet_type == packet_type.REQUEST:
-                response_type = PacketTypes.RESULT
-                try:
-                    result = func(*args, **kwargs)
-                except Exception as e:
-                    response_type = PacketTypes.EXCEPTION
-                    result = e
-                    logging.exception("Exception when processing request")
-
-                send(response_type, result)
-            return False
-
-        log.debug("Starting authorization")
-        auth(cookie)
-        del cookie
-
-        send(PacketTypes.IDENTITY, identity)
-        log.debug("Worker ready")
-        try:
-            while not step():
-                pass
-        except KeyboardInterrupt:
-            return
 
 
 class WorkerPool:
@@ -135,23 +44,25 @@ class WorkerPool:
             )
             self.address = self.socket.getsockname()[:2]
 
-    if hasattr(Process, "kill"):
-        @staticmethod
-        def _kill_process(process: Process) -> None:
-            if process.is_alive():
-                process.kill()
-    else:
-        @staticmethod
-        def _kill_process(process: Process) -> None:
-            if process.is_alive():
-                process.terminate()
+    @staticmethod
+    def _kill_process(process: Process) -> None:
+        if process.returncode is not None:
+            return None
+        process.kill()
 
-    def __create_process(self, identity: str) -> Process:
-        process = Process(
-            target=_inner,
-            args=(self.address, self.__cookie, identity),
+    async def __create_process(self, identity: str) -> Process:
+        process = await create_subprocess_exec(
+            sys.executable, "-m", "aiomisc.worker_pool.process",
+            stdin=PIPE
         )
-        self.loop.call_soon(process.start)
+        self.__spawning[identity] = process
+
+        process.stdin.write(pickle.dumps((
+            self.address, self.__cookie, identity)
+        ))
+        await process.stdin.drain()
+        process.stdin.close()
+
         return process
 
     def __init__(
@@ -164,6 +75,7 @@ class WorkerPool:
         self.__futures: Set[asyncio.Future] = set()
         self.__spawning: Dict[str, Process] = dict()
         self.__task_store: Set[asyncio.Task] = set()
+        self.__closing = False
         self.processes: Set[Process] = set()
         self.workers = workers
         self.tasks = asyncio.Queue(maxsize=max_overflow)
@@ -248,18 +160,23 @@ class WorkerPool:
                     func, args, kwargs, result_future, process_future,
                 ) = await self.tasks.get()
 
-                process_future.set_result(process)
-
                 try:
+                    if process_future.done():
+                        continue
+
+                    process_future.set_result(process)
+
                     if result_future.done():
                         continue
 
                     await step(func, args, kwargs, result_future)
                 except asyncio.IncompleteReadError:
+                    await process.wait()
+
                     result_future.set_exception(
                         ProcessError(
                             "Process {!r} exited with code {!r}".format(
-                                process, process.exitcode,
+                                process, process.returncode,
                             ),
                         ),
                     )
@@ -286,30 +203,32 @@ class WorkerPool:
 
         for n in range(self.workers):
             log.debug("Starting worker %d", n)
-            self.__spawn_process()
+            await self.__spawn_process()
 
-        self.__task_store.add(self.loop.create_task(self.supervise()))
+    def __on_exit(self, _, *, process: Process):
+        async def respawn():
+            if self.__closing:
+                return
 
-    def __spawn_process(self) -> None:
+            await self.__spawn_process()
+            self.processes.remove(process)
+
+        task = self.loop.create_task(respawn())
+        self.__task_store.add(task)
+        task.add_done_callback(self.__task_store.remove)
+
+    async def __spawn_process(self) -> None:
         log.debug("Spawning new process")
+
         identity = uuid.uuid4().hex
-        process = self.__create_process(identity)
+        process = await self.__create_process(identity)
         self.processes.add(process)
-        self.__spawning[identity] = process
 
-    async def supervise(self) -> None:
-        while True:
-            for process in tuple(self.processes):
-                if process.is_alive():
-                    continue
+        waiter = self.loop.create_task(process.wait())
+        self.__task_store.add(waiter)
 
-                log.debug(
-                    "Process %r[%d] dead with exitcode %r, respawning",
-                    process, process.pid, process.exitcode,
-                )
-                self.processes.remove(process)
-                self.loop.call_soon(self.__spawn_process)
-            await asyncio.sleep(self.process_poll_time)
+        waiter.add_done_callback(self.__task_store.remove)
+        waiter.add_done_callback(partial(self.__on_exit, process=process))
 
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
@@ -317,33 +236,19 @@ class WorkerPool:
         future.add_done_callback(self.__futures.remove)
         return future
 
-    async def __cancel_tasks(self) -> None:
-        tasks = set()
-
-        for task in tuple(self.__task_store):
-            if task.done():
-                continue
-            task.cancel()
-            tasks.add(task)
-
-        await asyncio.gather(*tasks, return_exceptions=True)
-        self.__task_store.clear()
-
-    async def __reject_futures(self) -> None:
-        while self.__futures:
-            future = self.__futures.pop()
+    def __reject_futures(self) -> None:
+        for future in self.__futures:
             if future.done():
                 continue
-
             future.set_exception(RuntimeError("Pool closed"))
-            await asyncio.sleep(0)
 
     async def close(self) -> None:
-        await asyncio.gather(
-            self.__cancel_tasks(),
-            self.__reject_futures(),
-            return_exceptions=True,
+        self.__closing = True
+
+        await cancel_tasks(
+            chain(tuple(self.__task_store), tuple(self.__futures))
         )
+
         while self.processes:
             self._kill_process(self.processes.pop())
 
