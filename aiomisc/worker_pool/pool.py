@@ -3,15 +3,16 @@ import pickle
 import socket
 import sys
 import uuid
-from asyncio.subprocess import Process, PIPE, create_subprocess_exec
 from functools import partial
 from inspect import Traceback
 from itertools import chain
 from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
+from subprocess import Popen, PIPE
 from tempfile import mktemp
 from typing import Optional, Set, Dict, Tuple, Any, Callable, Type
 
+from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
 from aiomisc.worker_pool.constants import (
     AddressType, INET_AF, COOKIE_SIZE,
@@ -45,41 +46,45 @@ class WorkerPool:
             self.address = self.socket.getsockname()[:2]
 
     @staticmethod
-    def _kill_process(process: Process) -> None:
+    def _kill_process(process: Popen) -> None:
         if process.returncode is not None:
             return None
         process.kill()
 
-    async def __create_process(self, identity: str) -> Process:
-        process = await create_subprocess_exec(
-            sys.executable, "-m", "aiomisc.worker_pool.process",
+    @threaded
+    def __create_process(self, identity: str) -> Popen:
+        process = Popen(
+            [sys.executable, "-m", "aiomisc.worker_pool.process"],
             stdin=PIPE
         )
         self.__spawning[identity] = process
 
         process.stdin.write(pickle.dumps((
-            self.address, self.__cookie, identity)
-        ))
-        await process.stdin.drain()
+            self.address, self.__cookie, identity
+        )))
         process.stdin.close()
 
         return process
 
     def __init__(
         self, workers: int, max_overflow: int = 0,
-        process_poll_time: float = 0.1
+        process_poll_time: float = 0.5
     ):
         self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
         self.__loop: Optional[asyncio.AbstractEventLoop] = None
         self.__futures: Set[asyncio.Future] = set()
-        self.__spawning: Dict[str, Process] = dict()
+        self.__spawning: Dict[str, Popen] = dict()
         self.__task_store: Set[asyncio.Task] = set()
         self.__closing = False
-        self.processes: Set[Process] = set()
+        self.processes: Set[Popen] = set()
         self.workers = workers
         self.tasks = asyncio.Queue(maxsize=max_overflow)
         self.process_poll_time = process_poll_time
+
+    async def __wait_process(self, process: Popen) -> None:
+        while process.poll() is None:
+            await asyncio.sleep(self.process_poll_time)
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -171,7 +176,7 @@ class WorkerPool:
 
                     await step(func, args, kwargs, result_future)
                 except asyncio.IncompleteReadError:
-                    await process.wait()
+                    await self.__wait_process(process)
 
                     result_future.set_exception(
                         ProcessError(
@@ -183,7 +188,7 @@ class WorkerPool:
                     break
                 except Exception as e:
                     if not result_future.done():
-                        result_future.set_exception(e)
+                        self.loop.call_soon(result_future.set_exception, e)
 
                     if not writer.is_closing():
                         self.loop.call_soon(writer.close)
@@ -193,7 +198,6 @@ class WorkerPool:
         task = self.loop.create_task(handler())
         task.add_done_callback(self.__task_store.remove)
         self.__task_store.add(task)
-        await task
 
     async def start_server(self) -> None:
         self.server = await asyncio.start_server(
@@ -205,7 +209,7 @@ class WorkerPool:
             log.debug("Starting worker %d", n)
             await self.__spawn_process()
 
-    def __on_exit(self, _, *, process: Process):
+    def __on_exit(self, _, *, process: Popen):
         async def respawn():
             if self.__closing:
                 return
@@ -224,7 +228,7 @@ class WorkerPool:
         process = await self.__create_process(identity)
         self.processes.add(process)
 
-        waiter = self.loop.create_task(process.wait())
+        waiter = self.loop.create_task(self.__wait_process(process))
         self.__task_store.add(waiter)
 
         waiter.add_done_callback(self.__task_store.remove)
@@ -263,7 +267,7 @@ class WorkerPool:
             func, args, kwargs, result_future, process_future,
         ))
 
-        process: Process = await process_future
+        process: Popen = await process_future
 
         try:
             return await result_future
