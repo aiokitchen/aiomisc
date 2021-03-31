@@ -10,7 +10,7 @@ from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
 from subprocess import Popen, PIPE
 from tempfile import mktemp
-from typing import Optional, Set, Dict, Tuple, Any, Callable, Type
+from typing import Optional, Set, Dict, Tuple, Any, Callable, Type, Coroutine
 
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
@@ -59,16 +59,20 @@ class WorkerPool:
         )
         self.__spawning[identity] = process
 
-        process.stdin.write(pickle.dumps((
-            self.address, self.__cookie, identity
-        )))
+        assert process.stdin
+
+        process.stdin.write(
+            pickle.dumps((
+                self.address, self.__cookie, identity
+            ))
+        )
         process.stdin.close()
 
         return process
 
     def __init__(
         self, workers: int, max_overflow: int = 0,
-        process_poll_time: float = 0.5
+        process_poll_time: float = 0.1
     ):
         self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
@@ -195,9 +199,13 @@ class WorkerPool:
 
                     raise
 
-        task = self.loop.create_task(handler())
+        self.__task(handler())
+
+    def __task(self, coroutine: Coroutine) -> asyncio.Task:
+        task = self.loop.create_task(coroutine)
         task.add_done_callback(self.__task_store.remove)
         self.__task_store.add(task)
+        return task
 
     async def start_server(self) -> None:
         self.server = await asyncio.start_server(
@@ -209,17 +217,15 @@ class WorkerPool:
             log.debug("Starting worker %d", n)
             await self.__spawn_process()
 
-    def __on_exit(self, _, *, process: Popen):
-        async def respawn():
+    def __on_exit(self, _: asyncio.Task, *, process: Popen) -> None:
+        async def respawn() -> None:
             if self.__closing:
-                return
+                return None
 
             await self.__spawn_process()
             self.processes.remove(process)
 
-        task = self.loop.create_task(respawn())
-        self.__task_store.add(task)
-        task.add_done_callback(self.__task_store.remove)
+        self.__task(respawn())
 
     async def __spawn_process(self) -> None:
         log.debug("Spawning new process")
@@ -228,10 +234,7 @@ class WorkerPool:
         process = await self.__create_process(identity)
         self.processes.add(process)
 
-        waiter = self.loop.create_task(self.__wait_process(process))
-        self.__task_store.add(waiter)
-
-        waiter.add_done_callback(self.__task_store.remove)
+        waiter = self.__task(self.__wait_process(process))
         waiter.add_done_callback(partial(self.__on_exit, process=process))
 
     def __create_future(self) -> asyncio.Future:

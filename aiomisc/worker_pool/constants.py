@@ -28,4 +28,3 @@ class PacketTypes(IntEnum):
 
 
 INET_AF = socket.AF_INET6
-
