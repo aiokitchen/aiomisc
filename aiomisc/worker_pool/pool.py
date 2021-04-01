@@ -51,6 +51,7 @@ class WorkerPool:
     def _kill_process(process: Popen) -> None:
         if process.returncode is not None:
             return None
+        log.debug("Terminating worker pool process PID: %s", process.pid)
         process.kill()
 
     @threaded
@@ -63,6 +64,7 @@ class WorkerPool:
             stdin=PIPE, env=os.environ
         )
         self.__spawning[identity] = process
+        log.debug("Spawning new worker pool process PID: %s", process.pid)
 
         assert process.stdin
 
@@ -122,7 +124,6 @@ class WorkerPool:
             header = Header.pack(packet_type.value, len(payload))
             writer.write(header)
             writer.write(payload)
-            await writer.drain()
 
         async def step(
             func: Callable, args: Tuple[Any, ...],

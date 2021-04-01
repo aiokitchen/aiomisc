@@ -83,13 +83,10 @@ def bind_socket(
 
     unix_address_family = getattr(socket, 'AF_UNIX', None)
     if sock.family == unix_address_family:
-        if proto_name is None:
-            proto_name = 'unix'
-
+        proto_name = proto_name or 'unix'
         sock.bind(address)
     else:
-        if proto_name is None:
-            proto_name = 'tcp'
+        proto_name = proto_name or 'tcp'
         sock.bind((address, port))
 
     sock_addr = sock.getsockname()
