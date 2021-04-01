@@ -4,9 +4,11 @@ import socket
 import sys
 from os import urandom
 from typing import Tuple, Union, Any
+
 from aiomisc.worker_pool.constants import (
     INET_AF, PacketTypes, Header, HASHER, SALT_SIZE
 )
+from aiomisc.log import basic_config
 
 
 def main() -> None:
@@ -14,7 +16,11 @@ def main() -> None:
     cookie: bytes
     identity: str
 
-    address, cookie, identity = pickle.load(sys.stdin.buffer)
+    (
+        address, cookie, identity, log_level, log_format
+    ) = pickle.load(sys.stdin.buffer)
+
+    basic_config(level=log_level, log_format=log_format)
 
     family = (
         socket.AF_UNIX if isinstance(address, str) else INET_AF

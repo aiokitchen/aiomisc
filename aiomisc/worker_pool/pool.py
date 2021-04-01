@@ -13,6 +13,7 @@ from subprocess import Popen, PIPE
 from tempfile import mktemp
 from typing import Optional, Set, Dict, Tuple, Any, Callable, Type, Coroutine
 
+from aiomisc.log.config import LOG_LEVEL, LOG_FORMAT
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
 from aiomisc.worker_pool.constants import (
@@ -65,9 +66,15 @@ class WorkerPool:
 
         assert process.stdin
 
+        log_level = (
+            log.getEffectiveLevel() if LOG_LEVEL is None else LOG_LEVEL.get()
+        )
+        log_format = 'color' if LOG_FORMAT is None else LOG_FORMAT.get().value
+
         process.stdin.write(
             pickle.dumps((
-                self.address, self.__cookie, identity
+                self.address, self.__cookie, identity,
+                log_level, log_format
             ))
         )
         process.stdin.close()
