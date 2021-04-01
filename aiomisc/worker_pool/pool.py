@@ -4,6 +4,7 @@ import pickle
 import socket
 import sys
 import uuid
+import warnings
 from functools import partial
 from inspect import Traceback
 from itertools import chain
@@ -20,6 +21,13 @@ from aiomisc.worker_pool.constants import (
     AddressType, INET_AF, COOKIE_SIZE,
     PacketTypes, Header, log, HASHER, T
 )
+
+
+if sys.version_info < (3, 7):
+    warnings.warn(
+        "Python 3.6 works not well see https://bugs.python.org/issue37380",
+        RuntimeWarning
+    )
 
 
 class WorkerPool:

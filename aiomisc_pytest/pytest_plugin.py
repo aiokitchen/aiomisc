@@ -592,7 +592,8 @@ def loop(
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
 
-    LOG_LEVEL.set(logging.getLogger().getEffectiveLevel())
+    if LOG_LEVEL:
+        LOG_LEVEL.set(logging.getLogger().getEffectiveLevel())
 
     pool = thread_pool_executor(thread_pool_size)
     loop.set_default_executor(pool)

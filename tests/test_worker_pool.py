@@ -1,5 +1,6 @@
 import asyncio
 import operator
+import sys
 from multiprocessing.context import ProcessError
 from os import getpid
 from time import sleep
@@ -72,6 +73,7 @@ async def test_exit(worker_pool):
         assert isinstance(exc, ProcessError)
 
 
+@pytest.mark.skipif(sys.version_info < (3.7), "bpo37380")
 async def test_exit_respawn(worker_pool):
     exceptions = await asyncio.gather(
         *[worker_pool.create_task(exit, 1)

@@ -10,13 +10,15 @@ from .formatter import color_formatter, json_handler
 from .wrap import wrap_logging_handler
 
 
+LOG_LEVEL: t.Optional[t.Any] = None
+LOG_FORMAT: t.Optional[t.Any] = None
+
 try:
     import contextvars
     LOG_LEVEL = contextvars.ContextVar("LOG_LEVEL", default=logging.INFO)
     LOG_FORMAT = contextvars.ContextVar("LOG_FORMAT", default=LogFormat.color)
 except ImportError:
-    LOG_LEVEL = None
-    LOG_FORMAT = None
+    pass
 
 
 DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"

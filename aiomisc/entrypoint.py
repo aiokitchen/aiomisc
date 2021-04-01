@@ -133,6 +133,10 @@ class Entrypoint:
             self._loop.close()
 
     async def __aenter__(self) -> "Entrypoint":
+        if self._loop is None:
+            # When __aenter__ called without __enter__
+            self._loop = asyncio.get_event_loop()
+
         self.ctx = Context(loop=self.loop)
         await self._start()
         return self
