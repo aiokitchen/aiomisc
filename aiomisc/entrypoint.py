@@ -82,6 +82,13 @@ class Entrypoint:
 
         self._closing = None    # type: t.Optional[asyncio.Event]
 
+        if self.log_config:
+            basic_config(
+                level=self.log_level,
+                log_format=self.log_format,
+                buffered=False,
+            )
+
     async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
         if self._closing is None:
@@ -126,18 +133,6 @@ class Entrypoint:
             self._loop.close()
 
     async def __aenter__(self) -> "Entrypoint":
-        if self._loop is None:
-            # When __aenter__ called without __enter__
-            self._loop = asyncio.get_event_loop()
-
-        if self.log_config:
-            basic_config(
-                level=self.log_level,
-                log_format=self.log_format,
-                loop=self.loop,
-                buffered=False,
-            )
-
         self.ctx = Context(loop=self.loop)
         await self._start()
         return self

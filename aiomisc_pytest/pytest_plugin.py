@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import aiomisc
-
+from aiomisc.log.config import LOG_LEVEL
 
 log = logging.getLogger("aiomisc_pytest")
 asyncio.get_event_loop = MagicMock(asyncio.get_event_loop)
@@ -591,6 +591,8 @@ def loop(
 ):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
+
+    LOG_LEVEL.set(logging.getLogger().getEffectiveLevel())
 
     pool = thread_pool_executor(thread_pool_size)
     loop.set_default_executor(pool)
