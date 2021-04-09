@@ -10,7 +10,7 @@ in separate processes no asynchronous.
 Example
 +++++++
 
-This very be useful when you want to process data in separate process but
+This will be useful when you want to process data in separate process but
 the input and result data are not big. For example parallel image processing.
 Lets write the program which accepts JPEG images and creates thumbnails
 for this. In this case you have the file with original image and you have
@@ -18,7 +18,7 @@ to generate the output path for ``thumbnail`` function.
 
 .. note::
 
-    You have to install Pollow image processing library for run this example.
+    You have to install Pillow image processing library to run this example.
 
     Installing pillow with pip:
 

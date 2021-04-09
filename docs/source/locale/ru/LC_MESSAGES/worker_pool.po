@@ -1,8 +1,7 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
-
+# Dmitry Orlov <me@mosquito.su>, 2021.
 #: ../../source/worker_pool.rst:2
 msgid "Worker Pool"
 msgstr "Worker Pool"
@@ -28,7 +27,7 @@ msgstr "Пример"
 
 #: ../../source/worker_pool.rst:13
 msgid ""
-"This very be useful when you want to process data in separate process but"
+"This will be useful when you want to process data in separate process but"
 " the input and result data are not big. For example parallel image "
 "processing. Lets write the program which accepts JPEG images and creates "
 "thumbnails for this. In this case you have the file with original image "
@@ -42,7 +41,7 @@ msgstr ""
 " выходной путь для функции ``thumbnail``."
 
 #: ../../source/worker_pool.rst:21
-msgid "You have to install Pollow image processing library for run this example."
+msgid "You have to install Pillow image processing library to run this example."
 msgstr "Придется установить библиотеку обработки изображений Pillow."
 
 #: ../../source/worker_pool.rst:23

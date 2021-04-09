@@ -24,7 +24,7 @@ async def test_success(worker_pool):
 
     results = sorted(results)
 
-    assert results == [i * i for i in range(worker_pool.workers * 2)]
+    assert sorted(results) == [i * i for i in range(worker_pool.workers * 2)]
 
 
 async def test_incomplete_task_kill(worker_pool):
