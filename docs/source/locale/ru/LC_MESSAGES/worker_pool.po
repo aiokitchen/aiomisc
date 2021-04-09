@@ -2,6 +2,21 @@
 # Copyright (C) 2021
 # This file is distributed under the same license as the PROJECT project.
 # Dmitry Orlov <me@mosquito.su>, 2021.
+
+msgid ""
+msgstr ""
+"Project-Id-Version: latest\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-04-09 18:38+0300\n"
+"PO-Revision-Date: 2021-04-09 18:00+4\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: Russian <me@mosauito.su>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+
 #: ../../source/worker_pool.rst:2
 msgid "Worker Pool"
 msgstr "Worker Pool"
@@ -12,7 +27,7 @@ msgid ""
 "multiprocess worker pool. The IPC in this case use completely synchronous"
 " communication method. This module reimplement the process based worker "
 "pool but IPC is completely asynchronous on callee side, but workers in "
-"separate processes no asynchronous."
+"separate processes aren't asynchronous."
 msgstr ""
 "В Python есть модуль multiprocessing с классом Pool, который реализует "
 "многопроцессорный пул воркеров. Межпроцессное взаимодействие, в этом "
