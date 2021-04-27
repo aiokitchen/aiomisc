@@ -3,7 +3,7 @@ Worker Pool
 
 Python has the ``multiprocessing`` module with ``Pool`` class which
 implements similar worker pool. The IPC in this case use completely
-synchronous communication method. This module reimplement the process
+synchronous communication method. This module reimplements the process
 based worker pool but IPC is completely asynchronous on callee side,
 meanwhile workers in separate processes aren't asynchronous.
 
@@ -11,14 +11,14 @@ Example
 +++++++
 
 This would be useful when you want to process the data in a separate process,
-and the input and output data are not very large. Otherwise it's will be works
+and the input and output data are not very large. Otherwise it will work
 fine, of course, but you would have to spend time transmitting the data
 over IPC.
 
-A good example is, parallel image processing. Of course, you can transfer bytes
+A good example is parallel image processing. Of course, you can transfer bytes
 of images through the IPC of the working pool, but in general case passing the
-file name ti the worker will be better. Exception is cases when the image
-payload significantly smaller the 1KB for example.
+file name to the worker will be better. Exception will be cases when the
+image payload significantly smaller the 1KB for example.
 
 Let's write a program that accepts images in JPEG format and creates thumbnails
 for this. In this case, you have a file with the original image, and you should
@@ -116,7 +116,7 @@ creates directories for the thumbnails. After that, a ``WorkerPool`` is started
 with as many processes as the processor has cores.
 
 The main process creates tasks for the workers, each task is a conversion of
-one file to one size, after which all the tasks fall into the ``WorkerPool``
+one file to one size, after which all tasks fall into the ``WorkerPool``
 instance.
 
 The ``WorkerPool`` processes the tasks concurrently, but only one job for one
