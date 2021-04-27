@@ -1,20 +1,28 @@
 Worker Pool
 ===========
 
-Python has multiprocessing module with Pool class which implements
-multiprocess worker pool. The IPC in this case use completely
-synchronous communication method. This module reimplement the process based
-worker pool but IPC is completely asynchronous on callee side, but workers
-in separate processes aren't asynchronous.
+Python has the ``multiprocessing`` module with ``Pool`` class which
+implements similar worker pool. The IPC in this case use completely
+synchronous communication method. This module reimplement the process
+based worker pool but IPC is completely asynchronous on callee side,
+meanwhile workers in separate processes aren't asynchronous.
 
 Example
 +++++++
 
-This will be useful when you want to process data in separate process but
-the input and result data are not big. For example parallel image processing.
-Lets write the program which accepts JPEG images and creates thumbnails
-for this. In this case you have the file with original image and you have
-to generate the output path for ``thumbnail`` function.
+This would be useful when you want to process the data in a separate process,
+and the input and output data are not very large. Otherwise it's will be works
+fine, of course, but you would have to spend time transmitting the data
+over IPC.
+
+A good example is, parallel image processing. Of course, you can transfer bytes
+of images through the IPC of the working pool, but in general case passing the
+file name ti the worker will be better. Exception is cases when the image
+payload significantly smaller the 1KB for example.
+
+Let's write a program that accepts images in JPEG format and creates thumbnails
+for this. In this case, you have a file with the original image, and you should
+generate the output path for the 'thumbnail' function.
 
 .. note::
 
@@ -28,7 +36,6 @@ to generate the output path for ``thumbnail`` function.
 
 .. code-block:: python
 
-    # RUN BEFORE: pip install Pillow
     import asyncio
     import sys
     from multiprocessing import cpu_count
@@ -103,3 +110,14 @@ to generate the output path for ``thumbnail`` function.
             image_dir = Path(sys.argv[1])
             loop.run_until_complete(amain(image_dir))
 
+
+This example takes the image directory as the first command-line argument, and
+creates directories for the thumbnails. After that, a ``WorkerPool`` is started
+with as many processes as the processor has cores.
+
+The main process creates tasks for the workers, each task is a conversion of
+one file to one size, after which all the tasks fall into the ``WorkerPool``
+instance.
+
+The ``WorkerPool`` processes the tasks concurrently, but only one job for one
+worker at the same time.
