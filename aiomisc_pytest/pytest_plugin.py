@@ -158,7 +158,7 @@ class TCPProxyClient:
             self.__client_repr, self.__server_repr,
         )
 
-    if sys.version_info < (3,7):
+    if sys.version_info < (3, 7):
         @staticmethod
         async def _close_writer(writer: asyncio.StreamWriter):
             writer.close()
