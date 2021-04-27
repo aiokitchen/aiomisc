@@ -8,7 +8,7 @@ bump:
 
 uml:
 	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
-		/usr/bin/java -jar /usr/local/share/java/plantuml.jar \
+		java -jar /usr/local/share/java/plantuml.jar \
 		-tsvg -o /mnt/docs/source/_static '/mnt/resources/uml/*/**.puml'
 
 sdist: bump uml
