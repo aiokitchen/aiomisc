@@ -4,6 +4,7 @@ from pstats import Stats
 from tempfile import NamedTemporaryFile
 
 from aiomisc.service.profiler import Profiler
+from tests import unix_only
 
 
 async def test_profiler_start_stop():
@@ -15,6 +16,7 @@ async def test_profiler_start_stop():
         await profiler.stop()
 
 
+@unix_only
 async def test_profiler_dump():
     profiler = None
     fl = NamedTemporaryFile(delete=False)

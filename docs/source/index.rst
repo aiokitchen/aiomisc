@@ -179,6 +179,7 @@ Table Of Contents
    threads
    process_pool
    utils
+   worker_pool
    logging
    pytest
    signal
