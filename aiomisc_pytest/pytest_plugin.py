@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import socket
+import sys
 import typing as t
 from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
@@ -157,6 +158,16 @@ class TCPProxyClient:
             self.__client_repr, self.__server_repr,
         )
 
+    if sys.version_info < (3,7):
+        @staticmethod
+        async def _close_writer(writer: asyncio.StreamWriter):
+            writer.close()
+    else:
+        @staticmethod
+        async def _close_writer(writer: asyncio.StreamWriter):
+            writer.close()
+            await writer.wait_closed()
+
     async def pipe(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
@@ -180,8 +191,7 @@ class TCPProxyClient:
                 if not self.buffered:
                     await writer.drain()
         finally:
-            writer.close()
-            await writer.wait_closed()
+            await self._close_writer(writer)
 
     async def connect(self, target_host: str, target_port: int) -> None:
         log.debug("Establishing connection for %r", self)
