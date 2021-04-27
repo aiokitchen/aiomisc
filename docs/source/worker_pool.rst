@@ -4,7 +4,7 @@ Worker Pool
 Python has the ``multiprocessing`` module with ``Pool`` class which
 implements similar worker pool. The IPC in this case use completely
 synchronous communication method. This module reimplements the process
-based worker pool but IPC is completely asynchronous on callee side,
+based worker pool but IPC is completely asynchronous on caller side,
 meanwhile workers in separate processes aren't asynchronous.
 
 Example
