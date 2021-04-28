@@ -13,8 +13,9 @@ from os import chmod, urandom
 from subprocess import Popen, PIPE
 from tempfile import mktemp
 from types import MappingProxyType
-from typing import Optional, Set, Dict, Tuple, Any, Callable, Type, Coroutine, \
-    Mapping
+from typing import (
+    Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
+)
 
 from aiomisc.log.config import LOG_LEVEL, LOG_FORMAT
 from aiomisc.thread_pool import threaded
