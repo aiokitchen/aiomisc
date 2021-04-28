@@ -12,7 +12,9 @@ from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
 from subprocess import Popen, PIPE
 from tempfile import mktemp
-from typing import Optional, Set, Dict, Tuple, Any, Callable, Type, Coroutine
+from types import MappingProxyType
+from typing import Optional, Set, Dict, Tuple, Any, Callable, Type, Coroutine, \
+    Mapping
 
 from aiomisc.log.config import LOG_LEVEL, LOG_FORMAT
 from aiomisc.thread_pool import threaded
@@ -34,6 +36,9 @@ class WorkerPool:
     tasks: asyncio.Queue
     server: asyncio.AbstractServer
     address: AddressType
+    initializer: Optional[Callable[[], Any]]
+    initializer_args: Tuple[Any, ...]
+    initializer_kwargs: Mapping[str, Any]
 
     if hasattr(socket, "AF_UNIX"):
         def _create_socket(self) -> None:
@@ -93,7 +98,10 @@ class WorkerPool:
 
     def __init__(
         self, workers: int, max_overflow: int = 0,
-        process_poll_time: float = 0.1
+        process_poll_time: float = 0.1,
+        initializer: Optional[Callable[[], Any]] = None,
+        initializer_args: Tuple[Any, ...] = (),
+        initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
     ):
         self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
@@ -106,6 +114,9 @@ class WorkerPool:
         self.workers = workers
         self.tasks = asyncio.Queue(maxsize=max_overflow)
         self.process_poll_time = process_poll_time
+        self.initializer = initializer
+        self.initializer_args = initializer_args
+        self.initializer_kwargs = initializer_kwargs
 
     async def __wait_process(self, process: Popen) -> None:
         while process.poll() is None:
@@ -175,6 +186,21 @@ class WorkerPool:
 
             packet_type, identity = await receive()
             assert packet_type == PacketTypes.IDENTITY
+
+            if self.initializer is not None:
+                initializer_done = self.__create_future()
+
+                await step(
+                    self.initializer,
+                    self.initializer_args,
+                    dict(self.initializer_kwargs),
+                    initializer_done
+                )
+
+                try:
+                    await initializer_done
+                except Exception:
+                    log.warning("Initializer function has been failed")
 
             process = self.__spawning.pop(identity)
 

@@ -84,3 +84,41 @@ async def test_exit_respawn(worker_pool):
     assert len(exceptions) == worker_pool.workers * 3
     for exc in exceptions:
         assert isinstance(exc, ProcessError)
+
+
+INITIALIZER_ARGS = None
+INITIALIZER_KWARGS = None
+
+
+def initializer(*args, **kwargs):
+    global INITIALIZER_ARGS, INITIALIZER_KWARGS
+    INITIALIZER_ARGS = args
+    INITIALIZER_KWARGS = kwargs
+
+
+def get_initializer_args():
+    return INITIALIZER_ARGS, INITIALIZER_KWARGS
+
+
+async def test_initializer(worker_pool):
+    pool = WorkerPool(
+        1, initializer=initializer, initializer_args=("foo",),
+        initializer_kwargs={"spam": "egg"}
+    )
+    async with pool:
+        args, kwargs = await pool.create_task(get_initializer_args)
+
+    assert args == ("foo",)
+    assert kwargs == {"spam": "egg"}
+
+    async with WorkerPool(1, initializer=initializer) as pool:
+        args, kwargs = await pool.create_task(get_initializer_args)
+
+    assert args == ()
+    assert kwargs == {}
+
+    async with WorkerPool(1) as pool:
+        args, kwargs = await pool.create_task(get_initializer_args)
+
+    assert args is None
+    assert kwargs is None
