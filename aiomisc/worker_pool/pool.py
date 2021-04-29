@@ -99,7 +99,7 @@ class WorkerPool:
 
     def __init__(
         self, workers: int, max_overflow: int = 0,
-        process_poll_time: float = 0.1,
+        process_poll_time: float = 0.2,
         initializer: Optional[Callable[[], Any]] = None,
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
@@ -111,6 +111,7 @@ class WorkerPool:
         self.__spawning: Dict[str, Popen] = dict()
         self.__task_store: Set[asyncio.Task] = set()
         self.__closing = False
+        self.__starting: Dict[str, asyncio.Future] = dict()
         self.processes: Set[Popen] = set()
         self.workers = workers
         self.tasks = asyncio.Queue(maxsize=max_overflow)
@@ -163,7 +164,7 @@ class WorkerPool:
 
             raise ValueError("Unknown packet type")
 
-        async def handler() -> None:
+        async def handler(start_event: asyncio.Event) -> None:
             log.debug("Starting to handle client")
 
             packet_type, salt = await receive()
@@ -187,6 +188,8 @@ class WorkerPool:
 
             packet_type, identity = await receive()
             assert packet_type == PacketTypes.IDENTITY
+            process = self.__spawning.pop(identity)
+            starting: asyncio.Future = self.__starting.pop(identity)
 
             if self.initializer is not None:
                 initializer_done = self.__create_future()
@@ -200,10 +203,16 @@ class WorkerPool:
 
                 try:
                     await initializer_done
-                except Exception:
-                    log.warning("Initializer function has been failed")
-
-            process = self.__spawning.pop(identity)
+                except Exception as e:
+                    starting.set_exception(e)
+                    raise
+                else:
+                    starting.set_result(None)
+                finally:
+                    start_event.set()
+            else:
+                starting.set_result(None)
+                start_event.set()
 
             while True:
                 func: Callable
@@ -246,15 +255,21 @@ class WorkerPool:
 
                     raise
 
-        self.__task(handler())
+        start_event = asyncio.Event()
+        task = self.loop.create_task(handler(start_event))
+        await start_event.wait()
+        self.__task_add(task)
+
+    def __task_add(self, task: asyncio.Task):
+        task.add_done_callback(self.__task_store.remove)
+        self.__task_store.add(task)
 
     def __task(self, coroutine: Coroutine) -> asyncio.Task:
         task = self.loop.create_task(coroutine)
-        task.add_done_callback(self.__task_store.remove)
-        self.__task_store.add(task)
+        self.__task_add(task)
         return task
 
-    async def start_server(self) -> None:
+    async def start(self) -> None:
         self.server = await asyncio.start_server(
             self.__handle_client,
             sock=self.socket,
@@ -278,7 +293,10 @@ class WorkerPool:
         log.debug("Spawning new process")
 
         identity = uuid.uuid4().hex
+        start_future = self.__create_future()
+        self.__starting[identity] = start_future
         process = await self.__create_process(identity)
+        await start_future
         self.processes.add(process)
 
         waiter = self.__task(self.__wait_process(process))
@@ -297,6 +315,9 @@ class WorkerPool:
             future.set_exception(RuntimeError("Pool closed"))
 
     async def close(self) -> None:
+        if self.__closing:
+            return
+
         self.__closing = True
 
         await cancel_tasks(
@@ -326,7 +347,7 @@ class WorkerPool:
             raise
 
     async def __aenter__(self) -> "WorkerPool":
-        await self.start_server()
+        await self.start()
         return self
 
     async def __aexit__(

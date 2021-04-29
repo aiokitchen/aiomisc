@@ -122,3 +122,15 @@ async def test_initializer(worker_pool):
 
     assert args is None
     assert kwargs is None
+
+
+def bad_initializer():
+    return 1 / 0
+
+
+async def test_bad_initializer(worker_pool):
+    pool = WorkerPool(1, initializer=bad_initializer)
+
+    with pytest.raises(ZeroDivisionError):
+        async with pool:
+            await pool.create_task(get_initializer_args)
