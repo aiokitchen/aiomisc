@@ -260,7 +260,7 @@ class WorkerPool:
         await start_event.wait()
         self.__task_add(task)
 
-    def __task_add(self, task: asyncio.Task):
+    def __task_add(self, task: asyncio.Task) -> None:
         task.add_done_callback(self.__task_store.remove)
         self.__task_store.add(task)
 
