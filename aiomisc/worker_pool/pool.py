@@ -275,9 +275,13 @@ class WorkerPool:
             sock=self.socket,
         )
 
+        tasks = []
+
         for n in range(self.workers):
             log.debug("Starting worker %d", n)
-            await self.__spawn_process()
+            tasks.append(self.__spawn_process())
+
+        await asyncio.gather(*tasks)
 
     def __on_exit(self, _: asyncio.Task, *, process: Popen) -> None:
         async def respawn() -> None:
