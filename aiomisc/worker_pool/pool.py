@@ -97,7 +97,8 @@ class WorkerPool:
         return process
 
     def __init__(
-        self, workers: int, max_overflow: int = 0,
+        self, workers: int, max_overflow: int = 0, *,
+        process_poll_time: float = 0.1,
         initializer: Optional[Callable[[], Any]] = None,
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
@@ -113,6 +114,7 @@ class WorkerPool:
         self.processes: Set[Popen] = set()
         self.workers = workers
         self.tasks = asyncio.Queue(maxsize=max_overflow)
+        self.process_poll_time = process_poll_time
         self.initializer = initializer
         self.initializer_args = initializer_args
         self.initializer_kwargs = initializer_kwargs
