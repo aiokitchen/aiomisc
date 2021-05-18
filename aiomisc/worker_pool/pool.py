@@ -5,7 +5,6 @@ import socket
 import sys
 import uuid
 import warnings
-from functools import partial
 from inspect import Traceback
 from itertools import chain
 from multiprocessing import AuthenticationError, ProcessError
