@@ -182,7 +182,7 @@ def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     of length equal to the number of arguments (and in the same order).
     Note 2: if some unexpected error occurs, exception is propagated to each
     future; to set an individual error for each aggregated call refer
-    to ``aggregate_ll``.
+    to ``aggregate_async``.
     :param leeway_ms: The maximum approximate delay between the first
     collected argument and the aggregated execution.
     :param max_count: The maximum number of arguments to call decorated
@@ -197,7 +197,7 @@ def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     return _
 
 
-def aggregate_ll(leeway_ms: float, max_count: int = None) -> Callable:
+def aggregate_async(leeway_ms: float, max_count: int = None) -> Callable:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
     containing ``value`` and ``future`` attributes instead. In this setting

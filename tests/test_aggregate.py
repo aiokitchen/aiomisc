@@ -7,7 +7,7 @@ from typing import List
 from aiocontextvars import ContextVar
 import pytest
 
-from aiomisc.aggregate import aggregate, aggregate_ll, Arg, ResultNotSet
+from aiomisc.aggregate import aggregate, aggregate_async, Arg, ResultNotSet
 
 
 async def test_invalid_func():
@@ -373,7 +373,7 @@ async def test_low_level_sloppy(loop):
     leeway = 0.1
     max_count = 2
 
-    @aggregate_ll(leeway * 1000, max_count=max_count)
+    @aggregate_async(leeway * 1000, max_count=max_count)
     async def pho(*args: Arg):
         for arg in args:
             if arg.value:
@@ -392,7 +392,7 @@ async def test_low_level_sloppy(loop):
 async def test_low_level_ok(loop):
     leeway = 0.1
 
-    @aggregate_ll(leeway * 1000)
+    @aggregate_async(leeway * 1000)
     async def pow(*args: Arg, power: float = 2):
         for arg in args:
             arg.future.set_result(math.pow(arg.value, power))
@@ -410,7 +410,7 @@ async def test_low_level_ok(loop):
 async def test_low_level_error(loop):
     leeway = 0.1
 
-    @aggregate_ll(leeway * 1000)
+    @aggregate_async(leeway * 1000)
     async def pho(*args: Arg):
         for arg in args:
             if arg.value:
