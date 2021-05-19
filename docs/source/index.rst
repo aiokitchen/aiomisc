@@ -184,7 +184,7 @@ Table Of Contents
    pytest
    signal
    plugins
-   apidoc
+   aiomisc
 
 Versioning
 ----------

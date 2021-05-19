@@ -1,8 +1,26 @@
+# Translations template for PROJECT.
+# Copyright (C) 2021 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-05-19 11:15+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
 # Translations template for aiomisc.
 # Copyright (C) 2021
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <me@mosquito.su>, 2021.
-
 #: ../../source/apidoc.rst:2
 msgid "API Reference"
 msgstr "Описание API"
@@ -51,8 +69,7 @@ msgstr "исполнение Future завершено, а ресурсы, ис�
 #: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "cancel_futures: If True then shutdown will cancel all pending"
-msgstr ""
-"cancel_futures: Если True то все отменяются все не завершенные"
+msgstr "cancel_futures: Если True то все отменяются все не завершенные"
 
 #: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
@@ -201,7 +218,7 @@ msgstr "awaitable объект"
 
 #: aiomisc.utils.select:2 of
 msgid "if True exception will not be raised just returned as result"
-msgstr "Если True то исключение не боросается а возвращается как результат"
+msgstr "если True то исключение не боросается а возвращается как результат"
 
 #: aiomisc.utils.select:4 of
 msgid "cancel unfinished coroutines (default True)"
@@ -216,7 +233,7 @@ msgid ""
 "when False and ``cancel=True``, unfinished coroutines will be cancelled "
 "in the background."
 msgstr ""
-"Если False и ``cancel=True``, незавершенные корутины будут отменены в "
+"если False и ``cancel=True``, незавершенные корутины будут отменены в "
 "фоне."
 
 #: aiomisc.utils.select:8 of
@@ -228,4 +245,48 @@ msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
 "Простой и полезный декоратор для переноса сопрограммы в "
 "``asyncio.shield``."
+
+#~ msgid "An enumeration."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "When the cron function executes longer"
+#~ " then execution interval a next call"
+#~ " will be skipping and warning will"
+#~ " be logged."
+#~ msgstr ""
+#~ "Когда периодическая функция выполняется "
+#~ "дольше, чем интервал выполнения, следующий "
+#~ "вызов будет пропущен, и будет "
+#~ "залогировано предупреждение."
+
+#~ msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
+#~ msgstr "Создает экземпляр WorkItemBase(func, args, kwargs, future, loop)"
+
+#~ msgid "Alias for field number 1"
+#~ msgstr "Алиас для поля 1"
+
+#~ msgid "Alias for field number 0"
+#~ msgstr "Алиас для поля 0"
+
+#~ msgid "Alias for field number 3"
+#~ msgstr "Алиас для поля 3"
+
+#~ msgid "Alias for field number 2"
+#~ msgstr "Алиас для поля 2"
+
+#~ msgid "Alias for field number 4"
+#~ msgstr "Алиас для поля 4"
+
+#~ msgid "Creates an event loop and thread pool executor"
+#~ msgstr "Создает цикл событий (event loop) и пул потоков (thread pool executor)"
+
+#~ msgid "thread pool maximal size"
+#~ msgstr "максимальный размер пула потоков"
+
+#~ msgid "event loop policy"
+#~ msgstr "event loop policy"
+
+#~ msgid "set ``loop.set_debug(True)`` if True"
+#~ msgstr "установит ``loop.set_debug(True)`` если True"
 

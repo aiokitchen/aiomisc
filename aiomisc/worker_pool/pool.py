@@ -103,6 +103,32 @@ class WorkerPool:
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
     ):
+        """
+        Python has the multiprocessing module with Pool class which implements
+        similar worker pool. The IPC in this case use completely synchronous
+        communication method. This module reimplements the process based
+        worker pool but IPC is completely asynchronous on caller side,
+        meanwhile workers in separate processes aren’t asynchronous.
+
+        >>> import asyncio
+        >>> from time import sleep
+        >>> async def do_pool():
+        ...    async with WorkerPool(4) as pool:
+        ...        tasks = [pool.create_task(sleep, 1) for _ in range(4)]
+        ...        await asyncio.gather(*tasks)
+        >>> asyncio.run(do_pool())
+
+        :param workers: count of processes
+        :param max_overflow: maximum tasks in queue waiting for worker.
+                             Default is zero that's means unlimited.
+        :param process_poll_time: time which worker pool polling the process
+                                  when process finished before restart or
+                                  close pool.
+        :param initializer: Function which executes first time after
+                            process will be started.
+        :param initializer_args: ``*args`` for ``initializer`` function
+        :param initializer_kwargs: ``*kwargs`` for ``initializer`` function
+        """
         self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
         self.__loop: Optional[asyncio.AbstractEventLoop] = None
@@ -335,6 +361,20 @@ class WorkerPool:
         self, func: Callable[..., T],
         *args: Any, **kwargs: Any
     ) -> T:
+        """
+        Sending task to the worker pool queue and returns coroutine which
+        returns the same value as the sent function.
+
+        .. note::
+
+           Function and function arguments must be serializable through
+           ``pickle``. Otherwise it's raises an exception.
+
+        :param func: Function for execution in separate process.
+        :param args: Function arguments
+        :param kwargs:
+        :return:
+        """
         result_future = self.__create_future()
         process_future = self.__create_future()
 
@@ -359,3 +399,6 @@ class WorkerPool:
         exc_val: Exception, exc_tb: Traceback
     ) -> None:
         await self.close()
+
+
+__all__ = ("WorkerPool",)
