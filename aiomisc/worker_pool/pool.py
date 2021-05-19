@@ -5,7 +5,6 @@ import socket
 import sys
 import uuid
 import warnings
-from functools import partial
 from inspect import Traceback
 from itertools import chain
 from multiprocessing import AuthenticationError, ProcessError
@@ -98,8 +97,8 @@ class WorkerPool:
         return process
 
     def __init__(
-        self, workers: int, max_overflow: int = 0,
-        process_poll_time: float = 0.2,
+        self, workers: int, max_overflow: int = 0, *,
+        process_poll_time: float = 0.1,
         initializer: Optional[Callable[[], Any]] = None,
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
@@ -237,6 +236,7 @@ class WorkerPool:
                     await step(func, args, kwargs, result_future)
                 except asyncio.IncompleteReadError:
                     await self.__wait_process(process)
+                    self.__on_exit(process)
 
                     result_future.set_exception(
                         ProcessError(
@@ -252,6 +252,9 @@ class WorkerPool:
 
                     if not writer.is_closing():
                         self.loop.call_soon(writer.close)
+
+                    await self.__wait_process(process)
+                    self.__on_exit(process)
 
                     raise
 
@@ -283,7 +286,7 @@ class WorkerPool:
 
         await asyncio.gather(*tasks)
 
-    def __on_exit(self, _: asyncio.Task, *, process: Popen) -> None:
+    def __on_exit(self, process: Popen) -> None:
         async def respawn() -> None:
             if self.__closing:
                 return None
@@ -302,9 +305,6 @@ class WorkerPool:
         process = await self.__create_process(identity)
         await start_future
         self.processes.add(process)
-
-        waiter = self.__task(self.__wait_process(process))
-        waiter.add_done_callback(partial(self.__on_exit, process=process))
 
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
