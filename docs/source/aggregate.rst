@@ -30,7 +30,25 @@ record and the load is 1000 RPS, then, with a 10% increase of the delay
     from aiomisc import aggregate
 
     @aggregate(leeway_ms=10, max_count=2)
-    async def pow(*nums, power = 2)]:
+    async def pow(*nums: float, power: float = 2.0)]:
         return [math.pow(num, power) for num in nums]
+
+    await asyncio.gather(pow(1.0), pow(2.0))
+
+To employ more low-level approach one can use `aggregate_async` instead.
+In this case aggregating function accepts `Arg` parameters, each containing
+`value` and `future` attributes. It is responsible for setting the results
+of execution for all the futures (instead of returning values).
+
+.. code-block:: python
+
+    import asyncio
+    from aiomisc import aggregate_async
+    from aiomisc.aggregate import Arg
+
+    @aggregate_async(leeway_ms=10, max_count=2)
+    async def pow(*args: Arg, power: float = 2.0)]:
+        for arg in args:
+            arg.future.set_result(math.pow(arg.value, power))
 
     await asyncio.gather(pow(1), pow(2))

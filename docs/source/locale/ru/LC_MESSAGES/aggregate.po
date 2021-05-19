@@ -63,3 +63,17 @@ msgstr ""
 "занимает 100 мс, а нагрузка на сервис составляет 1000 RPS, то с 10% "
 "увеличением задержки (до 110 ms) количество запросов к БД упадёт в 10 раз "
 "(до 100 QPS) "
+
+
+#: ../../source/aggregate.rst:38
+msgid ""
+"To employ more low-level approach one can use `aggregate_async` instead. "
+"In this case aggregating function accepts `Arg` parameters, each containing "
+"`value` and `future` attributes. It is responsible for setting the results "
+"of execution for all the futures (instead of returning values)."
+msgstr ""
+"Для более низкоуровнего подхода можно воспользоваться декоратором "
+"`aggregate_async`. В этом случае агрегирующая функция принимает в качестве "
+"параметров переменные `Arg`, содержащие значение параметра `value` и футуру "
+"`future`. Функция ответственна за выставление результатов работы для всех "
+"футур (вместо обычного возврата результатов)."
