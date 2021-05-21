@@ -43,7 +43,7 @@ async def test_invalid_max_count(max_count):
 async def test_error(loop):
     t_exec = 0
     event = Event()
-    leeway = 0.01
+    leeway = 0.1
 
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
@@ -113,6 +113,7 @@ async def test_max_count(loop):
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
+        await asyncio.sleep(0.03)
         t_exec = monotonic()
         event.set()
 
@@ -143,6 +144,7 @@ async def test_max_count_multiple_batches(loop):
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
+        await asyncio.sleep(0.03)
         t_exec = monotonic()
         event.set()
 
@@ -249,6 +251,7 @@ async def test_max_count_cancel(loop):
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
+        await asyncio.sleep(0.03)
         t_exec = monotonic()
         executions += 1
         executing_task = tasks[arg.get()]
