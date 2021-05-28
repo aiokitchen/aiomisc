@@ -1,0 +1,112 @@
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the PROJECT project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version: latest\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-04-27 13:26+0300\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+# "Project-Id-Version: latest\n"
+#: ../../source/worker_pool.rst:2
+msgid "Worker Pool"
+msgstr "Worker Pool"
+
+#: ../../source/worker_pool.rst:4
+msgid ""
+"Python has the ``multiprocessing`` module with ``Pool`` class which "
+"implements similar worker pool. The IPC in this case use completely "
+"synchronous communication method. This module reimplements the process "
+"based worker pool but IPC is completely asynchronous on caller side, "
+"meanwhile workers in separate processes aren't asynchronous."
+msgstr ""
+"В Python есть модуль ``multiprocessing`` в котором реализован класс "
+"``Pool``, это аналог этого модуля, за единственным исключением - IPC в "
+"этом случае полностью синхронный. Этот модуль реализует Worker Pool на "
+"основе процессов, но IPC, при этом, полностью асинхронный на вызывающей "
+"стороне, при этом рабочие процессы не асинхронны."
+
+#: ../../source/worker_pool.rst:11
+msgid "Example"
+msgstr "Пример"
+
+#: ../../source/worker_pool.rst:13
+msgid ""
+"This would be useful when you want to process the data in a separate "
+"process, and the input and output data are not very large. Otherwise it "
+"will work fine, of course, but you would have to spend time transmitting "
+"the data over IPC."
+msgstr ""
+"Это полезно, когда вы хотите обрабатывать данные в отдельном процессе, "
+"при этом входные и выходные данные не велики. В противном случае это, "
+"конечно, будет работать нормально, но вам придется тратить время на "
+"передачу данных по IPC."
+
+#: ../../source/worker_pool.rst:18
+msgid ""
+"A good example is parallel image processing. Of course, you can transfer "
+"bytes of images through the IPC of the working pool, but in general case "
+"passing the file name to the worker will be better. Exception will be "
+"cases when the image payload significantly smaller the 1KB for example."
+msgstr ""
+"Хорошим примером является параллельная обработка изображений. Конечно, вы "
+"можете передавать байты изображений через IPC рабочего пула, но в "
+"общем случае передача имени файла будет лучше. Исключением "
+"будут случаи, когда изображение очень маленькое меньше, к примеру 1 КБ."
+
+#: ../../source/worker_pool.rst:23
+msgid ""
+"Let's write a program that accepts images in JPEG format and creates "
+"thumbnails for this. In this case, you have a file with the original "
+"image, and you should generate the output path for the 'thumbnail' "
+"function."
+msgstr ""
+"Давайте напишем программу, которая принимает изображения в формате "
+"JPEG и создает миниатюры. В этом случае у вас есть файл с "
+"исходным изображением, и вы должны сгенерировать выходной путь "
+"для функции «thumbnail»."
+
+#: ../../source/worker_pool.rst:29
+msgid "You have to install Pillow image processing library to run this example."
+msgstr ""
+"Придется установить Pillow - библиотеку для работы с изображениями, "
+"чтобы запустить этот код."
+
+#: ../../source/worker_pool.rst:31
+msgid "Installing pillow with pip:"
+msgstr "Установка через pip:"
+
+#: ../../source/worker_pool.rst:114
+msgid ""
+"This example takes the image directory as the first command-line "
+"argument, and creates directories for the thumbnails. After that, a "
+"``WorkerPool`` is started with as many processes as the processor has "
+"cores."
+msgstr ""
+"В этом примере каталог изображений используется в качестве первого "
+"аргумента командной строки и создает каталоги для эскизов. После этого "
+"запускается ``WorkerPool`` с таким количеством процессов, "
+"сколько ядер у процессора."
+
+#: ../../source/worker_pool.rst:118
+msgid ""
+"The main process creates tasks for the workers, each task is a conversion"
+" of one file to one size, after which all tasks fall into the "
+"``WorkerPool`` instance."
+msgstr ""
+"Главный процесс создает задачи для рабочих, каждая задача это конвертация "
+"одного изображения в один размер, и все эти задачи передаются в ``WorkerPool``"
+
+#: ../../source/worker_pool.rst:122
+msgid ""
+"The ``WorkerPool`` processes the tasks concurrently, but only one job for"
+" one worker at the same time."
+msgstr ""
+"``WorkerPool`` обрабатывает задачи конкурентно, но не более одной задачи на "
+"одного рабочего в один момент времени"

@@ -183,7 +183,8 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
             return future
 
-    def shutdown(self, wait: bool = True) -> None:
+    # noinspection PyMethodOverriding
+    def shutdown(self, wait: bool = True) -> None:  # type: ignore
         for _ in self.__pool:
             self.__tasks.put_nowait(None)
 
@@ -226,7 +227,7 @@ async def _awaiter(future: Future) -> T:
         raise
 
 
-def threaded(func: F) -> Callable[..., typing.Awaitable[Any]]:
+def threaded(func: Callable[..., T]) -> Callable[..., typing.Awaitable[T]]:
     if asyncio.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")
 

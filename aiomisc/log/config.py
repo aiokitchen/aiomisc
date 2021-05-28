@@ -10,6 +10,17 @@ from .formatter import color_formatter, json_handler
 from .wrap import wrap_logging_handler
 
 
+LOG_LEVEL: t.Optional[t.Any] = None
+LOG_FORMAT: t.Optional[t.Any] = None
+
+try:
+    import contextvars
+    LOG_LEVEL = contextvars.ContextVar("LOG_LEVEL", default=logging.INFO)
+    LOG_FORMAT = contextvars.ContextVar("LOG_FORMAT", default=LogFormat.color)
+except ImportError:
+    pass
+
+
 DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 
@@ -17,6 +28,9 @@ def create_logging_handler(
     log_format: LogFormat = LogFormat.color,
     date_format: str = None, **kwargs: t.Any
 ) -> logging.Handler:
+
+    if LOG_FORMAT is not None:
+        LOG_FORMAT.set(log_format)
 
     if log_format == LogFormat.stream:
         handler = logging.StreamHandler()   # type: logging.Handler
@@ -79,6 +93,9 @@ def basic_config(
             flush_interval=flush_interval,
             loop=loop,
         )
+
+    if LOG_LEVEL is not None:
+        LOG_LEVEL.set(level)
 
     # noinspection PyArgumentList
     logging.basicConfig(

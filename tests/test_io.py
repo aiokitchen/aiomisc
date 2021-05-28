@@ -1,20 +1,21 @@
 import asyncio
 import struct
 import uuid
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import pytest
 
 import aiomisc
-
+from tests import unix_only
 
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
-async def test_simple(loop):
-    tmp_file = NamedTemporaryFile(prefix="test_io")
+async def test_simple(loop, tmp_path):
+    tdir = Path(tmp_path)
 
-    async with aiomisc.io.async_open(tmp_file.name, "w+", loop=loop) as afp:
+    async with aiomisc.io.async_open(tdir / 'test', "w+", loop=loop) as afp:
         await afp.open()
 
         assert await afp.writable()
@@ -45,50 +46,49 @@ async def test_simple(loop):
         assert await afp.writable()
 
 
-async def test_ordering(loop):
-    tmp = NamedTemporaryFile(prefix="test_io")
+async def test_ordering(loop, tmp_path):
+    tdir = Path(tmp_path)
 
-    with tmp:
-        async with aiomisc.io.async_open(tmp.name, "wb+", loop=loop) as afp:
-            await afp.seek(4)
-            assert await afp.tell() == 4
+    async with aiomisc.io.async_open(tdir / 'file', "wb+", loop=loop) as afp:
+        await afp.seek(4)
+        assert await afp.tell() == 4
 
-            await afp.write(struct.pack("!I", 65535))
-            assert await afp.tell() == 8
+        await afp.write(struct.pack("!I", 65535))
+        assert await afp.tell() == 8
 
-        assert afp.closed()
+    assert afp.closed()
 
-        async with aiomisc.io.async_open(tmp.name, "rb+", loop=loop) as afp:
-            assert (await afp.read(4)) == b"\0\0\0\0"
-            assert await afp.tell() == 4
+    async with aiomisc.io.async_open(tdir / 'file', "rb+", loop=loop) as afp:
+        assert (await afp.read(4)) == b"\0\0\0\0"
+        assert await afp.tell() == 4
 
-            assert (await afp.read(4)) == struct.pack("!I", 65535)
-            assert await afp.tell() == 8
+        assert (await afp.read(4)) == struct.pack("!I", 65535)
+        assert await afp.tell() == 8
 
 
-async def test_async_for(loop):
-    tmp = NamedTemporaryFile(prefix="test_io")
+async def test_async_for(loop, tmp_path):
+    tdir = Path(tmp_path)
 
-    with tmp:
-        async with aiomisc.io.async_open(tmp.name, "w", loop=loop) as afp:
-            await afp.write("foo\nbar\nbaz\n")
+    async with aiomisc.io.async_open(tdir / 'path', "w", loop=loop) as afp:
+        await afp.write("foo\nbar\nbaz\n")
 
-        with open(tmp.name, "r") as fp:
-            expected = []
+    with open(tdir / 'path', "r") as fp:
+        expected = []
 
-            for line in fp:
-                expected.append(line)
+        for line in fp:
+            expected.append(line)
 
-        assert expected
+    assert expected
 
-        async with aiomisc.io.async_open(tmp.name, "r", loop=loop) as afp:
-            result = []
-            async for line in afp:
-                result.append(line)
+    async with aiomisc.io.async_open(tdir / 'path', "r", loop=loop) as afp:
+        result = []
+        async for line in afp:
+            result.append(line)
 
     assert result == expected
 
 
+@unix_only
 async def test_async_for_parallel(loop):
     tmp = NamedTemporaryFile(prefix="test_io")
 
@@ -119,6 +119,7 @@ async def test_async_for_parallel(loop):
     assert result == expected
 
 
+@unix_only
 async def test_object(loop):
     with NamedTemporaryFile(prefix="test_io") as tmp:
         afp1 = await aiomisc.io.async_open(tmp.name, "w+", loop=loop)

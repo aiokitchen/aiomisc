@@ -18,18 +18,18 @@ class GroupBy(Enum):
 
 
 class MemoryTracer(Service):
-    _tracer = None      # type: PeriodicCallback
-    _log = None         # type: logging.Logger
-    _snapshot_on_start = None
+    _tracer: PeriodicCallback
+    _log: logging.Logger
+    _snapshot_on_start: tracemalloc.Snapshot
 
     logger = log.info
 
-    interval = 5        # type: int
-    top_results = 20    # type: int
+    interval: int = 5
+    top_results: int = 20
 
-    group_by = GroupBy.lineno   # type: GroupBy
+    group_by: GroupBy = GroupBy.lineno
 
-    STAT_FORMAT = (
+    STAT_FORMAT: str = (
         "%(count)8s | "
         "%(count_diff)8s | "
         "%(size)8s | "

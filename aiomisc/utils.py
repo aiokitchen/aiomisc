@@ -43,7 +43,7 @@ OptionsType = Iterable[Tuple[int, int, int]]
 def bind_socket(
     *args: Any, address: str, port: int, options: OptionsType = (),
     reuse_addr: bool = True, reuse_port: bool = False,
-    proto_name: str = "tcp"
+    proto_name: Optional[str] = None
 ) -> socket.socket:
     """
 
@@ -72,18 +72,31 @@ def bind_socket(
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
     if hasattr(socket, "SO_REUSEPORT"):
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port))
+        sock.setsockopt(
+            socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port)
+        )
     else:
         log.warning("SO_REUSEPORT is not implemented by underlying library.")
 
     for level, option, value in options:
         sock.setsockopt(level, option, value)
 
-    sock.bind((address, port))
-    sock_addr = sock.getsockname()[:2]
+    unix_address_family = getattr(socket, 'AF_UNIX', None)
+    if sock.family == unix_address_family:
+        proto_name = proto_name or 'unix'
+        sock.bind(address)
+    else:
+        proto_name = proto_name or 'tcp'
+        sock.bind((address, port))
+
+    sock_addr = sock.getsockname()
+    if not isinstance(sock_addr, str):
+        sock_addr = sock_addr[:2]
 
     if sock.family == socket.AF_INET6:
         log.info("Listening %s://[%s]:%s", proto_name, *sock_addr)
+    elif sock.family == unix_address_family:
+        log.info("Listening %s://%s", proto_name, sock_addr)
     else:
         log.info("Listening %s://%s:%s", proto_name, *sock_addr)
 

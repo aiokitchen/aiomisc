@@ -12,7 +12,6 @@ on:
 jobs:
   lint:
 
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -23,48 +22,120 @@ jobs:
           - mypy
 
     steps:
+
       - uses: actions/checkout@v2
-      - name: tox ${{ matrix.linter }}
-        uses: docker://snakepacker/python:all
+
+      - name: Setup python3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Install tox
+        run: python -m pip install tox
+
+      - name: Run ${{ matrix.linter }}
+        run: tox
         env:
           TOXENV: ${{ matrix.linter }}
-        with:
-          args: tox
 
   tests:
     needs: lint
-    runs-on: ubuntu-latest
-
-    services:
-      rabbitmq:
-        image: docker://mosquito/aiormq-rabbitmq
-        ports:
-          - 5672:5672
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
 
       matrix:
-        toxenv:
-          - py36
-          - py37
-          - py38
-          - py39
-          - uvloop37
-          - uvloop38
-          - uvloop39
-          - contextvars36
-          - rpc
-          - rpc_udp
+        include:
+          - python: '3.6'
+            toxenv: py36
+            os: ubuntu-latest
+          - python: '3.7'
+            toxenv: py37
+            os: ubuntu-latest
+          - python: '3.8'
+            toxenv: py38
+            os: ubuntu-latest
+          - python: '3.9'
+            toxenv: py39
+            os: ubuntu-latest
+          - python: '3.8'
+            toxenv: rpc
+            os: ubuntu-latest
+          - python: '3.8'
+            toxenv: rpc_udp
+            os: ubuntu-latest
+          - python: '3.6'
+            toxenv: contextvars36
+            os: ubuntu-latest
+          - python: '3.7'
+            toxenv: uvloop37
+            os: ubuntu-latest
+          - python: '3.8'
+            toxenv: uvloop38
+            os: ubuntu-latest
+          - python: '3.9'
+            toxenv: uvloop39
+            os: ubuntu-latest
+
+# TODO: Fix builds and enable it
+#          - python: '3.6'
+#            toxenv: py36
+#            os: macos-latest
+#          - python: '3.7'
+#            toxenv: py37
+#            os: macos-latest
+#          - python: '3.8'
+#            toxenv: py38
+#            os: macos-latest
+#          - python: '3.9'
+#            toxenv: py39
+#            os: macos-latest
+#          - python: '3.8'
+#            toxenv: rpc
+#            os: macos-latest
+#          - python: '3.8'
+#            toxenv: rpc_udp
+#            os: macos-latest
+#          - python: '3.6'
+#            toxenv: contextvars36
+#            os: macos-latest
+#          - python: '3.7'
+#            toxenv: uvloop37
+#            os: macos-latest
+#          - python: '3.8'
+#            toxenv: uvloop38
+#            os: macos-latest
+#          - python: '3.9'
+#            toxenv: uvloop39
+#            os: macos-latest
+
+#          - python: '3.6'
+#            toxenv: py36
+#            os: windows-latest
+#          - python: '3.7'
+#            toxenv: py37
+#            os: windows-latest
+#          - python: '3.8'
+#            toxenv: py38
+#            os: windows-latest
+          - python: '3.9'
+            toxenv: py39
+            os: windows-latest
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: tox ${{ matrix.toxenv }}
-        uses: docker://snakepacker/python:all
+      - name: Setup python${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "${{ matrix.python }}"
+
+      - name: Install tox
+        run: python -m pip install tox
+
+      - name: Run tox
+        run: tox
         env:
           TOXENV: ${{ matrix.toxenv }}
-          AMQP_URL: amqp://guest:guest@rabbitmq
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        with:
-          args: /bin/bash -c "wait-for-port rabbitmq:5672 && tox"
