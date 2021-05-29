@@ -7,7 +7,9 @@ from typing import List
 from aiocontextvars import ContextVar
 import pytest
 
-from aiomisc.aggregate import aggregate, aggregate_async, Arg, ResultNotSet
+from aiomisc.aggregate import (
+    aggregate, aggregate_async, Arg, ResultNotSetError,
+)
 
 
 async def test_invalid_func():
@@ -389,7 +391,7 @@ async def test_low_level_sloppy(loop):
     assert task1.done()
     assert await task1
     assert task2.done()
-    assert isinstance(task2.exception(), ResultNotSet)
+    assert isinstance(task2.exception(), ResultNotSetError)
 
 
 async def test_low_level_ok(loop):

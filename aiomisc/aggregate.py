@@ -17,7 +17,7 @@ class Arg(NamedTuple):
     future: Future
 
 
-class ResultNotSet(Exception):
+class ResultNotSetError(Exception):
     pass
 
 
@@ -39,7 +39,7 @@ class Aggregator:
 
     def __init__(
             self, func: AggFunc, *,
-            leeway_ms: float, max_count: int = None,
+            leeway_ms: float, max_count: Optional[int] = None,
     ):
         has_variadic_positional = any((
             parameter.kind == Parameter.VAR_POSITIONAL
@@ -166,10 +166,10 @@ class AggregatorLowLevel(Aggregator):
         # Validate that all results/exceptions are set by the func
         for future in futures:
             if not future.done():
-                future.set_exception(ResultNotSet)
+                future.set_exception(ResultNotSetError)
 
 
-def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
+def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
     """
     Parametric decorator that aggregates multiple
     (but no more than ``max_count`` defaulting to ``None``) single-argument
@@ -197,14 +197,16 @@ def aggregate(leeway_ms: float, max_count: int = None) -> Callable:
     return _
 
 
-def aggregate_async(leeway_ms: float, max_count: int = None) -> Callable:
+def aggregate_async(
+        leeway_ms: float, max_count: Optional[int] = None,
+) -> Callable:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
     containing ``value`` and ``future`` attributes instead. In this setting
     ``func`` is responsible for setting individual results/exceptions for all
     of the futures or throwing an exception (it will propagate to futures
     automatically). If ``func`` mistakenly does not set a result of some
-    future, then, ``ResultNotSet`` exception is set.
+    future, then, ``ResultNotSetError`` exception is set.
     :return:
     """
     def _(func: AggFuncLowLevel) -> Callable[[Any], Awaitable]:
