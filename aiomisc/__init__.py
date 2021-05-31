@@ -3,6 +3,7 @@ import logging
 import pkg_resources
 
 from . import io, log
+from .aggregate import aggregate, aggregate_async
 from .backoff import asyncbackoff
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
@@ -47,6 +48,7 @@ setup_plugins()
 
 
 __all__ = (
+    "aggregate", "aggregate_async",
     "asyncbackoff",
     "awaitable",
     "bind_socket",
