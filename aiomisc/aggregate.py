@@ -22,8 +22,8 @@ class ResultNotSetError(Exception):
 
 
 AggFuncHighLevel = Callable[[Any], Awaitable[Iterable]]
-AggFuncLowLevel = Callable[[Arg], Awaitable]
-AggFunc = Union[AggFuncHighLevel, AggFuncLowLevel]
+AggFuncAsync = Callable[[Arg], Awaitable]
+AggFunc = Union[AggFuncHighLevel, AggFuncAsync]
 
 
 class Aggregator:
@@ -147,7 +147,7 @@ class Aggregator:
         return future.result()
 
 
-class AggregatorLowLevel(Aggregator):
+class AggregatorAsync(Aggregator):
 
     async def _execute(self, *, args: list, futures: List[Future]) -> None:
         args = [
@@ -189,12 +189,12 @@ def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
     function with. Default ``None``.
     :return:
     """
-    def _(func: AggFuncHighLevel) -> Callable[[Any], Awaitable]:
+    def decorator(func: AggFuncHighLevel) -> Callable[[Any], Awaitable]:
         aggregator = Aggregator(
             func, max_count=max_count, leeway_ms=leeway_ms,
         )
         return aggregator.aggregate
-    return _
+    return decorator
 
 
 def aggregate_async(
@@ -209,9 +209,9 @@ def aggregate_async(
     future, then, ``ResultNotSetError`` exception is set.
     :return:
     """
-    def _(func: AggFuncLowLevel) -> Callable[[Any], Awaitable]:
-        aggregator = AggregatorLowLevel(
+    def decorator(func: AggFuncAsync) -> Callable[[Any], Awaitable]:
+        aggregator = AggregatorAsync(
             func, max_count=max_count, leeway_ms=leeway_ms,
         )
         return aggregator.aggregate
-    return _
+    return decorator
