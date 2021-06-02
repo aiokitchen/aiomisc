@@ -51,10 +51,7 @@ class AIOHTTPService(Service):
         super().__init__(**kwds)
 
     async def create_application(self) -> Application:
-        raise NotImplementedError(
-            "You should implement "
-            '"create_application" method',
-        )
+        return Application()
 
     async def create_site(self) -> SockSite:
         if self.runner is None:
