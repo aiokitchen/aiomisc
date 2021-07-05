@@ -13,6 +13,7 @@ from multiprocessing import cpu_count
 from types import MappingProxyType
 from typing import Any, Callable, NamedTuple, Optional, TypeVar  # noqa
 
+from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
 
@@ -52,6 +53,15 @@ WorkItemBase = NamedTuple(
 )
 
 
+class ThreadPoolStatistic(Statistic):
+    threads: int
+    done: int
+    error: int
+    success: int
+    submitted: int
+    sum_time: float
+
+
 class WorkItem(WorkItemBase):
     @staticmethod
     def set_result(
@@ -65,7 +75,7 @@ class WorkItem(WorkItemBase):
         else:
             future.set_result(result)
 
-    def __call__(self) -> None:
+    def __call__(self, statistic: ThreadPoolStatistic) -> None:
         if self.future.done():
             return
 
@@ -74,10 +84,17 @@ class WorkItem(WorkItemBase):
         if self.loop.is_closed():
             raise asyncio.CancelledError
 
+        delta = -time.monotonic()
         try:
             result = self.func(*self.args, **self.kwargs)
+            statistic.success += 1
         except Exception as e:
+            statistic.error += 1
             exception = e
+        finally:
+            delta += time.monotonic()
+            statistic.sum_time += delta
+            statistic.done += 1
 
         if self.loop.is_closed():
             raise asyncio.CancelledError
@@ -109,6 +126,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         self.__thread_events = set()  # type: typing.Set[threading.Event]
         self.__tasks = SimpleQueue()  # type: SimpleQueue[Optional[WorkItem]]
         self.__write_lock = threading.RLock()
+        self._statistic = ThreadPoolStatistic()
 
         pools = set()
         for idx in range(max_workers):
@@ -133,6 +151,8 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         return thread
 
     def _in_thread(self, event: threading.Event) -> None:
+        self._statistic.threads += 1
+
         while True:
             work_item = self.__tasks.get()
 
@@ -147,8 +167,9 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
                     )
                     continue
 
-                work_item()
+                work_item(self._statistic)
             except asyncio.CancelledError:
+                self._statistic.threads -= 1
                 break
             finally:
                 del work_item
@@ -181,6 +202,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
                 ),
             )
 
+            self._statistic.submitted += 1
             return future
 
     # noinspection PyMethodOverriding
@@ -253,6 +275,8 @@ def run_in_new_thread(
     loop = asyncio.get_event_loop()
     future = loop.create_future()
 
+    statistic = ThreadPoolStatistic()
+
     def set_result(result: Any) -> None:
         if future.done() or loop.is_closed():
             return
@@ -267,11 +291,16 @@ def run_in_new_thread(
 
     @wraps(func)
     def in_thread(target: F) -> None:
+        statistic.threads += 1
+        statistic.submitted += 1
+
         try:
             loop.call_soon_threadsafe(
                 set_result, target(),
             )
+            statistic.success += 1
         except Exception as exc:
+            statistic.error += 1
             if loop.is_closed() and no_return:
                 return
 
@@ -280,6 +309,9 @@ def run_in_new_thread(
                 return
 
             loop.call_soon_threadsafe(set_exception, exc)
+        finally:
+            statistic.done += 1
+            statistic.threads -= 1
 
     thread = threading.Thread(
         target=in_thread, name=func.__name__,

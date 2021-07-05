@@ -6,6 +6,7 @@ from . import io, log
 from .aggregate import aggregate, aggregate_async
 from .backoff import asyncbackoff
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
+from .counters import get_statistics, Statistic
 from .context import Context, get_context
 from .entrypoint import entrypoint
 from .iterator_wrapper import IteratorWrapper
@@ -52,6 +53,7 @@ __all__ = (
     "aggregate", "aggregate_async",
     "asyncbackoff",
     "awaitable",
+    "Statistic",
     "bind_socket",
     "cancel_tasks",
     "CircuitBreaker",
@@ -62,6 +64,7 @@ __all__ = (
     "cutout",
     "entrypoint",
     "get_context",
+    "get_statistics",
     "io",
     "IteratorWrapper",
     "IteratorWrapperSeparate",

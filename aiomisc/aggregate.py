@@ -8,6 +8,7 @@ from typing import (
     Any, Awaitable, Callable, Iterable, List, NamedTuple, Optional, Union,
 )
 
+from .counters import Statistic
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +25,14 @@ class ResultNotSetError(Exception):
 AggFuncHighLevel = Callable[[Any], Awaitable[Iterable]]
 AggFuncAsync = Callable[[Arg], Awaitable]
 AggFunc = Union[AggFuncHighLevel, AggFuncAsync]
+
+
+class AggregateStatistic(Statistic):
+    leeway_ms: float
+    max_count: int
+    success: int
+    error: int
+    done: int
 
 
 class Aggregator:
@@ -60,6 +69,9 @@ class Aggregator:
         self._max_count = max_count
         self._leeway = leeway_ms / 1000
         self._clear()
+        self._statistic = AggregateStatistic()
+        self._statistic.leeway_ms = self.leeway_ms
+        self._statistic.max_count = max_count
 
     def _clear(self) -> None:
         self._first_call_at = None
@@ -83,12 +95,16 @@ class Aggregator:
     async def _execute(self, *, args: list, futures: List[Future]) -> None:
         try:
             results = await self._func(*args)
+            self._statistic.success += 1
         except CancelledError:
             # Other waiting tasks can try to finish the job instead.
             raise
         except Exception as e:
             self._set_exception(e, futures)
+            self._statistic.error += 1
             return
+        finally:
+            self._statistic.done += 1
 
         self._set_results(results, futures)
 
@@ -156,12 +172,16 @@ class AggregatorAsync(Aggregator):
         ]
         try:
             await self._func(*args)
+            self._statistic.success += 1
         except CancelledError:
             # Other waiting tasks can try to finish the job instead.
             raise
         except Exception as e:
             self._set_exception(e, futures)
+            self._statistic.error += 1
             return
+        finally:
+            self._statistic.done += 1
 
         # Validate that all results/exceptions are set by the func
         for future in futures:

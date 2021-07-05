@@ -1,10 +1,12 @@
 import asyncio
 from functools import wraps
+from time import monotonic
 from typing import (
     Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
 )
 
 from .timeout import timeout
+from .counters import Statistic
 
 
 Number = Union[int, float]
@@ -13,6 +15,14 @@ T = TypeVar("T")
 
 WrapReturnType = Callable[[Callable[..., T]], T]
 ReturnType = Callable[[Callable[..., T]], WrapReturnType]
+
+
+class BackoffStatistic(Statistic):
+    call_count: int
+    attempts: int
+    cancels: int
+    errors: int
+    sum_time: float
 
 
 # noinspection SpellCheckingInspection
@@ -42,6 +52,7 @@ def asyncbackoff(
     """
 
     exceptions = exc + tuple(exceptions)
+    statistic = BackoffStatistic()
 
     if not pause:
         pause = 0
@@ -71,6 +82,7 @@ def asyncbackoff(
 
         @wraps(func)
         async def wrap(*args: Any, **kwargs: Any) -> Awaitable[T]:
+            statistic.call_count += 1
             last_exc = None
             tries = 0
 
@@ -78,15 +90,20 @@ def asyncbackoff(
                 nonlocal last_exc, tries
 
                 while True:
+                    statistic.attempts += 1
                     tries += 1
+                    delta = -monotonic()
+
                     try:
                         return await asyncio.wait_for(
                             func(*args, **kwargs),
                             timeout=attempt_timeout,
                         )
                     except asyncio.CancelledError:
+                        statistic.cancels += 1
                         raise
                     except exceptions as e:
+                        statistic.errors += 1
                         last_exc = e
                         if max_tries is not None and tries >= max_tries:
                             raise
@@ -96,6 +113,9 @@ def asyncbackoff(
                     except Exception as e:
                         last_exc = e
                         raise
+                    finally:
+                        delta += monotonic()
+                        statistic.sum_time += delta
 
             try:
                 return await asyncio.wait_for(run(), timeout=deadline)

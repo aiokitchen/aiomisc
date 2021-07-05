@@ -4,11 +4,16 @@ import typing as t
 from functools import partial
 
 from . import utils
-
+from .counters import Statistic
 
 log = logging.getLogger(__name__)
 ExceptionsType = t.Tuple[t.Type[Exception], ...]
 CallbackType = t.Callable[..., t.Union[t.Awaitable[t.Any], t.Any]]
+
+
+class PeriodicCallbackStatistic(Statistic):
+    call_count: int
+    sum_time: int
 
 
 class PeriodicCallback:
@@ -20,13 +25,17 @@ class PeriodicCallback:
 
     """
 
-    __slots__ = "_cb", "_closed", "_task", "_loop", "_handle", "__name"
+    __slots__ = (
+        "_cb", "_closed", "_task", "_loop", "_handle", "__name",
+        "_statistic"
+    )
 
     def __init__(
         self, coroutine_func: CallbackType,
         *args: t.Any, **kwargs: t.Any
     ):
 
+        self._statistic = PeriodicCallbackStatistic()
         self.__name = repr(coroutine_func)
         self._cb = partial(
             utils.awaitable(coroutine_func), *args, **kwargs
@@ -80,7 +89,14 @@ class PeriodicCallback:
                 runner(suppress_exceptions),        # type: ignore
             )
 
+            start_time = self._loop.time()
+
             self._task.add_done_callback(call)
+            self._task.add_done_callback(lambda _: do_stat(start_time))
+
+        def do_stat(start_time: float) -> None:
+            self._statistic.call_count += 1
+            self._statistic.sum_time += self._loop.time() - start_time
 
         def call(*_: t.Any) -> None:
             if self._handle is not None:
