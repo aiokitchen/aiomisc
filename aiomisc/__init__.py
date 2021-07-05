@@ -6,6 +6,7 @@ from . import io, log
 from .aggregate import aggregate, aggregate_async
 from .backoff import asyncbackoff
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
+from .counters import get_statistics, Statistic
 from .context import Context, get_context
 from .counters import get_statistics
 from .entrypoint import entrypoint
@@ -67,6 +68,7 @@ __all__ = (
     "aggregate_async",
     "asyncbackoff",
     "awaitable",
+    "Statistic",
     "bind_socket",
     "cancel_tasks",
     "chunk_list",
