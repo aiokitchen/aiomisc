@@ -30,5 +30,3 @@ def test_get_statistics():
     del simple, instance, metric, value
 
     assert list(get_statistics(StatSimple, StatChild)) == []
-
-
