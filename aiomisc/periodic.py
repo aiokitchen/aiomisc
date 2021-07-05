@@ -13,7 +13,7 @@ CallbackType = t.Callable[..., t.Union[t.Awaitable[t.Any], t.Any]]
 
 class PeriodicCallbackStatistic(Statistic):
     call_count: int
-    sum_time: int
+    sum_time: float
 
 
 class PeriodicCallback:

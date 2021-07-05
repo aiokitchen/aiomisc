@@ -30,3 +30,12 @@ def test_get_statistics():
     del simple, instance, metric, value
 
     assert list(get_statistics(StatSimple, StatChild)) == []
+
+
+def test_inheritance():
+    stat = StatChild()
+
+    assert stat.test_prop == 0
+    assert stat.foo == 0
+    assert stat.bar == 0.0
+    assert stat.baz == 0

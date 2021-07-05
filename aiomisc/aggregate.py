@@ -71,7 +71,7 @@ class Aggregator:
         self._clear()
         self._statistic = AggregateStatistic()
         self._statistic.leeway_ms = self.leeway_ms
-        self._statistic.max_count = max_count
+        self._statistic.max_count = max_count or 0
 
     def _clear(self) -> None:
         self._first_call_at = None
