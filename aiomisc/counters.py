@@ -25,6 +25,12 @@ class Metric:
         self.counter[self.name] -= value
         return self
 
+    def __eq__(self, other):
+        return self.counter[self.name] == other
+
+    def __hash__(self):
+        return hash(self.counter[self.name])
+
 
 class AbstractStatistic:
     __metrics__: t.FrozenSet[str]
