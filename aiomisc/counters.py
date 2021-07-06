@@ -25,10 +25,10 @@ class Metric:
         self.counter[self.name] -= value
         return self
 
-    def __eq__(self, other):
+    def __eq__(self, other: t.Any) -> bool:
         return self.counter[self.name] == other
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.counter[self.name])
 
 
