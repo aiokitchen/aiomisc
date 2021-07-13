@@ -199,11 +199,18 @@ def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
     (``async def func(*args, pho=1, bo=2) -> Iterable``) into its single
     execution with multiple positional arguments
     (``res1, res2, ... = await func(arg1, arg2, ...)``) collected within a time
-    window ``leeway_ms``. Note 1: ``func`` must return a sequence of values
-    of length equal to the number of arguments (and in the same order).
-    Note 2: if some unexpected error occurs, exception is propagated to each
-    future; to set an individual error for each aggregated call refer
-    to ``aggregate_async``.
+    window ``leeway_ms``.
+
+    .. note::
+
+        ``func`` must return a sequence of values of length equal to the
+        number of arguments (and in the same order).
+
+    .. note::
+
+        if some unexpected error occurs, exception is propagated to each
+        future; to set an individual error for each aggregated call refer
+        to ``aggregate_async``.
 
     :param leeway_ms: The maximum approximate delay between the first
            collected argument and the aggregated execution.

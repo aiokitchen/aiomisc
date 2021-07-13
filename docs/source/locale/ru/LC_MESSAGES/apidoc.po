@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-07-13 16:34+0300\n"
+"POT-Creation-Date: 2021-07-13 16:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,11 +80,20 @@ msgid ""
 "asynchronous function with variadic positional arguments (``async def "
 "func(*args, pho=1, bo=2) -> Iterable``) into its single execution with "
 "multiple positional arguments (``res1, res2, ... = await func(arg1, arg2,"
-" ...)``) collected within a time window ``leeway_ms``. Note 1: ``func`` "
-"must return a sequence of values of length equal to the number of "
-"arguments (and in the same order). Note 2: if some unexpected error "
-"occurs, exception is propagated to each future; to set an individual "
-"error for each aggregated call refer to ``aggregate_async``."
+" ...)``) collected within a time window ``leeway_ms``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:12 of
+msgid ""
+"``func`` must return a sequence of values of length equal to the number "
+"of arguments (and in the same order)."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:17 of
+msgid ""
+"if some unexpected error occurs, exception is propagated to each future; "
+"to set an individual error for each aggregated call refer to "
+"``aggregate_async``."
 msgstr ""
 
 #: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
@@ -92,13 +101,13 @@ msgstr ""
 msgid "Parameters"
 msgstr "Параметры"
 
-#: aiomisc.aggregate.aggregate:14 of
+#: aiomisc.aggregate.aggregate:21 of
 msgid ""
 "The maximum approximate delay between the first collected argument and "
 "the aggregated execution."
 msgstr ""
 
-#: aiomisc.aggregate.aggregate:16 of
+#: aiomisc.aggregate.aggregate:23 of
 msgid ""
 "The maximum number of arguments to call decorated function with. Default "
 "``None``."
