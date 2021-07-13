@@ -53,8 +53,9 @@ Installing from github.com:
 
 .. code-block:: bash
 
-    pip3 install git+https://github.com/mosquito/aiomisc.git
-
+    pip3 install git+https://github.com/aiokitchen/aiomisc.git
+    pip3 install \
+        https://github.com/aiokitchen/aiomisc/archive/refs/heads/master.zip
 
 .. _uvloop: https://pypi.org/project/uvloop
 .. _aiohttp: https://pypi.org/project/aiohttp
