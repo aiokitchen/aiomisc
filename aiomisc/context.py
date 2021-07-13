@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from aiomisc.counters import Statistic
 
+
 _StorageType = t.DefaultDict[t.Any, asyncio.Future]
 _EventObjectStoreType = t.Dict[
     asyncio.AbstractEventLoop, "Context",

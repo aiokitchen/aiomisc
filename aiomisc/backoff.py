@@ -5,8 +5,8 @@ from typing import (
     Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
 )
 
-from .timeout import timeout
 from .counters import Statistic
+from .timeout import timeout
 
 
 Number = Union[int, float]

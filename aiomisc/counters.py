@@ -1,12 +1,14 @@
 import typing as t
-from weakref import WeakSet
 from collections import Counter
+from weakref import WeakSet
 
 
 class Metric:
-    def __init__(self, name: str,
-                 counter: t.MutableMapping[str, t.Union[float, int]],
-                 default: t.Union[float, int] = 0):
+    def __init__(
+        self, name: str,
+        counter: t.MutableMapping[str, t.Union[float, int]],
+        default: t.Union[float, int] = 0,
+    ):
         self.name: str = name
         self.counter = counter
         self.counter[name] = default
@@ -46,12 +48,12 @@ class MetaStatistic(type):
     def __new__(
         mcs, name: str,
         bases: t.Tuple[type, ...],
-        dct: t.Dict[str, t.Any]
+        dct: t.Dict[str, t.Any],
     ) -> t.Any:
 
         # noinspection PyTypeChecker
         klass: t.Type[AbstractStatistic] = super().__new__(
-            mcs, name, bases, dct
+            mcs, name, bases, dct,
         )   # type: ignore
 
         metrics = set()
@@ -60,7 +62,7 @@ class MetaStatistic(type):
             if not issubclass(base_class, AbstractStatistic):
                 continue
 
-            if not hasattr(base_class, '__annotations__'):
+            if not hasattr(base_class, "__annotations__"):
                 continue
 
             for prop, kind in base_class.__annotations__.items():

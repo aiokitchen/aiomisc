@@ -142,7 +142,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         self.__thread_events.add(event)
 
         thread_name = "Thread {} from pool {}".format(
-            idx, self._statistic.name or ""
+            idx, self._statistic.name or "",
         )
         thread = threading.Thread(
             target=self._in_thread,
@@ -275,7 +275,7 @@ def run_in_new_thread(
     kwargs: Any = MappingProxyType({}),
     detach: bool = True,
     no_return: bool = False,
-    statistic_name: Optional[str] = None
+    statistic_name: Optional[str] = None,
 ) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()

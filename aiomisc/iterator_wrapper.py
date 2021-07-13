@@ -7,6 +7,7 @@ from concurrent.futures import Executor
 
 from aiomisc.counters import Statistic
 
+
 T = t.TypeVar("T")
 R = t.TypeVar("R")
 

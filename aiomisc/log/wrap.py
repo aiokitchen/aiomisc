@@ -49,7 +49,7 @@ def wrap_logging_handler(
     run_in_new_thread(
         _thread_flusher, args=(
             buffered_handler, flush_interval, loop,
-        ), no_return=True, statistic_name="logger"
+        ), no_return=True, statistic_name="logger",
     )
 
     return buffered_handler

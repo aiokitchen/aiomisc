@@ -6,6 +6,7 @@ from functools import partial
 from . import utils
 from .counters import Statistic
 
+
 log = logging.getLogger(__name__)
 ExceptionsType = t.Tuple[t.Type[Exception], ...]
 CallbackType = t.Callable[..., t.Union[t.Awaitable[t.Any], t.Any]]
@@ -27,7 +28,7 @@ class PeriodicCallback:
 
     __slots__ = (
         "_cb", "_closed", "_task", "_loop", "_handle", "__name",
-        "_statistic"
+        "_statistic",
     )
 
     def __init__(

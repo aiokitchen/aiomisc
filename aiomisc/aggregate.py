@@ -10,6 +10,7 @@ from typing import (
 
 from .counters import Statistic
 
+
 log = logging.getLogger(__name__)
 
 
