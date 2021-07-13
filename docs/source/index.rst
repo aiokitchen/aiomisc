@@ -186,6 +186,7 @@ Table Of Contents
    signal
    plugins
    apidoc
+   statistic
 
 Versioning
 ----------

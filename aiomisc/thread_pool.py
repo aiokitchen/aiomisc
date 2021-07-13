@@ -275,11 +275,12 @@ def run_in_new_thread(
     kwargs: Any = MappingProxyType({}),
     detach: bool = True,
     no_return: bool = False,
+    statistic_name: Optional[str] = None
 ) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()
 
-    statistic = ThreadPoolStatistic()
+    statistic = ThreadPoolStatistic(statistic_name)
 
     def set_result(result: Any) -> None:
         if future.done() or loop.is_closed():

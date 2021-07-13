@@ -1,0 +1,46 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2021, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 14.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-07-13 16:20+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#: ../../source/statistic.rst:2
+msgid "Statistic counters"
+msgstr "Статистические счетчики"
+
+#: ../../source/statistic.rst:4
+msgid ""
+"``aiomisc`` contains internal statistic counters. You may read this by "
+"`aiomisc.get_statistics()` function."
+msgstr ""
+"``aiomisc`` содержит внутренние счетчики статистики. Вы можете прочитать "
+"их с помощью функции `aiomisc.get_statistics()`."
+
+#: ../../source/statistic.rst:7
+msgid ""
+"Statistic instances creates dynamically. You might set custom names for "
+"this using ``statistic_name: Optional[str] = None`` argument for "
+"compatible entities."
+msgstr ""
+"Экземпляры классов статистики создаются динамически. Вы можете использовать "
+"определяемые пользователем имена для них добавляя "
+"аргумент ``statistic_name: Optional[str] = None`` в сущьности "
+"поддерживающе это."
+
+#: ../../source/statistic.rst:29
+msgid "This code will print something like this:"
+msgstr "Этот код выведет что-то вроде:"
+

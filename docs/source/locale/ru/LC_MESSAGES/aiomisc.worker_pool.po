@@ -1,0 +1,109 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2021, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 14.0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-19 11:24+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#: ../../source/aiomisc.worker_pool.rst:2
+msgid "aiomisc.worker\\_pool package"
+msgstr ""
+
+#: ../../source/aiomisc.worker_pool.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: aiomisc.worker_pool.constants.PacketTypes:1 of
+msgid "Bases: :class:`enum.IntEnum`"
+msgstr ""
+
+#: aiomisc.worker_pool.constants.PacketTypes:1 of
+msgid "An enumeration."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:1 of
+msgid "Bases: :class:`object`"
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:1 of
+msgid ""
+"Python has the multiprocessing module with Pool class which implements "
+"similar worker pool. The IPC in this case use completely synchronous "
+"communication method. This module reimplements the process based worker "
+"pool but IPC is completely asynchronous on caller side, meanwhile workers"
+" in separate processes aren’t asynchronous."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool
+#: aiomisc.worker_pool.pool.WorkerPool.create_task of
+msgid "Parameters"
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:15 of
+msgid "count of processes"
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:16 of
+msgid ""
+"maximum tasks in queue waiting for worker. Default is zero that's means "
+"unlimited."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:18 of
+msgid ""
+"time which worker pool polling the process when process finished before "
+"restart or close pool."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:21 of
+msgid "Function which executes first time after process will be started."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:23 of
+msgid "``*args`` for ``initializer`` function"
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool:24 of
+msgid "``*kwargs`` for ``initializer`` function"
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool.create_task:1 of
+msgid ""
+"Sending task to the worker pool queue and returns coroutine which returns"
+" the same value as the sent function."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool.create_task:6 of
+msgid ""
+"Function and function arguments must be serializable through ``pickle``. "
+"Otherwise it's raises an exception."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool.create_task:9 of
+msgid "Function for execution in separate process."
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool.create_task:10 of
+msgid "Function arguments"
+msgstr ""
+
+#: aiomisc.worker_pool.pool.WorkerPool.create_task of
+msgid "Returns"
+msgstr ""
+
+#: ../../source/aiomisc.worker_pool.rst:26
+msgid "Module contents"
+msgstr ""
+

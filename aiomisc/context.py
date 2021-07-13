@@ -2,7 +2,7 @@ import asyncio
 import typing as t
 from collections import defaultdict
 
-from aiomisc import Statistic
+from aiomisc.counters import Statistic
 
 _StorageType = t.DefaultDict[t.Any, asyncio.Future]
 _EventObjectStoreType = t.Dict[

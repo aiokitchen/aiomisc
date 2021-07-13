@@ -1,0 +1,130 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2021, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 14.0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-19 11:24+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#: ../../source/aiomisc.service.rst:2
+msgid "aiomisc.service package"
+msgstr ""
+
+#: ../../source/aiomisc.service.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: aiomisc.service.aiohttp.AIOHTTPSSLService:1
+#: aiomisc.service.asgi.ASGIHTTPService:1 of
+msgid "Bases: :class:`aiomisc.service.aiohttp.AIOHTTPService`"
+msgstr ""
+
+#: aiomisc.service.aiohttp.AIOHTTPService:1 aiomisc.service.base.SimpleServer:1
+#: aiomisc.service.cron.CronService:1
+#: aiomisc.service.periodic.PeriodicService:1
+#: aiomisc.service.profiler.Profiler:1 aiomisc.service.tracer.MemoryTracer:1 of
+msgid "Bases: :class:`aiomisc.service.base.Service`"
+msgstr ""
+
+#: aiomisc.service.asgi.ASGIHTTPSSLService:1 of
+msgid "Bases: :class:`aiomisc.service.aiohttp.AIOHTTPSSLService`"
+msgstr ""
+
+#: aiomisc.service.base.Service:1 of
+msgid "Bases: :class:`object`"
+msgstr ""
+
+#: aiomisc.service.base.ServiceMeta:1 of
+msgid "Bases: :class:`type`"
+msgstr ""
+
+#: aiomisc.service.cron.StoreItem:1 of
+msgid "Bases: :class:`tuple`"
+msgstr ""
+
+#: aiomisc.service.cron.StoreItem:1 of
+msgid ""
+"Create new instance of StoreItem(callback, spec, shield, "
+"suppress_exceptions)"
+msgstr ""
+
+#: ../../docstring aiomisc.service.cron.StoreItem.callback:1 of
+msgid "Alias for field number 0"
+msgstr ""
+
+#: ../../docstring aiomisc.service.cron.StoreItem.shield:1 of
+msgid "Alias for field number 2"
+msgstr ""
+
+#: ../../docstring aiomisc.service.cron.StoreItem.spec:1 of
+msgid "Alias for field number 1"
+msgstr ""
+
+#: ../../docstring aiomisc.service.cron.StoreItem.suppress_exceptions:1 of
+msgid "Alias for field number 3"
+msgstr ""
+
+#: aiomisc.service.tcp.TCPServer:1 aiomisc.service.tls.TLSServer:1
+#: aiomisc.service.udp.UDPServer:1 of
+msgid "Bases: :class:`aiomisc.service.base.SimpleServer`"
+msgstr ""
+
+#: aiomisc.service.tracer.GroupBy:1 of
+msgid "Bases: :class:`enum.Enum`"
+msgstr ""
+
+#: aiomisc.service.tracer.GroupBy:1 of
+msgid "An enumeration."
+msgstr ""
+
+#: logging.Logger.info:1 of
+msgid "Log 'msg % args' with severity 'INFO'."
+msgstr ""
+
+#: logging.Logger.info:3 of
+msgid ""
+"To pass exception information, use the keyword argument exc_info with a "
+"true value, e.g."
+msgstr ""
+
+#: logging.Logger.info:6 of
+#, python-format
+msgid ""
+"logger.info(\"Houston, we have a %s\", \"interesting problem\", "
+"exc_info=1)"
+msgstr ""
+
+#: aiomisc.service.udp.UDPServer.UDPSimpleProtocol:1 of
+msgid "Bases: :class:`asyncio.protocols.DatagramProtocol`"
+msgstr ""
+
+#: aiomisc.service.udp.UDPServer.UDPSimpleProtocol.connection_made:1 of
+msgid "Called when a connection is made."
+msgstr ""
+
+#: aiomisc.service.udp.UDPServer.UDPSimpleProtocol.connection_made:3 of
+msgid ""
+"The argument is the transport representing the pipe connection. To "
+"receive data, wait for data_received() calls. When the connection is "
+"closed, connection_lost() is called."
+msgstr ""
+
+#: aiomisc.service.udp.UDPServer.UDPSimpleProtocol.datagram_received:1 of
+msgid "Called when some datagram is received."
+msgstr ""
+
+#: ../../source/aiomisc.service.rst:80
+msgid "Module contents"
+msgstr ""
+

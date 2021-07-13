@@ -20,14 +20,14 @@ def test_get_statistics():
 
     simple.test_prop += 1
 
-    for instance, name, metric, value in get_statistics(StatSimple, StatChild):
+    for klass, name, metric, value in get_statistics(StatSimple, StatChild):
         if metric != "test_prop":
             continue
 
         assert value == 1
 
     # decref all
-    del simple, instance, metric, value
+    del simple, klass, metric, value
 
     assert list(get_statistics(StatSimple, StatChild)) == []
 

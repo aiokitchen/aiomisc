@@ -99,7 +99,7 @@ class Statistic(AbstractStatistic, metaclass=MetaStatistic):
 
 
 class StatisticResult(t.NamedTuple):
-    instance: AbstractStatistic
+    kind: t.Type[AbstractStatistic]
     name: t.Optional[str]
     metric: str
     value: t.Union[int, float]
@@ -116,7 +116,7 @@ def get_statistics(
         for instance in klass.__instances__:
             for metric, value in instance._counter.items():
                 yield StatisticResult(
-                    instance=instance,
+                    kind=klass,
                     name=instance.name,
                     metric=metric,
                     value=value,
