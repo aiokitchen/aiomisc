@@ -36,7 +36,7 @@ class AbstractStatistic:
     __metrics__: t.FrozenSet[str]
     __instances__: t.MutableSet["AbstractStatistic"]
     _counter: t.MutableMapping[str, t.Union[float, int]]
-    name: str
+    name: t.Optional[str]
 
 
 CLASS_STORE: t.Set[t.Type[AbstractStatistic]] = set()
