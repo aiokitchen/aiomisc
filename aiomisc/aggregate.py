@@ -204,10 +204,12 @@ def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
     Note 2: if some unexpected error occurs, exception is propagated to each
     future; to set an individual error for each aggregated call refer
     to ``aggregate_async``.
+
     :param leeway_ms: The maximum approximate delay between the first
-    collected argument and the aggregated execution.
+           collected argument and the aggregated execution.
     :param max_count: The maximum number of arguments to call decorated
-    function with. Default ``None``.
+           function with. Default ``None``.
+
     :return:
     """
     def decorator(func: AggFuncHighLevel) -> Callable[[Any], Awaitable]:
@@ -228,6 +230,7 @@ def aggregate_async(
     of the futures or throwing an exception (it will propagate to futures
     automatically). If ``func`` mistakenly does not set a result of some
     future, then, ``ResultNotSetError`` exception is set.
+
     :return:
     """
     def decorator(func: AggFuncAsync) -> Callable[[Any], Awaitable]:

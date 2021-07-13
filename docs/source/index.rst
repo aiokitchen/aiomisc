@@ -185,8 +185,8 @@ Table Of Contents
    pytest
    signal
    plugins
-   apidoc
    statistic
+   apidoc
 
 Versioning
 ----------
