@@ -47,8 +47,9 @@ class Aggregator:
     _lock: Lock
 
     def __init__(
-            self, func: AggFunc, *,
-            leeway_ms: float, max_count: Optional[int] = None,
+        self, func: AggFunc, *, leeway_ms: float,
+        max_count: Optional[int] = None,
+        statistic_name: Optional[str] = None
     ):
         has_variadic_positional = any((
             parameter.kind == Parameter.VAR_POSITIONAL
@@ -69,7 +70,7 @@ class Aggregator:
         self._max_count = max_count
         self._leeway = leeway_ms / 1000
         self._clear()
-        self._statistic = AggregateStatistic()
+        self._statistic = AggregateStatistic(statistic_name)
         self._statistic.leeway_ms = self.leeway_ms
         self._statistic.max_count = max_count or 0
 

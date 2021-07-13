@@ -32,6 +32,7 @@ class IteratorWrapper(t.AsyncIterator):
     def __init__(
         self, gen_func: FuncType, loop: asyncio.AbstractEventLoop = None,
         max_size: int = 0, executor: Executor = None,
+        statistic_name: t.Optional[str] = None,
     ):
 
         current_loop = loop or asyncio.get_event_loop()
@@ -46,7 +47,7 @@ class IteratorWrapper(t.AsyncIterator):
         self.__gen_func = gen_func  # type: t.Callable
         self.__write_event = threading.Event()
         self.__read_event = asyncio.Event()
-        self._statistic = IteratorWrapperStatistic()
+        self._statistic = IteratorWrapperStatistic(statistic_name)
         self._statistic.queue_size = max_size
 
     @property

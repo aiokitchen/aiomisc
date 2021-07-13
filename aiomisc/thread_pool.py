@@ -116,17 +116,18 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     def __init__(
         self, max_workers: int = max((cpu_count(), 4)),
         loop: AbstractEventLoop = None,
+        statistic_name: Optional[str] = None,
     ) -> None:
         """"""
         if loop:
             warnings.warn(DeprecationWarning("loop argument is obsolete"))
 
-        self.__futures = set()  # type: typing.Set[Future[Any]]
+        self.__futures: typing.Set[Future[Any]] = set()
 
-        self.__thread_events = set()  # type: typing.Set[threading.Event]
-        self.__tasks = SimpleQueue()  # type: SimpleQueue[Optional[WorkItem]]
+        self.__thread_events: typing.Set[threading.Event] = set()
+        self.__tasks: SimpleQueue[Optional[WorkItem]] = SimpleQueue()
         self.__write_lock = threading.RLock()
-        self._statistic = ThreadPoolStatistic()
+        self._statistic = ThreadPoolStatistic(statistic_name)
 
         pools = set()
         for idx in range(max_workers):
@@ -140,9 +141,12 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         event = threading.Event()
         self.__thread_events.add(event)
 
+        thread_name = "Thread {} from pool {}".format(
+            idx, self._statistic.name or ""
+        )
         thread = threading.Thread(
             target=self._in_thread,
-            name="[%d] Thread Pool" % idx,
+            name=thread_name.strip(),
             args=(event,),
         )
 

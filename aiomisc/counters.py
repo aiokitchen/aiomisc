@@ -36,6 +36,7 @@ class AbstractStatistic:
     __metrics__: t.FrozenSet[str]
     __instances__: t.MutableSet["AbstractStatistic"]
     _counter: t.MutableMapping[str, t.Union[float, int]]
+    name: str
 
 
 CLASS_STORE: t.Set[t.Type[AbstractStatistic]] = set()
@@ -87,13 +88,21 @@ class MetaStatistic(type):
 
 
 class Statistic(AbstractStatistic, metaclass=MetaStatistic):
-    def __init__(self) -> None:
+    def __init__(self, name: t.Optional[str] = None) -> None:
         self._counter = Counter()   # type: ignore
+        self.name = name
 
         for prop in self.__metrics__:
             setattr(self, prop, Metric(prop, self._counter))
 
         self.__instances__.add(self)
+
+
+class StatisticResult(t.NamedTuple):
+    instance: AbstractStatistic
+    name: t.Optional[str]
+    metric: str
+    value: t.Union[int, float]
 
 
 # noinspection PyProtectedMember
@@ -106,4 +115,9 @@ def get_statistics(
 
         for instance in klass.__instances__:
             for metric, value in instance._counter.items():
-                yield instance, metric, value
+                yield StatisticResult(
+                    instance=instance,
+                    name=instance.name,
+                    metric=metric,
+                    value=value,
+                )

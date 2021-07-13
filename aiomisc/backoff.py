@@ -32,7 +32,8 @@ def asyncbackoff(
     pause: Number = 0,
     *exc: Type[Exception], exceptions: Tuple[Type[Exception], ...] = (),
     max_tries: int = None,
-    giveup: Callable[[Exception], bool] = None
+    giveup: Callable[[Exception], bool] = None,
+    statistic_name: Optional[str] = None
 ) -> ReturnType:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
@@ -41,6 +42,7 @@ def asyncbackoff(
     In case of exception function will be called again with similar
     arguments after ``pause`` seconds.
 
+    :param statistic_name: name filed for statistic instances
     :param attempt_timeout: is maximum execution time for one
                             execution attempt.
     :param deadline: is maximum execution time for all execution attempts.
@@ -52,7 +54,7 @@ def asyncbackoff(
     """
 
     exceptions = exc + tuple(exceptions)
-    statistic = BackoffStatistic()
+    statistic = BackoffStatistic(statistic_name)
 
     if not pause:
         pause = 0

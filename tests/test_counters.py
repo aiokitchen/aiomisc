@@ -20,7 +20,7 @@ def test_get_statistics():
 
     simple.test_prop += 1
 
-    for instance, metric, value in get_statistics(StatSimple, StatChild):
+    for instance, name, metric, value in get_statistics(StatSimple, StatChild):
         if metric != "test_prop":
             continue
 
