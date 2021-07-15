@@ -3,7 +3,7 @@ import logging
 import typing as t
 from asyncio import iscoroutinefunction
 
-from croniter import croniter  # type: ignore
+from croniter import croniter
 
 from aiomisc import Service
 from aiomisc.cron import CronCallback

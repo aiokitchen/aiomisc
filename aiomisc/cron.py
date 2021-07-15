@@ -4,7 +4,7 @@ import typing as t
 from datetime import datetime, timezone
 from functools import partial
 
-from croniter import croniter  # type: ignore
+from croniter import croniter
 
 from . import utils
 from .counters import Statistic
