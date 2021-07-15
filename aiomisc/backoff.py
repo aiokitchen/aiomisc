@@ -18,7 +18,7 @@ ReturnType = Callable[[Callable[..., T]], WrapReturnType]
 
 
 class BackoffStatistic(Statistic):
-    call_count: int
+    done: int
     attempts: int
     cancels: int
     errors: int
@@ -84,7 +84,6 @@ def asyncbackoff(
 
         @wraps(func)
         async def wrap(*args: Any, **kwargs: Any) -> Awaitable[T]:
-            statistic.call_count += 1
             last_exc = None
             tries = 0
 
@@ -118,6 +117,7 @@ def asyncbackoff(
                     finally:
                         delta += monotonic()
                         statistic.sum_time += delta
+                        statistic.done += 1
 
             try:
                 return await asyncio.wait_for(run(), timeout=deadline)
