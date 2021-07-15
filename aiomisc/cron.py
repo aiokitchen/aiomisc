@@ -41,7 +41,7 @@ class CronCallback:
 
     async def _run(
         self,
-        suppress_exceptions: t.Tuple[t.Type[Exception], ...] = ()
+        suppress_exceptions: t.Tuple[t.Type[Exception], ...] = (),
     ) -> None:
         try:
             await self._cb()

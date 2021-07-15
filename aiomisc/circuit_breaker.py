@@ -81,7 +81,7 @@ class CircuitBreaker:
         recovery_time: Number = None,
         broken_time: Number = None,
         passing_time: Number = None,
-        exception_inspector: ExceptionInspectorType = None
+        exception_inspector: ExceptionInspectorType = None,
     ):
         """
         Circuit Breaker pattern implementation. The class instance collects
@@ -203,7 +203,7 @@ class CircuitBreaker:
         except Exception:
             log.exception(
                 "Unhandled exception in %r",
-                self._exception_inspector
+                self._exception_inspector,
             )
             return 1
 

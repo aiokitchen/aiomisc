@@ -142,7 +142,7 @@ class Entrypoint:
         return self
 
     async def __aexit__(
-        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any
+        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any,
     ) -> None:
         try:
             if self.loop.is_closed():
@@ -158,7 +158,7 @@ class Entrypoint:
                 self._thread_pool.shutdown()
 
     async def _start_service(
-        self, svc: Service
+        self, svc: Service,
     ) -> None:
         svc.set_loop(self.loop)
 

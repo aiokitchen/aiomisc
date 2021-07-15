@@ -111,7 +111,7 @@ class AsyncFileIOBase:
 
     async def __aexit__(
         self, exc_type: Any,
-        exc_val: Any, exc_tb: Any
+        exc_val: Any, exc_tb: Any,
     ) -> None:
         if self.fp is None:
             raise RuntimeError("file is not opened")

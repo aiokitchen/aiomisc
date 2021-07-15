@@ -73,7 +73,7 @@ def bind_socket(
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
     if hasattr(socket, "SO_REUSEPORT"):
         sock.setsockopt(
-            socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port)
+            socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port),
         )
     else:
         log.warning("SO_REUSEPORT is not implemented by underlying library.")
@@ -81,12 +81,12 @@ def bind_socket(
     for level, option, value in options:
         sock.setsockopt(level, option, value)
 
-    unix_address_family = getattr(socket, 'AF_UNIX', None)
+    unix_address_family = getattr(socket, "AF_UNIX", None)
     if sock.family == unix_address_family:
-        proto_name = proto_name or 'unix'
+        proto_name = proto_name or "unix"
         sock.bind(address)
     else:
-        proto_name = proto_name or 'tcp'
+        proto_name = proto_name or "tcp"
         sock.bind((address, port))
 
     sock_addr = sock.getsockname()
@@ -238,7 +238,7 @@ def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
 
 async def _select_waiter(
     idx: int, awaitable: Awaitable[T],
-    result: SelectResult
+    result: SelectResult,
 ) -> None:
     try:
         ret = await awaitable
