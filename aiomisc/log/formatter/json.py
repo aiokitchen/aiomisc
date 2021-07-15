@@ -111,7 +111,7 @@ class JSONLogFormatter(logging.Formatter):
         self, record: logging.LogRecord, datefmt: str = None,
     ) -> t.Union[int, str]:
         if datefmt == "%s":
-            return record.created
+            return record.created   # type: ignore
         return super().formatTime(record, datefmt=datefmt)
 
 

@@ -17,7 +17,7 @@ def _thread_flusher(
         return True
 
     def has_target() -> bool:
-        return bool(handler.target)     # type: ignore
+        return bool(handler.target)
 
     is_target = has_no_target
 
