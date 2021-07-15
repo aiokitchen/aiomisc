@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import threading
 import typing as t
 from collections import Counter, deque
@@ -10,9 +11,11 @@ from random import random
 from aiomisc.utils import awaitable
 
 
+log = logging.getLogger(__name__)
 Number = t.Union[int, float]
 StatisticType = t.Deque[t.Tuple[int, Counter]]
 T = t.TypeVar("T")
+ExceptionInspectorType = t.Optional[t.Callable[[Exception], bool]]
 
 
 @unique
@@ -44,6 +47,7 @@ class CircuitBreaker:
         "_broken_time",
         "_error_ratio",
         "_exceptions",
+        "_exception_inspector",
         "_last_exception",
         "_lock",
         "_loop",
@@ -77,6 +81,7 @@ class CircuitBreaker:
         recovery_time: Number = None,
         broken_time: Number = None,
         passing_time: Number = None,
+        exception_inspector: ExceptionInspectorType = None,
     ):
         """
         Circuit Breaker pattern implementation. The class instance collects
@@ -129,6 +134,7 @@ class CircuitBreaker:
         self._recovery_at = 0   # type: Number
 
         self._exceptions = tuple(frozenset(exceptions))
+        self._exception_inspector = exception_inspector
 
         self._passing_time = passing_time or self._response_time
         self._broken_time = broken_time or self._response_time
@@ -187,6 +193,20 @@ class CircuitBreaker:
         delay = self._stuck_until - self._get_time()
         return max(delay, 0)
 
+    def _inspect_exception(self, e: Exception) -> int:
+        if not self._exception_inspector:
+            return 1
+
+        # noinspection PyBroadException
+        try:
+            return 1 if self._exception_inspector(e) else 0
+        except Exception:
+            log.exception(
+                "Unhandled exception in %r",
+                self._exception_inspector,
+            )
+            return 1
+
     def _on_passing(
         self, counter: t.Counter[int],
     ) -> t.Generator[t.Any, t.Any, t.Any]:
@@ -196,7 +216,7 @@ class CircuitBreaker:
             self._last_exception = None
         except self._exceptions as e:
             self._last_exception = e
-            counter[CounterKey.FAIL] += 1
+            counter[CounterKey.FAIL] += self._inspect_exception(e)
             raise
         finally:
             counter[CounterKey.TOTAL] += 1

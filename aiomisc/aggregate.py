@@ -5,7 +5,7 @@ from asyncio import CancelledError, Event, Future, Lock, wait_for
 from inspect import Parameter
 from time import monotonic
 from typing import (
-    Any, Awaitable, Callable, Iterable, List, Optional, NamedTuple, Union,
+    Any, Awaitable, Callable, Iterable, List, NamedTuple, Optional, Union,
 )
 
 
@@ -129,8 +129,8 @@ class Aggregator:
                 )
             except asyncio.TimeoutError:
                 log.debug(
-                    'Aggregation timeout of %s for batch started at %.4f '
-                    'with %d calls after %.2f ms',
+                    "Aggregation timeout of %s for batch started at %.4f "
+                    "with %d calls after %.2f ms",
                     self._func.__name__, first_call_at, len(futures),
                     (monotonic() - first_call_at) * 1000,
                 )

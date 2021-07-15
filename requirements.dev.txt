@@ -17,4 +17,5 @@ sphinx>=3.5.1
 sphinx-autobuild
 sphinx-intl
 timeout-decorator
+types-croniter
 tox>=2.4
