@@ -1,6 +1,6 @@
 import logging
 
-import pkg_resources
+import pkg_resources    # type: ignore
 
 from . import io, log
 from .aggregate import aggregate, aggregate_async
