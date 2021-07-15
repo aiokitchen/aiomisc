@@ -3,12 +3,12 @@ import pickle
 import socket
 import sys
 from os import urandom
-from typing import Tuple, Union, Any
+from typing import Any, Tuple, Union
 
-from aiomisc.worker_pool.constants import (
-    INET_AF, PacketTypes, Header, HASHER, SALT_SIZE
-)
 from aiomisc.log import basic_config
+from aiomisc.worker_pool.constants import (
+    HASHER, INET_AF, SALT_SIZE, Header, PacketTypes,
+)
 
 
 def main() -> None:
@@ -17,7 +17,7 @@ def main() -> None:
     identity: str
 
     (
-        address, cookie, identity, log_level, log_format
+        address, cookie, identity, log_level, log_format,
     ) = pickle.load(sys.stdin.buffer)
 
     basic_config(level=log_level, log_format=log_format)
@@ -90,5 +90,5 @@ def main() -> None:
             return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

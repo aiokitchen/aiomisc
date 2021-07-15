@@ -25,7 +25,7 @@ except ImportError:
         @abstractmethod
         async def __aexit__(
             self, exc_type: t.Any, exc_val: t.Any,
-            exc_tb: t.Any
+            exc_tb: t.Any,
         ) -> t.Any:
             raise NotImplementedError
 
@@ -55,7 +55,7 @@ class ContextManager(AsyncContextManager):
 
     async def __aexit__(
         self, exc_type: t.Any, exc_value: t.Any,
-        traceback: t.Any
+        traceback: t.Any,
     ) -> t.Any:
         await self.__aexit(self.__instance)
 

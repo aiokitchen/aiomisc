@@ -9,26 +9,25 @@ from inspect import Traceback
 from itertools import chain
 from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from tempfile import mktemp
 from types import MappingProxyType
 from typing import (
     Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
 )
 
-from aiomisc.log.config import LOG_LEVEL, LOG_FORMAT
+from aiomisc.log.config import LOG_FORMAT, LOG_LEVEL
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
 from aiomisc.worker_pool.constants import (
-    AddressType, INET_AF, COOKIE_SIZE,
-    PacketTypes, Header, log, HASHER, T
+    COOKIE_SIZE, HASHER, INET_AF, AddressType, Header, PacketTypes, T, log,
 )
 
 
 if sys.version_info < (3, 7):
     warnings.warn(
         "Python 3.6 works not well see https://bugs.python.org/issue37380",
-        RuntimeWarning
+        RuntimeWarning,
     )
 
 
@@ -74,7 +73,7 @@ class WorkerPool:
 
         process = Popen(
             [sys.executable, "-m", "aiomisc.worker_pool.process"],
-            stdin=PIPE, env=os.environ
+            stdin=PIPE, env=os.environ,
         )
         self.__spawning[identity] = process
         log.debug("Spawning new worker pool process PID: %s", process.pid)
@@ -84,13 +83,13 @@ class WorkerPool:
         log_level = (
             log.getEffectiveLevel() if LOG_LEVEL is None else LOG_LEVEL.get()
         )
-        log_format = 'color' if LOG_FORMAT is None else LOG_FORMAT.get().value
+        log_format = "color" if LOG_FORMAT is None else LOG_FORMAT.get().value
 
         process.stdin.write(
             pickle.dumps((
                 self.address, self.__cookie, identity,
-                log_level, log_format
-            ))
+                log_level, log_format,
+            )),
         )
         process.stdin.close()
 
@@ -130,7 +129,7 @@ class WorkerPool:
         return self.__loop
 
     async def __handle_client(
-        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
     ) -> None:
         async def receive() -> Tuple[PacketTypes, Any]:
             header = await reader.readexactly(Header.size)
@@ -147,7 +146,7 @@ class WorkerPool:
 
         async def step(
             func: Callable, args: Tuple[Any, ...],
-            kwargs: Dict[str, Any], result_future: asyncio.Future
+            kwargs: Dict[str, Any], result_future: asyncio.Future,
         ) -> None:
             await send(PacketTypes.REQUEST, (func, args, kwargs))
 
@@ -197,7 +196,7 @@ class WorkerPool:
                     self.initializer,
                     self.initializer_args,
                     dict(self.initializer_kwargs),
-                    initializer_done
+                    initializer_done,
                 )
 
                 try:
@@ -325,7 +324,7 @@ class WorkerPool:
         self.__closing = True
 
         await cancel_tasks(
-            chain(tuple(self.__task_store), tuple(self.__futures))
+            chain(tuple(self.__task_store), tuple(self.__futures)),
         )
 
         while self.processes:
@@ -356,6 +355,6 @@ class WorkerPool:
 
     async def __aexit__(
         self, exc_type: Type[Exception],
-        exc_val: Exception, exc_tb: Traceback
+        exc_val: Exception, exc_tb: Traceback,
     ) -> None:
         await self.close()

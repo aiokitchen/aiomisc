@@ -81,7 +81,7 @@ class TLSServer(SimpleServer):
 
     async def handle_client(
         self, reader: asyncio.StreamReader,
-        writer: asyncio.StreamWriter
+        writer: asyncio.StreamWriter,
     ) -> t.Any:
         raise NotImplementedError
 

@@ -139,7 +139,7 @@ class IteratorWrapper(t.AsyncIterator):
 
     async def __aexit__(
         self, exc_type: t.Any, exc_val: t.Any,
-        exc_tb: t.Any
+        exc_tb: t.Any,
     ) -> None:
         if self.closed:
             return

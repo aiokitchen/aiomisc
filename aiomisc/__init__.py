@@ -1,6 +1,6 @@
 import logging
 
-import pkg_resources    # type: ignore
+import pkg_resources  # type: ignore
 
 from . import io, log
 from .aggregate import aggregate, aggregate_async
@@ -25,6 +25,7 @@ from .utils import (
     new_event_loop, select, shield,
 )
 from .worker_pool.pool import WorkerPool
+
 
 plugins = {
     entry_point.name: entry_point.load()
