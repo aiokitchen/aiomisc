@@ -91,6 +91,9 @@ gathered. If the effective error ratio after ``recovery_time`` is lower than
 ``error_ratio`` then the next state will be set to **PASSING**, and
 otherwise - to **BROKEN**.
 
+Argument ``exception_inspector`` is a function that is called whenever
+an exception from the list of monitored exceptions occurs. When ``False``
+will be returned, this exception will be ignored.
 
 .. image:: /_static/cb-flow.svg
 

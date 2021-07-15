@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from collections import Counter
 
 import pytest
@@ -158,3 +159,37 @@ async def test_get_time():
 async def test_bad_response_time():
     with pytest.raises(ValueError):
         aiomisc.CircuitBreaker(0.5, 0)
+
+
+def test_exception_inspector():
+    def inspector(exc: Exception) -> bool:
+        if isinstance(exc, ValueError):
+            return False
+        return True
+
+    cb = PatchedCircuitBreaker(
+        error_ratio=0.5,
+        response_time=5,
+        exception_inspector=inspector
+    )
+
+    PatchedCircuitBreaker.reset()
+
+    def raiser(exc_type):
+        raise exc_type()
+
+    for i in range(100):
+        PatchedCircuitBreaker.tick(0.1)
+        with pytest.raises(ValueError):
+            cb.call(raiser, ValueError)
+
+        assert cb.recovery_ratio == 0
+
+    PatchedCircuitBreaker.tick(1)
+
+    for i in range(10):
+        PatchedCircuitBreaker.tick(0.1)
+        with pytest.raises(RuntimeError):
+            cb.call(raiser, RuntimeError)
+
+        assert cb.recovery_ratio > 0
