@@ -92,7 +92,7 @@ class Entrypoint:
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
-        self._tasks = WeakSet()
+        self._tasks: t.MutableSet[asyncio.Task] = WeakSet()
 
         if self.log_config:
             basic_config(
