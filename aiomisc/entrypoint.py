@@ -67,8 +67,11 @@ class Entrypoint:
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
-        self._thread_pool = None    # type: t.Optional[ExecutorType]
-        self.ctx = None             # type: t.Optional[Context]
+        self._tasks: t.MutableSet[asyncio.Task] = WeakSet()
+        self._thread_pool: t.Optional[ExecutorType] = None
+        self._closing: t.Optional[asyncio.Event] = None
+
+        self.ctx: t.Optional[Context] = None
         self.log_buffer_size = log_buffer_size
         self.log_config = log_config
         self.log_flush_interval = log_flush_interval
@@ -80,9 +83,6 @@ class Entrypoint:
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
-        self._tasks: t.MutableSet[asyncio.Task] = WeakSet()
-
-        self._closing = None    # type: t.Optional[asyncio.Event]
 
         if self.log_config:
             basic_config(
