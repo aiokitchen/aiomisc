@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import aiomisc
+from aiomisc import cancel_tasks
 from aiomisc.log.config import LOG_LEVEL
 
 log = logging.getLogger("aiomisc_pytest")
@@ -586,6 +587,10 @@ def _loop(event_loop_policy):
             if loop.is_closed():
                 return
 
+            with suppress(Exception):
+                loop.run_until_complete(
+                    cancel_tasks(asyncio.Task.all_tasks(loop))
+                )
             with suppress(Exception):
                 loop.run_until_complete(loop.shutdown_asyncgens())
             with suppress(Exception):
