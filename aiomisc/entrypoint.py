@@ -1,13 +1,14 @@
 import asyncio
 import logging
 import typing as t
-from concurrent.futures._base import Executor
+from concurrent.futures import Executor
+from weakref import WeakSet
 
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import create_default_event_loop, event_loop_policy
+from .utils import create_default_event_loop, event_loop_policy, cancel_tasks
 
 
 ExecutorType = Executor
@@ -79,6 +80,7 @@ class Entrypoint:
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
+        self._tasks = WeakSet()
 
         self._closing = None    # type: t.Optional[asyncio.Event]
 
@@ -177,8 +179,11 @@ class Entrypoint:
         await ev_task
 
         if start_task.done():
+            # raise an Exception when failed
             await start_task
             return
+        else:
+            self._tasks.add(start_task)
 
         return None
 
@@ -192,6 +197,8 @@ class Entrypoint:
 
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
+
+        await cancel_tasks(set(self._tasks))
 
         await self.post_stop.call(entrypoint=self)
         await self.loop.shutdown_asyncgens()
