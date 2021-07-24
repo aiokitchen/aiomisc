@@ -200,6 +200,9 @@ class Entrypoint:
 
         await cancel_tasks(set(self._tasks))
 
+        if self._loop_owner:
+            await cancel_tasks(asyncio.Task.all_tasks(self._loop))
+
         await self.post_stop.call(entrypoint=self)
         await self.loop.shutdown_asyncgens()
 
