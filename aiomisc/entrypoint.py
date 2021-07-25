@@ -187,6 +187,11 @@ class Entrypoint:
 
         return None
 
+    async def _cancel_background_tasks(self):
+        tasks = asyncio.Task.all_tasks(self._loop)            # type: ignore
+        current_task = asyncio.Task.current_task(self.loop)   # type: ignore
+        await cancel_tasks(task for task in tasks if task is not current_task)
+
     async def graceful_shutdown(self, exception: Exception) -> None:
         if self._closing:
             self._closing.set()
@@ -201,8 +206,7 @@ class Entrypoint:
         await cancel_tasks(set(self._tasks))
 
         if self._loop_owner:
-            tasks = list(asyncio.Task.all_tasks(self._loop))    # type: ignore
-            await cancel_tasks(tasks)
+            await self._cancel_background_tasks()
 
         await self.post_stop.call(entrypoint=self)
         await self.loop.shutdown_asyncgens()
