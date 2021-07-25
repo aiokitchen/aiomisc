@@ -187,7 +187,7 @@ class Entrypoint:
 
         return None
 
-    async def _cancel_background_tasks(self):
+    async def _cancel_background_tasks(self) -> None:
         tasks = asyncio.Task.all_tasks(self._loop)            # type: ignore
         current_task = asyncio.Task.current_task(self.loop)   # type: ignore
         await cancel_tasks(task for task in tasks if task is not current_task)
