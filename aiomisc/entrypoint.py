@@ -15,6 +15,14 @@ from .utils import create_default_event_loop, event_loop_policy, cancel_tasks
 ExecutorType = Executor
 
 
+if sys.version_info < (3, 7):
+    asyncio_all_tasks = asyncio.Task.all_tasks
+    asyncio_current_task = asyncio.Task.current_task
+else:
+    asyncio_all_tasks = asyncio.all_tasks
+    asyncio_current_task = asyncio.current_task
+
+
 class Entrypoint:
 
     PRE_START = Signal()
@@ -188,16 +196,9 @@ class Entrypoint:
 
         return None
 
-    if sys.version_info < (3, 7):
-        asyncio_all_tasks = asyncio.Task.all_tasks
-        asyncio_current_task = asyncio.Task.current_task
-    else:
-        asyncio_all_tasks = asyncio.all_tasks
-        asyncio_current_task = asyncio.current_task
-
     async def _cancel_background_tasks(self) -> None:
-        tasks = self.asyncio_all_tasks(self._loop)            # type: ignore
-        current_task = self.asyncio_current_task(self.loop)   # type: ignore
+        tasks = asyncio_all_tasks(self._loop)
+        current_task = asyncio_current_task(self.loop)
         await cancel_tasks(task for task in tasks if task is not current_task)
 
     async def graceful_shutdown(self, exception: Exception) -> None:
