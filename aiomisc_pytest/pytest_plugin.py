@@ -12,7 +12,6 @@ from unittest.mock import MagicMock
 import pytest
 
 import aiomisc
-from aiomisc import cancel_tasks
 from aiomisc.log.config import LOG_LEVEL
 
 log = logging.getLogger("aiomisc_pytest")
