@@ -588,11 +588,6 @@ def _loop(event_loop_policy):
                 return
 
             with suppress(Exception):
-                # Cancel all tasks anyway
-                loop.run_until_complete(
-                    cancel_tasks(asyncio.Task.all_tasks(loop))
-                )
-            with suppress(Exception):
                 loop.run_until_complete(loop.shutdown_asyncgens())
             with suppress(Exception):
                 loop.close()
