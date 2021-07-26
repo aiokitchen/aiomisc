@@ -1,5 +1,5 @@
 import asyncio
-from concurrent.futures._base import Executor
+from concurrent.futures import Executor
 from functools import partial, total_ordering
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Generator, TypeVar, Union

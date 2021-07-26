@@ -1,16 +1,26 @@
 import asyncio
 import logging
+import sys
 import typing as t
-from concurrent.futures._base import Executor
+from concurrent.futures import Executor
+from weakref import WeakSet
 
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import create_default_event_loop, event_loop_policy
+from .utils import create_default_event_loop, event_loop_policy, cancel_tasks
 
 
 ExecutorType = Executor
+
+
+if sys.version_info < (3, 7):
+    asyncio_all_tasks = asyncio.Task.all_tasks
+    asyncio_current_task = asyncio.Task.current_task
+else:
+    asyncio_all_tasks = asyncio.all_tasks
+    asyncio_current_task = asyncio.current_task
 
 
 class Entrypoint:
@@ -66,8 +76,11 @@ class Entrypoint:
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
-        self._thread_pool = None    # type: t.Optional[ExecutorType]
-        self.ctx = None             # type: t.Optional[Context]
+        self._tasks: t.MutableSet[asyncio.Task] = WeakSet()
+        self._thread_pool: t.Optional[ExecutorType] = None
+        self._closing: t.Optional[asyncio.Event] = None
+
+        self.ctx: t.Optional[Context] = None
         self.log_buffer_size = log_buffer_size
         self.log_config = log_config
         self.log_flush_interval = log_flush_interval
@@ -79,8 +92,6 @@ class Entrypoint:
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_stop = self.POST_STOP.copy()
-
-        self._closing = None    # type: t.Optional[asyncio.Event]
 
         if self.log_config:
             basic_config(
@@ -177,10 +188,18 @@ class Entrypoint:
         await ev_task
 
         if start_task.done():
+            # raise an Exception when failed
             await start_task
             return
+        else:
+            self._tasks.add(start_task)
 
         return None
+
+    async def _cancel_background_tasks(self) -> None:
+        tasks = asyncio_all_tasks(self._loop)
+        current_task = asyncio_current_task(self.loop)
+        await cancel_tasks(task for task in tasks if task is not current_task)
 
     async def graceful_shutdown(self, exception: Exception) -> None:
         if self._closing:
@@ -192,6 +211,11 @@ class Entrypoint:
 
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
+
+        await cancel_tasks(set(self._tasks))
+
+        if self._loop_owner:
+            await self._cancel_background_tasks()
 
         await self.post_stop.call(entrypoint=self)
         await self.loop.shutdown_asyncgens()

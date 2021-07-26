@@ -3,7 +3,7 @@ import inspect
 import threading
 import typing as t
 from collections import deque
-from concurrent.futures._base import Executor
+from concurrent.futures import Executor
 
 
 T = t.TypeVar("T")

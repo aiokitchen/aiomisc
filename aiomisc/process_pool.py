@@ -1,5 +1,5 @@
 import asyncio
-from concurrent.futures._base import Executor
+from concurrent.futures import Executor
 from multiprocessing import Pool, cpu_count
 from typing import Any, Callable, Set, Tuple, TypeVar
 

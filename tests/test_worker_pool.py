@@ -61,6 +61,8 @@ async def test_exceptions(worker_pool):
         assert isinstance(exc, ZeroDivisionError)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7),
+                    reason="https://bugs.python.org/issue37380")
 async def test_exit(worker_pool):
     exceptions = await asyncio.gather(
         *[worker_pool.create_task(exit, 1)
