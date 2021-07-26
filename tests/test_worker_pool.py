@@ -157,7 +157,7 @@ def get_initializer_args():
 async def test_initializer(worker_pool):
     pool = WorkerPool(
         1, initializer=initializer, initializer_args=("foo",),
-        initializer_kwargs={"spam": "egg"},
+        initializer_kwargs={"spam": "egg"}
     )
     async with pool:
         args, kwargs = await pool.create_task(get_initializer_args)
