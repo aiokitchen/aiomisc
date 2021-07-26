@@ -296,7 +296,7 @@ async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
 
 
 async def test_threaded_generator_non_generator_raises(
-        iterator_decorator, loop, timer
+        iterator_decorator, loop, timer,
 ):
     @iterator_decorator()
     def errored():

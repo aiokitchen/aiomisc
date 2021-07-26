@@ -17,10 +17,12 @@ async def worker_pool(loop) -> WorkerPool:
 
 
 async def test_success(worker_pool):
-    results = await asyncio.gather(*[
-        worker_pool.create_task(operator.mul, i, i)
-        for i in range(worker_pool.workers * 2)
-    ])
+    results = await asyncio.gather(
+        *[
+            worker_pool.create_task(operator.mul, i, i)
+            for i in range(worker_pool.workers * 2)
+        ]
+    )
 
     results = sorted(results)
 
@@ -28,32 +30,44 @@ async def test_success(worker_pool):
 
 
 async def test_incomplete_task_kill(worker_pool):
-    pids_start = set(await asyncio.gather(
-        *[worker_pool.create_task(getpid)
-          for _ in range(worker_pool.workers * 4)]
-    ))
+    pids_start = set(
+        await asyncio.gather(
+            *[
+                worker_pool.create_task(getpid)
+                for _ in range(worker_pool.workers * 4)
+            ]
+        ),
+    )
 
     with pytest.raises(asyncio.TimeoutError):
         await asyncio.wait_for(
-            asyncio.gather(*[
-                worker_pool.create_task(sleep, 3600)
-                for _ in range(worker_pool.workers)
-            ]), timeout=1
+            asyncio.gather(
+                *[
+                    worker_pool.create_task(sleep, 3600)
+                    for _ in range(worker_pool.workers)
+                ]
+            ), timeout=1,
         )
 
-    pids_end = set(await asyncio.gather(
-        *[worker_pool.create_task(getpid)
-          for _ in range(worker_pool.workers * 4)]
-    ))
+    pids_end = set(
+        await asyncio.gather(
+            *[
+                worker_pool.create_task(getpid)
+                for _ in range(worker_pool.workers * 4)
+            ]
+        ),
+    )
 
     assert list(pids_start) != list(pids_end)
 
 
 async def test_exceptions(worker_pool):
-    results = await asyncio.gather(*[
-        worker_pool.create_task(operator.truediv, i, 0)
-        for i in range(worker_pool.workers * 2)
-    ], return_exceptions=True)
+    results = await asyncio.gather(
+        *[
+            worker_pool.create_task(operator.truediv, i, 0)
+            for i in range(worker_pool.workers * 2)
+        ], return_exceptions=True
+    )
 
     assert len(results) == worker_pool.workers * 2
 
@@ -61,12 +75,16 @@ async def test_exceptions(worker_pool):
         assert isinstance(exc, ZeroDivisionError)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7),
-                    reason="https://bugs.python.org/issue37380")
+@pytest.mark.skipif(
+    sys.version_info < (3, 7),
+    reason="https://bugs.python.org/issue37380",
+)
 async def test_exit(worker_pool):
     exceptions = await asyncio.gather(
-        *[worker_pool.create_task(exit, 1)
-          for _ in range(worker_pool.workers)],
+        *[
+            worker_pool.create_task(exit, 1)
+            for _ in range(worker_pool.workers)
+        ],
         return_exceptions=True
     )
 
@@ -78,8 +96,10 @@ async def test_exit(worker_pool):
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="bpo37380")
 async def test_exit_respawn(worker_pool):
     exceptions = await asyncio.gather(
-        *[worker_pool.create_task(exit, 1)
-          for _ in range(worker_pool.workers * 3)],
+        *[
+            worker_pool.create_task(exit, 1)
+            for _ in range(worker_pool.workers * 3)
+        ],
         return_exceptions=True
     )
 
@@ -105,7 +125,7 @@ def get_initializer_args():
 async def test_initializer(worker_pool):
     pool = WorkerPool(
         1, initializer=initializer, initializer_args=("foo",),
-        initializer_kwargs={"spam": "egg"}
+        initializer_kwargs={"spam": "egg"},
     )
     async with pool:
         args, kwargs = await pool.create_task(get_initializer_args)

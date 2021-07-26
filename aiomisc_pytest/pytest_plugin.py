@@ -14,6 +14,7 @@ import pytest
 import aiomisc
 from aiomisc.log.config import LOG_LEVEL
 
+
 log = logging.getLogger("aiomisc_pytest")
 asyncio.get_event_loop = MagicMock(asyncio.get_event_loop)
 asyncio.get_event_loop.side_effect = get_event_loop
@@ -350,7 +351,7 @@ class TCPProxy:
 
     async def _handle_client(
             self, reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter
+            writer: asyncio.StreamWriter,
     ):
         client = TCPProxyClient(reader, writer, buffered=self.buffered)
         self.clients.add(client)
@@ -513,7 +514,7 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
 
     event_loop = pyfuncitem.funcargs.get("loop", None)
     func_wraper = pyfuncitem.funcargs.get(
-        "aiomisc_func_wrap", aiomisc.awaitable
+        "aiomisc_func_wrap", aiomisc.awaitable,
     )
 
     aiomisc_test_timeout = pyfuncitem.funcargs.get(

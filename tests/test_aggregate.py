@@ -4,12 +4,10 @@ from asyncio import Event, wait
 from time import monotonic
 from typing import List
 
-from aiocontextvars import ContextVar
 import pytest
+from aiocontextvars import ContextVar
 
-from aiomisc.aggregate import (
-    aggregate, aggregate_async, Arg, ResultNotSetError,
-)
+from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
 
 
 async def test_invalid_func():
@@ -22,7 +20,7 @@ async def test_invalid_func():
     )
 
 
-@pytest.mark.parametrize('leeway_ms', (-1.0, 0.0))
+@pytest.mark.parametrize("leeway_ms", (-1.0, 0.0))
 async def test_invalid_leeway(leeway_ms):
     with pytest.raises(ValueError) as excinfo:
         @aggregate(leeway_ms)
@@ -32,7 +30,7 @@ async def test_invalid_leeway(leeway_ms):
     assert str(excinfo.value) == "leeway_ms must be positive float"
 
 
-@pytest.mark.parametrize('max_count', (-1, 0))
+@pytest.mark.parametrize("max_count", (-1, 0))
 async def test_invalid_max_count(max_count):
     with pytest.raises(ValueError) as excinfo:
         @aggregate(10, max_count)
@@ -187,7 +185,7 @@ async def test_leeway_cancel(loop):
     event = Event()
     executions = 0
     leeway = 0.1
-    arg = ContextVar('arg')
+    arg = ContextVar("arg")
     tasks = []
     executing_task = None
 
@@ -246,7 +244,7 @@ async def test_max_count_cancel(loop):
     executions = 0
     leeway = 100
     max_count = 5
-    arg = ContextVar('arg')
+    arg = ContextVar("arg")
     tasks = []
     executing_task = None
 
@@ -308,7 +306,7 @@ async def test_max_count_multiple_batches_cancel(loop):
     executions = 0
     leeway = 0.1
     max_count = 5
-    arg = ContextVar('arg')
+    arg = ContextVar("arg")
     tasks = []
     executing_task = None
 

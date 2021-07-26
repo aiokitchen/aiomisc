@@ -11,7 +11,7 @@ import aiomisc
 class HashServer(aiomisc.service.TCPServer):
     async def handle_client(
         self, reader: asyncio.StreamReader,
-        writer: asyncio.StreamWriter
+        writer: asyncio.StreamWriter,
     ):
         hasher = hashlib.md5()
 

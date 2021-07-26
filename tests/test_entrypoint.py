@@ -11,8 +11,9 @@ import pytest
 import aiomisc
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
-from aiomisc.service.asgi import ASGIHTTPService, ASGIApplicationType
+from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from tests import unix_only
+
 
 try:
     import uvloop
@@ -162,7 +163,7 @@ def test_tcp_server(aiomisc_unused_port):
 
         async def handle_client(
             self, reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter
+            writer: asyncio.StreamWriter,
         ):
             self.DATA.append(await reader.readline())
             writer.close()
@@ -190,7 +191,7 @@ def test_tls_server(certs, ssl_client_context, aiomisc_unused_port):
 
         async def handle_client(
             self, reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter
+            writer: asyncio.StreamWriter,
         ):
             self.DATA.append(await reader.readline())
             writer.close()
@@ -306,7 +307,7 @@ def test_tcp_server_unix(unix_socket_tcp):
 
         async def handle_client(
             self, reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter
+            writer: asyncio.StreamWriter,
         ):
             self.DATA.append(await reader.readline())
             writer.close()

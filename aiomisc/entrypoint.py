@@ -9,7 +9,7 @@ from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import create_default_event_loop, event_loop_policy, cancel_tasks
+from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
 
 
 ExecutorType = Executor

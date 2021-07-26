@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 import pytest
-
 from async_generator import async_generator, yield_
 
 

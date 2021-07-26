@@ -4,9 +4,8 @@ from collections import Counter
 import pytest
 
 import aiomisc
-from aiomisc.circuit_breaker import (
-    CircuitBreakerStates as States, CircuitBroken
-)
+from aiomisc.circuit_breaker import CircuitBreakerStates as States
+from aiomisc.circuit_breaker import CircuitBroken
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -169,7 +168,7 @@ def test_exception_inspector():
     cb = PatchedCircuitBreaker(
         error_ratio=0.5,
         response_time=5,
-        exception_inspector=inspector
+        exception_inspector=inspector,
     )
 
     PatchedCircuitBreaker.reset()

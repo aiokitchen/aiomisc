@@ -10,7 +10,7 @@ import aiomisc
 class EchoServer(aiomisc.service.TCPServer):
     async def handle_client(
             self, reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter
+            writer: asyncio.StreamWriter,
     ):
         chunk = await reader.read(65534)
         while chunk:
