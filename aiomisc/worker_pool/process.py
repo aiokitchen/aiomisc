@@ -20,7 +20,11 @@ def main() -> None:
         address, cookie, identity, log_level, log_format,
     ) = pickle.load(sys.stdin.buffer)
 
-    basic_config(level=log_level, log_format=log_format)
+    basic_config(
+        level=log_level,
+        log_format=log_format,
+        buffered=False,
+    )
 
     family = (
         socket.AF_UNIX if isinstance(address, str) else INET_AF

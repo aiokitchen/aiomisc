@@ -1,6 +1,7 @@
 import asyncio
 import operator
 import sys
+import threading
 from multiprocessing.context import ProcessError
 from os import getpid
 from time import sleep
@@ -156,3 +157,8 @@ async def test_bad_initializer(worker_pool):
     with pytest.raises(ZeroDivisionError):
         async with pool:
             await pool.create_task(get_initializer_args)
+
+
+async def test_threads_active_count_in_pool(worker_pool):
+    threads = await worker_pool.create_task(threading.active_count)
+    assert threads == 1
