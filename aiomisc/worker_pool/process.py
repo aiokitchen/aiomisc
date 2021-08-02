@@ -1,14 +1,21 @@
+import asyncio
 import logging
 import pickle
+import signal
 import socket
 import sys
 from os import urandom
+from types import FrameType
 from typing import Any, Tuple, Union
 
 from aiomisc.log import basic_config
 from aiomisc.worker_pool.constants import (
-    HASHER, INET_AF, SALT_SIZE, Header, PacketTypes,
+    HASHER, INET_AF, SALT_SIZE, SIGNAL, Header, PacketTypes,
 )
+
+
+def on_signal(signum: int, frame: FrameType) -> None:
+    raise asyncio.CancelledError
 
 
 def main() -> None:
@@ -67,19 +74,23 @@ def main() -> None:
             try:
                 packet_type, (func, args, kwargs) = receive()
             except ValueError:
-                return True
+                return False
 
             if packet_type == packet_type.REQUEST:
                 response_type = PacketTypes.RESULT
                 try:
                     result = func(*args, **kwargs)
+                except asyncio.CancelledError:
+                    logging.exception("Request cancelled for %r", func)
+                    send(PacketTypes.CANCELLED, asyncio.CancelledError)
+                    return True
                 except Exception as e:
                     response_type = PacketTypes.EXCEPTION
                     result = e
                     logging.exception("Exception when processing request")
 
                 send(response_type, result)
-            return False
+            return True
 
         logging.debug("Starting authorization")
         auth(cookie)
@@ -87,8 +98,11 @@ def main() -> None:
 
         send(PacketTypes.IDENTITY, identity)
         logging.debug("Worker ready")
+
+        signal.signal(SIGNAL, on_signal)
+
         try:
-            while not step():
+            while step():
                 pass
         except KeyboardInterrupt:
             return
