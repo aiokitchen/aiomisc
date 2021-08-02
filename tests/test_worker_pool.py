@@ -54,7 +54,7 @@ async def test_incomplete_task_kill(worker_pool):
         await asyncio.gather(
             *[
                 worker_pool.create_task(getpid)
-                for _ in range(worker_pool.workers)
+                for _ in range(worker_pool.workers * 100)
             ]
         ),
     )
