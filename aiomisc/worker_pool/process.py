@@ -81,10 +81,7 @@ def main() -> None:
                 try:
                     result = func(*args, **kwargs)
                 except asyncio.CancelledError:
-                    logging.exception(
-                        "Request cancelled for %r",
-                        func, args, kwargs,
-                    )
+                    logging.exception("Request cancelled for %r", func)
                     send(PacketTypes.CANCELLED, asyncio.CancelledError)
                     return True
                 except Exception as e:
