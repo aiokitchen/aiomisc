@@ -33,6 +33,6 @@ INET_AF = socket.AF_INET6
 
 
 if sys.platform in ('win32', 'cygwin'):
-    SIGNAL = signal.SIGBREAK
+    SIGNAL = signal.SIGBREAK    # type: ignore
 else:
     SIGNAL = signal.SIGUSR1
