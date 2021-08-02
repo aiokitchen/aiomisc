@@ -1,6 +1,7 @@
 import asyncio
 import operator
 import sys
+import platform
 import threading
 from multiprocessing.context import ProcessError
 from os import getpid
@@ -31,6 +32,36 @@ async def test_success(worker_pool):
 
 
 async def test_incomplete_task_kill(worker_pool):
+
+    await asyncio.gather(
+        *[
+            worker_pool.create_task(getpid)
+            for _ in range(worker_pool.workers * 4)
+        ]
+    )
+
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(
+            asyncio.gather(
+                *[
+                    worker_pool.create_task(sleep, 3600)
+                    for _ in range(worker_pool.workers)
+                ]
+            ), timeout=1,
+        )
+
+    await asyncio.gather(
+        *[
+            worker_pool.create_task(getpid)
+            for _ in range(worker_pool.workers * 4)
+        ]
+    )
+
+
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="Flapping on windows",
+)
+async def test_incomplete_task_pool_reuse(worker_pool):
     pids_start = set(process.pid for process in worker_pool.processes)
 
     await asyncio.gather(
@@ -60,6 +91,7 @@ async def test_incomplete_task_kill(worker_pool):
     pids_end = set(process.pid for process in worker_pool.processes)
 
     assert list(pids_start) == list(pids_end)
+
 
 
 async def test_exceptions(worker_pool):
