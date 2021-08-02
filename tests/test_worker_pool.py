@@ -54,12 +54,12 @@ async def test_incomplete_task_kill(worker_pool):
         await asyncio.gather(
             *[
                 worker_pool.create_task(getpid)
-                for _ in range(worker_pool.workers * 4)
+                for _ in range(worker_pool.workers)
             ]
         ),
     )
 
-    assert list(pids_start) != list(pids_end)
+    assert list(pids_start) == list(pids_end)
 
 
 async def test_exceptions(worker_pool):

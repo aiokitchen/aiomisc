@@ -74,19 +74,26 @@ def main() -> None:
             try:
                 packet_type, (func, args, kwargs) = receive()
             except ValueError:
-                return True
+                return False
 
             if packet_type == packet_type.REQUEST:
                 response_type = PacketTypes.RESULT
                 try:
                     result = func(*args, **kwargs)
+                except asyncio.CancelledError:
+                    logging.exception(
+                        "Request cancelled for %r",
+                        func, args, kwargs,
+                    )
+                    send(PacketTypes.CANCELLED, asyncio.CancelledError)
+                    return True
                 except Exception as e:
                     response_type = PacketTypes.EXCEPTION
                     result = e
                     logging.exception("Exception when processing request")
 
                 send(response_type, result)
-            return False
+            return True
 
         logging.debug("Starting authorization")
         auth(cookie)
@@ -98,7 +105,7 @@ def main() -> None:
         signal.signal(SIGNAL, on_signal)
 
         try:
-            while not step():
+            while step():
                 pass
         except KeyboardInterrupt:
             return

@@ -23,6 +23,7 @@ class PacketTypes(IntEnum):
     REQUEST = 0
     EXCEPTION = 1
     RESULT = 2
+    CANCELLED = 3
     AUTH_SALT = 50
     AUTH_DIGEST = 51
     AUTH_OK = 59
