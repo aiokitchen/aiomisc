@@ -2,6 +2,7 @@ import asyncio
 import operator
 import platform
 import sys
+import platform
 import threading
 from multiprocessing.context import ProcessError
 from os import getpid
@@ -91,6 +92,7 @@ async def test_incomplete_task_pool_reuse(worker_pool):
     pids_end = set(process.pid for process in worker_pool.processes)
 
     assert list(pids_start) == list(pids_end)
+
 
 
 async def test_exceptions(worker_pool):
