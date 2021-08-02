@@ -32,7 +32,7 @@ class PacketTypes(IntEnum):
 INET_AF = socket.AF_INET6
 
 
-if sys.platform == "Windows":
+if sys.platform in ('win32', 'cygwin'):
     SIGNAL = signal.SIGBREAK
 else:
     SIGNAL = signal.SIGUSR1
