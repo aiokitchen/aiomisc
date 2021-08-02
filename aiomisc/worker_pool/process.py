@@ -1,14 +1,21 @@
+import asyncio
 import logging
 import pickle
+import signal
 import socket
 import sys
 from os import urandom
+from types import FrameType
 from typing import Any, Tuple, Union
 
 from aiomisc.log import basic_config
 from aiomisc.worker_pool.constants import (
-    HASHER, INET_AF, SALT_SIZE, Header, PacketTypes,
+    HASHER, INET_AF, SALT_SIZE, SIGNAL, Header, PacketTypes,
 )
+
+
+def on_signal(signum: int, frame: FrameType) -> None:
+    raise asyncio.CancelledError
 
 
 def main() -> None:
@@ -87,6 +94,9 @@ def main() -> None:
 
         send(PacketTypes.IDENTITY, identity)
         logging.debug("Worker ready")
+
+        signal.signal(SIGNAL, on_signal)
+
         try:
             while not step():
                 pass

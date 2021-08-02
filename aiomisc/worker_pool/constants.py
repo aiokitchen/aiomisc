@@ -1,6 +1,8 @@
 import hashlib
 import logging
+import signal
 import socket
+import sys
 from enum import IntEnum
 from struct import Struct
 from typing import Tuple, TypeVar, Union
@@ -28,3 +30,9 @@ class PacketTypes(IntEnum):
 
 
 INET_AF = socket.AF_INET6
+
+
+if sys.platform == "Windows":
+    SIGNAL = signal.SIGBREAK
+else:
+    SIGNAL = signal.SIGUSR1
