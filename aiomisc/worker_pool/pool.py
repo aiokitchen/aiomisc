@@ -21,8 +21,8 @@ from aiomisc.log.config import LOG_FORMAT, LOG_LEVEL
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
 from aiomisc.worker_pool.constants import (
-    COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header,
-    PacketTypes, T, log,
+    COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header, PacketTypes, T,
+    log,
 )
 
 
