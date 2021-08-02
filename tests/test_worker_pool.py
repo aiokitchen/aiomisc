@@ -93,7 +93,6 @@ async def test_incomplete_task_pool_reuse(worker_pool):
     assert list(pids_start) == list(pids_end)
 
 
-
 async def test_exceptions(worker_pool):
     results = await asyncio.gather(
         *[
