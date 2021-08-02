@@ -1,7 +1,7 @@
 import asyncio
 import operator
-import sys
 import platform
+import sys
 import threading
 from multiprocessing.context import ProcessError
 from os import getpid
