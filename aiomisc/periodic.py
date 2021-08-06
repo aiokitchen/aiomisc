@@ -14,6 +14,8 @@ CallbackType = t.Callable[..., t.Union[t.Awaitable[t.Any], t.Any]]
 
 class PeriodicCallbackStatistic(Statistic):
     call_count: int
+    done: int
+    fail: int
     sum_time: float
 
 
@@ -93,11 +95,16 @@ class PeriodicCallback:
             start_time = self._loop.time()
 
             self._task.add_done_callback(call)
-            self._task.add_done_callback(lambda _: do_stat(start_time))
+            self._task.add_done_callback(lambda t: do_stat(t, start_time))
 
-        def do_stat(start_time: float) -> None:
+        def do_stat(task: asyncio.Task, start_time: float) -> None:
             self._statistic.call_count += 1
             self._statistic.sum_time += self._loop.time() - start_time
+
+            if task.exception() is not None:
+                self._statistic.fail += 1
+            else:
+                self._statistic.done += 1
 
         def call(*_: t.Any) -> None:
             if self._handle is not None:
