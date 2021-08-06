@@ -7,7 +7,6 @@ from typing import (
 
 from .counters import Statistic
 from .timeout import timeout
-from .counters import Statistic
 
 
 Number = Union[int, float]
