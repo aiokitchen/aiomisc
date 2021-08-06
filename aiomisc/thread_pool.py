@@ -141,9 +141,11 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         event = threading.Event()
         self.__thread_events.add(event)
 
-        thread_name = "Thread {} from pool {}".format(
-            idx, self._statistic.name or "",
-        )
+        thread_name = "Thread {}".format(idx)
+
+        if self._statistic.name:
+            thread_name += " from pool {}".format(self._statistic.name)
+
         thread = threading.Thread(
             target=self._in_thread,
             name=thread_name.strip(),
