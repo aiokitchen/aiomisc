@@ -101,7 +101,9 @@ class PeriodicCallback:
             self._statistic.call_count += 1
             self._statistic.sum_time += self._loop.time() - start_time
 
-            if task.exception() is not None:
+            if task.cancelled():
+                self._statistic.fail += 1
+            elif task.exception():
                 self._statistic.fail += 1
             else:
                 self._statistic.done += 1
