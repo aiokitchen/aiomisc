@@ -12,14 +12,12 @@ from aiomisc.cron import CronCallback
 log = logging.getLogger(__name__)
 ExceptionsType = t.Tuple[t.Type[Exception], ...]
 
-StoreItem = t.NamedTuple(
-    "StoreItem", (
-        ("callback", CronCallback),
-        ("spec", str),
-        ("shield", bool),
-        ("suppress_exceptions", ExceptionsType),
-    ),
-)
+
+class StoreItem(t.NamedTuple):
+    callback: CronCallback
+    spec: str
+    shield: bool
+    suppress_exceptions: ExceptionsType
 
 
 class CronService(Service):

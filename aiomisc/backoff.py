@@ -1,9 +1,11 @@
 import asyncio
 from functools import wraps
+from time import monotonic
 from typing import (
     Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
 )
 
+from .counters import Statistic
 from .timeout import timeout
 
 
@@ -15,6 +17,14 @@ WrapReturnType = Callable[[Callable[..., T]], T]
 ReturnType = Callable[[Callable[..., T]], WrapReturnType]
 
 
+class BackoffStatistic(Statistic):
+    done: int
+    attempts: int
+    cancels: int
+    errors: int
+    sum_time: float
+
+
 # noinspection SpellCheckingInspection
 def asyncbackoff(
     attempt_timeout: Optional[Number],
@@ -22,7 +32,8 @@ def asyncbackoff(
     pause: Number = 0,
     *exc: Type[Exception], exceptions: Tuple[Type[Exception], ...] = (),
     max_tries: int = None,
-    giveup: Callable[[Exception], bool] = None
+    giveup: Callable[[Exception], bool] = None,
+    statistic_name: Optional[str] = None
 ) -> ReturnType:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
@@ -31,6 +42,7 @@ def asyncbackoff(
     In case of exception function will be called again with similar
     arguments after ``pause`` seconds.
 
+    :param statistic_name: name filed for statistic instances
     :param attempt_timeout: is maximum execution time for one
                             execution attempt.
     :param deadline: is maximum execution time for all execution attempts.
@@ -42,6 +54,7 @@ def asyncbackoff(
     """
 
     exceptions = exc + tuple(exceptions)
+    statistic = BackoffStatistic(statistic_name)
 
     if not pause:
         pause = 0
@@ -78,15 +91,20 @@ def asyncbackoff(
                 nonlocal last_exc, tries
 
                 while True:
+                    statistic.attempts += 1
                     tries += 1
+                    delta = -monotonic()
+
                     try:
                         return await asyncio.wait_for(
                             func(*args, **kwargs),
                             timeout=attempt_timeout,
                         )
                     except asyncio.CancelledError:
+                        statistic.cancels += 1
                         raise
                     except exceptions as e:
+                        statistic.errors += 1
                         last_exc = e
                         if max_tries is not None and tries >= max_tries:
                             raise
@@ -96,6 +114,10 @@ def asyncbackoff(
                     except Exception as e:
                         last_exc = e
                         raise
+                    finally:
+                        delta += monotonic()
+                        statistic.sum_time += delta
+                        statistic.done += 1
 
             try:
                 return await asyncio.wait_for(run(), timeout=deadline)

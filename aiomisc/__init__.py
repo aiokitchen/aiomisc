@@ -7,6 +7,7 @@ from .aggregate import aggregate, aggregate_async
 from .backoff import asyncbackoff
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
+from .counters import Statistic, get_statistics
 from .entrypoint import entrypoint
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
@@ -49,40 +50,43 @@ setup_plugins()
 
 
 __all__ = (
-    "aggregate", "aggregate_async",
+    "CircuitBreaker",
+    "CircuitBroken",
+    "Context",
+    "IteratorWrapper",
+    "IteratorWrapperSeparate",
+    "PeriodicCallback",
+    "PoolBase",
+    "ProcessPoolExecutor",
+    "SelectResult",
+    "Service",
+    "Signal",
+    "Statistic",
+    "ThreadPoolExecutor",
+    "WorkerPool",
+    "aggregate",
+    "aggregate_async",
     "asyncbackoff",
     "awaitable",
     "bind_socket",
     "cancel_tasks",
-    "CircuitBreaker",
-    "CircuitBroken",
     "chunk_list",
-    "Context",
     "context_partial",
     "cutout",
     "entrypoint",
     "get_context",
+    "get_statistics",
     "io",
-    "IteratorWrapper",
-    "IteratorWrapperSeparate",
     "log",
     "new_event_loop",
-    "PeriodicCallback",
     "plugins",
-    "PoolBase",
-    "ProcessPoolExecutor",
     "receiver",
     "select",
-    "SelectResult",
-    "Service",
     "shield",
-    "Signal",
     "sync_wait_coroutine",
     "threaded",
     "threaded_iterable",
     "threaded_iterable_separate",
     "threaded_separate",
-    "ThreadPoolExecutor",
     "timeout",
-    "WorkerPool",
 )

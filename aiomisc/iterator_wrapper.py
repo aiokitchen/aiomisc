@@ -5,6 +5,8 @@ import typing as t
 from collections import deque
 from concurrent.futures import Executor
 
+from aiomisc.counters import Statistic
+
 
 T = t.TypeVar("T")
 R = t.TypeVar("R")
@@ -13,15 +15,25 @@ GenType = t.Generator[T, R, None]
 FuncType = t.Callable[[], GenType]
 
 
+class IteratorWrapperStatistic(Statistic):
+    started: int
+    queue_size: int
+    queue_length: int
+    yielded: int
+    enqueued: int
+
+
 class IteratorWrapper(t.AsyncIterator):
     __slots__ = (
         "__close_event", "__closed", "__gen_func", "__gen_task", "__queue",
         "__queue_maxsize", "__read_event", "__write_event", "executor", "loop",
+        "_statistic",
     )
 
     def __init__(
         self, gen_func: FuncType, loop: asyncio.AbstractEventLoop = None,
         max_size: int = 0, executor: Executor = None,
+        statistic_name: t.Optional[str] = None,
     ):
 
         current_loop = loop or asyncio.get_event_loop()
@@ -36,6 +48,8 @@ class IteratorWrapper(t.AsyncIterator):
         self.__gen_func = gen_func  # type: t.Callable
         self.__write_event = threading.Event()
         self.__read_event = asyncio.Event()
+        self._statistic = IteratorWrapperStatistic(statistic_name)
+        self._statistic.queue_size = max_size
 
     @property
     def closed(self) -> bool:
@@ -53,6 +67,7 @@ class IteratorWrapper(t.AsyncIterator):
         self.loop.call_soon_threadsafe(setter)
 
     def _in_thread(self) -> None:
+        self._statistic.started += 1
         try:
             gen = iter(self.__gen_func())
 
@@ -71,6 +86,7 @@ class IteratorWrapper(t.AsyncIterator):
                         return
 
                 self.__queue.append((item, False))
+                self._statistic.enqueued += 1
                 self._set_read_event()
 
                 if self.__write_event.is_set():
@@ -86,6 +102,7 @@ class IteratorWrapper(t.AsyncIterator):
             self.__queue.append((e, True))
             self.loop.call_soon_threadsafe(self.__read_event.set)
         finally:
+            self._statistic.started -= 1
             self._set_read_event()
             self.loop.call_soon_threadsafe(self.__close_event.set)
 
@@ -132,6 +149,7 @@ class IteratorWrapper(t.AsyncIterator):
             await self.close()
             raise item from item
 
+        self._statistic.yielded += 1
         return item
 
     async def __aenter__(self) -> "IteratorWrapper":

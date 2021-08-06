@@ -8,6 +8,7 @@ from enum import IntEnum, unique
 from functools import wraps
 from random import random
 
+from aiomisc.counters import Statistic
 from aiomisc.utils import awaitable
 
 
@@ -32,6 +33,17 @@ class CircuitBreakerStates(IntEnum):
     RECOVERING = 2
 
 
+class CircuitBreakerStatistic(Statistic):
+    call_count: int
+    error_ratio: float
+    error_ratio_threshold: float
+    call_passing: int
+    call_broken: int
+    call_recovering: int
+    call_recovering_ok: int
+    call_recovering_failed: int
+
+
 class CircuitBroken(Exception):
     __slots__ = ("last_exception",)
 
@@ -45,6 +57,7 @@ class CircuitBroken(Exception):
 class CircuitBreaker:
     __slots__ = (
         "_broken_time",
+        "_counters",
         "_error_ratio",
         "_exceptions",
         "_exception_inspector",
@@ -82,6 +95,7 @@ class CircuitBreaker:
         broken_time: Number = None,
         passing_time: Number = None,
         exception_inspector: ExceptionInspectorType = None,
+        statistic_name: t.Optional[str] = None,
     ):
         """
         Circuit Breaker pattern implementation. The class instance collects
@@ -140,6 +154,8 @@ class CircuitBreaker:
         self._broken_time = broken_time or self._response_time
         self._recovery_time = recovery_time or self._response_time
         self._last_exception = None     # type: t.Optional[Exception]
+        self._counters = CircuitBreakerStatistic(statistic_name)
+        self._counters.error_ratio_threshold = error_ratio
 
     @property
     def response_time(self) -> Number:
@@ -230,8 +246,10 @@ class CircuitBreaker:
         )
 
         if not condition:
+            self._counters.call_recovering_failed += 1
             raise CircuitBroken(self._last_exception)
 
+        self._counters.call_recovering_ok += 1
         yield from self._on_passing(counter)
 
     @property
@@ -304,15 +322,19 @@ class CircuitBreaker:
     def context(self) -> t.Generator[t.Any, t.Any, t.Any]:
         counter = self.counter()
         self._compute_state()
+        self._counters.call_count += 1
 
         if self._state is CircuitBreakerStates.PASSING:
+            self._counters.call_passing += 1
             yield from self._on_passing(counter)
             return
 
         elif self._state is CircuitBreakerStates.BROKEN:
+            self._counters.call_broken += 1
             raise CircuitBroken(self._last_exception)
 
         elif self._state is CircuitBreakerStates.RECOVERING:
+            self._counters.call_recovering += 1
             yield from self._on_recover(counter)
             return
 

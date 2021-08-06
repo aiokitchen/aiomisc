@@ -1,7 +1,10 @@
 import asyncio
 from concurrent.futures import Executor
 from multiprocessing import Pool, cpu_count
+from time import monotonic
 from typing import Any, Callable, Set, Tuple, TypeVar
+
+from .counters import Statistic
 
 
 T = TypeVar("T")
@@ -13,12 +16,23 @@ _CreateFutureType = Tuple[
 ]
 
 
+class ProcessPoolStatistic(Statistic):
+    processes: int
+    done: int
+    error: int
+    success: int
+    submitted: int
+    sum_time: float
+
+
 class ProcessPoolExecutor(Executor):
     DEFAULT_MAX_WORKERS = max((cpu_count(), 4))
 
     def __init__(self, max_workers: int = DEFAULT_MAX_WORKERS, **kwargs: Any):
         self.__futures = set()      # type: FuturesSet
         self.__pool = Pool(processes=max_workers, **kwargs)
+        self._statistic = ProcessPoolStatistic()
+        self._statistic.processes = max_workers
 
     def _create_future(self) -> _CreateFutureType:
         loop = asyncio.get_event_loop()
@@ -26,11 +40,18 @@ class ProcessPoolExecutor(Executor):
 
         self.__futures.add(future)
         future.add_done_callback(self.__futures.remove)
+        start_time = monotonic()
 
         def callback(result: T) -> None:
+            self._statistic.success += 1
+            self._statistic.done += 1
+            self._statistic.sum_time += monotonic() - start_time
             loop.call_soon_threadsafe(future.set_result, result)
 
         def errorback(exc: T) -> None:
+            self._statistic.error += 1
+            self._statistic.done += 1
+            self._statistic.sum_time += monotonic() - start_time
             loop.call_soon_threadsafe(future.set_exception, exc)
 
         return callback, errorback, future
@@ -55,6 +76,7 @@ class ProcessPoolExecutor(Executor):
             error_callback=errorback,
         )
 
+        self._statistic.submitted += 1
         return future
 
     # noinspection PyMethodOverriding

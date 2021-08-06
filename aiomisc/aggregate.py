@@ -8,6 +8,8 @@ from typing import (
     Any, Awaitable, Callable, Iterable, List, NamedTuple, Optional, Union,
 )
 
+from .counters import Statistic
+
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +28,14 @@ AggFuncAsync = Callable[[Arg], Awaitable]
 AggFunc = Union[AggFuncHighLevel, AggFuncAsync]
 
 
+class AggregateStatistic(Statistic):
+    leeway_ms: float
+    max_count: int
+    success: int
+    error: int
+    done: int
+
+
 class Aggregator:
 
     _func: AggFunc
@@ -38,8 +48,9 @@ class Aggregator:
     _lock: Lock
 
     def __init__(
-            self, func: AggFunc, *,
-            leeway_ms: float, max_count: Optional[int] = None,
+        self, func: AggFunc, *, leeway_ms: float,
+        max_count: Optional[int] = None,
+        statistic_name: Optional[str] = None
     ):
         has_variadic_positional = any((
             parameter.kind == Parameter.VAR_POSITIONAL
@@ -60,6 +71,9 @@ class Aggregator:
         self._max_count = max_count
         self._leeway = leeway_ms / 1000
         self._clear()
+        self._statistic = AggregateStatistic(statistic_name)
+        self._statistic.leeway_ms = self.leeway_ms
+        self._statistic.max_count = max_count or 0
 
     def _clear(self) -> None:
         self._first_call_at = None
@@ -83,12 +97,16 @@ class Aggregator:
     async def _execute(self, *, args: list, futures: List[Future]) -> None:
         try:
             results = await self._func(*args)
+            self._statistic.success += 1
         except CancelledError:
             # Other waiting tasks can try to finish the job instead.
             raise
         except Exception as e:
             self._set_exception(e, futures)
+            self._statistic.error += 1
             return
+        finally:
+            self._statistic.done += 1
 
         self._set_results(results, futures)
 
@@ -156,12 +174,16 @@ class AggregatorAsync(Aggregator):
         ]
         try:
             await self._func(*args)
+            self._statistic.success += 1
         except CancelledError:
             # Other waiting tasks can try to finish the job instead.
             raise
         except Exception as e:
             self._set_exception(e, futures)
+            self._statistic.error += 1
             return
+        finally:
+            self._statistic.done += 1
 
         # Validate that all results/exceptions are set by the func
         for future in futures:
@@ -178,15 +200,24 @@ def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
     (``async def func(*args, pho=1, bo=2) -> Iterable``) into its single
     execution with multiple positional arguments
     (``res1, res2, ... = await func(arg1, arg2, ...)``) collected within a time
-    window ``leeway_ms``. Note 1: ``func`` must return a sequence of values
-    of length equal to the number of arguments (and in the same order).
-    Note 2: if some unexpected error occurs, exception is propagated to each
-    future; to set an individual error for each aggregated call refer
-    to ``aggregate_async``.
+    window ``leeway_ms``.
+
+    .. note::
+
+        ``func`` must return a sequence of values of length equal to the
+        number of arguments (and in the same order).
+
+    .. note::
+
+        if some unexpected error occurs, exception is propagated to each
+        future; to set an individual error for each aggregated call refer
+        to ``aggregate_async``.
+
     :param leeway_ms: The maximum approximate delay between the first
-    collected argument and the aggregated execution.
+           collected argument and the aggregated execution.
     :param max_count: The maximum number of arguments to call decorated
-    function with. Default ``None``.
+           function with. Default ``None``.
+
     :return:
     """
     def decorator(func: AggFuncHighLevel) -> Callable[[Any], Awaitable]:
@@ -207,6 +238,7 @@ def aggregate_async(
     of the futures or throwing an exception (it will propagate to futures
     automatically). If ``func`` mistakenly does not set a result of some
     future, then, ``ResultNotSetError`` exception is set.
+
     :return:
     """
     def decorator(func: AggFuncAsync) -> Callable[[Any], Awaitable]:

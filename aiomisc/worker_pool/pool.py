@@ -16,6 +16,7 @@ from typing import (
     Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
 )
 
+from aiomisc.counters import Statistic
 from aiomisc.log.config import LOG_FORMAT, LOG_LEVEL
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
@@ -30,6 +31,18 @@ if sys.version_info < (3, 7):
         "Python 3.6 works not well see https://bugs.python.org/issue37380",
         RuntimeWarning,
     )
+
+
+class WorkerPoolStatistic(Statistic):
+    processes: int
+    queue_size: int
+    submitted: int
+    sum_time: float
+    done: int
+    success: int
+    error: int
+    bad_auth: int
+    task_added: int
 
 
 class WorkerPool:
@@ -111,6 +124,7 @@ class WorkerPool:
         self.__task_store: Set[asyncio.Task] = set()
         self.__closing = False
         self.__starting: Dict[str, asyncio.Future] = dict()
+        self._statistic = WorkerPoolStatistic()
         self.processes: Set[Popen] = set()
         self.workers = workers
         self.tasks = asyncio.Queue(maxsize=max_overflow)
@@ -150,15 +164,19 @@ class WorkerPool:
             kwargs: Dict[str, Any], result_future: asyncio.Future,
         ) -> None:
             await send(PacketTypes.REQUEST, (func, args, kwargs))
+            self._statistic.submitted += 1
 
             packet_type, result = await receive()
+            self._statistic.done += 1
 
             if packet_type == PacketTypes.RESULT:
                 result_future.set_result(result)
+                self._statistic.success += 1
                 return None
 
             if packet_type == PacketTypes.EXCEPTION:
                 result_future.set_exception(result)
+                self._statistic.error += 1
                 return None
 
             if packet_type == PacketTypes.CANCELLED:
@@ -183,6 +201,7 @@ class WorkerPool:
 
             if digest != hasher.digest():
                 exc = AuthenticationError("Invalid cookie")
+                self._statistic.bad_auth += 1
                 await send(PacketTypes.EXCEPTION, exc)
                 raise exc
 
@@ -225,6 +244,7 @@ class WorkerPool:
                 result_future: asyncio.Future
                 process_future: asyncio.Future
 
+                self._statistic.processes += 1
                 (
                     func, args, kwargs, result_future, process_future,
                 ) = await self.tasks.get()
@@ -262,6 +282,8 @@ class WorkerPool:
                     self.__on_exit(process)
 
                     raise
+                finally:
+                    self._statistic.processes -= 1
 
         start_event = asyncio.Event()
         task = self.loop.create_task(handler(start_event))
@@ -269,6 +291,7 @@ class WorkerPool:
         self.__task_add(task)
 
     def __task_add(self, task: asyncio.Task) -> None:
+        self._statistic.task_added += 1
         task.add_done_callback(self.__task_store.remove)
         self.__task_store.add(task)
 

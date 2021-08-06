@@ -7,9 +7,18 @@ from functools import partial
 from croniter import croniter
 
 from . import utils
+from .counters import Statistic
 
 
 log = logging.getLogger(__name__)
+
+
+class CronCallbackStatistic(Statistic):
+    call_count: int
+    sum_time: float
+    call_ok: int
+    call_failed: int
+    call_suppressed: int
 
 
 class CronCallback:
@@ -23,7 +32,7 @@ class CronCallback:
 
     __slots__ = (
         "_cb", "_closed", "_task", "_loop", "_handle", "__name",
-        "_croniter",
+        "_croniter", "_statistic",
     )
 
     def __init__(
@@ -35,6 +44,7 @@ class CronCallback:
         self._cb = partial(
             utils.awaitable(coroutine_func), *args, **kwargs
         )
+        self._statistic = CronCallbackStatistic()
         self._closed = False
         self._handle = None     # type: t.Optional[asyncio.Handle]
         self._task = None       # type: t.Optional[asyncio.Future]
@@ -43,14 +53,24 @@ class CronCallback:
         self,
         suppress_exceptions: t.Tuple[t.Type[Exception], ...] = (),
     ) -> None:
+        delta = -self._loop.time()
         try:
             await self._cb()
+            self._statistic.call_ok += 1
         except asyncio.CancelledError:
+            self._statistic.call_failed += 1
             raise
         except suppress_exceptions:
+            self._statistic.call_failed += 1
+            self._statistic.call_suppressed += 1
             return
         except Exception:
+            self._statistic.call_failed += 1
             log.exception("Cron task error:")
+        finally:
+            delta += self._loop.time()
+            self._statistic.sum_time += delta
+            self._statistic.call_count += 1
 
     def get_next(self) -> float:
         if not self._loop or not self._croniter:
