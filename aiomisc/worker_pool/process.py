@@ -6,7 +6,7 @@ import socket
 import sys
 from os import urandom
 from types import FrameType
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Union, Optional
 
 from aiomisc.log import basic_config
 from aiomisc.worker_pool.constants import (
@@ -18,7 +18,7 @@ def on_signal(signum: int, frame: FrameType) -> None:
     raise asyncio.CancelledError
 
 
-def main() -> None:
+def main() -> Optional[int]:
     address: Union[str, Tuple[str, int]]
     cookie: bytes
     identity: str
@@ -39,7 +39,11 @@ def main() -> None:
 
     with socket.socket(family, socket.SOCK_STREAM) as sock:
         logging.debug("Connecting...")
-        sock.connect(address)
+        try:
+            sock.connect(address)
+        except ConnectionRefusedError:
+            logging.error("Failed to establish IPC.")
+            return 2
 
         def send(packet_type: PacketTypes, data: Any) -> None:
             payload = pickle.dumps(data)
@@ -73,6 +77,9 @@ def main() -> None:
         def step() -> bool:
             try:
                 packet_type, (func, args, kwargs) = receive()
+            except ConnectionResetError:
+                logging.error("Pool connection closed")
+                return False
             except ValueError:
                 return False
 
@@ -93,7 +100,13 @@ def main() -> None:
             return True
 
         logging.debug("Starting authorization")
-        auth(cookie)
+
+        try:
+            auth(cookie)
+        except ConnectionResetError:
+            logging.error("Failed to authorize process in pool. Exiting")
+            return 3
+
         del cookie
 
         send(PacketTypes.IDENTITY, identity)
@@ -104,9 +117,11 @@ def main() -> None:
         try:
             while step():
                 pass
+            return 0
         except KeyboardInterrupt:
-            return
+            return 1
 
 
 if __name__ == "__main__":
-    main()
+    rc = main()
+    exit(rc or 0)
