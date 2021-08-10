@@ -26,6 +26,9 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Resetting git to master
+        run: git reset --hard master
+
       - name: Bump package version
         run: python3 bump.py aiomisc/version.py
 
