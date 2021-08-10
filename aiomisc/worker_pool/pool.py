@@ -143,6 +143,16 @@ class WorkerPool:
             self.__loop = asyncio.get_event_loop()
         return self.__loop
 
+    @staticmethod
+    async def __wait_closed(writer: asyncio.StreamWriter) -> None:
+        if writer.is_closing():
+            return
+
+        writer.close()
+
+        if hasattr(writer, "wait_closed"):
+            await writer.wait_closed()
+
     async def __handle_client(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
     ) -> None:
@@ -237,58 +247,63 @@ class WorkerPool:
                 starting.set_result(None)
                 start_event.set()
 
-            while True:
-                func: Callable
-                args: Tuple[Any, ...]
-                kwargs: Dict[str, Any]
-                result_future: asyncio.Future
-                process_future: asyncio.Future
+            try:
+                while True:
+                    func: Callable
+                    args: Tuple[Any, ...]
+                    kwargs: Dict[str, Any]
+                    result_future: asyncio.Future
+                    process_future: asyncio.Future
 
-                self._statistic.processes += 1
-                (
-                    func, args, kwargs, result_future, process_future,
-                ) = await self.tasks.get()
+                    self._statistic.processes += 1
+                    (
+                        func, args, kwargs, result_future, process_future,
+                    ) = await self.tasks.get()
 
-                try:
-                    if process_future.done():
-                        continue
+                    try:
+                        if process_future.done():
+                            continue
 
-                    process_future.set_result(process)
+                        process_future.set_result(process)
 
-                    if result_future.done():
-                        continue
+                        if result_future.done():
+                            continue
 
-                    await step(func, args, kwargs, result_future)
-                except asyncio.IncompleteReadError:
-                    await self.__wait_process(process)
-                    self.__on_exit(process)
+                        await step(func, args, kwargs, result_future)
+                    except asyncio.IncompleteReadError:
+                        await self.__wait_process(process)
+                        self.__on_exit(process)
 
-                    result_future.set_exception(
-                        ProcessError(
-                            "Process {!r} exited with code {!r}".format(
-                                process, process.returncode,
+                        result_future.set_exception(
+                            ProcessError(
+                                "Process {!r} exited with code {!r}".format(
+                                    process, process.returncode,
+                                ),
                             ),
-                        ),
-                    )
-                    break
-                except Exception as e:
-                    if not result_future.done():
-                        self.loop.call_soon(result_future.set_exception, e)
+                        )
+                        break
+                    except Exception as e:
+                        if not result_future.done():
+                            self.loop.call_soon(result_future.set_exception, e)
 
-                    if not writer.is_closing():
-                        self.loop.call_soon(writer.close)
+                        if not writer.is_closing():
+                            self.loop.call_soon(writer.close)
 
-                    await self.__wait_process(process)
-                    self.__on_exit(process)
+                        await self.__wait_process(process)
+                        self.__on_exit(process)
 
-                    raise
-                finally:
-                    self._statistic.processes -= 1
+                        raise
+                    finally:
+                        self._statistic.processes -= 1
+            finally:
+                await self.__wait_closed(writer)
 
         start_event = asyncio.Event()
         task = self.loop.create_task(handler(start_event))
         await start_event.wait()
         self.__task_add(task)
+
+        await task
 
     def __task_add(self, task: asyncio.Task) -> None:
         self._statistic.task_added += 1
