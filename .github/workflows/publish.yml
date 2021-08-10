@@ -16,10 +16,6 @@ jobs:
     steps:
 
       - uses: actions/checkout@v2
-        with:
-          clean: 1
-          fetch-depth: 1
-          submodules: recursive
 
       - name: Setup python3.9
         uses: actions/setup-python@v2
@@ -28,6 +24,9 @@ jobs:
 
       - name: Resetting git to master
         run: git reset --hard master
+
+      - name: Resetting git to master
+        run: git fetch --unshallow --tags || true
 
       - name: Bump package version
         run: python3 bump.py aiomisc/version.py
