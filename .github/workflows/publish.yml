@@ -17,6 +17,8 @@ jobs:
 
       - uses: actions/checkout@v2
         with:
+          clean: 1
+          fetch-depth: 1
           submodules: recursive
 
       - name: Setup python3.9
