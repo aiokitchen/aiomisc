@@ -26,15 +26,15 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Build source package
+        run: python3 bump.py aiomisc/version.py
+
       - name: Install requires
-        run: python -m pip install twine wheel
+        run: python3 -m pip install twine wheel
 
       - name: Build source package
-        run: python bump.py aiomisc/version.py
-
-      - name: Build source package
-        run: python setup.py sdist
-
+        run: python3 setup.py sdist bdist_wheel
+        
       - name: Publishing to pypi
         run: twine upload --skip-existing --disable-progress-bar dist/*.tar.gz dist/*.whl
         env:
