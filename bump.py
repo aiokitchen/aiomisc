@@ -35,6 +35,7 @@ def git_version():
     except OSError:
         output = 'v0.0'
 
+    log.info("GIT version is: %r", output)
     version, commits, commit_hash = output.lstrip('v').strip().rsplit('-', 2)
 
     return (

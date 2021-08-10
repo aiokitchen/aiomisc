@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Build source package
+      - name: Bump package version
         run: python3 bump.py aiomisc/version.py
 
       - name: Install requires
@@ -34,7 +34,7 @@ jobs:
 
       - name: Build source package
         run: python3 setup.py sdist bdist_wheel
-        
+
       - name: Publishing to pypi
         run: twine upload --skip-existing --disable-progress-bar dist/*.tar.gz dist/*.whl
         env:
