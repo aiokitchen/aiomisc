@@ -136,11 +136,14 @@ def asyncbackoff(
     return decorator
 
 
-def asyncretry(max_tries: int, exceptions: Tuple[Type[Exception], ...],
-               pause: Number = 0, giveup: Callable[[Exception], bool] = None,
-               statistic_name: Optional[str] = None, ) -> ReturnType:
+def asyncretry(
+    max_tries: int,
+    exceptions: Tuple[Type[Exception], ...] = (Exception,),
+    pause: Number = 0,
+    giveup: Callable[[Exception], bool] = None,
+    statistic_name: Optional[str] = None, ) -> ReturnType:
     """
-    Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``.
+    Shortcut of ``asyncbackoff(None, None, 0, Exception)``.
 
     In case of exception function will be called again with similar
     arguments after ``pause`` seconds.

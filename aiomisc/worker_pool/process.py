@@ -6,7 +6,7 @@ import socket
 import sys
 from os import urandom
 from types import FrameType
-from typing import Any, Tuple, Union, Optional
+from typing import Any, Optional, Tuple, Union
 
 from aiomisc.log import basic_config
 from aiomisc.worker_pool.constants import (
