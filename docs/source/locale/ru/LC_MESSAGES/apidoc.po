@@ -65,7 +65,7 @@ msgstr "cancel_futures: Если True то все отменяются все н
 #: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "futures. Futures that are completed or running will not be cancelled."
-msgstr ""
+msgstr "футуры. Футуры, которые завершены или запущены, не будут отменены."
 
 #: aiomisc.process_pool.ProcessPoolExecutor.submit:1
 #: aiomisc.thread_pool.ThreadPoolExecutor.submit:1 of
@@ -147,7 +147,7 @@ msgstr ""
 
 #: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:10 of
 msgid "name filed for statistic instances"
-msgstr ""
+msgstr "имя для экземпляров статистики"
 
 #: aiomisc.backoff.asyncbackoff:8 of
 msgid "is maximum execution time for one execution attempt."
@@ -181,11 +181,11 @@ msgstr ""
 
 #: aiomisc.backoff.asyncbackoff:16 of
 msgid "statistic class"
-msgstr ""
+msgstr "класс статистики"
 
 #: aiomisc.backoff.asyncretry:1 of
 msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
-msgstr ""
+msgstr "Аналог ``asyncbackoff(None, None, 0, Exception)``."
 
 #: aiomisc.utils.awaitable:1 of
 msgid ""
@@ -296,7 +296,4 @@ msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
 "Простой и полезный декоратор для переноса сопрограммы в "
 "``asyncio.shield``."
-
-#~ msgid "statistic class diferrent for retry and"
-#~ msgstr ""
 
