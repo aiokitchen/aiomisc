@@ -136,7 +136,9 @@ def asyncbackoff(
     return decorator
 
 
-def asyncretry(max_tries, *args, **kwargs) -> ReturnType:
+def asyncretry(max_tries: int, exceptions: Tuple[Type[Exception], ...],
+               pause: Number = 0, giveup: Callable[[Exception], bool] = None,
+               statistic_name: Optional[str] = None, ) -> ReturnType:
     """
     Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``.
 
@@ -146,11 +148,17 @@ def asyncretry(max_tries, *args, **kwargs) -> ReturnType:
     :param max_tries: is maximum count of execution attempts (>= 1).
     :param exceptions: similar as exc but keyword only.
     :param giveup: is a predicate function which can decide by a given
+    :param pause: is time gap between execution attempts.
     :param statistic_name: name filed for statistic instances
     """
 
     return asyncbackoff(
-        attempt_timeout=None, deadline=None, pause=0,
-        max_tries=max_tries, statistic_class=RetryStatistic,
-        *args, **kwargs
+        attempt_timeout=None,
+        deadline=None,
+        exceptions=exceptions,
+        giveup=giveup,
+        max_tries=max_tries,
+        pause=pause,
+        statistic_class=RetryStatistic,
+        statistic_name=statistic_name,
     )
