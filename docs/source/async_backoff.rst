@@ -122,3 +122,7 @@ Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just retries
     @asyncretry(5)
     async def try_download_file(url):
         ...
+
+    @asyncretry(3, exceptions=(ConnectionError,))
+    async def get_cluster_lock():
+        ...
