@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-08-20 23:14+0300\n"
+"POT-Creation-Date: 2021-08-20 23:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -180,7 +180,7 @@ msgstr ""
 " попытки"
 
 #: aiomisc.backoff.asyncbackoff:16 of
-msgid "statistic class diferrent for retry and"
+msgid "statistic class"
 msgstr ""
 
 #: aiomisc.backoff.asyncretry:1 of
@@ -296,4 +296,7 @@ msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
 "Простой и полезный декоратор для переноса сопрограммы в "
 "``asyncio.shield``."
+
+#~ msgid "statistic class diferrent for retry and"
+#~ msgstr ""
 

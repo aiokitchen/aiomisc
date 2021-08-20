@@ -56,7 +56,7 @@ def asyncbackoff(
     :param exceptions: similar as exc but keyword only.
     :param max_tries: is maximum count of execution attempts (>= 1).
     :param giveup: is a predicate function which can decide by a given
-    :param statistic_class: statistic class diferrent for retry and
+    :param statistic_class: statistic class
     """
 
     exceptions = exc + tuple(exceptions)
