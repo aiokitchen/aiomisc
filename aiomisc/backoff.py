@@ -141,7 +141,8 @@ def asyncretry(
     exceptions: Tuple[Type[Exception], ...] = (Exception,),
     pause: Number = 0,
     giveup: Callable[[Exception], bool] = None,
-    statistic_name: Optional[str] = None, ) -> ReturnType:
+    statistic_name: Optional[str] = None,
+) -> ReturnType:
     """
     Shortcut of ``asyncbackoff(None, None, 0, Exception)``.
 

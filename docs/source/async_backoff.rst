@@ -108,10 +108,17 @@ asyncretry
 Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just retries
 ``max_tries`` times.
 
+.. note::
+
+    By default will be retry when any Exception. It's very simple and useful
+    in generic cases, but you should specify an exception list when your wrapped
+    functions calling hundreds of times per second, cause you have a risk be
+    the reason of denial of service in case your function calls remote service.
+
 .. code-block:: python
 
-	from aiomisc import asyncretry
+    from aiomisc import asyncretry
 
-	@asyncretry(5)
-	async def try_download_file(url):
-		...
+    @asyncretry(5)
+    async def try_download_file(url):
+        ...
