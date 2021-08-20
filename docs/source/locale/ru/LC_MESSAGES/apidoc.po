@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-07-13 16:38+0300\n"
+"POT-Creation-Date: 2021-08-20 23:14+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -97,7 +97,8 @@ msgid ""
 msgstr ""
 
 #: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
-#: aiomisc.utils.bind_socket aiomisc.utils.cancel_tasks aiomisc.utils.select of
+#: aiomisc.backoff.asyncretry aiomisc.utils.bind_socket
+#: aiomisc.utils.cancel_tasks aiomisc.utils.select of
 msgid "Parameters"
 msgstr "Параметры"
 
@@ -136,7 +137,7 @@ msgstr ""
 "Параметрический декоратор, который гарантирует, что ограничение "
 "``attempt_timeout`` и ``deadline`` соблюдены декорируемой функцией."
 
-#: aiomisc.backoff.asyncbackoff:4 of
+#: aiomisc.backoff.asyncbackoff:4 aiomisc.backoff.asyncretry:3 of
 msgid ""
 "In case of exception function will be called again with similar arguments"
 " after ``pause`` seconds."
@@ -144,7 +145,7 @@ msgstr ""
 "В случае возникновения исключения функция будет вызвана снова с "
 "аналогичными аргументами через ``pause`` секунд."
 
-#: aiomisc.backoff.asyncbackoff:7 of
+#: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:10 of
 msgid "name filed for statistic instances"
 msgstr ""
 
@@ -156,7 +157,7 @@ msgstr "это максимальное время выполнения для �
 msgid "is maximum execution time for all execution attempts."
 msgstr "это максимальное время выполнения для всех попыток выполнения."
 
-#: aiomisc.backoff.asyncbackoff:11 of
+#: aiomisc.backoff.asyncbackoff:11 aiomisc.backoff.asyncretry:9 of
 msgid "is time gap between execution attempts."
 msgstr "это пауза между попытками выполнениями."
 
@@ -164,19 +165,27 @@ msgstr "это пауза между попытками выполнениями
 msgid "retrying when this exceptions was raised."
 msgstr "повторять только если брошены перечисленные тут исключения."
 
-#: aiomisc.backoff.asyncbackoff:13 of
+#: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:7 of
 msgid "similar as exc but keyword only."
 msgstr "тоже самое что и exc но это именованный аргумент."
 
-#: aiomisc.backoff.asyncbackoff:14 of
+#: aiomisc.backoff.asyncbackoff:14 aiomisc.backoff.asyncretry:6 of
 msgid "is maximum count of execution attempts (>= 1)."
 msgstr "это максимальныое количество попыток исполнения (>= 1)."
 
-#: aiomisc.backoff.asyncbackoff:15 of
+#: aiomisc.backoff.asyncbackoff:15 aiomisc.backoff.asyncretry:8 of
 msgid "is a predicate function which can decide by a given"
 msgstr ""
 "это функция-предикат, которая может принимать решение нужно ли продолжать"
 " попытки"
+
+#: aiomisc.backoff.asyncbackoff:16 of
+msgid "statistic class diferrent for retry and"
+msgstr ""
+
+#: aiomisc.backoff.asyncretry:1 of
+msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
+msgstr ""
 
 #: aiomisc.utils.awaitable:1 of
 msgid ""
@@ -287,3 +296,4 @@ msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
 "Простой и полезный декоратор для переноса сопрограммы в "
 "``asyncio.shield``."
+

@@ -1,14 +1,15 @@
 Async backoff
 =============
 
-``asyncbackoff `` it's a decorator that helps you guarantee maximal async
+``asyncbackoff`` it's a decorator that helps you guarantee maximal async
 function execution and retrying policy.
 
-The main principle might be described in three rules:
+The main principle might be described in five rules:
+
 * function will be cancelled when executed longer than
   ``deadline`` (if specified)
 * function will be cancelled when executed longer than
-  ``attempt_timeout`` and will be retried (if specified)
+  ``attempt_timeout`` (if specified) and will be retried
 * Reattempts performs after ``pause`` seconds (if specified, default is ``0``)
 * Reattempts will be performed not more than ``max_tries`` times.
 * ``giveup`` argument is a function that decides should give
