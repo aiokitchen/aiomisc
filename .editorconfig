@@ -15,6 +15,7 @@ max_line_length = 79
 
 [*.rst]
 indent_size = 4
+indent_style = space
 
 [Makefile]
 indent_style = tab

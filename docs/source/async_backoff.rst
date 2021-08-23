@@ -1,6 +1,22 @@
 Async backoff
 =============
 
+``asyncbackoff`` it's a decorator that helps you guarantee maximal async
+function execution and retrying policy.
+
+The main principle might be described in five rules:
+
+* function will be cancelled when executed longer than
+  ``deadline`` (if specified)
+* function will be cancelled when executed longer than
+  ``attempt_timeout`` (if specified) and will be retried
+* Reattempts performs after ``pause`` seconds (if specified, default is ``0``)
+* Reattempts will be performed not more than ``max_tries`` times.
+* ``giveup`` argument is a function that decides should give
+  up the reattempts or continue retrying.
+
+All these rules work at the same time.
+
 Arguments description:
 
 * ``attempt_timeout`` is maximum execution time for one execution attempt.
@@ -84,4 +100,30 @@ Keyword arguments notation:
                   exceptions=[OSError],
                   giveup=lambda e: e.errno != errno.ECONNABORTED)
     async def db_fetch(data: dict):
+        ...
+
+
+asyncretry
+==========
+
+Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just retries
+``max_tries`` times.
+
+.. note::
+
+    By default will be retry when any Exception. It's very simple and useful
+    in generic cases, but you should specify an exception list when your wrapped
+    functions calling hundreds of times per second, cause you have a risk be
+    the reason of denial of service in case your function calls remote service.
+
+.. code-block:: python
+
+    from aiomisc import asyncretry
+
+    @asyncretry(5)
+    async def try_download_file(url):
+        ...
+
+    @asyncretry(3, exceptions=(ConnectionError,))
+    async def get_cluster_lock():
         ...

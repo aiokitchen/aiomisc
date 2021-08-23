@@ -36,7 +36,7 @@ develop: clean
 mypy:
 	mypy aiomisc/thread_pool.py
 
-translate:
+translate: bump
 	make -C docs/ gettext
 	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
 

@@ -8,62 +8,143 @@ msgid "Async backoff"
 msgstr "Async backoff"
 
 #: ../../source/async_backoff.rst:4
+msgid ""
+"``asyncbackoff`` it's a decorator that helps you guarantee maximal async "
+"function execution and retrying policy."
+msgstr ""
+"``asyncbackoff `` декоратор который обеспечивает политику повторов и "
+"политику максимального количества повторных попыток выполнения "
+"асинхронной функции."
+
+#: ../../source/async_backoff.rst:7
+msgid "The main principle might be described in five rules:"
+msgstr "Основной принцип может быть описан пятью правилами:"
+
+#: ../../source/async_backoff.rst:9
+msgid ""
+"function will be cancelled when executed longer than ``deadline`` (if "
+"specified)"
+msgstr ""
+"функция будет отменена, если она будет выполнена дольше, чем ``deadline``"
+" (если указано)"
+
+#: ../../source/async_backoff.rst:11
+msgid ""
+"function will be cancelled when executed longer than ``attempt_timeout`` "
+"(if specified) and will be retried"
+msgstr ""
+"функция будет отменена при выполнении дольше, чем ``attempt_timeout` "
+"(если указано) после этого будет выполнена повторная попытка."
+
+#: ../../source/async_backoff.rst:13
+msgid ""
+"Reattempts performs after ``pause`` seconds (if specified, default is "
+"``0``)"
+msgstr ""
+"Попытки выполняются после ``pausea`` секунд (если указано, по умолчанию ``0``)"
+
+#: ../../source/async_backoff.rst:14
+msgid "Reattempts will be performed not more than ``max_tries`` times."
+msgstr "Попытки будут выполняться не более ``max_tries`` раз."
+
+#: ../../source/async_backoff.rst:15
+msgid ""
+"``giveup`` argument is a function that decides should give up the "
+"reattempts or continue retrying."
+msgstr ""
+"аргумент ``giveup`` - это функция, которая решает, следует ли \"сдаться\" "
+"и прекратить дальнейшие попыток или продолжать."
+
+#: ../../source/async_backoff.rst:18
+msgid "All these rules work at the same time."
+msgstr "Все эти правила работают одновременно."
+
+#: ../../source/async_backoff.rst:20
 msgid "Arguments description:"
 msgstr "Описание аргументов:"
 
-#: ../../source/async_backoff.rst:6
+#: ../../source/async_backoff.rst:22
 msgid "``attempt_timeout`` is maximum execution time for one execution attempt."
 msgstr "``attempt_timeout`` максимально допустимое время выполнения одной попытки."
 
-#: ../../source/async_backoff.rst:7
+#: ../../source/async_backoff.rst:23
 msgid "``deadline`` is maximum execution time for all execution attempts."
 msgstr "``deadline`` максимально допустимое время выполнения всех попыток."
 
-#: ../../source/async_backoff.rst:8
+#: ../../source/async_backoff.rst:24
 msgid "``pause`` is time gap between execution attempts."
 msgstr "``pause`` промежуток времени между попытками."
 
-#: ../../source/async_backoff.rst:9
+#: ../../source/async_backoff.rst:25
 msgid "``exceptions`` retrying when this exceptions was raised."
 msgstr ""
-"``exceptions`` делает последующие попытки только если эти "
-"будут брошены эти исключения."
+"``exceptions`` делает последующие попытки только если эти будут брошены "
+"эти исключения."
 
-#: ../../source/async_backoff.rst:10
+#: ../../source/async_backoff.rst:26
 msgid ""
 "``giveup`` (keyword only) is a predicate function which can decide by a "
 "given exception if we should continue to do retries."
 msgstr ""
-"``giveup`` (именовынный аргумент) это функция-предикат, которая может решить "
-"по данному исключению, следует ли нам продолжать повторять попытки."
+"``giveup`` (именовынный аргумент) это функция-предикат, которая может "
+"решить по данному исключению, следует ли нам продолжать повторять "
+"попытки."
 
-#: ../../source/async_backoff.rst:12
+#: ../../source/async_backoff.rst:28
 msgid ""
 "``max_tries`` (keyword only) is maximum count of execution attempts (>= "
 "1)."
 msgstr ""
-"``max_tries`` (именовынный аргумент) - максимальное количество попыток (> = 1)."
+"``max_tries`` (именовынный аргумент) - максимальное количество попыток (>"
+" = 1)."
 
-#: ../../source/async_backoff.rst:14
+#: ../../source/async_backoff.rst:30
 msgid ""
 "Decorator that ensures that ``attempt_timeout`` and ``deadline`` time "
 "limits are met by decorated function."
 msgstr ""
-"Декоратор, обеспечивающий соблюдение временных ограничений \"attempt_timeout\" "
-"и \"deadline\" декорированной функцией."
+"Декоратор, обеспечивающий соблюдение временных ограничений "
+"\"attempt_timeout\" и \"deadline\" декорированной функцией."
 
-#: ../../source/async_backoff.rst:17
+#: ../../source/async_backoff.rst:33
 msgid ""
 "In case of exception function will be called again with similar arguments"
 " after ``pause`` seconds."
 msgstr ""
-"В случае возникновения исключения функция будет вызвана снова с аналогичными "
-"аргументами через кол-во секунд переданное в аргументе \"pause\"."
+"В случае возникновения исключения функция будет вызвана снова с "
+"аналогичными аргументами через кол-во секунд переданное в аргументе "
+"\"pause\"."
 
-#: ../../source/async_backoff.rst:21
+#: ../../source/async_backoff.rst:37
 msgid "Position arguments notation:"
 msgstr "Объявление через позиционные аргументы:"
 
-#: ../../source/async_backoff.rst:47
+#: ../../source/async_backoff.rst:63
 msgid "Keyword arguments notation:"
 msgstr "Объявление через именованные аргументы"
+
+#: ../../source/async_backoff.rst:107
+msgid "asyncretry"
+msgstr "asyncretry"
+
+#: ../../source/async_backoff.rst:109
+msgid ""
+"Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just "
+"retries ``max_tries`` times."
+msgstr ""
+"Аналог ``asyncbackoff(None, None, 0, *args, **kwargs)``. Прсто повторяет "
+"выполнение функции ``max_tries`` раз."
+
+#: ../../source/async_backoff.rst:114
+msgid ""
+"By default will be retry when any Exception. It's very simple and useful "
+"in generic cases, but you should specify an exception list when your "
+"wrapped functions calling hundreds of times per second, cause you have a "
+"risk be the reason of denial of service in case your function calls "
+"remote service."
+msgstr ""
+"По умолчанию будет повторена попытка при любом исключении. Это очень "
+"просто и полезно в общих случаях, при этом следует указать список "
+"исключений тогда, когда обернутые функции вызывают сотни раз в секунду, "
+"потому что у вас есть риск быть причиной отказа в обслуживании в случае, "
+"если ваша функция вызывает какой-то сервис по сети."

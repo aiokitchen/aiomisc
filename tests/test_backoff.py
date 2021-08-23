@@ -284,3 +284,33 @@ async def test_last_exception_is_last(loop):
 
     with pytest.raises(TestExc):
         await test()
+
+
+async def test_asyncbackoff_retry(loop):
+    mana = 0
+
+    @aiomisc.asyncbackoff(None, None, 0, Exception, max_tries=5)
+    async def test():
+        nonlocal mana
+        mana += 1
+        raise ValueError("RETRY")
+
+    with pytest.raises(ValueError, match="^RETRY$"):
+        await test()
+
+    assert mana == 5
+
+
+async def test_asyncretry(loop):
+    mana = 0
+
+    @aiomisc.asyncretry(5)
+    async def test():
+        nonlocal mana
+        mana += 1
+        raise ValueError("RETRY")
+
+    with pytest.raises(ValueError, match="^RETRY$"):
+        await test()
+
+    assert mana == 5

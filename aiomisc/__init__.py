@@ -4,7 +4,7 @@ import pkg_resources  # type: ignore
 
 from . import io, log
 from .aggregate import aggregate, aggregate_async
-from .backoff import asyncbackoff
+from .backoff import asyncbackoff, asyncretry
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
 from .counters import Statistic, get_statistics
@@ -67,6 +67,7 @@ __all__ = (
     "aggregate",
     "aggregate_async",
     "asyncbackoff",
+    "asyncretry",
     "awaitable",
     "bind_socket",
     "cancel_tasks",

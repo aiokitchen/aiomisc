@@ -25,6 +25,10 @@ class BackoffStatistic(Statistic):
     sum_time: float
 
 
+class RetryStatistic(BackoffStatistic):
+    pass
+
+
 # noinspection SpellCheckingInspection
 def asyncbackoff(
     attempt_timeout: Optional[Number],
@@ -33,7 +37,8 @@ def asyncbackoff(
     *exc: Type[Exception], exceptions: Tuple[Type[Exception], ...] = (),
     max_tries: int = None,
     giveup: Callable[[Exception], bool] = None,
-    statistic_name: Optional[str] = None
+    statistic_name: Optional[str] = None,
+    statistic_class: Type[BackoffStatistic] = BackoffStatistic
 ) -> ReturnType:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
@@ -51,10 +56,11 @@ def asyncbackoff(
     :param exceptions: similar as exc but keyword only.
     :param max_tries: is maximum count of execution attempts (>= 1).
     :param giveup: is a predicate function which can decide by a given
+    :param statistic_class: statistic class
     """
 
     exceptions = exc + tuple(exceptions)
-    statistic = BackoffStatistic(statistic_name)
+    statistic = statistic_class(statistic_name)
 
     if not pause:
         pause = 0
@@ -128,3 +134,36 @@ def asyncbackoff(
 
         return wrap
     return decorator
+
+
+def asyncretry(
+    max_tries: Optional[int],
+    exceptions: Tuple[Type[Exception], ...] = (Exception,),
+    pause: Number = 0,
+    giveup: Callable[[Exception], bool] = None,
+    statistic_name: Optional[str] = None,
+) -> ReturnType:
+    """
+    Shortcut of ``asyncbackoff(None, None, 0, Exception)``.
+
+    In case of exception function will be called again with similar
+    arguments after ``pause`` seconds.
+
+    :param max_tries: is maximum count of execution attempts
+                      (>= 1 or ``None`` means infinity).
+    :param exceptions: similar as exc but keyword only.
+    :param giveup: is a predicate function which can decide by a given
+    :param pause: is time gap between execution attempts.
+    :param statistic_name: name filed for statistic instances
+    """
+
+    return asyncbackoff(
+        attempt_timeout=None,
+        deadline=None,
+        exceptions=exceptions,
+        giveup=giveup,
+        max_tries=max_tries,
+        pause=pause,
+        statistic_class=RetryStatistic,
+        statistic_name=statistic_name,
+    )
