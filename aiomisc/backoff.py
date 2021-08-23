@@ -137,7 +137,7 @@ def asyncbackoff(
 
 
 def asyncretry(
-    max_tries: int,
+    max_tries: Optional[int],
     exceptions: Tuple[Type[Exception], ...] = (Exception,),
     pause: Number = 0,
     giveup: Callable[[Exception], bool] = None,
@@ -149,7 +149,8 @@ def asyncretry(
     In case of exception function will be called again with similar
     arguments after ``pause`` seconds.
 
-    :param max_tries: is maximum count of execution attempts (>= 1).
+    :param max_tries: is maximum count of execution attempts
+                      (>= 1 or ``None`` means infinity).
     :param exceptions: similar as exc but keyword only.
     :param giveup: is a predicate function which can decide by a given
     :param pause: is time gap between execution attempts.

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-08-20 23:29+0300\n"
+"POT-Creation-Date: 2021-08-23 12:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -145,7 +145,7 @@ msgstr ""
 "В случае возникновения исключения функция будет вызвана снова с "
 "аналогичными аргументами через ``pause`` секунд."
 
-#: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:10 of
+#: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:11 of
 msgid "name filed for statistic instances"
 msgstr "имя для экземпляров статистики"
 
@@ -157,7 +157,7 @@ msgstr "это максимальное время выполнения для �
 msgid "is maximum execution time for all execution attempts."
 msgstr "это максимальное время выполнения для всех попыток выполнения."
 
-#: aiomisc.backoff.asyncbackoff:11 aiomisc.backoff.asyncretry:9 of
+#: aiomisc.backoff.asyncbackoff:11 aiomisc.backoff.asyncretry:10 of
 msgid "is time gap between execution attempts."
 msgstr "это пауза между попытками выполнениями."
 
@@ -165,15 +165,15 @@ msgstr "это пауза между попытками выполнениями
 msgid "retrying when this exceptions was raised."
 msgstr "повторять только если брошены перечисленные тут исключения."
 
-#: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:7 of
+#: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:8 of
 msgid "similar as exc but keyword only."
 msgstr "тоже самое что и exc но это именованный аргумент."
 
-#: aiomisc.backoff.asyncbackoff:14 aiomisc.backoff.asyncretry:6 of
+#: aiomisc.backoff.asyncbackoff:14 of
 msgid "is maximum count of execution attempts (>= 1)."
 msgstr "это максимальныое количество попыток исполнения (>= 1)."
 
-#: aiomisc.backoff.asyncbackoff:15 aiomisc.backoff.asyncretry:8 of
+#: aiomisc.backoff.asyncbackoff:15 aiomisc.backoff.asyncretry:9 of
 msgid "is a predicate function which can decide by a given"
 msgstr ""
 "это функция-предикат, которая может принимать решение нужно ли продолжать"
@@ -186,6 +186,14 @@ msgstr "класс статистики"
 #: aiomisc.backoff.asyncretry:1 of
 msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
 msgstr "Аналог ``asyncbackoff(None, None, 0, Exception)``."
+
+#: aiomisc.backoff.asyncretry:6 of
+msgid ""
+"is maximum count of execution attempts "
+"(>= 1 or ``None`` means infinity)."
+msgstr ""
+"это максимальныое количество попыток исполнения "
+"(>= 1 или ``None`` бесконечность)."
 
 #: aiomisc.utils.awaitable:1 of
 msgid ""
