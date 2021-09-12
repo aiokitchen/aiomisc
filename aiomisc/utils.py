@@ -40,6 +40,25 @@ def chunk_list(iterable: Iterable[T], size: int) -> Iterable[List[T]]:
 OptionsType = Iterable[Tuple[int, int, int]]
 
 
+if hasattr(socket, 'TCP_NODELAY'):
+    def _sock_set_nodelay(sock: socket.socket):
+        if sock.proto != socket.IPPROTO_TCP:
+            return
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+else:
+    def _sock_set_nodelay(_):
+        return
+
+if hasattr(socket, "SO_REUSEPORT"):
+    def _sock_set_reuseport(sock: socket.socket, reuse_port: bool):
+        sock.setsockopt(
+            socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port),
+        )
+else:
+    def _sock_set_reuseport(_, __):
+        log.warning("SO_REUSEPORT is not implemented by underlying library.")
+
+
 def bind_socket(
     *args: Any, address: str, port: int, options: OptionsType = (),
     reuse_addr: bool = True, reuse_port: bool = False,
@@ -70,13 +89,13 @@ def bind_socket(
     sock = socket.socket(*args)
     sock.setblocking(False)
 
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(reuse_addr))
-    if hasattr(socket, "SO_REUSEPORT"):
-        sock.setsockopt(
-            socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port),
-        )
-    else:
-        log.warning("SO_REUSEPORT is not implemented by underlying library.")
+    if not args and ":" in address:
+        sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, reuse_addr.real)
+
+    _sock_set_reuseport(sock, reuse_port)
+    _sock_set_nodelay(sock)
 
     for level, option, value in options:
         sock.setsockopt(level, option, value)
