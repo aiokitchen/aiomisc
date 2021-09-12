@@ -17,10 +17,10 @@ from typing import (
 )
 
 from aiomisc.counters import Statistic
-from aiomisc.log.config import LOG_FORMAT, LOG_LEVEL
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import bind_socket, cancel_tasks
-from aiomisc.worker_pool.constants import (
+from aiomisc_log import LOG_FORMAT, LOG_LEVEL
+from aiomisc_worker import (
     COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header, PacketTypes, T,
     log,
 )
@@ -59,7 +59,7 @@ class WorkerPool:
             self.socket = bind_socket(
                 socket.AF_UNIX,
                 socket.SOCK_STREAM,
-                address=path, port=0,
+                address=path,
             )
             self.address = path
             chmod(path, 0o600)
@@ -69,7 +69,6 @@ class WorkerPool:
                 INET_AF,
                 socket.SOCK_STREAM,
                 address="localhost",
-                port=0,
             )
             self.address = self.socket.getsockname()[:2]
 
@@ -85,9 +84,11 @@ class WorkerPool:
         if self.__closing:
             raise RuntimeError("Pool closed")
 
+        env = dict(os.environ)
+        env["AIOMISC_NO_PLUGINS"] = ""
         process = Popen(
-            [sys.executable, "-m", "aiomisc.worker_pool.process"],
-            stdin=PIPE, env=os.environ,
+            [sys.executable, "-m", "aiomisc_worker"],
+            stdin=PIPE, env=env,
         )
         self.__spawning[identity] = process
         log.debug("Spawning new worker pool process PID: %s", process.pid)
@@ -333,9 +334,8 @@ class WorkerPool:
         async def respawn() -> None:
             if self.__closing:
                 return None
-
-            await self.__spawn_process()
             self.processes.remove(process)
+            await self.__spawn_process()
 
         self.__task(respawn())
 
@@ -371,8 +371,12 @@ class WorkerPool:
             chain(tuple(self.__task_store), tuple(self.__futures)),
         )
 
-        while self.processes:
-            self._kill_process(self.processes.pop())
+        @threaded
+        def killer():
+            while self.processes:
+                self._kill_process(self.processes.pop())
+
+        await killer()
 
     async def create_task(
         self, func: Callable[..., T],
@@ -402,3 +406,4 @@ class WorkerPool:
         exc_val: Exception, exc_tb: Traceback,
     ) -> None:
         await self.close()
+

@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import aiomisc
-from aiomisc.log.config import LOG_LEVEL
+from aiomisc_log import LOG_LEVEL
 
 
 log = logging.getLogger("aiomisc_pytest")

@@ -4,7 +4,7 @@ import typing as t
 
 from colorlog import ColoredFormatter
 
-from aiomisc.log.enum import DateFormat
+from ..enum import DateFormat
 
 
 def color_formatter(

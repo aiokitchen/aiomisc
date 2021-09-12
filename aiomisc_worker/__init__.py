@@ -37,3 +37,6 @@ if sys.platform in ("win32", "cygwin"):
     SIGNAL = signal.SIGBREAK    # type: ignore
 else:
     SIGNAL = signal.SIGUSR2
+
+
+

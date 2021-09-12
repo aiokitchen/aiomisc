@@ -52,8 +52,13 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
-    packages=find_packages(exclude=['tests']),
-    package_data={"aiomisc": ["py.typed"]},
+    packages=find_packages(exclude=['tests*']),
+    package_data={
+        "aiomisc": ["py.typed"],
+        "aiomisc_log": ["py.typed"],
+        "aiomisc_pytest": ["py.typed"],
+        "aiomisc_worker": ["py.typed"],
+    },
     install_requires=load_requirements('requirements.txt'),
     extras_require={
         'aiohttp': ['aiohttp'],

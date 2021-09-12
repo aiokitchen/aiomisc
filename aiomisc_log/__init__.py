@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import logging.handlers
 import os
@@ -7,7 +6,6 @@ import typing as t
 
 from .enum import LogFormat, LogLevel
 from .formatter import color_formatter, json_handler
-from .wrap import wrap_logging_handler
 
 
 LOG_LEVEL: t.Optional[t.Any] = None
@@ -65,12 +63,17 @@ def create_logging_handler(
     raise NotImplementedError
 
 
+HandlerWrapperType = t.Callable[[logging.Handler], logging.Handler]
+
+
+def pass_wrapper(handler: logging.Handler) -> logging.Handler:
+    return handler
+
+
 def basic_config(
     level: t.Union[int, str] = logging.INFO,
     log_format: t.Union[str, LogFormat] = LogFormat.color,
-    buffered: bool = True, buffer_size: int = 1024,
-    flush_interval: t.Union[int, float] = 0.2,
-    loop: asyncio.AbstractEventLoop = None,
+    handler_wrapper: HandlerWrapperType = pass_wrapper,
     **kwargs: t.Any
 ) -> None:
 
@@ -84,15 +87,7 @@ def basic_config(
     if isinstance(log_format, str):
         log_format = LogFormat[log_format]
 
-    handler = create_logging_handler(log_format, **kwargs)
-
-    if buffered:
-        handler = wrap_logging_handler(
-            handler,
-            buffer_size=buffer_size,
-            flush_interval=flush_interval,
-            loop=loop,
-        )
+    handler = handler_wrapper(create_logging_handler(log_format, **kwargs))
 
     if LOG_LEVEL is not None:
         LOG_LEVEL.set(level)

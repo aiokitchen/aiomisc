@@ -7,6 +7,7 @@ from weakref import WeakSet
 
 from .context import Context, get_context
 from .log import LogFormat, basic_config
+from .plugins import plugins  # noqa
 from .service import Service
 from .signal import Signal
 from .utils import cancel_tasks, create_default_event_loop, event_loop_policy

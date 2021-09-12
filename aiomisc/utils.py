@@ -60,7 +60,7 @@ else:
 
 
 def bind_socket(
-    *args: Any, address: str, port: int, options: OptionsType = (),
+    *args: Any, address: str, port: int = 0, options: OptionsType = (),
     reuse_addr: bool = True, reuse_port: bool = False,
     proto_name: Optional[str] = None
 ) -> socket.socket:
