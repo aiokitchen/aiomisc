@@ -41,21 +41,21 @@ OptionsType = Iterable[Tuple[int, int, int]]
 
 
 if hasattr(socket, "TCP_NODELAY"):
-    def _sock_set_nodelay(sock: socket.socket):
+    def _sock_set_nodelay(sock: socket.socket) -> None:
         if sock.proto != socket.IPPROTO_TCP:
-            return
+            return None
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 else:
-    def _sock_set_nodelay(_):
-        return
+    def _sock_set_nodelay(sock: socket.socket) -> None:
+        return None
 
 if hasattr(socket, "SO_REUSEPORT"):
-    def _sock_set_reuseport(sock: socket.socket, reuse_port: bool):
+    def _sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
         sock.setsockopt(
             socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port),
         )
 else:
-    def _sock_set_reuseport(_, __):
+    def _sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
         log.warning("SO_REUSEPORT is not implemented by underlying library.")
 
 

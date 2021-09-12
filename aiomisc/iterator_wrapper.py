@@ -135,7 +135,7 @@ class IteratorWrapper(t.AsyncIterator):
         self.__gen_task = self.loop.create_task(self._run())
         return IteratorProxy(self, self.__finalizer)
 
-    def __finalizer(self):
+    def __finalizer(self) -> None:
         self.__closed.set()
         self.loop.create_task(self.close())
 
@@ -173,7 +173,10 @@ class IteratorWrapper(t.AsyncIterator):
 
 
 class IteratorProxy(t.AsyncIterator):
-    def __init__(self, iterator: t.AsyncIterator, finalizer):
+    def __init__(
+        self, iterator: t.AsyncIterator,
+        finalizer: t.Callable[[], None],
+    ):
         self.__iterator = iterator
         finalize(self, finalizer)
 
