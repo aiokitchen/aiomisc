@@ -121,4 +121,3 @@ def main() -> Optional[int]:
 if __name__ == "__main__":
     rc = main()
     exit(rc or 0)
-

@@ -7,6 +7,7 @@ from .counters import Statistic, get_statistics
 from .entrypoint import entrypoint
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
+from .plugins import plugins
 from .pool import PoolBase
 from .process_pool import ProcessPoolExecutor
 from .service import Service
@@ -23,7 +24,6 @@ from .utils import (
 )
 from .worker_pool import WorkerPool
 
-from .plugins import plugins
 
 __all__ = (
     "CircuitBreaker",

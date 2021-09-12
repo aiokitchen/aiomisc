@@ -4,7 +4,7 @@ from types import MappingProxyType
 from typing import Callable, Mapping
 
 
-def setup_plugins() -> MappingProxyType:
+def setup_plugins() -> Mapping[str, Callable]:
     if os.getenv("AIOMISC_NO_PLUGINS"):
         return MappingProxyType({})
 
@@ -32,8 +32,8 @@ plugins: Mapping[str, Callable] = setup_plugins()
 
 __all__ = ("plugins",)
 
-if __name__ == '__main__':
-    from aiomisc_log import basic_config, LogFormat
+if __name__ == "__main__":
+    from aiomisc_log import LogFormat, basic_config
 
     basic_config(log_format=LogFormat.plain)
     logging.info("Available %s plugins.", len(plugins))

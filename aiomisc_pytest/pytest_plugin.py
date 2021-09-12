@@ -7,6 +7,7 @@ import typing as t
 from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
+from inspect import isasyncgenfunction
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,21 +22,18 @@ asyncio.get_event_loop.side_effect = get_event_loop
 
 
 try:
-    import uvloop
+    import uvloop  # type: ignore
 except ImportError:
     uvloop = None
 
 
-try:
-    from async_generator import isasyncgenfunction
-except ImportError:
-    from inspect import isasyncgenfunction
+def delayed_future(
+    timeout: t.Union[int, float], result: bool = True
+) -> asyncio.Future:
 
-
-def delayed_future(timeout, result=True):
     loop = asyncio.get_event_loop()
 
-    def resolve(f: asyncio.Future):
+    def resolve(f: asyncio.Future) -> None:
         nonlocal result
 
         if f.done():
@@ -56,13 +54,13 @@ DelayType = t.Union[int, float]
 class Delay:
     __slots__ = "__timeout", "future", "lock"
 
-    def __init__(self):
-        self.__timeout = 0
+    def __init__(self) -> None:
+        self.__timeout: t.Union[int, float] = 0
         self.future = None
         self.lock = asyncio.Lock()
 
     @property
-    def timeout(self):
+    def timeout(self) -> t.Union[int, float]:
         return self.__timeout
 
     @timeout.setter

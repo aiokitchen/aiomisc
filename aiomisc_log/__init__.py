@@ -30,8 +30,10 @@ def create_logging_handler(
     if LOG_FORMAT is not None:
         LOG_FORMAT.set(log_format)
 
+    handler: logging.Handler
+
     if log_format == LogFormat.stream:
-        handler = logging.StreamHandler()   # type: logging.Handler
+        handler = logging.StreamHandler()
         if date_format and date_format is not Ellipsis:
             formatter = logging.Formatter(
                 "%(asctime)s " + DEFAULT_FORMAT, datefmt=date_format,
@@ -60,7 +62,7 @@ def create_logging_handler(
         handler.setFormatter(formatter)
         return handler
     elif log_format == LogFormat.plain:
-        handler = logging.StreamHandler()   # type: logging.Handler
+        handler = logging.StreamHandler()
         formatter = logging.Formatter("%(message)s")
         handler.setFormatter(formatter)
         return handler
@@ -102,3 +104,10 @@ def basic_config(
         level=int(level),
         handlers=[handler],
     )
+
+
+__all__ = (
+    "LogFormat",
+    "LogLevel",
+    "basic_config",
+)

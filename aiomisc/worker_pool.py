@@ -372,7 +372,7 @@ class WorkerPool:
         )
 
         @threaded
-        def killer():
+        def killer() -> None:
             while self.processes:
                 self._kill_process(self.processes.pop())
 
@@ -406,4 +406,3 @@ class WorkerPool:
         exc_val: Exception, exc_tb: Traceback,
     ) -> None:
         await self.close()
-
