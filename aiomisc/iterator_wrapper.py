@@ -127,7 +127,6 @@ class IteratorWrapper(t.AsyncIterator):
         await asyncio.gather(
             self.__gen_task, loop=self.loop, return_exceptions=True,
         )
-        del self.__queue
 
     def __aiter__(self) -> t.AsyncIterator[t.Any]:
         if self.__gen_task is not None:
