@@ -9,6 +9,7 @@ class LogFormat(IntEnum):
     color = 1
     json = 2
     syslog = 3
+    plain = 4
 
     @classmethod
     def choices(cls) -> t.Tuple[str, ...]:

@@ -1,6 +1,5 @@
 import asyncio
 from functools import wraps
-from time import monotonic
 from typing import (
     Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
 )
@@ -96,10 +95,12 @@ def asyncbackoff(
             async def run() -> Any:
                 nonlocal last_exc, tries
 
+                loop = asyncio.get_event_loop()
+
                 while True:
                     statistic.attempts += 1
                     tries += 1
-                    delta = -monotonic()
+                    delta = -loop.time()
 
                     try:
                         return await asyncio.wait_for(
@@ -121,7 +122,7 @@ def asyncbackoff(
                         last_exc = e
                         raise
                     finally:
-                        delta += monotonic()
+                        delta += loop.time()
                         statistic.sum_time += delta
                         statistic.done += 1
 

@@ -1,7 +1,6 @@
 import asyncio
 from concurrent.futures import Executor
 from multiprocessing import Pool, cpu_count
-from time import monotonic
 from typing import Any, Callable, Set, Tuple, TypeVar
 
 from .counters import Statistic
@@ -40,18 +39,18 @@ class ProcessPoolExecutor(Executor):
 
         self.__futures.add(future)
         future.add_done_callback(self.__futures.remove)
-        start_time = monotonic()
+        start_time = loop.time()
 
         def callback(result: T) -> None:
             self._statistic.success += 1
             self._statistic.done += 1
-            self._statistic.sum_time += monotonic() - start_time
+            self._statistic.sum_time += loop.time() - start_time
             loop.call_soon_threadsafe(future.set_result, result)
 
         def errorback(exc: T) -> None:
             self._statistic.error += 1
             self._statistic.done += 1
-            self._statistic.sum_time += monotonic() - start_time
+            self._statistic.sum_time += loop.time() - start_time
             loop.call_soon_threadsafe(future.set_exception, exc)
 
         return callback, errorback, future

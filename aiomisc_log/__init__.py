@@ -59,6 +59,11 @@ def create_logging_handler(
 
         handler.setFormatter(formatter)
         return handler
+    elif log_format == LogFormat.plain:
+        handler = logging.StreamHandler()   # type: logging.Handler
+        formatter = logging.Formatter("%(message)s")
+        handler.setFormatter(formatter)
+        return handler
 
     raise NotImplementedError
 

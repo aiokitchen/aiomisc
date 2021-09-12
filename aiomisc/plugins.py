@@ -33,10 +33,10 @@ plugins: Mapping[str, Callable] = setup_plugins()
 __all__ = ("plugins",)
 
 if __name__ == '__main__':
-    from aiomisc_log import basic_config
+    from aiomisc_log import basic_config, LogFormat
 
-    basic_config()
-    logging.info("Available plugins:")
+    basic_config(log_format=LogFormat.plain)
+    logging.info("Available %s plugins.", len(plugins))
 
     for name in plugins:
         print(name)
