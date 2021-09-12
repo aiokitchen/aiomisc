@@ -40,7 +40,7 @@ def chunk_list(iterable: Iterable[T], size: int) -> Iterable[List[T]]:
 OptionsType = Iterable[Tuple[int, int, int]]
 
 
-if hasattr(socket, 'TCP_NODELAY'):
+if hasattr(socket, "TCP_NODELAY"):
     def _sock_set_nodelay(sock: socket.socket):
         if sock.proto != socket.IPPROTO_TCP:
             return

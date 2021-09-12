@@ -4,6 +4,8 @@ import threading
 import typing as t
 from collections import deque
 from concurrent.futures import Executor
+from typing import Awaitable
+from weakref import finalize
 
 from aiomisc.counters import Statistic
 
@@ -37,15 +39,15 @@ class IteratorWrapper(t.AsyncIterator):
     ):
 
         current_loop = loop or asyncio.get_event_loop()
-        self.loop = current_loop    # type: asyncio.AbstractEventLoop
+        self.loop: asyncio.AbstractEventLoop = current_loop
         self.executor = executor
 
-        self.__closed = False
+        self.__closed = threading.Event()
         self.__close_event = asyncio.Event()
-        self.__queue = deque()      # type: t.Deque[t.Any]
+        self.__queue: t.Deque[t.Any] = deque()
         self.__queue_maxsize = max_size
-        self.__gen_task = None      # type: t.Optional[asyncio.Task]
-        self.__gen_func = gen_func  # type: t.Callable
+        self.__gen_task: t.Optional[asyncio.Task] = None
+        self.__gen_func: t.Callable = gen_func
         self.__write_event = threading.Event()
         self.__read_event = asyncio.Event()
         self._statistic = IteratorWrapperStatistic(statistic_name)
@@ -53,7 +55,7 @@ class IteratorWrapper(t.AsyncIterator):
 
     @property
     def closed(self) -> bool:
-        return self.__closed
+        return self.__closed.is_set()
 
     @staticmethod
     def __throw(_: t.Any) -> t.NoReturn:
@@ -86,6 +88,8 @@ class IteratorWrapper(t.AsyncIterator):
                         return
 
                 self.__queue.append((item, False))
+                del item
+
                 self._statistic.enqueued += 1
                 self._set_read_event()
 
@@ -110,7 +114,7 @@ class IteratorWrapper(t.AsyncIterator):
         return await self.loop.run_in_executor(self.executor, self._in_thread)
 
     async def close(self) -> None:
-        self.__closed = True
+        self.__closed.set()
         self.__queue.clear()
 
         if self.__gen_task is None:
@@ -130,7 +134,11 @@ class IteratorWrapper(t.AsyncIterator):
             return self
 
         self.__gen_task = self.loop.create_task(self._run())
-        return self
+        return IteratorProxy(self, self.__finalizer)
+
+    def __finalizer(self):
+        self.__closed.set()
+        self.loop.create_task(self.close())
 
     async def __anext__(self) -> t.Awaitable[T]:
         while len(self.__queue) == 0:
@@ -163,3 +171,12 @@ class IteratorWrapper(t.AsyncIterator):
             return
 
         await self.close()
+
+
+class IteratorProxy(t.AsyncIterator):
+    def __init__(self, iterator: t.AsyncIterator, finalizer):
+        self.__iterator = iterator
+        finalize(self, finalizer)
+
+    def __anext__(self) -> Awaitable[t.Any]:
+        return self.__iterator.__anext__()
