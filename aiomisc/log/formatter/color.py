@@ -2,7 +2,7 @@ import logging
 import sys
 import typing as t
 
-from colorlog import ColoredFormatter  # type: ignore
+from colorlog import ColoredFormatter
 
 from aiomisc.log.enum import DateFormat
 
