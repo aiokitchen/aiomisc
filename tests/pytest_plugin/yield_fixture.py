@@ -2,15 +2,13 @@ import asyncio
 import logging
 
 import pytest
-from async_generator import async_generator, yield_
 
 
 @pytest.fixture
-@async_generator
 async def yield_fixture():
     logging.info("Setup")
     await asyncio.sleep(0)
-    await yield_(True)
+    yield True
     await asyncio.sleep(0)
     logging.info("Teardown")
 
