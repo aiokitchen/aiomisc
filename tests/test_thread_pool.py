@@ -295,6 +295,30 @@ async def test_threaded_generator_close_cm(iterator_decorator, loop, timer):
         assert stopped.is_set()
 
 
+async def test_threaded_generator_close_break(iterator_decorator, loop, timer):
+    stopped = threading.Event()
+
+    @iterator_decorator(max_size=1)
+    def noise():
+        nonlocal stopped
+
+        try:
+            while True:
+                yield os.urandom(32)
+        finally:
+            stopped.set()
+
+    async with timeout(2):
+        counter = 0
+        async for _ in noise():     # NOQA
+            counter += 1
+            if counter > 9:
+                break
+
+        stopped.wait(timeout=5)
+        assert stopped.is_set()
+
+
 async def test_threaded_generator_non_generator_raises(
         iterator_decorator, loop, timer,
 ):
