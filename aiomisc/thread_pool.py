@@ -42,15 +42,13 @@ try:
 except ImportError:
     context_partial = partial
 
-WorkItemBase = NamedTuple(
-    "WorkItemBase", (
-        ("func", typing.Callable[..., Any]),
-        ("args", typing.Tuple[Any, ...]),
-        ("kwargs", typing.Dict[str, Any]),
-        ("future", asyncio.Future),
-        ("loop", asyncio.AbstractEventLoop),
-    ),
-)
+
+class WorkItemBase(NamedTuple):
+    func: typing.Callable[..., Any]
+    args: typing.Tuple[Any, ...]
+    kwargs: typing.Dict[str, Any]
+    future: asyncio.Future
+    loop: asyncio.AbstractEventLoop
 
 
 class ThreadPoolStatistic(Statistic):
@@ -81,14 +79,11 @@ class WorkItem(WorkItemBase):
 
         result, exception = None, None
 
-        if self.loop.is_closed():
-            raise asyncio.CancelledError
-
-        delta = -time.monotonic()
+        delta = -self.loop.time()
         try:
             result = self.func(*self.args, **self.kwargs)
             statistic.success += 1
-        except Exception as e:
+        except BaseException as e:
             statistic.error += 1
             exception = e
         finally:
@@ -159,28 +154,27 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     def _in_thread(self, event: threading.Event) -> None:
         self._statistic.threads += 1
 
-        while True:
-            work_item = self.__tasks.get()
+        try:
+            while True:
+                work_item = self.__tasks.get()
 
-            if work_item is None:
-                break
+                if work_item is None:
+                    break
 
-            try:
-                if work_item.loop.is_closed():
-                    log.warning(
-                        "Event loop is closed. Call %r skipped",
-                        work_item.func,
-                    )
-                    continue
+                try:
+                    if work_item.loop.is_closed():
+                        log.warning(
+                            "Event loop is closed. Call %r skipped",
+                            work_item.func,
+                        )
+                        continue
 
-                work_item(self._statistic)
-            except asyncio.CancelledError:
-                self._statistic.threads -= 1
-                break
-            finally:
-                del work_item
-
-        event.set()
+                    work_item(self._statistic)
+                finally:
+                    del work_item
+        finally:
+            self._statistic.threads -= 1
+            event.set()
 
     def submit(  # type: ignore
         self, fn: F, *args: Any, **kwargs: Any
@@ -192,12 +186,11 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
             raise ValueError("First argument must be callable")
 
         loop = asyncio.get_event_loop()
+        future: asyncio.Future = loop.create_future()
+        self.__futures.add(future)
+        future.add_done_callback(self.__futures.remove)
 
         with self.__write_lock:
-            future = loop.create_future()  # type: asyncio.Future[Any]
-            self.__futures.add(future)
-            future.add_done_callback(self.__futures.remove)
-
             self.__tasks.put_nowait(
                 WorkItem(
                     func=fn,
@@ -208,8 +201,8 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
                 ),
             )
 
-            self._statistic.submitted += 1
-            return future
+        self._statistic.submitted += 1
+        return future
 
     # noinspection PyMethodOverriding
     def shutdown(self, wait: bool = True) -> None:  # type: ignore
