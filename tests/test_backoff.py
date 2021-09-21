@@ -136,20 +136,29 @@ async def test_exit(loop):
 
 async def test_pause(loop):
     mana = 0
+    condition = asyncio.Condition()
 
-    @aiomisc.asyncbackoff(0.05, 0.5, 0.35)
+    @aiomisc.asyncbackoff(0.05, 1.2, 0.35)
     async def test():
         nonlocal mana
 
-        mana += 1
-        await asyncio.sleep(0.2)
+        async with condition:
+            mana += 1
+            condition.notify_all()
 
+        await asyncio.sleep(0.2)
         raise ValueError("Not enough mana")
 
-    with pytest.raises(asyncio.TimeoutError):
-        await test()
+    task = loop.create_task(test())
 
-    assert mana == 2
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: mana == 2),
+            timeout=5
+        )
+
+    with pytest.raises(asyncio.TimeoutError):
+        await task
 
 
 async def test_no_waterline(loop):
