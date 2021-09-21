@@ -193,7 +193,7 @@ async def test_no_deadline(loop, max_sleep):
         async with condition:
             condition.notify_all()
 
-    task = asyncio.create_task(test())
+    task = loop.create_task(test())
 
     async with condition:
         await asyncio.wait_for(
