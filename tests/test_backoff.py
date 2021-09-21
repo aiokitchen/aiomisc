@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 import pytest
 from async_timeout import timeout

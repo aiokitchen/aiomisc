@@ -2,7 +2,6 @@ import asyncio
 import concurrent.futures
 import os
 import ssl
-import time
 from contextlib import contextmanager
 from pathlib import Path
 

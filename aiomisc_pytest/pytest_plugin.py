@@ -28,7 +28,7 @@ except ImportError:
 
 
 def delayed_future(
-    timeout: t.Union[int, float], result: bool = True
+    timeout: t.Union[int, float], result: bool = True,
 ) -> asyncio.Future:
 
     loop = asyncio.get_event_loop()

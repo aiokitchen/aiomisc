@@ -140,7 +140,7 @@ class Entrypoint:
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                buffered=False
+                buffered=False,
             )
 
         self.loop.run_until_complete(

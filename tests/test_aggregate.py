@@ -1,7 +1,7 @@
 import asyncio
 import math
 from asyncio import Event, wait
-from typing import List, Any
+from typing import Any, List
 
 import pytest
 from aiocontextvars import ContextVar
