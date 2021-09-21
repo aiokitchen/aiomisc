@@ -9,23 +9,26 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 
 async def test_periodic(loop):
+    condition = asyncio.Condition()
     counter = 0
 
-    def task():
+    async def task():
         nonlocal counter
         counter += 1
+
+        async with condition:
+            condition.notify_all()
 
     periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop)
 
-    await asyncio.sleep(0.5)
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: counter >= 5),
+            timeout=5,
+        )
+
     periodic.stop()
-
-    assert 4 < counter < 7
-
-    await asyncio.sleep(0.5)
-
-    assert 4 < counter < 7
 
 
 async def test_long_func(loop):

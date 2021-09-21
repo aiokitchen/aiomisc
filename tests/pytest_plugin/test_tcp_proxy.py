@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import time
 
 import pytest
 
@@ -80,10 +81,10 @@ async def test_proxy_client_slow(proxy, loop):
     reader, writer = await proxy.create_client()
     payload = b"Hello world"
 
-    delta = -loop.time()
+    delta = -time.time()
     writer.write(payload)
     hash = await asyncio.wait_for(reader.readexactly(16), timeout=2)
-    delta += loop.time()
+    delta += time.time()
 
     assert delta >= delay, [c.delay for c in proxy.clients]
 

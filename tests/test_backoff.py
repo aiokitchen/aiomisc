@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 from async_timeout import timeout
@@ -26,16 +27,16 @@ async def test_kwargs(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    t = loop.time()
+    t = time.time()
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t2 = loop.time() - t
+    t2 = time.time() - t
     assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t3 = loop.time() - t
+    t3 = time.time() - t
     assert t3 > 0.8
 
     assert mana < 3.8
@@ -211,16 +212,16 @@ async def test_too_long_multiple(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    t = loop.time()
+    t = time.time()
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t2 = loop.time() - t
+    t2 = time.time() - t
     assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t3 = loop.time() - t
+    t3 = time.time() - t
     assert t3 > 0.8
 
     assert mana < 3.8

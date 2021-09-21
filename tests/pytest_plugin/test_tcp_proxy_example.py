@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 
@@ -60,12 +61,12 @@ async def test_proxy_client_slow(proxy, loop):
         reader, writer = await proxy.create_client()
         payload = b"Hello world"
 
-        delta = -loop.time()
+        delta = -time.time()
 
         writer.write(payload)
         await asyncio.wait_for(reader.read(1024), timeout=2)
 
-        delta += loop.time()
+        delta += time.time()
 
         assert delta >= read_delay + write_delay
 

@@ -1,5 +1,6 @@
 import asyncio
 import math
+import time
 from asyncio import Event, wait
 from typing import Any, List
 
@@ -47,14 +48,14 @@ async def test_error(loop):
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> Any:
         nonlocal t_exec
-        t_exec = loop.time()
+        t_exec = time.time()
         event.set()
         raise ValueError
 
     async def pho(num: int):
         return await pow(float(num))
 
-    t = loop.time()
+    t = time.time()
 
     tasks = []
     for i in range(10):
@@ -78,12 +79,12 @@ async def test_leeway_ok(loop):
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
-        t_exec = loop.time()
+        t_exec = time.time()
         event.set()
 
         return [math.pow(num, power) for num in args]
 
-    t = loop.time()
+    t = time.time()
 
     tasks = []
     for i in range(9):
@@ -112,12 +113,12 @@ async def test_max_count(loop):
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
         await asyncio.sleep(0.03)
-        t_exec = loop.time()
+        t_exec = time.time()
         event.set()
 
         return [math.pow(num, power) for num in args]
 
-    t = loop.time()
+    t = time.time()
 
     tasks = []
     for i in range(5):
@@ -143,12 +144,12 @@ async def test_max_count_multiple_batches(loop):
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
         await asyncio.sleep(0.03)
-        t_exec = loop.time()
+        t_exec = time.time()
         event.set()
 
         return [math.pow(num, power) for num in args]
 
-    t = loop.time()
+    t = time.time()
 
     tasks = []
     for i in range(9):
@@ -190,7 +191,7 @@ async def test_leeway_cancel(loop):
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
-        t_exec = loop.time()
+        t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -202,7 +203,7 @@ async def test_leeway_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
-    t = loop.time()
+    t = time.time()
 
     for i in range(9):
         tasks.append(loop.create_task(pho(i)))
@@ -250,7 +251,7 @@ async def test_max_count_cancel(loop):
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
         await asyncio.sleep(0.03)
-        t_exec = loop.time()
+        t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -262,7 +263,7 @@ async def test_max_count_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
-    t = loop.time()
+    t = time.time()
 
     tasks = []
     for i in range(5):
@@ -311,7 +312,7 @@ async def test_max_count_multiple_batches_cancel(loop):
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
-        t_exec = loop.time()
+        t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -323,7 +324,7 @@ async def test_max_count_multiple_batches_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
-    t = loop.time()
+    t = time.time()
 
     tasks = []
     for i in range(9):

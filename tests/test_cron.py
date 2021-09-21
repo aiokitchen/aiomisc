@@ -1,4 +1,5 @@
 import asyncio
+import time
 from datetime import timedelta
 
 import pytest
@@ -133,4 +134,4 @@ async def test_tz_next(loop, now):
     with freeze_time(now):
         cron.start("*/10 * * * *", loop)
         expected = timedelta(minutes=10).total_seconds()
-        assert 0 <= cron.get_current() - loop.time() <= expected
+        assert 0 <= cron.get_current() - time.time() <= expected

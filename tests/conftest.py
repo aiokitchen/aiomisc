@@ -2,6 +2,7 @@ import asyncio
 import concurrent.futures
 import os
 import ssl
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -17,17 +18,17 @@ except ImportError:
 
 
 @pytest.fixture
-def timer(loop):
+def timer():
     @contextmanager
     def timer(expected_time=0, *, dispersion=0.5):
         expected_time = float(expected_time)
         dispersion_value = expected_time * dispersion
 
-        now = loop.time()
+        now = time.time()
 
         yield
 
-        delta = loop.time() - now
+        delta = time.time() - now
 
         lower_bound = expected_time - dispersion_value
         upper_bound = expected_time + dispersion_value
