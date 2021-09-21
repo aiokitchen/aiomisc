@@ -1,5 +1,4 @@
 import asyncio
-import time
 from datetime import timedelta
 
 import pytest
@@ -19,7 +18,7 @@ async def test_cron(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 2
 
@@ -40,7 +39,7 @@ async def test_long_func(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(1.5)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 1
 
@@ -99,7 +98,7 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 2
 
@@ -110,7 +109,7 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 4
 
@@ -134,4 +133,4 @@ async def test_tz_next(loop, now):
     with freeze_time(now):
         cron.start("*/10 * * * *", loop)
         expected = timedelta(minutes=10).total_seconds()
-        assert 0 <= cron.get_current() - time.time() <= expected
+        assert 0 <= cron.get_current() - loop.time() <= expected
