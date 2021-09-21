@@ -11,6 +11,7 @@ mypy~=0.782
 pylava
 pytest
 pytest-cov~=2.5.1
+pytest-rst
 pytest-freezegun~=0.4.2
 sphinx>=3.5.1
 sphinx-autobuild

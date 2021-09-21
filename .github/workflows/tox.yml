@@ -83,51 +83,57 @@ jobs:
           - python: '3.9'
             toxenv: uvloop39
             os: ubuntu-latest
-
-# TODO: Fix builds and enable it
-#          - python: '3.6'
-#            toxenv: py36
-#            os: macos-latest
-#          - python: '3.7'
-#            toxenv: py37
-#            os: macos-latest
-#          - python: '3.8'
-#            toxenv: py38
-#            os: macos-latest
-#          - python: '3.9'
-#            toxenv: py39
-#            os: macos-latest
-#          - python: '3.8'
-#            toxenv: rpc
-#            os: macos-latest
-#          - python: '3.8'
-#            toxenv: rpc_udp
-#            os: macos-latest
-#          - python: '3.6'
-#            toxenv: contextvars36
-#            os: macos-latest
-#          - python: '3.7'
-#            toxenv: uvloop37
-#            os: macos-latest
-#          - python: '3.8'
-#            toxenv: uvloop38
-#            os: macos-latest
-#          - python: '3.9'
-#            toxenv: uvloop39
-#            os: macos-latest
-
-#          - python: '3.6'
-#            toxenv: py36
-#            os: windows-latest
-#          - python: '3.7'
-#            toxenv: py37
-#            os: windows-latest
-#          - python: '3.8'
-#            toxenv: py38
-#            os: windows-latest
+          - python: '3.6'
+            toxenv: py36
+            os: macos-latest
+          - python: '3.7'
+            toxenv: py37
+            os: macos-latest
+          - python: '3.8'
+            toxenv: py38
+            os: macos-latest
+          - python: '3.9'
+            toxenv: py39
+            os: macos-latest
+          - python: '3.8'
+            toxenv: rpc
+            os: macos-latest
+          - python: '3.8'
+            toxenv: rpc_udp
+            os: macos-latest
+          - python: '3.6'
+            toxenv: contextvars36
+            os: macos-latest
+          - python: '3.7'
+            toxenv: uvloop37
+            os: macos-latest
+          - python: '3.8'
+            toxenv: uvloop38
+            os: macos-latest
+          - python: '3.9'
+            toxenv: uvloop39
+            os: macos-latest
+          - python: '3.6'
+            toxenv: py36
+            os: windows-latest
+          - python: '3.7'
+            toxenv: py37
+            os: windows-latest
+          - python: '3.8'
+            toxenv: py38
+            os: windows-latest
           - python: '3.9'
             toxenv: py39
             os: windows-latest
+          - python: '3.9'
+            toxenv: pydoc
+            os: windows-latest
+          - python: '3.9'
+            toxenv: pydoc
+            os: ubuntu-latest
+          - python: '3.9'
+            toxenv: pydoc
+            os: macos-latest
 
     steps:
       - uses: actions/checkout@v2
