@@ -19,7 +19,6 @@ def test_str_representation():
 
 def test_periodic():
     counter = 0
-    condition = None
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
@@ -63,8 +62,9 @@ def test_delay():
     class CountPeriodicService(PeriodicService):
         async def callback(self):
             nonlocal counter
-            counter += 1
-            await asyncio.sleep(0)
+            async with condition:
+                counter += 1
+                condition.notify_all()
 
     svc = CountPeriodicService(interval=0.1, delay=0.5)
 
@@ -75,11 +75,14 @@ def test_delay():
         await asyncio.sleep(0.25)
         assert not counter
 
-        await asyncio.sleep(0.5)
+        async with condition:
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter == 5),
+                timeout=5
+            )
 
         await svc.stop(None)
 
-        assert 1 < counter < 4
-
     with aiomisc.entrypoint(svc) as loop:
+        condition = asyncio.Condition()
         loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))

@@ -33,11 +33,14 @@ async def test_periodic(loop):
 
 async def test_long_func(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     async def task():
         nonlocal counter
-        counter += 1
-        await asyncio.sleep(0.5)
+        async with condition:
+            counter += 1
+            await asyncio.sleep(0.5)
+            condition.notify_all()
 
     periodic = aiomisc.PeriodicCallback(task)
     periodic.start(0.1, loop)
@@ -45,7 +48,11 @@ async def test_long_func(loop):
     await asyncio.sleep(1)
     periodic.stop()
 
-    assert 1 < counter < 3
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: counter == 2),
+            timeout=2
+        )
 
 
 async def test_shield(loop):

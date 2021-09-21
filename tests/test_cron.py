@@ -29,19 +29,30 @@ async def test_cron(loop):
 
 async def test_long_func(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     async def task():
         nonlocal counter
-        counter += 1
-        await asyncio.sleep(1)
+        async with condition:
+            counter += 1
+            await asyncio.sleep(1)
+            condition.notify_all()
 
     cron = CronCallback(task)
     cron.start("* * * * * *", loop)
 
-    await asyncio.sleep(1.5)
-    cron.stop()
+    async with condition:
+        await condition.wait_for(lambda: counter == 1)
 
-    assert counter == 1
+    await cron.stop()
+
+    async with condition:
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter > 1),
+                timeout=2
+            )
+
 
 
 async def test_shield(loop):
