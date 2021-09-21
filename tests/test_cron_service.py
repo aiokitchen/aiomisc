@@ -24,11 +24,13 @@ def test_str_representation():
 
 def test_cron():
     counter = 0
+    condition = None
 
     async def callback():
         nonlocal counter
-        counter += 1
-        await asyncio.sleep(0)
+        async with condition:
+            counter += 1
+            condition.notify_all()
 
     svc = CronService()
 
@@ -38,25 +40,43 @@ def test_cron():
         nonlocal counter, svc
 
         counter = 0
-        await asyncio.sleep(1)
-        assert counter == 1
+        async with condition:
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter == 1),
+                timeout=2
+            )
 
         await svc.stop()
 
         await asyncio.sleep(1)
+        async with condition:
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter == 1),
+                timeout=2
+            )
+
         assert counter == 1
 
     with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
+        condition = asyncio.Condition()
+
+        loop.run_until_complete(
+            asyncio.wait_for(
+                assert_counter(),
+                timeout=10
+            )
+        )
 
 
 def test_register():
     counter = 0
+    condition = None
 
     async def callback():
         nonlocal counter
-        counter += 1
-        await asyncio.sleep(0)
+        async with condition:
+            counter += 1
+            condition.notify_all()
 
     svc = CronService()
 
@@ -73,8 +93,11 @@ def test_register():
         nonlocal counter, svc
 
         counter = 0
-        await asyncio.sleep(2)
-        assert counter == 5
+        async with condition:
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter == 5),
+                timeout=10
+            )
 
         await svc.stop()
 
@@ -82,4 +105,5 @@ def test_register():
         assert counter == 5
 
     with aiomisc.entrypoint(svc) as loop:
+        condition = asyncio.Condition()
         loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))

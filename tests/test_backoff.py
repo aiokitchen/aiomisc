@@ -154,25 +154,34 @@ async def test_pause(loop):
 
 async def test_no_waterline(loop):
     mana = 0
+    condition = asyncio.Condition()
 
     @aiomisc.asyncbackoff(None, 1, 0, Exception)
     async def test():
         nonlocal mana
 
-        mana += 1
-        await asyncio.sleep(0.2)
+        async with condition:
+            mana += 1
+            await asyncio.sleep(0.1)
+            condition.notify_all()
+            raise ValueError("RETRY")
 
-        raise ValueError("RETRY")
+    task = loop.create_task(test())
+
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: mana >= 5),
+            timeout=2
+        )
 
     with pytest.raises(ValueError, match="^RETRY$"):
-        await test()
-
-    assert mana == 5
+        await task
 
 
 @pytest.mark.parametrize("max_sleep", (0.5, 1))
 async def test_no_deadline(loop, max_sleep):
     mana = 0
+    condition = asyncio.Condition()
 
     @aiomisc.asyncbackoff(0.15, None, 0, Exception)
     async def test():
@@ -181,9 +190,18 @@ async def test_no_deadline(loop, max_sleep):
         mana += 1
         await asyncio.sleep(max_sleep - (mana - 1) * 0.1)
 
-    await test()
+        async with condition:
+            condition.notify_all()
 
-    assert mana == max_sleep * 10
+    task = asyncio.create_task(test())
+
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: mana == max_sleep * 10),
+            timeout=max_sleep * 10
+        )
+
+    await asyncio.wait_for(task, timeout=max_sleep)
 
 
 def test_values(loop):
