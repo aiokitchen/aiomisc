@@ -52,7 +52,7 @@ async def test_proxy_client_close(proxy):
     assert reader.at_eof()
 
 
-async def test_proxy_client_slow(proxy):
+async def test_proxy_client_slow(proxy, loop):
     read_delay = 0.1
     write_delay = 0.2
 
@@ -61,12 +61,12 @@ async def test_proxy_client_slow(proxy):
         reader, writer = await proxy.create_client()
         payload = b"Hello world"
 
-        delta = -time.monotonic()
+        delta = -loop.time()
 
         writer.write(payload)
         await asyncio.wait_for(reader.read(1024), timeout=2)
 
-        delta += time.monotonic()
+        delta += loop.time()
 
         assert delta >= read_delay + write_delay
 

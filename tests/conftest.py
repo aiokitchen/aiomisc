@@ -18,17 +18,17 @@ except ImportError:
 
 
 @pytest.fixture
-def timer():
+def timer(loop):
     @contextmanager
     def timer(expected_time=0, *, dispersion=0.5):
         expected_time = float(expected_time)
         dispersion_value = expected_time * dispersion
 
-        now = time.monotonic()
+        now = loop.time()
 
         yield
 
-        delta = time.monotonic() - now
+        delta = loop.time() - now
 
         lower_bound = expected_time - dispersion_value
         upper_bound = expected_time + dispersion_value

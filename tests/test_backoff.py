@@ -27,16 +27,16 @@ async def test_kwargs(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    t = time.monotonic()
+    t = loop.time()
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t2 = time.monotonic() - t
+    t2 = loop.time() - t
     assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t3 = time.monotonic() - t
+    t3 = loop.time() - t
     assert t3 > 0.8
 
     assert mana < 3.8
@@ -212,16 +212,16 @@ async def test_too_long_multiple(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    t = time.monotonic()
+    t = loop.time()
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t2 = time.monotonic() - t
+    t2 = loop.time() - t
     assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t3 = time.monotonic() - t
+    t3 = loop.time() - t
     assert t3 > 0.8
 
     assert mana < 3.8
