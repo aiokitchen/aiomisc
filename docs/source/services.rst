@@ -17,21 +17,26 @@ after event loop has been created.
    ``start()`` method. Use ``self.loop`` instead:
 
    .. code-block:: python
+      :name: test_service_start_event
 
+      import asyncio
+      from threading import Event
       from aiomisc import entrypoint, Service
 
+      event = Event()
 
       class MyService(Service):
         async def start(self):
             # Send signal to entrypoint for continue running
             self.start_event.set()
 
+            event.set()
             # Start service task
-            await asyncio.sleep(3600, loop=self.loop)
+            await asyncio.sleep(3600)
 
 
       with entrypoint(MyService()) as loop:
-          loop.run_forever()
+          assert event.is_set()
 
 
 Method ``start()`` creates as a separate task that can run forever. But in
@@ -51,16 +56,42 @@ TCPServer
 Just implement ``handle_client(reader, writer)`` to use it.
 
 .. code-block:: python
+    :name: test_service_echo_tcp_server
+
+    import asyncio
+    import logging
+    from aiomisc import entrypoint
+    from aiomisc.service import TCPServer
+
+
+    log = logging.getLogger(__name__)
+
 
     class EchoServer(TCPServer):
         async def handle_client(self, reader: asyncio.StreamReader,
                                 writer: asyncio.StreamWriter):
-            while True:
-                writer.write(await reader.readline())
+            while not reader.at_eof():
+                writer.write(await reader.read(255))
+
+            log.info("Client connection closed")
 
 
-    with entrypoint(EchoServer(address='::1', port=8901)) as loop:
-        loop.run_forever()
+    async def echo_client(host, port):
+        reader, writer = await asyncio.open_connection(host=host, port=port)
+        writer.write(b"hello\n")
+        assert await reader.readline() == b"hello\n"
+
+        writer.write(b"world\n")
+        assert await reader.readline() == b"world\n"
+
+        writer.close()
+        await writer.wait_closed()
+
+
+    with entrypoint(
+        EchoServer(address='::1', port=8901),
+    ) as loop:
+        loop.run_until_complete(echo_client("::1", 8901))
 
 
 UDPServer

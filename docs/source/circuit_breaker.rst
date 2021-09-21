@@ -16,8 +16,9 @@ the method in order to gather it.
 Usage example:
 
 .. code-block:: python
+    :name: test_circuit_breaker
 
-    from aiohttp import web
+    from aiohttp import web, ClientSession
     from aiomisc.service.aiohttp import AIOHTTPService
     import aiohttp
     import aiomisc
@@ -54,9 +55,15 @@ Usage example:
             return app
 
 
+    async def main():
+        async with ClientSession() as session:
+            async with session.get("http://localhost:8080/") as response:
+                assert response.headers
+
+
     if __name__ == '__main__':
         with aiomisc.entrypoint(API(port=8080)) as loop:
-            loop.run_forever()
+            loop.run_until_complete(main())
 
 
 .. _Circuit breaker is a design pattern: http://bit.ly/aimcbwiki
@@ -104,8 +111,9 @@ cutout
 Decorator for ``CircuitBreaker`` which wrapping functions.
 
 .. code-block:: python
+    :name: test_cutout
 
-    from aiohttp import web
+    from aiohttp import web, ClientSession
     from aiomisc.service.aiohttp import AIOHTTPService
     import aiohttp
     import aiomisc
@@ -139,6 +147,12 @@ Decorator for ``CircuitBreaker`` which wrapping functions.
             return app
 
 
+    async def main():
+        async with ClientSession() as session:
+            async with session.get("http://localhost:8080/") as response:
+                assert response.headers
+
+
     if __name__ == '__main__':
         with aiomisc.entrypoint(API(port=8080)) as loop:
-            loop.run_forever()
+            loop.run_until_complete(main())

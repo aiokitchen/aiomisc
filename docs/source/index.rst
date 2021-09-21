@@ -126,6 +126,7 @@ Async entrypoint with logging and useful arguments:
 Install event loop on program start:
 
 .. code-block:: python
+    :name: test_index_get_loop
 
     import asyncio
     import aiomisc
@@ -138,7 +139,7 @@ Install event loop on program start:
 
 
     async def main():
-        await asyncio.sleep(3)
+        await asyncio.sleep(1)
 
 
     if __name__ == '__main__':
@@ -149,6 +150,7 @@ Install event loop on program start:
 Close current event loop and install a new one:
 
 .. code-block:: python
+    :name: test_index_new_loop
 
     import asyncio
     import aiomisc

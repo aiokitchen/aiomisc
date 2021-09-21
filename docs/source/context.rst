@@ -15,6 +15,7 @@ started. In other cases ``get_context()`` function returns current context.
 
 
 .. code-block:: python
+    :name: test_context
 
     import asyncio
     from random import random, randint
@@ -29,6 +30,8 @@ started. In other cases ``get_context()`` function returns current context.
             wait_time = await context['wait_time']
 
             print('Wait time is', wait_time)
+            self.start_event.set()
+
             while True:
                 print('Hello from service', self.name)
                 await asyncio.sleep(wait_time)
@@ -50,7 +53,7 @@ started. In other cases ``get_context()`` function returns current context.
     )
 
     with entrypoint(*services) as loop:
-        loop.run_forever()
+        pass
 
 
 .. note::

@@ -7,6 +7,7 @@ Color
 Setting up colorized logs:
 
 .. code-block:: python
+    :name: test_logging_color
 
     import logging
     from aiomisc.log import basic_config
@@ -21,6 +22,7 @@ JSON
 Setting up json logs:
 
 .. code-block:: python
+    :name: test_logging_json
 
     import logging
     from aiomisc.log import basic_config
@@ -36,7 +38,9 @@ Buffered log handler
 Parameter `buffered=True` enables memory buffer that flushes logs in a thread.
 
 .. code-block:: python
+    :name: test_logging_buffered
 
+    import asyncio
     import logging
     from aiomisc.log import basic_config
     from aiomisc.periodic import PeriodicCallback
@@ -57,13 +61,14 @@ Parameter `buffered=True` enables memory buffer that flushes logs in a thread.
             level=logging.INFO,
             buffered=True,
             log_format='color',
-            flush_interval=2
+            flush_interval=0.5
         )
 
         periodic = PeriodicCallback(write_log, loop)
         periodic.start(0.3)
 
-        loop.run_forever()
+        # Wait for flush just for example
+        loop.run_until_complete(asyncio.sleep(1))
 
 
 .. note::

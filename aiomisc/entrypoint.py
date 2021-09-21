@@ -136,6 +136,13 @@ class Entrypoint:
         if self.loop.is_closed():
             return
 
+        if self.log_config:
+            basic_config(
+                level=self.log_level,
+                log_format=self.log_format,
+                buffered=False
+            )
+
         self.loop.run_until_complete(
             self.__aexit__(exc_type, exc_val, exc_tb),
         )

@@ -5,6 +5,7 @@ In generic case the entrypoint helper creates event loop and cancels already
 running coroutines on exit.
 
 .. code-block:: python
+    :name: test_entrypoint_simple
 
     import asyncio
     import aiomisc
@@ -19,15 +20,15 @@ running coroutines on exit.
 Complete example:
 
 .. code-block:: python
+    :name: test_entrypoint_complex
 
     import asyncio
     import aiomisc
     import logging
 
     async def main():
-        while True:
-            await asyncio.sleep(1)
-            logging.info("Hello there")
+        await asyncio.sleep(1)
+        logging.info("Hello there")
 
     with aiomisc.entrypoint(
         pool_size=2,
@@ -39,15 +40,19 @@ Complete example:
         policy=asyncio.DefaultEventLoopPolicy(),    # default
         debug=False,                                # default
     ) as loop:
-        loop.create_task(main())
-        loop.run_forever()
+        loop.run_until_complete(main())
 
 Running entrypoint from async code
 
 .. code-block:: python
+    :name: test_entrypoint_async
 
     import asyncio
     import aiomisc
+    import logging
+    from aiomisc.service.periodic import PeriodicService
+
+    log = logging.getLogger(__name__)
 
     class MyPeriodicService(PeriodicService):
         async def callback(self):
@@ -55,12 +60,15 @@ Running entrypoint from async code
             # ...
 
     async def main():
-        service = MyPeriodicService(interval=60, delay=0)  # once per minute
+        service = MyPeriodicService(interval=1, delay=0)  # once per minute
 
         # returns an entrypoint instance because event-loop
         # already running and might be get via asyncio.get_event_loop()
         async with aiomisc.entrypoint(service) as ep:
-            await ep.closing()
+            try:
+                await asyncio.wait_for(ep.closing(), timeout=1)
+            except asyncio.TimeoutError:
+                pass
 
 
     asyncio.run(main())
