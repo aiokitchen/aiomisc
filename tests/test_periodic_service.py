@@ -34,11 +34,11 @@ def test_periodic():
 
         counter = 0
 
-        for i in (5, 10, 15):
+        for i in (5, 10):
             async with condition:
                 await asyncio.wait_for(
                     condition.wait_for(lambda: counter == i),
-                    timeout=2
+                    timeout=10
                 )
 
             await svc.stop(None)
