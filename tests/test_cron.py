@@ -39,7 +39,7 @@ async def test_long_func(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(1.5)
-    await cron.stop()
+    cron.stop()
 
     assert counter == 1
 
