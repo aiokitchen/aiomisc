@@ -54,7 +54,6 @@ async def test_long_func(loop):
             )
 
 
-
 async def test_shield(loop):
     counter = 0
 
