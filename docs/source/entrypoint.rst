@@ -79,7 +79,7 @@ Running entrypoint from async code
 
 ``aiomisc.run()`` - it's short way to create and destroy
 ``aiomisc.entrypoint``. It's very similar to ``asyncio.run()``
-but handle `` Service``s and other ``entrypoint``'s kwargs.
+but handle ``Service``'s and other ``entrypoint``'s kwargs.
 
 .. code-block:: python
     :name: test_ep_run_simple

@@ -42,7 +42,8 @@ In general, for light loads, I would advise you to adhere to the following rules
 * If the main task is read large chunks of files for processing,
   both of the above methods are not optimal.
 
-  Just try do all blocking staff in separate functions in threads:
+  Just try pack all blocking staff in separate functions and
+  call it in a thread pool:
 
   .. code-block:: python
      :name: test_io_file_threaded
@@ -75,11 +76,18 @@ In general, for light loads, I would advise you to adhere to the following rules
 
      async def main(filename):
          await fill_random_file(filename, 1024 * 1024)
-         return await hash_file(filename)
+         first_hash = await hash_file(filename)
+
+         await fill_random_file(filename, 1024 * 1024)
+         second_hash = await hash_file(filename)
+
+         assert first_hash != second_hash
 
 
      with tempfile.NamedTemporaryFile(prefix="random.", mode="r") as file:
-        assert aiomisc.run(main(file.name))
+        aiomisc.run(
+            main(file.name)
+        )
 
 
 .. _aiofiles: https://pypi.org/project/aiofiles/
