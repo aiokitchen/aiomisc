@@ -45,13 +45,9 @@ async def test_long_func(loop):
         await condition.wait_for(lambda: counter == 1)
 
     await cron.stop()
+    await asyncio.sleep(2)
 
-    async with condition:
-        with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(
-                condition.wait_for(lambda: counter > 1),
-                timeout=2
-            )
+    assert counter == 1
 
 
 async def test_shield(loop):
