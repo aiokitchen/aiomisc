@@ -230,5 +230,16 @@ class Entrypoint:
 
 entrypoint = Entrypoint
 
+T = t.TypeVar("T")
 
-__all__ = ("entrypoint", "Entrypoint", "get_context")
+
+def run(
+    coro: t.Coroutine[None, t.Any, T],
+    *services: Service,
+    **kwargs: t.Any
+) -> T:
+    with entrypoint(*services, **kwargs) as loop:
+        return loop.run_until_complete(coro)
+
+
+__all__ = ("entrypoint", "Entrypoint", "get_context", "run")

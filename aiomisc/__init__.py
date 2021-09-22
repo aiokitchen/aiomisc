@@ -4,7 +4,7 @@ from .backoff import asyncbackoff, asyncretry
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
 from .counters import Statistic, get_statistics
-from .entrypoint import entrypoint
+from .entrypoint import entrypoint, run
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
 from .plugins import plugins
@@ -58,6 +58,7 @@ __all__ = (
     "new_event_loop",
     "plugins",
     "receiver",
+    "run",
     "select",
     "shield",
     "sync_wait_coroutine",

@@ -72,3 +72,26 @@ Running entrypoint from async code
 
 
     asyncio.run(main())
+
+
+``run()`` shortcut
+==================
+
+``aiomisc.run()`` - it's short way to create and destroy
+``aiomisc.entrypoint``. It's very similar to ``asyncio.run()``
+but handle `` Service``s and other ``entrypoint``'s kwargs.
+
+.. code-block:: python
+    :name: test_ep_run_simple
+
+    import asyncio
+    import aiomisc
+
+    async def main():
+        loop = asyncio.get_event_loop()
+        now = loop.time()
+        await asyncio.sleep(0.1)
+        assert now < loop.time()
+
+
+    aiomisc.run(main())
