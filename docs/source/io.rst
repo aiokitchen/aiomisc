@@ -43,7 +43,7 @@ In general, for light loads, I would advise you to adhere to the following rules
   both of the above methods are not optimal.
 
   Just try pack all blocking staff in separate functions and
-  call it in a thread pool:
+  call it in a thread pool, see example bellow:
 
   .. code-block:: python
      :name: test_io_file_threaded

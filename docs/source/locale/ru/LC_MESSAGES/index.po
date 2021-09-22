@@ -7,6 +7,15 @@
 msgid "aiomisc - miscellaneous utils for asyncio"
 msgstr "aiomisc - это библиотека с различными утилитами для asyncio"
 
+msgid "Coveralls"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Latest Version"
+msgstr "Актуальная версия"
+
 #: ../../source/index.rst:26
 msgid "Miscellaneous utils for asyncio."
 msgstr "Различные утилиты для asyncio"
@@ -31,55 +40,59 @@ msgstr "Вместе с aiohttp_:"
 msgid "Installing from github.com:"
 msgstr "Установка с github.com:"
 
-#: ../../source/index.rst:64
+#: ../../source/index.rst:65
 msgid "Quick Start"
 msgstr "Быстрый старт"
 
-#: ../../source/index.rst:66
+#: ../../source/index.rst:67
 msgid "Async entrypoint with logging and useful arguments:"
-msgstr "Асинхронная точка входа (entrypoint) с логированием и полезными аргументами"
+msgstr ""
+"Асинхронная точка входа (entrypoint) с логированием и полезными "
+"аргументами"
 
-#: ../../source/index.rst:125
+#: ../../source/index.rst:126
 msgid "Install event loop on program start:"
 msgstr "Установка event loop на старте программы:"
 
-#: ../../source/index.rst:148
+#: ../../source/index.rst:150
 msgid "Close current event loop and install a new one:"
 msgstr "Закрываем текущий event loop и устанавлиаем новый:"
 
-#: ../../source/index.rst:165
+#: ../../source/index.rst:168
 msgid "Table Of Contents"
 msgstr "Содержание"
 
-#: ../../source/index.rst:189
+#: ../../source/index.rst:195
 msgid "Versioning"
 msgstr "Версионирование"
 
-#: ../../source/index.rst:191
+#: ../../source/index.rst:197
 msgid "This software follows `Semantic Versioning`_"
-msgstr "Это программное обеспечение следует методологиии `Семантического Версионирования`_"
+msgstr ""
+"Это программное обеспечение следует методологиии `Семантического "
+"Версионирования`_"
 
-#: ../../source/index.rst:195
+#: ../../source/index.rst:201
 msgid "How to develop?"
 msgstr "Как начать разработку?"
 
-#: ../../source/index.rst:197
+#: ../../source/index.rst:203
 msgid "Should be installed:"
 msgstr "Должно быть установлено"
 
-#: ../../source/index.rst:199
+#: ../../source/index.rst:205
 msgid "`virtualenv`"
 msgstr "`virtualenv`"
 
-#: ../../source/index.rst:200
+#: ../../source/index.rst:206
 msgid "GNU Make as `make`"
 msgstr "GNU Make как `make`"
 
-#: ../../source/index.rst:201
+#: ../../source/index.rst:207
 msgid "Python 3.5+ as `python3`"
 msgstr "Python 3.5+ как `python3`"
 
-#: ../../source/index.rst:204
+#: ../../source/index.rst:210
 msgid "For setting up developer environment just type"
 msgstr "Для настройки окружения разработчика просто наберите"
 

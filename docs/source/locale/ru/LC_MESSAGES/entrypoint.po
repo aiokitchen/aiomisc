@@ -11,10 +11,11 @@ msgstr "Точка входа (`entrypoint`)"
 msgid ""
 "In generic case the entrypoint helper creates event loop and cancels "
 "already running coroutines on exit."
-msgstr "В общем случае точка входа это сущность помогающая создать event "
-"loop и закрыть все еще запущенные корутины при выходе."
+msgstr ""
+"В общем случае точка входа это сущность помогающая создать event loop и "
+"закрыть все еще запущенные корутины при выходе."
 
-#: ../../source/entrypoint.rst:19
+#: ../../source/entrypoint.rst:20
 msgid "Complete example:"
 msgstr "Пример целиком:"
 
@@ -22,3 +23,16 @@ msgstr "Пример целиком:"
 msgid "Running entrypoint from async code"
 msgstr "Запуск точки входа (`entrypoint`) из асинхронного кода"
 
+#: ../../source/entrypoint.rst:78
+msgid "``run()`` shortcut"
+msgstr ""
+
+#: ../../source/entrypoint.rst:80
+msgid ""
+"``aiomisc.run()`` - it's short way to create and destroy "
+"``aiomisc.entrypoint``. It's very similar to ``asyncio.run()`` but handle"
+" ``Service``'s and other ``entrypoint``'s kwargs."
+msgstr ""
+"``aiomisc.run()`` - это простой способ создать и разрушить "
+"``aiomisc.entrypoint``. Это очень похоже на ``asyncio.run()`` но управляет "
+"сервисами ``aiomisc.Service`` и принимает прочие аргументы entrypoint."

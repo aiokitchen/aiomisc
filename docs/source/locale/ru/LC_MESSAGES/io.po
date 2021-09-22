@@ -9,5 +9,61 @@ msgstr "асинхронные операции с файлами"
 
 #: ../../source/io.rst:4
 msgid "Asynchronous files operations. Based on thread-pool under the hood."
-msgstr "Асинхронные файловые операции запускающиеся в пуле потоков \"под капотом\"."
+msgstr ""
+"Асинхронные файловые операции запускающиеся в пуле потоков \"под "
+"капотом\"."
+
+#: ../../source/io.rst:31
+msgid ""
+"This is the way to working with files based on threads. It's very similar"
+" to `aiofiles`_ project  and same limitations."
+msgstr ""
+"Этот способ работы с файлами основан на потоках. Это очень похоже на то "
+"как сделано в библиотеке `aiofiles`_ с теми-же ограничениями."
+
+#: ../../source/io.rst:34
+msgid ""
+"Of course you can use `aiofile`_ project for this. But it's not a silver "
+"bullet and has OS API related limitations."
+msgstr ""
+"Разумеется вы можете использовать библиотеку `aiofile`_ для этого. Но это"
+" не панацея, так как имеет ограничения связанные с API операционной "
+"системы."
+
+#: ../../source/io.rst:37
+msgid ""
+"In general, for light loads, I would advise you to adhere to the "
+"following rules:"
+msgstr ""
+"В основном, для не больших нагрузок приложений, я рекомендую "
+"придерживаться следующих правил:"
+
+#: ../../source/io.rst:39
+msgid ""
+"If reading and writing small or big chunks from files with random access "
+"is the main task in your project, use `aiofile`_."
+msgstr ""
+"Если чтение и запись маленьких или больших кусочков в файлы со случайным "
+"доступом основная задача приложения - стоит использовать `aiofile`_."
+
+#: ../../source/io.rst:41
+msgid "Otherwise use this module or `aiofiles`_"
+msgstr "Иначе можно взять этот модуль или `aiofiles`_"
+
+#: ../../source/io.rst:42
+msgid ""
+"If the main task is read large chunks of files for processing, both of "
+"the above methods are not optimal."
+msgstr ""
+"Если основная задача в приложении это чтение больших кусков из файлов для"
+" последующей обработки, ни один из вышеописанных методов не будет "
+"оптимальным."
+
+#: ../../source/io.rst:45
+msgid ""
+"Just try pack all blocking staff in separate functions and call it in a "
+"thread pool, see example bellow:"
+msgstr ""
+"Просто попробуйте завернуть все блокирующие вызовы в отдельные функции и "
+"вызывайте их используя пул потоков (см. пример ниже):"
 

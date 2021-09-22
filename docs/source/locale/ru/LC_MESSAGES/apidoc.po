@@ -3,14 +3,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-08-23 12:58+0300\n"
+"POT-Creation-Date: 2021-09-22 14:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/apidoc.rst:2
 msgid "API Reference"
@@ -188,12 +188,10 @@ msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
 msgstr "Аналог ``asyncbackoff(None, None, 0, Exception)``."
 
 #: aiomisc.backoff.asyncretry:6 of
-msgid ""
-"is maximum count of execution attempts "
-"(>= 1 or ``None`` means infinity)."
+msgid "is maximum count of execution attempts (>= 1 or ``None`` means infinity)."
 msgstr ""
-"это максимальныое количество попыток исполнения "
-"(>= 1 или ``None`` бесконечность)."
+"это максимальныое количество попыток исполнения (>= 1 или ``None`` - "
+"бесконечность)."
 
 #: aiomisc.utils.awaitable:1 of
 msgid ""
@@ -297,11 +295,16 @@ msgstr ""
 
 #: aiomisc.utils.select:8 of
 msgid "event loop"
-msgstr "event loop"
+msgstr "цикл событий (event loop)"
 
 #: aiomisc.utils.shield:1 of
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
-"Простой и полезный декоратор для переноса сопрограммы в "
+"Простой и полезный декоратор для оборачивания сопрограммы "
 "``asyncio.shield``."
+
+#: aiomisc_log.enum.LogFormat:1 aiomisc_log.enum.LogLevel:1
+#: aiomisc_worker.PacketTypes:1 of
+msgid "An enumeration."
+msgstr "Перечисление."
 
