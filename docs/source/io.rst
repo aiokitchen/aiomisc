@@ -52,6 +52,7 @@ In general, for light loads, I would advise you to adhere to the following rules
      import aiomisc
      import hashlib
      import tempfile
+     from pathlib import Path
 
 
      @aiomisc.threaded
@@ -74,19 +75,21 @@ In general, for light loads, I would advise you to adhere to the following rules
             return fp.tell()
 
 
-     async def main(filename):
+     async def main(path):
+         filename = path / "one"
          await fill_random_file(filename, 1024 * 1024)
          first_hash = await hash_file(filename)
 
+         filename = path / "two"
          await fill_random_file(filename, 1024 * 1024)
          second_hash = await hash_file(filename)
 
          assert first_hash != second_hash
 
 
-     with tempfile.NamedTemporaryFile(prefix="random.", mode="r") as file:
+     with tempfile.TemporaryDirectory(prefix="random.") as path:
         aiomisc.run(
-            main(file.name)
+            main(Path(path))
         )
 
 
