@@ -26,3 +26,61 @@ Asynchronous files operations. Based on thread-pool under the hood.
 
     with aiomisc.entrypoint() as loop:
         loop.run_until_complete(file_write())
+
+
+This is the way to working with files based on threads.
+It's very similar to `aiofiles`_ project  and same limitations.
+
+Of course you can use `aiofile`_ project for this. But it's not a
+silver bullet and has OS API related limitations.
+
+In general, for light loads, I would advise you to adhere to the following rules:
+
+* If reading and writing small or big chunks from files with random access
+  is the main task in your project, use `aiofile`_.
+* Otherwise use this module or `aiofiles`_
+* If the main task is read large chunks of files for processing,
+  both of the above methods are not optimal.
+
+  Just try do all blocking staff in separate functions in threads:
+
+  .. code-block:: python
+     :name: test_io_file_threaded
+
+     import os
+     import aiomisc
+     import hashlib
+     import tempfile
+
+
+     @aiomisc.threaded
+     def hash_file(filename, chunk_size=65535, hash_func=hashlib.blake2b):
+         hasher = hash_func()
+
+         with open(filename, "rb") as fp:
+             for chunk in iter(lambda: fp.read(chunk_size), b""):
+                hasher.update(chunk)
+
+         return hasher.hexdigest()
+
+
+     @aiomisc.threaded
+     def fill_random_file(filename, size, chunk_size=65535):
+         with open(filename, "wb") as fp:
+            while fp.tell() < size:
+                fp.write(os.urandom(chunk_size))
+
+            return fp.tell()
+
+
+     async def main(filename):
+         await fill_random_file(filename, 1024 * 1024)
+         return await hash_file(filename)
+
+
+     with tempfile.NamedTemporaryFile(prefix="random.", mode="r") as file:
+        assert aiomisc.run(main(file.name))
+
+
+.. _aiofiles: https://pypi.org/project/aiofiles/
+.. _aiofile: https://pypi.org/project/aiofile/
