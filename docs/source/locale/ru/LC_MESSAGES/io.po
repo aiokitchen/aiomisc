@@ -1,8 +1,26 @@
+# Translations template for PROJECT.
+# Copyright (C) 2021 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-09-23 12:34+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
 # Translations template for aiomisc.
 # Copyright (C) 2021
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <me@mosquito.su>, 2021.
-
 #: ../../source/io.rst:2
 msgid "asynchronous file operations"
 msgstr "асинхронные операции с файлами"
@@ -35,7 +53,7 @@ msgid ""
 "In general, for light loads, I would advise you to adhere to the "
 "following rules:"
 msgstr ""
-"В основном, для не больших нагрузок приложений, я рекомендую "
+"В основном, для небольших нагрузок приложений, я рекомендую "
 "придерживаться следующих правил:"
 
 #: ../../source/io.rst:39
@@ -53,17 +71,36 @@ msgstr "Иначе можно взять этот модуль или `aiofiles`
 #: ../../source/io.rst:42
 msgid ""
 "If the main task is read large chunks of files for processing, both of "
-"the above methods are not optimal."
+"the above methods are not optimal cause you will switch context each IO "
+"operation, it's often suboptimal for file cache and you will lost "
+"execution time for context switches. In case for thread-based IO executor"
+" implementation thread context switches cost might be more expensive than"
+" IO operation time in summary."
 msgstr ""
-"Если основная задача в приложении это чтение больших кусков из файлов для"
-" последующей обработки, ни один из вышеописанных методов не будет "
-"оптимальным."
+"Если основная задача читать большие куски файлов для дальнейшей их обработки "
+"оба вышеописанных метода будут не оптимальны, так как переключения контекста "
+"каждую IO операцию - это скорее всего не будет оптимально для файлового кеша "
+"и возможно потерять большую часть времени исполнения на переключение "
+"контекста исполнения. В случае имплементации асинхронного IO на основе потоков "
+"цена переключения контектса между потоками может оказаться выше чем суммарно "
+"время исполнения всех IO операций."
 
-#: ../../source/io.rst:45
+#: ../../source/io.rst:49
 msgid ""
 "Just try pack all blocking staff in separate functions and call it in a "
 "thread pool, see example bellow:"
 msgstr ""
 "Просто попробуйте завернуть все блокирующие вызовы в отдельные функции и "
 "вызывайте их используя пул потоков (см. пример ниже):"
+
+#~ msgid ""
+#~ "If the main task is read large "
+#~ "chunks of files for processing, both "
+#~ "of the above methods are not "
+#~ "optimal."
+#~ msgstr ""
+#~ "Если основная задача в приложении это"
+#~ " чтение больших кусков из файлов для"
+#~ " последующей обработки, ни один из "
+#~ "вышеописанных методов не будет оптимальным."
 

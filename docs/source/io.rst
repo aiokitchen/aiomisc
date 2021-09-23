@@ -40,7 +40,12 @@ In general, for light loads, I would advise you to adhere to the following rules
   is the main task in your project, use `aiofile`_.
 * Otherwise use this module or `aiofiles`_
 * If the main task is read large chunks of files for processing,
-  both of the above methods are not optimal.
+  both of the above methods are not optimal cause you will switch
+  context each IO operation, it's often suboptimal for file cache
+  and you will lost execution time for context switches. In case
+  for thread-based IO executor implementation thread context
+  switches cost might be more expensive than IO operation time
+  in summary.
 
   Just try pack all blocking staff in separate functions and
   call it in a thread pool, see example bellow:
