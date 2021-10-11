@@ -3,9 +3,10 @@ import logging.handlers
 import os
 import sys
 import typing as t
+from types import TracebackType
 
 from .enum import LogFormat, LogLevel
-from .formatter import color_formatter, json_handler
+from .formatter import color_formatter, json_handler, rich_formatter
 
 
 LOG_LEVEL: t.Optional[t.Any] = None
@@ -47,6 +48,14 @@ def create_logging_handler(
         return json_handler(date_format=date_format, **kwargs)
     elif log_format == LogFormat.color:
         return color_formatter(date_format=date_format, **kwargs)
+    elif log_format == LogFormat.rich:
+        return rich_formatter(date_format=date_format, **kwargs)
+    elif log_format == LogFormat.rich_tb:
+        return rich_formatter(
+            date_format=date_format,
+            rich_tracebacks=True,
+            **kwargs
+        )
     elif log_format == LogFormat.syslog:
         if date_format:
             sys.stderr.write("Can not apply \"date_format\" for syslog\n")
@@ -77,6 +86,32 @@ def pass_wrapper(handler: logging.Handler) -> logging.Handler:
     return handler
 
 
+class UnhandledHook:
+    __slots__ = "logger",
+
+    MESSAGE: str = "Unhandled exception"
+    LOGGER_NAME: str = "unhandled"
+    logger: logging.Logger
+
+    def __init__(self) -> None:
+        self.logger = logging.getLogger().getChild(self.LOGGER_NAME)
+        self.logger.propagate = False
+
+    def set_handler(self, handler: logging.Handler) -> None:
+        self.logger.handlers.clear()
+        self.logger.handlers.append(handler)
+
+    def __call__(
+        self,
+        exc_type: t.Type[BaseException],
+        exc_value: BaseException,
+        exc_traceback: TracebackType
+    ) -> None:
+        self.logger.exception(
+            self.MESSAGE, exc_info=(exc_type, exc_value, exc_traceback)
+        )
+
+
 def basic_config(
     level: t.Union[int, str] = logging.INFO,
     log_format: t.Union[str, LogFormat] = LogFormat.color,
@@ -94,7 +129,11 @@ def basic_config(
     if isinstance(log_format, str):
         log_format = LogFormat[log_format]
 
-    handler = handler_wrapper(create_logging_handler(log_format, **kwargs))
+    raw_handler = create_logging_handler(log_format, **kwargs)
+    unhandled_hook = UnhandledHook()
+    sys.excepthook = unhandled_hook
+
+    handler = handler_wrapper(raw_handler)
 
     if LOG_LEVEL is not None:
         LOG_LEVEL.set(level)
@@ -104,6 +143,8 @@ def basic_config(
         level=int(level),
         handlers=[handler],
     )
+
+    unhandled_hook.set_handler(raw_handler)
 
 
 __all__ = (

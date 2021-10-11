@@ -1,10 +1,10 @@
 import asyncio
-import logging
 import sys
 import typing as t
 from concurrent.futures import Executor
 from weakref import WeakSet
 
+from aiomisc_log import LogLevel
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
@@ -51,8 +51,8 @@ class Entrypoint:
     def __init__(
         self, *services: Service, loop: asyncio.AbstractEventLoop = None,
         pool_size: int = None,
-        log_level: t.Union[int, str] = logging.INFO,
-        log_format: t.Union[str, LogFormat] = "color",
+        log_level: t.Union[int, str] = LogLevel.default(),
+        log_format: t.Union[str, LogFormat] = LogFormat.default(),
         log_buffer_size: int = 1024,
         log_flush_interval: float = 0.2,
         log_config: bool = True,

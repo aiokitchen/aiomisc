@@ -10,10 +10,20 @@ class LogFormat(IntEnum):
     json = 2
     syslog = 3
     plain = 4
+    rich = 5
+    rich_tb = 6
 
     @classmethod
     def choices(cls) -> t.Tuple[str, ...]:
         return tuple(cls._member_names_)    # type: ignore
+
+    @classmethod
+    def default(cls) -> str:
+        try:
+            import rich
+            return cls.rich.name
+        except ImportError:
+            return cls.color.name
 
 
 class LogLevel(IntEnum):
@@ -28,6 +38,10 @@ class LogLevel(IntEnum):
     def choices(cls) -> t.Tuple[str, ...]:
         return tuple(cls._member_names_)    # type: ignore
 
+    @classmethod
+    def default(cls) -> str:
+        return cls.info.name
+
 
 class DateFormat(Enum):
     color = "%Y-%m-%d %H:%M:%S"
@@ -37,3 +51,4 @@ class DateFormat(Enum):
     # not formatted just returns record created time
     json = "%s"
     syslog = None
+    rich = "[%X]"

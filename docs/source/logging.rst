@@ -31,6 +31,31 @@ Setting up json logs:
     # Configure logging
     basic_config(level=logging.INFO, buffered=False, log_format='json')
 
+Rich
+++++
+
+`Rich`_ is a Python library for rich text and beautiful formatting in the terminal.
+
+`aiomisc.basic_config` has support for using `Rich`_ as a logging handler.
+But it isn't dependency and you have install `Rich`_ manually.
+
+.. code-block:: bash
+
+    pip install rich
+
+.. code-block:: python
+
+    import logging
+    from aiomisc.log import basic_config
+
+    # Configure rich log handler
+    basic_config(level=logging.INFO, buffered=False, log_format='rich')
+
+    # Configure rich log handler with rich tracebacks display
+    basic_config(level=logging.INFO, buffered=False, log_format='richtb')
+
+.. _Rich: https://pypi.org/project/rich/
+
 
 Buffered log handler
 ++++++++++++++++++++
