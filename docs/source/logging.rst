@@ -1,6 +1,17 @@
 Logging configuration
 =====================
 
+Default logging configuration might be configured by setting environment variables:
+
+* `AIOMISC_LOG_LEVEL` - default logging level
+* `AIOMISC_LOG_FORMAT` - default log format
+
+.. code-block:: shell
+
+    $ export AIOMISC_LOG_LEVEL=debug
+    $ export AIOMISC_LOG_FORMAT=rich
+
+
 Color
 +++++
 

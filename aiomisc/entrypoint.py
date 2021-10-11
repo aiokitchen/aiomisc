@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 import typing as t
 from concurrent.futures import Executor
@@ -24,6 +25,12 @@ else:
 
 
 class Entrypoint:
+    DEFAULT_LOG_LEVEL: str = os.getenv(
+        "AIOMISC_LOG_LEVEL", LogLevel.default()
+    )
+    DEFAULT_LOG_FORMAT: str = os.getenv(
+        "AIOMISC_LOG_FORMAT", LogFormat.default()
+    )
 
     PRE_START = Signal()
     POST_STOP = Signal()
@@ -51,8 +58,8 @@ class Entrypoint:
     def __init__(
         self, *services: Service, loop: asyncio.AbstractEventLoop = None,
         pool_size: int = None,
-        log_level: t.Union[int, str] = LogLevel.default(),
-        log_format: t.Union[str, LogFormat] = LogFormat.default(),
+        log_level: t.Union[int, str] = DEFAULT_LOG_LEVEL,
+        log_format: t.Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
         log_buffer_size: int = 1024,
         log_flush_interval: float = 0.2,
         log_config: bool = True,
