@@ -51,7 +51,7 @@ async def test_long_func(loop):
     async with condition:
         await asyncio.wait_for(
             condition.wait_for(lambda: counter == 2),
-            timeout=2
+            timeout=2,
         )
 
 
@@ -135,7 +135,7 @@ async def test_restart(loop):
         async with condition:
             await asyncio.wait_for(
                 condition.wait_for(lambda: counter == i),
-                timeout=5
+                timeout=5,
             )
 
         await periodic.stop()

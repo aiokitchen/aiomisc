@@ -154,7 +154,7 @@ async def test_pause(loop):
     async with condition:
         await asyncio.wait_for(
             condition.wait_for(lambda: mana == 2),
-            timeout=5
+            timeout=5,
         )
 
     with pytest.raises(asyncio.TimeoutError):
@@ -180,7 +180,7 @@ async def test_no_waterline(loop):
     async with condition:
         await asyncio.wait_for(
             condition.wait_for(lambda: mana >= 5),
-            timeout=2
+            timeout=2,
         )
 
     with pytest.raises(ValueError, match="^RETRY$"):
@@ -207,7 +207,7 @@ async def test_no_deadline(loop, max_sleep):
     async with condition:
         await asyncio.wait_for(
             condition.wait_for(lambda: mana == max_sleep * 10),
-            timeout=max_sleep * 10
+            timeout=max_sleep * 10,
         )
 
     await asyncio.wait_for(task, timeout=max_sleep)

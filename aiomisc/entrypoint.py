@@ -6,6 +6,7 @@ from concurrent.futures import Executor
 from weakref import WeakSet
 
 from aiomisc_log import LogLevel
+
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
@@ -14,6 +15,7 @@ from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
 
 
 ExecutorType = Executor
+T = t.TypeVar("T")
 
 
 if sys.version_info < (3, 7):
@@ -24,12 +26,43 @@ else:
     asyncio_current_task = asyncio.current_task
 
 
+def _get_env_bool(name: str, default: str) -> bool:
+    enable_variants = {"1", "enable", "enabled", "on", "true", "yes"}
+    return os.getenv(name, default).lower() in enable_variants
+
+
+def _get_env_convert(
+    name: str, converter: t.Callable[..., T], default: T,
+) -> T:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return converter(value)
+
+
 class Entrypoint:
     DEFAULT_LOG_LEVEL: str = os.getenv(
-        "AIOMISC_LOG_LEVEL", LogLevel.default()
+        "AIOMISC_LOG_LEVEL", LogLevel.default(),
     )
     DEFAULT_LOG_FORMAT: str = os.getenv(
-        "AIOMISC_LOG_FORMAT", LogFormat.default()
+        "AIOMISC_LOG_FORMAT", LogFormat.default(),
+    )
+
+    DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
+    DEFAULT_AIOMISC_LOG_CONFIG: bool = _get_env_bool(
+        "AIOMISC_LOG_CONFIG", "1",
+    )
+    DEFAULT_AIOMISC_LOG_FLUSH: float = _get_env_convert(
+        "AIOMISC_LOG_FLUSH", float, 0.2,
+    )
+    DEFAULT_AIOMISC_BUFFERING: bool = _get_env_bool(
+        "AIOMISC_LOG_BUFFERING", "1",
+    )
+    DEFAULT_AIOMISC_BUFFER_SIZE: int = _get_env_convert(
+        "AIOMISC_LOG_BUFFER", int, 1024,
+    )
+    DEFAULT_AIOMISC_POOL_SIZE: t.Optional[int] = _get_env_convert(
+        "AIOMISC_POOL_SIZE", int, None,
     )
 
     PRE_START = Signal()
@@ -40,7 +73,7 @@ class Entrypoint:
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                buffered=True,
+                buffered=self.log_buffering,
                 loop=self.loop,
                 buffer_size=self.log_buffer_size,
                 flush_interval=self.log_flush_interval,
@@ -60,11 +93,12 @@ class Entrypoint:
         pool_size: int = None,
         log_level: t.Union[int, str] = DEFAULT_LOG_LEVEL,
         log_format: t.Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
-        log_buffer_size: int = 1024,
-        log_flush_interval: float = 0.2,
-        log_config: bool = True,
+        log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
+        log_buffer_size: int = DEFAULT_AIOMISC_BUFFER_SIZE,
+        log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
+        log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
-        debug: bool = False
+        debug: bool = DEFAULT_AIOMISC_DEBUG
     ):
 
         """
@@ -89,6 +123,7 @@ class Entrypoint:
 
         self.ctx: t.Optional[Context] = None
         self.log_buffer_size = log_buffer_size
+        self.log_buffering = log_buffering
         self.log_config = log_config
         self.log_flush_interval = log_flush_interval
         self.log_format = log_format
@@ -236,8 +271,6 @@ class Entrypoint:
 
 
 entrypoint = Entrypoint
-
-T = t.TypeVar("T")
 
 
 def run(

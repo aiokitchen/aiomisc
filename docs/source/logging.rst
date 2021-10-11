@@ -5,6 +5,9 @@ Default logging configuration might be configured by setting environment variabl
 
 * `AIOMISC_LOG_LEVEL` - default logging level
 * `AIOMISC_LOG_FORMAT` - default log format
+* `AIOMISC_LOG_CONFIG` - should logging be configured
+* `AIOMISC_LOG_FLUSH` - interval between logs flushing from buffer
+* `AIOMISC_LOG_BUFFER` - maximum log buffer size
 
 .. code-block:: shell
 

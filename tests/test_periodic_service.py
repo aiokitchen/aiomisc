@@ -40,7 +40,7 @@ def test_periodic():
             async with condition:
                 await asyncio.wait_for(
                     condition.wait_for(lambda: counter == i),
-                    timeout=10
+                    timeout=10,
                 )
 
             await svc.stop(None)
@@ -51,8 +51,8 @@ def test_periodic():
         loop.run_until_complete(
             asyncio.wait_for(
                 assert_counter(),
-                timeout=10
-            )
+                timeout=10,
+            ),
         )
 
 
@@ -78,7 +78,7 @@ def test_delay():
         async with condition:
             await asyncio.wait_for(
                 condition.wait_for(lambda: counter == 5),
-                timeout=5
+                timeout=5,
             )
 
         await svc.stop(None)

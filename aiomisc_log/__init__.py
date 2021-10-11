@@ -105,10 +105,10 @@ class UnhandledHook:
         self,
         exc_type: t.Type[BaseException],
         exc_value: BaseException,
-        exc_traceback: TracebackType
+        exc_traceback: TracebackType,
     ) -> None:
         self.logger.exception(
-            self.MESSAGE, exc_info=(exc_type, exc_value, exc_traceback)
+            self.MESSAGE, exc_info=(exc_type, exc_value, exc_traceback),
         )
 
 

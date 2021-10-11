@@ -43,7 +43,7 @@ def test_cron():
         async with condition:
             await asyncio.wait_for(
                 condition.wait_for(lambda: counter == 1),
-                timeout=2
+                timeout=2,
             )
 
         await svc.stop()
@@ -52,7 +52,7 @@ def test_cron():
         async with condition:
             await asyncio.wait_for(
                 condition.wait_for(lambda: counter == 1),
-                timeout=2
+                timeout=2,
             )
 
         assert counter == 1
@@ -63,8 +63,8 @@ def test_cron():
         loop.run_until_complete(
             asyncio.wait_for(
                 assert_counter(),
-                timeout=10
-            )
+                timeout=10,
+            ),
         )
 
 
@@ -96,7 +96,7 @@ def test_register():
         async with condition:
             await asyncio.wait_for(
                 condition.wait_for(lambda: counter == 5),
-                timeout=10
+                timeout=10,
             )
 
         await svc.stop()

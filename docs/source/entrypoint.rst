@@ -33,7 +33,7 @@ Complete example:
     with aiomisc.entrypoint(
         pool_size=2,
         log_level='info',
-        log_format='color',                         # default
+        log_format='color',                         # default when "rich" absent
         log_buffer_size=1024,                       # default
         log_flush_interval=0.2,                     # default
         log_config=True,                            # default
@@ -73,6 +73,19 @@ Running entrypoint from async code
 
     asyncio.run(main())
 
+Configuration from environment
+++++++++++++++++++++++++++++++
+
+Module support configuration from environment variables:
+
+* `AIOMISC_LOG_LEVEL` - default logging level
+* `AIOMISC_LOG_FORMAT` - default log format
+* `AIOMISC_LOG_CONFIG` - should logging be configured
+* `AIOMISC_LOG_FLUSH` - interval between logs flushing from buffer
+* `AIOMISC_LOG_BUFFERING` - should logging be buffered
+* `AIOMISC_LOG_BUFFER_SIZE` - maximum log buffer size
+* `AIOMISC_POOL_SIZE` - thread pool size
+
 
 ``run()`` shortcut
 ==================
@@ -95,3 +108,4 @@ but handle ``Service``'s and other ``entrypoint``'s kwargs.
 
 
     aiomisc.run(main())
+

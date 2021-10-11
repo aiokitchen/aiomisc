@@ -4,6 +4,7 @@ import typing as t
 
 from aiomisc_log.enum import DateFormat
 
+
 try:
     from rich.console import Console
     from rich.logging import RichHandler
@@ -16,7 +17,7 @@ try:
         handler = RichHandler(
             console=Console(file=stream or sys.stderr),
             log_time_format=date_format or DateFormat.rich.value,
-            rich_tracebacks=rich_tracebacks
+            rich_tracebacks=rich_tracebacks,
         )
         formatter = logging.Formatter("%(message)s")
         handler.setFormatter(formatter)
