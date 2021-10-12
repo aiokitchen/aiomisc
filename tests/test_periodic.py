@@ -114,7 +114,7 @@ async def test_delay(loop):
 
     periodic.stop()
 
-    assert 1 < counter < 4
+    assert 1 < counter <= 4
 
 
 async def test_restart(loop):
