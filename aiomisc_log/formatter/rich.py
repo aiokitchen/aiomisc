@@ -9,7 +9,6 @@ try:
     from rich.console import Console
     from rich.logging import RichHandler
 
-
     def rich_formatter(
         date_format: str = None, stream: t.IO[str] = None,
         rich_tracebacks: bool = False, **_: t.Any
