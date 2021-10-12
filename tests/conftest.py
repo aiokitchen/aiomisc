@@ -73,13 +73,15 @@ def certs():
     return Path(os.path.dirname(os.path.abspath(__file__))) / "certs"
 
 
-@pytest.fixture(params=(ssl.Purpose.SERVER_AUTH, ssl.Purpose.CLIENT_AUTH))
-def ssl_client_context(request, certs):
+@pytest.fixture
+def ssl_client_context(certs):
     ca = str(certs / "ca.pem")
     key = str(certs / "client.key")
     cert = str(certs / "client.pem")
 
-    context = ssl.create_default_context(request.param, capath=ca)
+    context = ssl.create_default_context(
+        ssl.Purpose.SERVER_AUTH, capath=ca
+    )
 
     if key:
         context.load_cert_chain(

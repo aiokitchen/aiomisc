@@ -18,13 +18,15 @@ def get_ssl_context(
     cert, key, ca = map(str, (cert, key, ca))
 
     context = ssl.create_default_context(
-        (
-            ssl.Purpose.SERVER_AUTH
-            if require_client_cert
-            else ssl.Purpose.CLIENT_AUTH
-        ),
-        capath=ca,
+        ssl.Purpose.CLIENT_AUTH,
+        cafile=ca,
     )
+
+    if ca and not Path(ca).exists():
+        raise FileNotFoundError("CA file doesn't exists")
+
+    if require_client_cert:
+        context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
 
     if key:
         context.load_cert_chain(
@@ -34,7 +36,6 @@ def get_ssl_context(
 
     if not verify:
         context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
 
     return context
 
