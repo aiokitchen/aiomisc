@@ -20,7 +20,8 @@ class LogFormat(IntEnum):
     @classmethod
     def default(cls) -> str:
         try:
-            import rich
+            import rich     # noqa
+
             return cls.rich.name
         except ImportError:
             return cls.color.name
