@@ -65,10 +65,13 @@ jobs:
           - python: '3.9'
             toxenv: py39
             os: ubuntu-latest
-          - python: '3.8'
+          - python: '3.10'
+            toxenv: py310
+            os: ubuntu-latest
+          - python: '3.9'
             toxenv: rpc
             os: ubuntu-latest
-          - python: '3.8'
+          - python: '3.9'
             toxenv: rpc_udp
             os: ubuntu-latest
           - python: '3.6'
@@ -83,6 +86,9 @@ jobs:
           - python: '3.9'
             toxenv: uvloop39
             os: ubuntu-latest
+          - python: '3.10'
+            toxenv: uvloop310
+            os: ubuntu-latest
           - python: '3.6'
             toxenv: py36
             os: macos-latest
@@ -95,10 +101,13 @@ jobs:
           - python: '3.9'
             toxenv: py39
             os: macos-latest
-          - python: '3.8'
+          - python: '3.10'
+            toxenv: py310
+            os: macos-latest
+          - python: '3.9'
             toxenv: rpc
             os: macos-latest
-          - python: '3.8'
+          - python: '3.9'
             toxenv: rpc_udp
             os: macos-latest
           - python: '3.6'
@@ -125,12 +134,15 @@ jobs:
           - python: '3.9'
             toxenv: py39
             os: windows-latest
-          - python: '3.9'
-            toxenv: pydoc
+          - python: '3.10'
+            toxenv: py310
             os: windows-latest
           - python: '3.9'
             toxenv: pydoc
             os: ubuntu-latest
+          - python: '3.9'
+            toxenv: pydoc
+            os: windows-latest
           - python: '3.9'
             toxenv: pydoc
             os: macos-latest
