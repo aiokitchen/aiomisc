@@ -126,7 +126,7 @@ async def test_max_count(loop):
 
     await event.wait()
     elapsed = t_exec - t
-    assert 0 < elapsed < leeway
+    assert 0 < elapsed < leeway * 2
 
     await wait(tasks)
     for i, task in enumerate(tasks):
@@ -159,7 +159,7 @@ async def test_max_count_multiple_batches(loop):
     await event.wait()
     event.clear()
     elapsed = t_exec - t
-    assert 0 < elapsed < leeway
+    assert 0 < elapsed < leeway * 2
 
     await wait(tasks[:5])
     for i in range(5):
