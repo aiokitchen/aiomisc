@@ -7,6 +7,8 @@ from weakref import WeakSet
 
 
 class Metric:
+    __slots__ = ("name", "counter")
+
     def __init__(
         self, name: str,
         counter: MutableMapping[str, Union[float, int]],
@@ -93,6 +95,8 @@ class MetaStatistic(type):
 
 
 class Statistic(AbstractStatistic, metaclass=MetaStatistic):
+    __slots__ = ("_counter", "name")
+
     def __init__(self, name: Optional[str] = None) -> None:
         self._counter = Counter()   # type: ignore
         self.name = name
