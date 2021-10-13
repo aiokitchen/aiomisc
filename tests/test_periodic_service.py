@@ -17,12 +17,14 @@ def test_str_representation():
     assert str(svc) == "FooPeriodicService(interval=42,delay=4815162342)"
 
 
-def test_periodic():
+def test_periodic(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
             nonlocal counter
+            nonlocal condition
 
             async with condition:
                 counter += 1
@@ -46,8 +48,7 @@ def test_periodic():
             await svc.stop(None)
             assert counter == i
 
-    with aiomisc.entrypoint(svc) as loop:
-        condition = asyncio.Condition()
+    with aiomisc.entrypoint(svc, loop=loop) as loop:
         loop.run_until_complete(
             asyncio.wait_for(
                 assert_counter(),
@@ -56,12 +57,14 @@ def test_periodic():
         )
 
 
-def test_delay():
+def test_delay(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
             nonlocal counter
+
             async with condition:
                 counter += 1
                 condition.notify_all()
@@ -83,6 +86,5 @@ def test_delay():
 
         await svc.stop(None)
 
-    with aiomisc.entrypoint(svc) as loop:
-        condition = asyncio.Condition()
+    with aiomisc.entrypoint(svc, loop=loop) as loop:
         loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))

@@ -49,6 +49,7 @@ class PeriodicCallback:
         )
         self._closed = False
         self._handle = None
+        self._task = None
 
     async def _run(self, suppress_exceptions: ExceptionsType = ()) -> None:
         try:
