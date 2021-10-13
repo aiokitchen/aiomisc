@@ -80,7 +80,7 @@ def ssl_client_context(certs):
     cert = str(certs / "client.pem")
 
     context = ssl.create_default_context(
-        ssl.Purpose.SERVER_AUTH, capath=ca
+        ssl.Purpose.SERVER_AUTH, capath=ca,
     )
 
     if key:

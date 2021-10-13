@@ -1,6 +1,6 @@
 import logging
 import sys
-import typing as t
+from typing import IO, Any
 
 from aiomisc_log.enum import DateFormat
 
@@ -10,8 +10,8 @@ try:
     from rich.logging import RichHandler
 
     def rich_formatter(
-        date_format: str = None, stream: t.IO[str] = None,
-        rich_tracebacks: bool = False, **_: t.Any
+        date_format: str = None, stream: IO[str] = None,
+        rich_tracebacks: bool = False, **_: Any
     ) -> logging.Handler:
         handler = RichHandler(
             console=Console(file=stream or sys.stderr),
@@ -23,7 +23,7 @@ try:
         return handler
 except ImportError:
     def rich_formatter(
-        date_format: str = None, stream: t.IO[str] = None,
-        rich_tracebacks: bool = False, **_: t.Any
+        date_format: str = None, stream: IO[str] = None,
+        rich_tracebacks: bool = False, **_: Any
     ) -> logging.Handler:
         raise ImportError("You must install \"rich\" library for use it")

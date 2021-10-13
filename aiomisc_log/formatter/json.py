@@ -2,15 +2,14 @@ import json
 import logging
 import sys
 import traceback
-import typing as t
 from types import MappingProxyType
+from typing import IO, Any, Callable, Dict, Union, List
+
+JSONObjType = Dict[str, Any]
+DumpsType = Callable[[JSONObjType, Any], str]
 
 
-JSONObjType = t.Dict[str, t.Any]
-DumpsType = t.Callable[[JSONObjType, t.Any], str]
-
-
-def _dump_json(obj: JSONObjType, *args: t.Any, **kwargs: t.Any) -> str:
+def _dump_json(obj: JSONObjType, *args: Any, **kwargs: Any) -> str:
     kwargs["default"] = repr
     kwargs["ensure_ascii"] = False
     return json.dumps(obj, *args, **kwargs)
@@ -53,9 +52,9 @@ class JSONLogFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         record_dict = MappingProxyType(record.__dict__)
 
-        data = dict(
+        data: Dict[str, Any] = dict(
             errno=0 if not record.exc_info else 255,
-        )    # type: t.Dict[str, t.Any]
+        )
 
         for key, value in self.FIELD_MAPPING.items():
             mapping, field_type = value
@@ -75,14 +74,14 @@ class JSONLogFormatter(logging.Formatter):
             elif key[0] == "_":
                 continue
 
-            record_value = record_dict[key]    # type: t.Any
+            record_value: Any = record_dict[key]
 
             if record_value is None:
                 continue
 
             data[key] = record_value
 
-        args = data.pop("args", [])     # type: t.List[t.Any]
+        args: List[Any] = data.pop("args", [])
 
         for idx, item in enumerate(args):
             data["argument_%d" % idx] = str(item)
@@ -104,23 +103,23 @@ class JSONLogFormatter(logging.Formatter):
     def formatMessage(self, record: logging.LogRecord) -> str:
         return record.getMessage()
 
-    def formatException(self, exc_info: t.Any) -> str:
+    def formatException(self, exc_info: Any) -> str:
         return "\n".join(traceback.format_exception(*exc_info))
 
     def formatTime(     # type: ignore
         self, record: logging.LogRecord, datefmt: str = None,
-    ) -> t.Union[int, str]:
+    ) -> Union[int, str]:
         if datefmt == "%s":
             return record.created   # type: ignore
         return super().formatTime(record, datefmt=datefmt)
 
 
 def json_handler(
-    stream: t.IO[str] = None,
+    stream: IO[str] = None,
     date_format: str = None,
-    **kwargs: t.Any
+    **kwargs: Any
 ) -> logging.Handler:
-    log_stream = stream or sys.stdout       # type: t.IO[str]
+    log_stream: IO[str] = stream or sys.stdout
     formatter = JSONLogFormatter(datefmt=date_format, **kwargs)
     handler = logging.StreamHandler(log_stream)
     handler.setFormatter(formatter)

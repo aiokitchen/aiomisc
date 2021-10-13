@@ -2,15 +2,15 @@ import logging
 import logging.handlers
 import os
 import sys
-import typing as t
 from types import TracebackType
+from typing import Any, Callable, Optional, Type, Union
 
 from .enum import LogFormat, LogLevel
 from .formatter import color_formatter, json_handler, rich_formatter
 
 
-LOG_LEVEL: t.Optional[t.Any] = None
-LOG_FORMAT: t.Optional[t.Any] = None
+LOG_LEVEL: Optional[Any] = None
+LOG_FORMAT: Optional[Any] = None
 
 try:
     import contextvars
@@ -25,7 +25,7 @@ DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 def create_logging_handler(
     log_format: LogFormat = LogFormat.color,
-    date_format: str = None, **kwargs: t.Any
+    date_format: str = None, **kwargs: Any
 ) -> logging.Handler:
 
     if LOG_FORMAT is not None:
@@ -79,7 +79,7 @@ def create_logging_handler(
     raise NotImplementedError
 
 
-HandlerWrapperType = t.Callable[[logging.Handler], logging.Handler]
+HandlerWrapperType = Callable[[logging.Handler], logging.Handler]
 
 
 def pass_wrapper(handler: logging.Handler) -> logging.Handler:
@@ -103,7 +103,7 @@ class UnhandledHook:
 
     def __call__(
         self,
-        exc_type: t.Type[BaseException],
+        exc_type: Type[BaseException],
         exc_value: BaseException,
         exc_traceback: TracebackType,
     ) -> None:
@@ -113,10 +113,10 @@ class UnhandledHook:
 
 
 def basic_config(
-    level: t.Union[int, str] = logging.INFO,
-    log_format: t.Union[str, LogFormat] = LogFormat.color,
+    level: Union[int, str] = logging.INFO,
+    log_format: Union[str, LogFormat] = LogFormat.color,
     handler_wrapper: HandlerWrapperType = pass_wrapper,
-    **kwargs: t.Any
+    **kwargs: Any
 ) -> None:
 
     if isinstance(level, str):

@@ -187,7 +187,7 @@ def test_tcp_server(aiomisc_unused_port):
 
 @pytest.mark.parametrize("client_cert_required", [False, True])
 def test_tls_server(
-    client_cert_required, certs, ssl_client_context, aiomisc_unused_port
+    client_cert_required, certs, ssl_client_context, aiomisc_unused_port,
 ):
     class TestService(TLSServer):
         DATA = []
@@ -204,7 +204,7 @@ def test_tls_server(
         ca=certs / "ca.pem",
         key=certs / "server.key",
         cert=certs / "server.pem",
-        require_client_cert=client_cert_required
+        require_client_cert=client_cert_required,
     )
 
     @aiomisc.threaded

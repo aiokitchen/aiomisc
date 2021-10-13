@@ -1,8 +1,10 @@
 import asyncio
 import os
 import sys
-import typing as t
 from concurrent.futures import Executor
+from typing import (
+    Any, Callable, Coroutine, MutableSet, Optional, TypeVar, Union,
+)
 from weakref import WeakSet
 
 from aiomisc_log import LogLevel
@@ -15,7 +17,7 @@ from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
 
 
 ExecutorType = Executor
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 if sys.version_info < (3, 7):
@@ -32,7 +34,7 @@ def _get_env_bool(name: str, default: str) -> bool:
 
 
 def _get_env_convert(
-    name: str, converter: t.Callable[..., T], default: T,
+    name: str, converter: Callable[..., T], default: T,
 ) -> T:
     value = os.getenv(name)
     if value is None:
@@ -61,7 +63,7 @@ class Entrypoint:
     DEFAULT_AIOMISC_BUFFER_SIZE: int = _get_env_convert(
         "AIOMISC_LOG_BUFFER", int, 1024,
     )
-    DEFAULT_AIOMISC_POOL_SIZE: t.Optional[int] = _get_env_convert(
+    DEFAULT_AIOMISC_POOL_SIZE: Optional[int] = _get_env_convert(
         "AIOMISC_POOL_SIZE", int, None,
     )
 
@@ -91,8 +93,8 @@ class Entrypoint:
     def __init__(
         self, *services: Service, loop: asyncio.AbstractEventLoop = None,
         pool_size: int = None,
-        log_level: t.Union[int, str] = DEFAULT_LOG_LEVEL,
-        log_format: t.Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
+        log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
+        log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
         log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
         log_buffer_size: int = DEFAULT_AIOMISC_BUFFER_SIZE,
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
@@ -117,11 +119,11 @@ class Entrypoint:
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
-        self._tasks: t.MutableSet[asyncio.Task] = WeakSet()
-        self._thread_pool: t.Optional[ExecutorType] = None
-        self._closing: t.Optional[asyncio.Event] = None
+        self._tasks: MutableSet[asyncio.Task] = WeakSet()
+        self._thread_pool: Optional[ExecutorType] = None
+        self._closing: Optional[asyncio.Event] = None
 
-        self.ctx: t.Optional[Context] = None
+        self.ctx: Optional[Context] = None
         self.log_buffer_size = log_buffer_size
         self.log_buffering = log_buffering
         self.log_config = log_config
@@ -173,7 +175,7 @@ class Entrypoint:
         return self.loop
 
     def __exit__(
-        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any,
+        self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
         if self.loop.is_closed():
             return
@@ -202,7 +204,7 @@ class Entrypoint:
         return self
 
     async def __aexit__(
-        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any,
+        self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
         try:
             if self.loop.is_closed():
@@ -274,9 +276,9 @@ entrypoint = Entrypoint
 
 
 def run(
-    coro: t.Coroutine[None, t.Any, T],
+    coro: Coroutine[None, Any, T],
     *services: Service,
-    **kwargs: t.Any
+    **kwargs: Any
 ) -> T:
     with entrypoint(*services, **kwargs) as loop:
         return loop.run_until_complete(coro)

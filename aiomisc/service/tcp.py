@@ -1,7 +1,7 @@
 import asyncio
 import socket
-import typing as t
 from functools import partial
+from typing import Any, Optional
 
 from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
@@ -12,7 +12,7 @@ class TCPServer(SimpleServer):
 
     def __init__(
         self, address: str = None, port: int = None,
-        options: OptionsType = (), sock: socket.socket = None, **kwargs: t.Any
+        options: OptionsType = (), sock: socket.socket = None, **kwargs: Any
     ):
         if not sock:
             if not (address and port):
@@ -32,20 +32,20 @@ class TCPServer(SimpleServer):
         else:
             self.make_socket = lambda: sock     # type: ignore
 
-        self.socket = None      # type: t.Optional[socket.socket]
+        self.socket: Optional[socket.socket] = None
 
         super().__init__(**kwargs)
 
     async def handle_client(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
-    ) -> t.Any:
+    ) -> Any:
         raise NotImplementedError
 
     def make_client_handler(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
-    ) -> t.Any:
+    ) -> Any:
         return self.create_task(awaitable(self.handle_client)(reader, writer))
 
     async def start(self) -> None:

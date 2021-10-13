@@ -1,7 +1,7 @@
 import logging
 import re
-import typing as t  # noqa
 from types import MappingProxyType
+from typing import Iterable
 
 from aiocarbon.protocol.pickle import PickleClient  # type: ignore
 from aiocarbon.protocol.tcp import TCPClient  # type: ignore
@@ -28,13 +28,13 @@ PROTOCOLS = MappingProxyType({
 
 
 class CarbonSender(Service):
-    host = "127.0.0.1"          # type: str
-    port = 2003                 # type: int
-    send_interval = 5           # type: int
-    protocol = "udp"            # type: str
-    namespace = ("",)           # type: t.Iterable[str]
+    host: str = "127.0.0.1"
+    port: int = 2003
+    send_interval: int = 5
+    protocol: str = "udp"
+    namespace: Iterable[str] = ("",)
     storage = TotalStorage
-    _handle = None              # type: PeriodicCallback
+    _handle: PeriodicCallback
 
     async def start(self) -> None:
         namespace = ".".join(
@@ -59,4 +59,4 @@ class CarbonSender(Service):
         )
 
     async def stop(self, exc: Exception = None) -> None:
-        self._handle.stop()
+        await self._handle.stop()

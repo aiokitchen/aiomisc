@@ -2,9 +2,9 @@ import asyncio
 import logging
 import logging.handlers
 import time
-import typing as t
 from contextlib import suppress
 from functools import partial
+from typing import Any, Optional, Union
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
@@ -14,7 +14,7 @@ from .thread_pool import run_in_new_thread
 
 def _thread_flusher(
     handler: logging.handlers.MemoryHandler,
-    flush_interval: t.Union[float, int],
+    flush_interval: Union[float, int],
     loop: asyncio.AbstractEventLoop,
 ) -> None:
     def has_no_target() -> bool:
@@ -38,9 +38,9 @@ def _thread_flusher(
 
 def wrap_logging_handler(
     handler: logging.Handler,
-    loop: t.Optional[asyncio.AbstractEventLoop] = None,
+    loop: Optional[asyncio.AbstractEventLoop] = None,
     buffer_size: int = 1024,
-    flush_interval: t.Union[float, int] = 0.1,
+    flush_interval: Union[float, int] = 0.1,
 ) -> logging.Handler:
     loop = loop or asyncio.get_event_loop()
 
@@ -60,12 +60,12 @@ def wrap_logging_handler(
 
 
 def basic_config(
-    level: t.Union[int, str] = logging.INFO,
-    log_format: t.Union[str, LogFormat] = LogFormat.color,
+    level: Union[int, str] = logging.INFO,
+    log_format: Union[str, LogFormat] = LogFormat.color,
     buffered: bool = True, buffer_size: int = 1024,
-    flush_interval: t.Union[int, float] = 0.2,
+    flush_interval: Union[int, float] = 0.2,
     loop: asyncio.AbstractEventLoop = None,
-    **kwargs: t.Any
+    **kwargs: Any
 ) -> None:
     wrapper = aiomisc_log.pass_wrapper
 

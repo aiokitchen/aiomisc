@@ -1,5 +1,5 @@
 import asyncio
-import typing as t
+from typing import Any, Awaitable, Dict, Tuple, Optional, Set
 
 from ..context import Context, get_context
 from ..utils import cancel_tasks
@@ -7,8 +7,8 @@ from ..utils import cancel_tasks
 
 class ServiceMeta(type):
     def __new__(
-        cls, name: str, bases: t.Tuple, namespace: t.Dict, **kwds: t.Any
-    ) -> t.Any:
+        cls, name: str, bases: Tuple, namespace: Dict, **kwds: Any
+    ) -> Any:
         instance = type.__new__(
             cls, name, bases, dict(namespace),
         )
@@ -34,17 +34,17 @@ class ServiceMeta(type):
 
 
 class Service(metaclass=ServiceMeta):
-    __async_required__ = "start", "stop"    # type: t.Tuple[str, ...]
-    __required__ = ()                       # type: t.Tuple[str, ...]
+    __async_required__: Tuple[str, ...] = "start", "stop"
+    __required__: Tuple[str, ...] = ()
 
-    def __init__(self, **kwargs: t.Any):
+    def __init__(self, **kwargs: Any):
         lost_kw = self.__required__ - kwargs.keys()
         if lost_kw:
             raise AttributeError("Absent attributes", lost_kw)
 
         self._set_params(**kwargs)
-        self.__context = None           # type: t.Optional[Context]
-        self.__start_event = None       # type: t.Optional[asyncio.Event]
+        self.__context: Optional[Context] = None
+        self.__start_event: Optional[asyncio.Event] = None
 
     @property
     def start_event(self) -> asyncio.Event:
@@ -64,24 +64,24 @@ class Service(metaclass=ServiceMeta):
         self.loop = loop
         self.__start_event = asyncio.Event()
 
-    def _set_params(self, **kwargs: t.Any) -> None:
+    def _set_params(self, **kwargs: Any) -> None:
         for name, value in kwargs.items():
             setattr(self, name, value)
 
-    async def start(self) -> t.Any:
+    async def start(self) -> Any:
         raise NotImplementedError
 
-    async def stop(self, exception: Exception = None) -> t.Any:
+    async def stop(self, exception: Exception = None) -> Any:
         pass
 
 
 class SimpleServer(Service):
-    def __init__(self, **kwargs: t.Any):
-        self.server = None      # type: t.Optional[asyncio.AbstractServer]
-        self.tasks = set()      # type: t.Set[asyncio.Task]
+    def __init__(self, **kwargs: Any):
+        self.server: Optional[asyncio.AbstractServer] = None
+        self.tasks: Set[asyncio.Task] = set()
         super().__init__(**kwargs)
 
-    def create_task(self, coro: t.Awaitable[t.Any]) -> asyncio.Task:
+    def create_task(self, coro: Awaitable[Any]) -> asyncio.Task:
         task = self.loop.create_task(coro)
         self.tasks.add(task)
         task.add_done_callback(self.tasks.remove)

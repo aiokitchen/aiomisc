@@ -1,15 +1,15 @@
 import asyncio
 import logging
-import typing as t
 from functools import partial
+from typing import Any, Awaitable, Callable, Optional, Tuple, Type, Union
 
 from . import utils
 from .counters import Statistic
 
 
 log = logging.getLogger(__name__)
-ExceptionsType = t.Tuple[t.Type[Exception], ...]
-CallbackType = t.Callable[..., t.Union[t.Awaitable[t.Any], t.Any]]
+ExceptionsType = Tuple[Type[Exception], ...]
+CallbackType = Callable[..., Union[Awaitable[Any], Any]]
 
 
 class PeriodicCallbackStatistic(Statistic):
@@ -33,9 +33,13 @@ class PeriodicCallback:
         "_statistic",
     )
 
+    _closed: Optional[bool]
+    _handle: Optional[asyncio.Handle]
+    _task: Optional[asyncio.Future]
+
     def __init__(
         self, coroutine_func: CallbackType,
-        *args: t.Any, **kwargs: t.Any
+        *args: Any, **kwargs: Any
     ):
 
         self._statistic = PeriodicCallbackStatistic()
@@ -43,9 +47,8 @@ class PeriodicCallback:
         self._cb = partial(
             utils.awaitable(coroutine_func), *args, **kwargs
         )
-        self._closed = False    # type: t.Optional[bool]
-        self._handle = None     # type: t.Optional[asyncio.Handle]
-        self._task = None       # type: t.Optional[asyncio.Future]
+        self._closed = False
+        self._handle = None
 
     async def _run(self, suppress_exceptions: ExceptionsType = ()) -> None:
         try:
@@ -58,9 +61,9 @@ class PeriodicCallback:
             log.exception("Periodic task error:")
 
     def start(
-        self, interval: t.Union[int, float],
+        self, interval: Union[int, float],
         loop: asyncio.AbstractEventLoop = None, *,
-        delay: t.Union[int, float] = 0,
+        delay: Union[int, float] = 0,
         shield: bool = False,
         suppress_exceptions: ExceptionsType = ()
     ) -> None:
@@ -70,7 +73,6 @@ class PeriodicCallback:
         current_loop = loop or asyncio.get_event_loop()
         # noinspection PyAttributeOutsideInit
         self._loop = current_loop   # type: asyncio.AbstractEventLoop
-
         self._closed = False
 
         def periodic() -> None:
@@ -108,7 +110,7 @@ class PeriodicCallback:
             else:
                 self._statistic.done += 1
 
-        def call(*_: t.Any) -> None:
+        def call(*_: Any) -> None:
             if self._handle is not None:
                 self._handle.cancel()
                 del self._handle
@@ -119,7 +121,7 @@ class PeriodicCallback:
 
         self._loop.call_later(delay, self._loop.call_soon_threadsafe, periodic)
 
-    def stop(self) -> asyncio.Task:
+    def stop(self) -> asyncio.Future:
         self._closed = True
 
         if self._task is None:
@@ -139,5 +141,5 @@ class PeriodicCallback:
         return "%s(%s)" % (self.__class__.__name__, self.__name)
 
     @property
-    def task(self) -> asyncio.Task:
+    def task(self) -> asyncio.Future:
         return self._task   # type: ignore

@@ -1,6 +1,6 @@
 import logging
-import typing as t
 from enum import Enum, IntEnum, unique
+from typing import Tuple
 
 
 @unique
@@ -14,13 +14,13 @@ class LogFormat(IntEnum):
     rich_tb = 6
 
     @classmethod
-    def choices(cls) -> t.Tuple[str, ...]:
+    def choices(cls) -> Tuple[str, ...]:
         return tuple(cls._member_names_)    # type: ignore
 
     @classmethod
     def default(cls) -> str:
         try:
-            import rich     # noqa
+            import rich  # noqa
 
             return cls.rich.name
         except ImportError:
@@ -36,7 +36,7 @@ class LogLevel(IntEnum):
     notset = logging.NOTSET
 
     @classmethod
-    def choices(cls) -> t.Tuple[str, ...]:
+    def choices(cls) -> Tuple[str, ...]:
         return tuple(cls._member_names_)    # type: ignore
 
     @classmethod

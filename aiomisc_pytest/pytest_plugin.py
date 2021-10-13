@@ -3,11 +3,11 @@ import logging
 import os
 import socket
 import sys
-import typing as t
 from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
+from typing import Callable, Coroutine, Optional, Tuple, Type, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -28,7 +28,7 @@ except ImportError:
 
 
 def delayed_future(
-    timeout: t.Union[int, float], result: bool = True,
+    timeout: Union[int, float], result: bool = True,
 ) -> asyncio.Future:
 
     loop = asyncio.get_event_loop()
@@ -47,20 +47,20 @@ def delayed_future(
     return future
 
 
-ProxyProcessorType = t.Coroutine[bytes, None, bytes]
-DelayType = t.Union[int, float]
+ProxyProcessorType = Coroutine[bytes, None, bytes]
+DelayType = Union[int, float]
 
 
 class Delay:
     __slots__ = "__timeout", "future", "lock"
 
     def __init__(self) -> None:
-        self.__timeout: t.Union[int, float] = 0
+        self.__timeout: Union[int, float] = 0
         self.future = None
         self.lock = asyncio.Lock()
 
     @property
-    def timeout(self) -> t.Union[int, float]:
+    def timeout(self) -> Union[int, float]:
         return self.__timeout
 
     @timeout.setter
@@ -129,11 +129,11 @@ class TCPProxyClient:
         self.__server_repr = None
 
     @property
-    def read_processor(self) -> t.Callable[[], ProxyProcessorType]:
+    def read_processor(self) -> Callable[[], ProxyProcessorType]:
         return self.__processors["read"]
 
     @read_processor.setter
-    def read_processor(self, value: t.Optional[ProxyProcessorType]) -> None:
+    def read_processor(self, value: Optional[ProxyProcessorType]) -> None:
         if value is None:
             self.__processors["read"] = self._blank_processor
             return
@@ -141,11 +141,11 @@ class TCPProxyClient:
         self.__processors["read"] = aiomisc.awaitable(value)
 
     @property
-    def write_processor(self) -> t.Callable[[], ProxyProcessorType]:
+    def write_processor(self) -> Callable[[], ProxyProcessorType]:
         return self.__processors["write"]
 
     @write_processor.setter
-    def write_processor(self, value: t.Optional[ProxyProcessorType]) -> None:
+    def write_processor(self, value: Optional[ProxyProcessorType]) -> None:
         if value is None:
             self.__processors["write"] = self._blank_processor
             return
@@ -280,7 +280,7 @@ class TCPProxy:
         )
         return self.server
 
-    ClientType = t.Tuple[asyncio.StreamReader, asyncio.StreamWriter]
+    ClientType = Tuple[asyncio.StreamReader, asyncio.StreamWriter]
 
     async def create_client(self) -> ClientType:
         log.debug("Creating client for %r", self)
@@ -318,8 +318,8 @@ class TCPProxy:
         self.write_delay = write_delay
 
     def set_content_processors(
-            self, read: t.Optional[ProxyProcessorType],
-            write: t.Optional[ProxyProcessorType],
+            self, read: Optional[ProxyProcessorType],
+            write: Optional[ProxyProcessorType],
     ):
         log.debug(
             "Setting content processors for %r: read=%r write=%r",
@@ -379,7 +379,7 @@ class TCPProxy:
 
 
 @pytest.fixture(scope="session")
-def tcp_proxy() -> t.Type[TCPProxy]:
+def tcp_proxy() -> Type[TCPProxy]:
     return TCPProxy
 
 
@@ -660,7 +660,7 @@ def get_unused_port() -> int:
 
 
 @pytest.fixture
-def aiomisc_unused_port_factory() -> t.Callable[[], int]:
+def aiomisc_unused_port_factory() -> Callable[[], int]:
     return get_unused_port
 
 

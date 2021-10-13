@@ -1,33 +1,36 @@
-import typing as t
 from collections import Counter
+from typing import (
+    Any, Dict, FrozenSet, Generator, MutableMapping, MutableSet, NamedTuple,
+    Optional, Set, Tuple, Type, Union,
+)
 from weakref import WeakSet
 
 
 class Metric:
     def __init__(
         self, name: str,
-        counter: t.MutableMapping[str, t.Union[float, int]],
-        default: t.Union[float, int] = 0,
+        counter: MutableMapping[str, Union[float, int]],
+        default: Union[float, int] = 0,
     ):
         self.name: str = name
         self.counter = counter
         self.counter[name] = default
 
-    def __get__(self) -> t.Union[float, int]:
+    def __get__(self) -> Union[float, int]:
         return self.counter[self.name]
 
-    def __set__(self, value: t.Union[float, int]) -> None:
+    def __set__(self, value: Union[float, int]) -> None:
         self.counter[self.name] = value
 
-    def __iadd__(self, value: t.Union[float, int]) -> "Metric":
+    def __iadd__(self, value: Union[float, int]) -> "Metric":
         self.counter[self.name] += value
         return self
 
-    def __isub__(self, value: t.Union[float, int]) -> "Metric":
+    def __isub__(self, value: Union[float, int]) -> "Metric":
         self.counter[self.name] -= value
         return self
 
-    def __eq__(self, other: t.Any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         return self.counter[self.name] == other
 
     def __hash__(self) -> int:
@@ -35,24 +38,24 @@ class Metric:
 
 
 class AbstractStatistic:
-    __metrics__: t.FrozenSet[str]
-    __instances__: t.MutableSet["AbstractStatistic"]
-    _counter: t.MutableMapping[str, t.Union[float, int]]
-    name: t.Optional[str]
+    __metrics__: FrozenSet[str]
+    __instances__: MutableSet["AbstractStatistic"]
+    _counter: MutableMapping[str, Union[float, int]]
+    name: Optional[str]
 
 
-CLASS_STORE: t.Set[t.Type[AbstractStatistic]] = set()
+CLASS_STORE: Set[Type[AbstractStatistic]] = set()
 
 
 class MetaStatistic(type):
     def __new__(
         mcs, name: str,
-        bases: t.Tuple[type, ...],
-        dct: t.Dict[str, t.Any],
-    ) -> t.Any:
+        bases: Tuple[type, ...],
+        dct: Dict[str, Any],
+    ) -> Any:
 
         # noinspection PyTypeChecker
-        klass: t.Type[AbstractStatistic] = super().__new__(
+        klass: Type[AbstractStatistic] = super().__new__(
             mcs, name, bases, dct,
         )   # type: ignore
 
@@ -90,7 +93,7 @@ class MetaStatistic(type):
 
 
 class Statistic(AbstractStatistic, metaclass=MetaStatistic):
-    def __init__(self, name: t.Optional[str] = None) -> None:
+    def __init__(self, name: Optional[str] = None) -> None:
         self._counter = Counter()   # type: ignore
         self.name = name
 
@@ -100,17 +103,17 @@ class Statistic(AbstractStatistic, metaclass=MetaStatistic):
         self.__instances__.add(self)
 
 
-class StatisticResult(t.NamedTuple):
-    kind: t.Type[AbstractStatistic]
-    name: t.Optional[str]
+class StatisticResult(NamedTuple):
+    kind: Type[AbstractStatistic]
+    name: Optional[str]
     metric: str
-    value: t.Union[int, float]
+    value: Union[int, float]
 
 
 # noinspection PyProtectedMember
 def get_statistics(
-    *kind: t.Type[Statistic]
-) -> t.Generator[t.Any, t.Tuple[Statistic, str, int], None]:
+    *kind: Type[Statistic]
+) -> Generator[Any, Tuple[Statistic, str, int], None]:
     for klass in CLASS_STORE:
         if kind and not issubclass(klass, kind):
             continue
