@@ -232,7 +232,7 @@ class CircuitBreaker:
             return 1
 
     def _on_passing(
-        self, counter: Counter[int],
+        self, counter: CounterType[int],
     ) -> Generator[Any, Any, Any]:
         try:
             yield
@@ -246,7 +246,7 @@ class CircuitBreaker:
             counter[CounterKey.TOTAL] += 1
 
     def _on_recover(
-        self, counter: Counter[int],
+        self, counter: CounterType[int],
     ) -> Generator[Any, Any, Any]:
         current_time = self._get_time()
         condition = (random() + 1) < (

@@ -2,9 +2,10 @@ import asyncio
 import logging
 import logging.handlers
 import time
+from socket import socket
 from contextlib import suppress
 from functools import partial
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Dict
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
@@ -59,6 +60,52 @@ def wrap_logging_handler(
     return buffered_handler
 
 
+class UnhandledLoopHook(aiomisc_log.UnhandledHook):
+    @staticmethod
+    def _fill_transport_extra(transport: Optional[asyncio.Transport],
+                              extra: Dict[str, Any]) -> None:
+        if transport is None:
+            return
+
+        extra['transport'] = repr(transport)
+
+        for key in ('peername', 'sockname', 'compression',
+                    'cipher', 'peercert', 'pipe', 'subprocess'):
+            value = transport.get_extra_info(key)
+            if value:
+                extra['transport_{}'.format(key)] = value
+
+    # noinspection PyMethodOverriding
+    def __call__(
+        self, loop: asyncio.AbstractEventLoop, context: Dict[str, Any]
+    ) -> None:
+        message: str = context.get('message')
+        exception: Optional[BaseException] = context.get('exception')
+        future: Optional[asyncio.Future] = context.get('future')
+        task: Optional[asyncio.Task] = context.get('task')
+        handle: Optional[asyncio.Handle] = context.get('handle')
+        protocol: Optional[asyncio.Protocol] = context.get('protocol')
+        transport: Optional[asyncio.Transport] = context.get('transport')
+        sock: Optional[socket] = context.get('socket')
+
+        if exception is None:
+            if future is not None:
+                exception = future.exception()
+            elif task is not None:
+                exception = task.exception()
+
+        extra = {}
+        if handle is not None:
+            extra['handle'] = repr(handle)
+        if protocol is not None:
+            extra['protocol'] = repr(protocol)
+        if sock is not None:
+            extra['sock'] = repr(sock)
+
+        self._fill_transport_extra(transport, extra)
+        self.logger.exception(message, exc_info=exception, extra=extra)
+
+
 def basic_config(
     level: Union[int, str] = logging.INFO,
     log_format: Union[str, LogFormat] = LogFormat.color,
@@ -69,6 +116,8 @@ def basic_config(
 ) -> None:
     wrapper = aiomisc_log.pass_wrapper
 
+    loop = loop or asyncio.get_event_loop()
+
     if buffered:
         wrapper = partial(
             wrap_logging_handler,
@@ -76,6 +125,8 @@ def basic_config(
             flush_interval=flush_interval,
             loop=loop,
         )
+
+    loop.set_exception_handler(UnhandledLoopHook())
 
     return aiomisc_log.basic_config(
         level=level,
