@@ -3,7 +3,7 @@ import inspect
 import logging
 import socket
 from types import MappingProxyType
-from typing import Any, Mapping, Iterable
+from typing import Any, Iterable, Mapping
 
 import yarl
 from aiohttp import ClientSession, TCPConnector

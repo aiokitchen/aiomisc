@@ -3,7 +3,8 @@ import logging
 import sys
 import traceback
 from types import MappingProxyType
-from typing import IO, Any, Callable, Dict, Union, List
+from typing import IO, Any, Callable, Dict, List, Union
+
 
 JSONObjType = Dict[str, Any]
 DumpsType = Callable[[JSONObjType, Any], str]

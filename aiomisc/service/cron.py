@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from asyncio import iscoroutinefunction
-from typing import Any, Callable, NamedTuple, Tuple, Type, Set
+from typing import Any, Callable, NamedTuple, Set, Tuple, Type
 
 from croniter import croniter
 

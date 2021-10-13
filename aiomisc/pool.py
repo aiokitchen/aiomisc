@@ -3,8 +3,9 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
-from typing import Any, Awaitable, Callable, NoReturn, TypeVar, Union, Set, \
-    DefaultDict
+from typing import (
+    Any, Awaitable, Callable, DefaultDict, NoReturn, Set, TypeVar, Union,
+)
 
 from .utils import cancel_tasks
 

@@ -6,9 +6,10 @@ from contextlib import contextmanager
 from enum import IntEnum, unique
 from functools import wraps
 from random import random
+from typing import Any, Awaitable, Callable
+from typing import Counter as CounterType
 from typing import (
-    Any, Awaitable, Callable, Counter as CounterType, Deque, Generator, Iterable, Optional,
-    Tuple, Type, TypeVar, Union,
+    Deque, Generator, Iterable, Optional, Tuple, Type, TypeVar, Union,
 )
 
 from aiomisc.counters import Statistic
