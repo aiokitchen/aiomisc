@@ -13,7 +13,8 @@ from unittest.mock import MagicMock
 import pytest
 
 import aiomisc
-from aiomisc_log import LOG_LEVEL
+from aiomisc.utils import bind_socket
+from aiomisc_log import LOG_LEVEL, basic_config
 
 
 log = logging.getLogger("aiomisc_pytest")
@@ -573,7 +574,12 @@ def entrypoint_kwargs() -> dict:
 
 
 @pytest.fixture(name="loop", autouse=loop_autouse)
-def _loop(event_loop_policy):
+def _loop(event_loop_policy, caplog: pytest.LogCaptureFixture):
+    basic_config(
+        log_format='plain',
+        stream=caplog.handler.stream,
+    )
+
     try:
         asyncio.set_event_loop_policy(event_loop_policy)
         loop = asyncio.new_event_loop()
@@ -582,6 +588,11 @@ def _loop(event_loop_policy):
         try:
             yield loop
         finally:
+            basic_config(
+                log_format='plain',
+                stream=sys.stderr,
+            )
+
             if loop.is_closed():
                 return
 
