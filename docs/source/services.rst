@@ -641,3 +641,64 @@ Full configuration:
 You will find full specification of options in the `Raven documentation`_.
 
 .. _Raven documentation: https://docs.sentry.io/clients/python/advanced/#client-arguments
+
+
+SDWatchdogService
++++++++++++++++++
+
+Service just adding to your entrypoint and notifying SystemD
+service watchdog timer.
+
+This can be safely added at any time, since if the service does not detect
+systemd-related environment variables, then its initialization is skipped.
+
+Example of python file:
+
+.. code-block:: python
+    :name: test_sdwatchdog
+
+    import logging
+    from time import sleep
+
+    from aiomisc import entrypoint
+    from aiomisc.service.sdwatchdog import SDWatchdogService
+
+
+    if __name__ == '__main__':
+        with entrypoint(SDWatchdogService()) as loop:
+            loop.run_forever()
+
+
+Example of systemd service file:
+
+.. code-block:: ini
+
+    [Service]
+    # Activating the notification mechanism
+    Type=notify
+
+    # Command which should be started
+    ExecStart=/home/mosquito/.venv/aiomisc/bin/python /home/mosquito/scratch.py
+
+    # The time for which the program must send a watchdog notification
+    WatchdogSec=5
+
+    # Kill the process if it has stopped responding to the watchdog timer
+    WatchdogSignal=SIGKILL
+
+    # The service should be restarted on failure
+    Restart=on-failure
+
+    # Try to kill the process instead of cgroup
+    KillMode=process
+
+    # Trying to stop service properly
+    KillSignal=SIGINT
+
+    # Trying to restart service properly
+    RestartKillSignal=SIGINT
+
+    # Send SIGKILL when timeouts are exceeded
+    FinalKillSignal=SIGKILL
+    SendSIGKILL=yes
+
