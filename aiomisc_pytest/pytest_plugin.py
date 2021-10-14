@@ -7,7 +7,8 @@ from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
-from typing import Callable, Coroutine, Optional, Tuple, Type, Union
+from typing import Callable, Coroutine, Optional, Tuple, Type, Union, \
+    NamedTuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -662,12 +663,30 @@ def loop(
         del loop
 
 
-def get_unused_port() -> int:
-    sock = socket.socket()
-    sock.bind(("", 0))
-    port = sock.getsockname()[-1]
-    sock.close()
+def get_unused_port(*args) -> int:
+    with socket.socket(*args) as sock:
+        sock.bind(("", 0))
+        port = sock.getsockname()[1]
     return port
+
+
+class PortSocket(NamedTuple):
+    port: int
+    socket: socket.socket
+
+
+@pytest.fixture
+def aiomisc_socket_factory(request, localhost) -> Callable[..., PortSocket]:
+    """ Returns a """
+    def factory(*args, **kwargs) -> PortSocket:
+        sock = bind_socket(*args, address=localhost, port=0, **kwargs)
+        port = sock.getsockname()[1]
+
+        # Close socket after teardown
+        request.addfinalizer(sock.close)
+
+        return PortSocket(port=port, socket=sock)
+    return factory
 
 
 @pytest.fixture

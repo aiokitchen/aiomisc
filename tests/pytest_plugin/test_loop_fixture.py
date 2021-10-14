@@ -1,9 +1,12 @@
 import asyncio
+import logging
 import socket
+from typing import Callable
 
 import pytest
 
 from aiomisc import Service
+from aiomisc_pytest.pytest_plugin import PortSocket
 
 
 class _TestService(Service):
@@ -37,10 +40,22 @@ async def test_loop_fixture(
     assert service.loop is service.loop_on_init is loop
 
 
-try:
-    from .yield_fixture_native import yield_fixture
-except SyntaxError:
-    from .yield_fixture import yield_fixture  # noqa
+@pytest.fixture
+async def yield_fixture(loop):
+    logging.info("Setup")
+
+    f = loop.create_future()
+    loop.call_later(0, f.set_result, True)
+    await f
+
+    try:
+        yield True
+    finally:
+        f = loop.create_future()
+        loop.call_later(0, f.set_result, True)
+        await f
+
+        logging.info("Teardown")
 
 
 async def test_yield_fixture(yield_fixture):  # noqa
@@ -49,3 +64,17 @@ async def test_yield_fixture(yield_fixture):  # noqa
 
 def test_localhost(localhost):
     assert socket.gethostbyname("localhost") == localhost
+
+
+def test_aiomisc_socket_factory(
+    aiomisc_socket_factory: Callable[..., PortSocket]
+):
+    result = aiomisc_socket_factory(socket.AF_INET, socket.SOCK_STREAM)
+    assert result.port > 0
+    assert result.socket.family == socket.AF_INET
+    assert result.socket.type == socket.SOCK_STREAM
+
+    result = aiomisc_socket_factory(socket.AF_INET, socket.SOCK_DGRAM)
+    assert result.port > 0
+    assert result.socket.family == socket.AF_INET
+    assert result.socket.type == socket.SOCK_DGRAM
