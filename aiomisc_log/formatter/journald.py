@@ -63,8 +63,10 @@ class JournaldLogHandler(logging.Handler):
         fp.write(value_bytes)
         fp.write(b"\n")
 
-    def __init__(self, identifier: str = None,
-                 facility: int = Facility.LOCAL7):
+    def __init__(
+        self, identifier: str = None,
+        facility: int = Facility.LOCAL7,
+    ):
         super().__init__()
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         self.socket.connect(str(self.SOCKET_PATH))
