@@ -55,8 +55,8 @@ class AIOHTTPService(Service):
         return Application()
 
     async def create_site(self) -> SockSite:
-        if self.runner is None:
-            raise RuntimeError
+        if getattr(self, "runner", None) is None:
+            raise RuntimeError("runner already created")
 
         return SockSite(
             self.runner, self.socket,
@@ -64,7 +64,7 @@ class AIOHTTPService(Service):
         )
 
     async def start(self) -> None:
-        if self.runner is not None:
+        if hasattr(self, "runner"):
             raise RuntimeError("Can not start twice")
 
         self.runner = AppRunner(
@@ -84,7 +84,7 @@ class AIOHTTPService(Service):
             if self.site:
                 await self.site.stop()
         finally:
-            if self.runner:
+            if hasattr(self, 'runner'):
                 await self.runner.cleanup()
 
 
