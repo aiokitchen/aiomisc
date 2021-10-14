@@ -58,6 +58,7 @@ But it isn't dependency and you have install `Rich`_ manually.
     pip install rich
 
 .. code-block:: python
+    :name: test_rich_handlers
 
     import logging
     from aiomisc.log import basic_config
@@ -65,8 +66,15 @@ But it isn't dependency and you have install `Rich`_ manually.
     # Configure rich log handler
     basic_config(level=logging.INFO, buffered=False, log_format='rich')
 
+    logging.info("Rich logger")
+
     # Configure rich log handler with rich tracebacks display
-    basic_config(level=logging.INFO, buffered=False, log_format='richtb')
+    basic_config(level=logging.INFO, buffered=False, log_format='rich_tb')
+
+    try:
+        1 / 0
+    except:
+        logging.exception("Rich traceback logger")
 
 .. _Rich: https://pypi.org/project/rich/
 
