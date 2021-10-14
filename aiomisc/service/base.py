@@ -34,7 +34,7 @@ class ServiceMeta(type):
 
 
 class Service(metaclass=ServiceMeta):
-    __async_required__: Tuple[str, ...] = "start", "stop"
+    __async_required__: Tuple[str, ...] = ("start", "stop")
     __required__: Tuple[str, ...] = ()
 
     def __init__(self, **kwargs: Any):

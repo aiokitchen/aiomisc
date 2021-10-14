@@ -5,12 +5,18 @@ import time
 from socket import socket
 from contextlib import suppress
 from functools import partial
-from typing import Any, Optional, Union, Dict, TypedDict
+from typing import Any, Optional, Union, Dict
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
 
 from .thread_pool import run_in_new_thread
+
+
+try:
+    from typing import TypedDict
+except ImportError:
+    from typing_extensions import TypedDict
 
 
 def _thread_flusher(
