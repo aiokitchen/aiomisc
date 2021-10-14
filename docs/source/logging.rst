@@ -45,6 +45,24 @@ Setting up json logs:
     # Configure logging
     basic_config(level=logging.INFO, buffered=False, log_format='json')
 
+JournalD
+++++++++
+
+`JournalD`_ daemon for collecting logs. It's a part of systemd.
+`aiomisc.basic_config` has support for using `JournalD`_ for store logs.
+
+.. code-block:: python
+    import logging
+    from aiomisc.log import basic_config
+
+    # Configure rich log handler
+    basic_config(level=logging.INFO, buffered=False, log_format='journald')
+
+    logging.info("Journald log record")
+
+.. _JournalD:: https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html
+
+
 Rich
 ++++
 

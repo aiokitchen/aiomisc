@@ -680,6 +680,9 @@ Example of systemd service file:
     # Command which should be started
     ExecStart=/home/mosquito/.venv/aiomisc/bin/python /home/mosquito/scratch.py
 
+    # Set journald logging handler
+    Environment=AIOMISC_LOG_FORMAT=journald
+
     # The time for which the program must send a watchdog notification
     WatchdogSec=5
 
@@ -701,4 +704,3 @@ Example of systemd service file:
     # Send SIGKILL when timeouts are exceeded
     FinalKillSignal=SIGKILL
     SendSIGKILL=yes
-
