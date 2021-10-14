@@ -3,11 +3,13 @@ import logging
 import os
 import socket
 from collections import deque
-from typing import Union, Any, Deque, Tuple, Optional
+from typing import Any, Deque, Optional, Tuple, Union
 
-from .base import Service
-from ..entrypoint import entrypoint, Entrypoint
-from ..utils import TimeoutType
+from aiomisc.entrypoint import entrypoint
+from aiomisc.periodic import PeriodicCallback
+from aiomisc.service.base import Service
+from aiomisc.utils import TimeoutType
+
 
 log = logging.getLogger(__name__)
 
@@ -15,13 +17,17 @@ log = logging.getLogger(__name__)
 class AsyncUDPSocket:
 
     __slots__ = (
-        '__loop', '__sock', '__address',
-        '__write_queue', '__read_queue',
-        '__closed', '__writer_added', '__lock'
+        "__address",
+        "__lock",
+        "__loop",
+        "__sock",
+        "__write_queue",
+        "__writer_added",
     )
 
     def __init__(
-        self, address: Union[tuple, str, bytes], loop: asyncio.AbstractEventLoop
+        self, address: Union[tuple, str, bytes],
+        loop: asyncio.AbstractEventLoop,
     ):
         self.__loop = loop
         self.__sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
@@ -29,9 +35,6 @@ class AsyncUDPSocket:
         self.__sock.connect(address)
         self.__writer_added = False
         self.__write_queue: Deque[Tuple[bytes, asyncio.Future]] = deque()
-        self.__read_queue: asyncio.Queue = asyncio.Queue()
-
-        self.__loop.add_reader(self.__sock.fileno(), self.__reader)
 
     async def sendall(self, data: str) -> bool:
         future = self.__loop.create_future()
@@ -66,12 +69,6 @@ class AsyncUDPSocket:
 
         self.close()
 
-    async def receive(self) -> bytes:
-        return await self.__read_queue.get()
-
-    def __reader(self) -> None:
-        self.__read_queue.put_nowait(self.__sock.recv(1024))
-
     def close(self) -> None:
         self.__loop.remove_writer(self.__sock.fileno())
         self.__sock.close()
@@ -96,26 +93,25 @@ WATCHDOG_INTERVAL: Optional[TimeoutType] = _get_watchdog_interval()
 class SDWatchdogService(Service):
     socket: AsyncUDPSocket
     watchdog_interval: Optional[TimeoutType]
+    _watchdog_timer: PeriodicCallback
 
     async def _post_start(
-        self, entrypoint: Entrypoint, services: Tuple[Service, ...]
+        self, services: Tuple[Service, ...], **__: Any
     ) -> None:
         if not hasattr(self, "socket"):
             return
-
         await self.socket.sendall(
-            "STATUS=Started {} services".format(len(services))
+            "STATUS=Started {} services".format(len(services)),
         )
         await self.socket.sendall("READY=1")
 
-    async def _pre_stop(self, *_: Any) -> None:
+    async def _pre_stop(self, *_: Any, **__: Any) -> None:
         if not hasattr(self, "socket"):
             return
-
         await self.socket.sendall("STOPPING=1")
 
     def __init__(
-        self, *, watchdog_interval: TimeoutType = WATCHDOG_INTERVAL,
+        self, *, watchdog_interval: Optional[TimeoutType] = WATCHDOG_INTERVAL,
         **kwargs: Any
     ):
         self.watchdog_interval = watchdog_interval
@@ -123,33 +119,43 @@ class SDWatchdogService(Service):
         entrypoint.PRE_STOP.connect(self._pre_stop)
         super().__init__(**kwargs)
 
+    def _get_socket_addr(self) -> Optional[str]:
+        addr = os.getenv("NOTIFY_SOCKET")
+        if addr is None:
+            return None
+
+        if addr[0] == "@":
+            addr = "\0" + addr[1:]
+
+        return addr
+
     async def start(self) -> None:
-        addr = os.getenv('NOTIFY_SOCKET')
+        addr = self._get_socket_addr()
         if addr is None:
             log.debug(
-                "NOTIFY_SOCKET not exported. Skipping service %r", self
+                "NOTIFY_SOCKET not exported. Skipping service %r", self,
             )
             return None
 
-        if addr[0] == '@':
-            addr = '\0' + addr[1:]
-
         self.socket = AsyncUDPSocket(addr, loop=self.loop)
-        self.loop.call_soon(self.start_event.set)
-
         await self.socket.sendall("STATUS=starting")
 
         if self.watchdog_interval is None:
             return
 
+        if self.watchdog_interval != WATCHDOG_INTERVAL:
+            await self.socket.sendall(
+                "WATCHDOG_USEC={}".format(
+                    int(self.watchdog_interval * 1000000),
+                ),
+            )
+
         self.start_event.set()
-        await asyncio.gather(self.__watchdog(), self.__reader())
+        self._watchdog_timer = PeriodicCallback(
+            self.socket.sendall,
+            "WATCHDOG=1",
+        )
+        self._watchdog_timer.start(self.watchdog_interval)
 
-    async def __watchdog(self) -> None:
-        while True:
-            await self.socket.sendall("WATCHDOG=1")
-            await asyncio.sleep(self.watchdog_interval)
-
-    async def __reader(self) -> None:
-        while True:
-            log.debug("[%r] Received %r", self, await self.socket.receive())
+    async def stop(self, exception: Exception = None) -> Any:
+        await self._watchdog_timer.stop()
