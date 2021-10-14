@@ -7,6 +7,7 @@ from typing import (
 )
 from weakref import WeakSet
 
+import aiomisc_log
 from aiomisc_log import LogLevel
 
 from .context import Context, get_context
@@ -138,10 +139,9 @@ class Entrypoint:
         self.post_stop = self.POST_STOP.copy()
 
         if self.log_config:
-            basic_config(
+            aiomisc_log.basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                buffered=False,
             )
 
     async def closing(self) -> None:
