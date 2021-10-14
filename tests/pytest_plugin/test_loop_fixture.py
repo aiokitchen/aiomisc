@@ -67,7 +67,7 @@ def test_localhost(localhost):
 
 
 def test_aiomisc_socket_factory(
-    aiomisc_socket_factory: Callable[..., PortSocket]
+    aiomisc_socket_factory: Callable[..., PortSocket],
 ):
     result = aiomisc_socket_factory(socket.AF_INET, socket.SOCK_STREAM)
     assert result.port > 0

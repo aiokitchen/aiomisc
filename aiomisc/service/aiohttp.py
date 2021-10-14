@@ -84,7 +84,7 @@ class AIOHTTPService(Service):
             if self.site:
                 await self.site.stop()
         finally:
-            if hasattr(self, 'runner'):
+            if hasattr(self, "runner"):
                 await self.runner.cleanup()
 
 

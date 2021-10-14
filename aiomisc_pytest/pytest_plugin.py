@@ -7,8 +7,7 @@ from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
-from typing import Callable, Coroutine, Optional, Tuple, Type, Union, \
-    NamedTuple
+from typing import Callable, Coroutine, NamedTuple, Optional, Tuple, Type, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -577,7 +576,7 @@ def entrypoint_kwargs() -> dict:
 @pytest.fixture(name="loop", autouse=loop_autouse)
 def _loop(event_loop_policy, caplog: pytest.LogCaptureFixture):
     basic_config(
-        log_format='plain',
+        log_format="plain",
         stream=caplog.handler.stream,
     )
 
@@ -590,7 +589,7 @@ def _loop(event_loop_policy, caplog: pytest.LogCaptureFixture):
             yield loop
         finally:
             basic_config(
-                log_format='plain',
+                log_format="plain",
                 stream=sys.stderr,
             )
 

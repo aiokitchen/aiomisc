@@ -268,7 +268,7 @@ async def _awaiter(future: asyncio.Future) -> T:
 
 
 def threaded(
-    func: typing.Callable[..., T]
+    func: typing.Callable[..., T],
 ) -> typing.Callable[..., typing.Awaitable[T]]:
     if asyncio.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")

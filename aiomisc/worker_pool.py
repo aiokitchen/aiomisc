@@ -18,7 +18,7 @@ from typing import (
 
 from aiomisc.counters import Statistic
 from aiomisc.thread_pool import threaded
-from aiomisc.utils import bind_socket, cancel_tasks
+from aiomisc.utils import bind_socket, cancel_tasks, shield
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL
 from aiomisc_worker import (
     COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header, PacketTypes, T,
@@ -361,7 +361,15 @@ class WorkerPool:
                 continue
             future.set_exception(RuntimeError("Pool closed"))
 
+    @shield
     async def close(self) -> None:
+        @threaded
+        def killer() -> None:
+            while self.processes:
+                self._kill_process(self.processes.pop())
+
+        killer_task = killer()
+
         if self.__closing:
             return
 
@@ -371,12 +379,7 @@ class WorkerPool:
             chain(tuple(self.__task_store), tuple(self.__futures)),
         )
 
-        @threaded
-        def killer() -> None:
-            while self.processes:
-                self._kill_process(self.processes.pop())
-
-        await killer()
+        await killer_task
 
     async def create_task(
         self, func: Callable[..., T],
