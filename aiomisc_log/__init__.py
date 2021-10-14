@@ -6,7 +6,9 @@ from types import TracebackType
 from typing import Any, Callable, Optional, Type, Union
 
 from .enum import LogFormat, LogLevel
-from .formatter import color_formatter, json_handler, rich_formatter
+from .formatter import (
+    color_formatter, journald_formatter, json_handler, rich_formatter,
+)
 
 
 LOG_LEVEL: Optional[Any] = None
@@ -48,6 +50,8 @@ def create_logging_handler(
         return json_handler(date_format=date_format, **kwargs)
     elif log_format == LogFormat.color:
         return color_formatter(date_format=date_format, **kwargs)
+    elif log_format == LogFormat.journald:
+        return journald_formatter()
     elif log_format == LogFormat.rich:
         return rich_formatter(date_format=date_format, **kwargs)
     elif log_format == LogFormat.rich_tb:

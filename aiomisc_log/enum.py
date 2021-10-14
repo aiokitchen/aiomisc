@@ -10,8 +10,9 @@ class LogFormat(IntEnum):
     json = 2
     syslog = 3
     plain = 4
-    rich = 5
-    rich_tb = 6
+    journald = 5
+    rich = 6
+    rich_tb = 7
 
     @classmethod
     def choices(cls) -> Tuple[str, ...]:
