@@ -86,10 +86,9 @@ def pass_wrapper(handler: logging.Handler) -> logging.Handler:
     return handler
 
 
-class UnhandledHook:
+class UnhandledHookBase:
     __slots__ = "logger",
 
-    MESSAGE: str = "Unhandled exception"
     LOGGER_NAME: str = "unhandled"
     logger: logging.Logger
 
@@ -100,6 +99,10 @@ class UnhandledHook:
     def set_handler(self, handler: logging.Handler) -> None:
         self.logger.handlers.clear()
         self.logger.handlers.append(handler)
+
+
+class UnhandledHook(UnhandledHookBase):
+    MESSAGE: str = "Unhandled exception"
 
     def __call__(
         self,

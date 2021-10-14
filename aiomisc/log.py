@@ -5,7 +5,7 @@ import time
 from socket import socket
 from contextlib import suppress
 from functools import partial
-from typing import Any, Optional, Union, Dict
+from typing import Any, Optional, Union, Dict, TypedDict
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
@@ -60,7 +60,18 @@ def wrap_logging_handler(
     return buffered_handler
 
 
-class UnhandledLoopHook(aiomisc_log.UnhandledHook):
+class AsyncioExceptionContext(TypedDict):
+    message: str
+    exception: Optional[BaseException]
+    future: Optional[asyncio.Future]
+    task: Optional[asyncio.Task]
+    handle: Optional[asyncio.Handle]
+    protocol: Optional[asyncio.Protocol]
+    transport: Optional[asyncio.Transport]
+    socket: Optional[socket]
+
+
+class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
     @staticmethod
     def _fill_transport_extra(transport: Optional[asyncio.Transport],
                               extra: Dict[str, Any]) -> None:
@@ -75,11 +86,11 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHook):
             if value:
                 extra['transport_{}'.format(key)] = value
 
-    # noinspection PyMethodOverriding
     def __call__(
-        self, loop: asyncio.AbstractEventLoop, context: Dict[str, Any]
+        self, loop: asyncio.AbstractEventLoop,
+        context: AsyncioExceptionContext
     ) -> None:
-        message: str = context.get('message')
+        message: str = context.get('message', 'unhandled loop exception')
         exception: Optional[BaseException] = context.get('exception')
         future: Optional[asyncio.Future] = context.get('future')
         task: Optional[asyncio.Task] = context.get('task')
@@ -107,8 +118,8 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHook):
 
 
 def basic_config(
-    level: Union[int, str] = logging.INFO,
-    log_format: Union[str, LogFormat] = LogFormat.color,
+    level: Union[int, str] = LogLevel.default(),
+    log_format: Union[str, LogFormat] = LogFormat.default(),
     buffered: bool = True, buffer_size: int = 1024,
     flush_interval: Union[int, float] = 0.2,
     loop: asyncio.AbstractEventLoop = None,
@@ -126,7 +137,7 @@ def basic_config(
             loop=loop,
         )
 
-    loop.set_exception_handler(UnhandledLoopHook())
+    loop.set_exception_handler(UnhandledLoopHook())     # type: ignore
 
     return aiomisc_log.basic_config(
         level=level,
