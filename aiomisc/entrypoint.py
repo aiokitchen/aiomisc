@@ -70,6 +70,8 @@ class Entrypoint:
 
     PRE_START = Signal()
     POST_STOP = Signal()
+    POST_START = Signal()
+    PRE_STOP = Signal()
 
     async def _start(self) -> None:
         if self.log_config:
@@ -82,7 +84,10 @@ class Entrypoint:
                 flush_interval=self.log_flush_interval,
             )
 
-        for signal in (self.pre_start, self.post_stop):
+        for signal in (
+            self.pre_start, self.post_stop,
+            self.pre_stop, self.post_start,
+        ):
             signal.freeze()
 
         await self.pre_start.call(entrypoint=self, services=self.services)
@@ -90,6 +95,8 @@ class Entrypoint:
         await asyncio.gather(
             *[self._start_service(svc) for svc in self.services],
         )
+
+        await self.post_start.call(entrypoint=self, services=self.services)
 
     def __init__(
         self, *services: Service, loop: asyncio.AbstractEventLoop = None,
@@ -136,6 +143,8 @@ class Entrypoint:
         self.services = services
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
+        self.post_start = self.POST_START.copy()
+        self.pre_stop = self.PRE_STOP.copy()
         self.post_stop = self.POST_STOP.copy()
 
         if self.log_config:
@@ -206,6 +215,8 @@ class Entrypoint:
     async def __aexit__(
         self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
+        await self.pre_stop.call(entrypoint=self)
+
         try:
             if self.loop.is_closed():
                 return
