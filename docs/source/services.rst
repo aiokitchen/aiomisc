@@ -666,7 +666,7 @@ Example of python file:
 
     if __name__ == '__main__':
         with entrypoint(SDWatchdogService()) as loop:
-            loop.run_forever()
+            pass
 
 
 Example of systemd service file:
