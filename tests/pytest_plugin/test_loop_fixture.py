@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import socket
+import sys
 from typing import Callable
 
 import pytest
@@ -66,6 +67,7 @@ def test_localhost(localhost):
     assert socket.gethostbyname("localhost") == localhost
 
 
+@pytest.mark.skipif(sys.version_info > (3, 6), reason="skip python 3.6")
 def test_aiomisc_socket_factory(
     aiomisc_socket_factory: Callable[..., PortSocket],
 ):
