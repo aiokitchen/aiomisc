@@ -22,6 +22,9 @@ class LogFormat(IntEnum):
 
     @classmethod
     def default(cls) -> str:
+        if not os.isatty(sys.stderr.fileno()):
+            return cls.plain.name
+
         journal_stream = os.getenv("JOURNAL_STREAM", "")
         if journal_stream:
             st_dev, st_ino = map(int, journal_stream.split(":", 1))

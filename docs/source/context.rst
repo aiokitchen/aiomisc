@@ -1,14 +1,14 @@
 Context
 =======
 
-Services can require each others data. In this case you should use ``Context``.
+Services can require each other's data. In this case, you should use ``Context``.
 
 ``Context`` is a repository associated with the running ``entrypoint``.
 
 ``Context``-object will be created when ``entrypoint`` starts and linked
 to the running event loop.
 
-Cross dependent services might await or set each others data via the context.
+Cross-dependent services might await or set each other's data via the context.
 
 For service instances ``self.context`` is available since ``entrypoint``
 started. In other cases ``get_context()`` function returns current context.

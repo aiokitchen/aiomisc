@@ -6,7 +6,7 @@ You can register async callback functions for specific events of an entrypoint.
 pre_start
 +++++++++
 
-``pre_start`` signal occurs on entrypoint start up before any service have started.
+``pre_start`` signal occurs on entrypoint starting up before any service has started.
 
 .. code-block:: python
 
@@ -23,7 +23,7 @@ pre_start
 post_start
 ++++++++++
 
-``post_start`` signal occurs next entrypoint start up after all services have
+``post_start`` signal occurs next entrypoint starting up after all services have
 been started.
 
 .. code-block:: python

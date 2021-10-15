@@ -1,4 +1,6 @@
 import asyncio
+import platform
+
 import math
 import time
 from asyncio import Event, wait
@@ -8,6 +10,13 @@ import pytest
 from aiocontextvars import ContextVar
 
 from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
+
+
+pytestmark = pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="Skip flapping tests on windows because it "
+           "system timer hasn't enough resolution",
+)
 
 
 async def test_invalid_func():

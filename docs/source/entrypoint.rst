@@ -1,7 +1,7 @@
 entrypoint
 ==========
 
-In generic case the entrypoint helper creates event loop and cancels already
+In the generic case, the entrypoint helper creates an event loop and cancels already
 running coroutines on exit.
 
 .. code-block:: python
@@ -90,7 +90,7 @@ Module support configuration from environment variables:
 ``run()`` shortcut
 ==================
 
-``aiomisc.run()`` - it's short way to create and destroy
+``aiomisc.run()`` - it's the short way to create and destroy
 ``aiomisc.entrypoint``. It's very similar to ``asyncio.run()``
 but handle ``Service``'s and other ``entrypoint``'s kwargs.
 
@@ -108,4 +108,3 @@ but handle ``Service``'s and other ``entrypoint``'s kwargs.
 
 
     aiomisc.run(main())
-

@@ -29,7 +29,7 @@ Miscellaneous utils for asyncio.
 Installation
 ------------
 
-Installing from pypi:
+Installing from PyPI:
 
 .. code-block:: bash
 

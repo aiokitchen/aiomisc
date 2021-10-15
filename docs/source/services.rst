@@ -1,12 +1,12 @@
 Services
 ========
 
-``Services`` is abstraction to help organize lots of different
+``Services`` is an abstraction to help organize lots of different
 tasks in one process. Each service must implement ``start()`` method and can
 implement ``stop()`` method.
 
 Service instance should be passed to the ``entrypoint``, and will be started
-after event loop has been created.
+after the event loop has been created.
 
 .. note::
 
@@ -44,7 +44,7 @@ this case ``self.start_event.set()`` should be called for notifying
 ``entrypoint``.
 
 During graceful shutdown method ``stop()`` will be called first,
-and after that all running tasks will be cancelled (including ``start()``).
+and after that, all running tasks will be canceled (including ``start()``).
 
 
 This package contains some useful base classes for simple services writing.
@@ -142,7 +142,7 @@ PeriodicService
 +++++++++++++++
 
 ``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for
-running callback to complete on stop. You need to use ``PeriodicService``
+the running callback to complete on the stop method. You need to use ``PeriodicService``
 as a base class and override ``callback`` async coroutine method.
 
 Service class accepts required ``interval`` argument - periodic interval
@@ -172,7 +172,7 @@ CronService
 .. _croniter: https://github.com/taichino/croniter
 
 ``CronService`` runs ``CronCallback's`` as a service and waits for
-running callbacks to complete on stop.
+running callbacks to complete on the stop method.
 
 It's based on croniter_. You can register async coroutine method with ``spec`` argument - cron like format:
 
@@ -373,7 +373,7 @@ aiohttp application can be started as a service:
         loop.run_forever()
 
 
-Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates HTTPS
+Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates an HTTPS
 server. You must pass SSL-required options (see ``TLSServer`` class).
 
 
@@ -492,7 +492,7 @@ Profiler
 Simple service for profiling.
 Optional `path` argument can be provided to dump complete profiling data,
 which can be later used by, for example, snakeviz.
-Also can change ordering with `order` argument ("cumulative" by default).
+Also can change ordering with the `order` argument ("cumulative" by default).
 
 
 .. code-block:: python
@@ -638,7 +638,7 @@ Full configuration:
    with entrypoint(raven_sender) as loop:
        loop.run_until_complete(main())
 
-You will find full specification of options in the `Raven documentation`_.
+You will find the full specification of options in the `Raven documentation`_.
 
 .. _Raven documentation: https://docs.sentry.io/clients/python/advanced/#client-arguments
 

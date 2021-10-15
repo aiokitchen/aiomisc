@@ -4,7 +4,7 @@ Statistic counters
 ``aiomisc`` contains internal statistic counters. You may read this by
 `aiomisc.get_statistics()` function.
 
-Statistic instances creates dynamically. You might set custom names for this
+Statistic instances create dynamically. You might set custom names for this
 using ``statistic_name: Optional[str] = None`` argument for compatible
 entities.
 

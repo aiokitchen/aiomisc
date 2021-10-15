@@ -48,12 +48,12 @@ Setting up json logs:
 JournalD
 ++++++++
 
-`JournalD`_ daemon for collecting logs. It's a part of systemd.
+`JournalD`_ daemon for collecting logs. It's a part of the systemd.
 `aiomisc.basic_config` has support for using `JournalD`_ for store logs.
 
 .. note::
 
-    This handler is the default when the program starting as systemd service.
+    This handler is the default when the program starting as a systemd service.
 
     `aiomisc.log.LogFormat.default()` will returns `journald`  in this case.
 
@@ -64,7 +64,7 @@ JournalD
     # Configure rich log handler
     basic_config(level=logging.INFO, buffered=False, log_format='journald')
 
-    logging.info("Journald log record")
+    logging.info("JournalD log record")
 
 .. _JournalD:: https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html
 
@@ -75,7 +75,7 @@ Rich
 `Rich`_ is a Python library for rich text and beautiful formatting in the terminal.
 
 `aiomisc.basic_config` has support for using `Rich`_ as a logging handler.
-But it isn't dependency and you have install `Rich`_ manually.
+But it isn't dependency and you have to install `Rich`_ manually.
 
 .. code-block:: bash
 
@@ -110,7 +110,7 @@ But it isn't dependency and you have install `Rich`_ manually.
 Buffered log handler
 ++++++++++++++++++++
 
-Parameter `buffered=True` enables memory buffer that flushes logs in a thread.
+Parameter `buffered=True` enables a memory buffer that flushes logs in a thread.
 
 .. code-block:: python
     :name: test_logging_buffered
