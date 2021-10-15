@@ -1,7 +1,7 @@
 import asyncio
 import logging
-import typing as t
 from asyncio import iscoroutinefunction
+from typing import Any, Callable, NamedTuple, Set, Tuple, Type
 
 from croniter import croniter
 
@@ -10,10 +10,10 @@ from aiomisc.cron import CronCallback
 
 
 log = logging.getLogger(__name__)
-ExceptionsType = t.Tuple[t.Type[Exception], ...]
+ExceptionsType = Tuple[Type[Exception], ...]
 
 
-class StoreItem(t.NamedTuple):
+class StoreItem(NamedTuple):
     callback: CronCallback
     spec: str
     shield: bool
@@ -21,13 +21,15 @@ class StoreItem(t.NamedTuple):
 
 
 class CronService(Service):
-    def __init__(self, **kwargs: t.Any):
+    _callbacks_storage: Set[StoreItem]
+
+    def __init__(self, **kwargs: Any):
         super(CronService, self).__init__(**kwargs)
-        self._callbacks_storage = set()     # type: t.Set[StoreItem]
+        self._callbacks_storage = set()
 
     def register(
         self,
-        function: t.Callable,
+        function: Callable,
         spec: str,
         shield: bool = False,
         suppress_exceptions: ExceptionsType = (),

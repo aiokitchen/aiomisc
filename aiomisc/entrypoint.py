@@ -1,9 +1,14 @@
 import asyncio
-import logging
+import os
 import sys
-import typing as t
 from concurrent.futures import Executor
+from typing import (
+    Any, Callable, Coroutine, MutableSet, Optional, TypeVar, Union,
+)
 from weakref import WeakSet
+
+import aiomisc_log
+from aiomisc_log import LogLevel
 
 from .context import Context, get_context
 from .log import LogFormat, basic_config
@@ -13,6 +18,7 @@ from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
 
 
 ExecutorType = Executor
+T = TypeVar("T")
 
 
 if sys.version_info < (3, 7):
@@ -23,23 +29,65 @@ else:
     asyncio_current_task = asyncio.current_task
 
 
+def _get_env_bool(name: str, default: str) -> bool:
+    enable_variants = {"1", "enable", "enabled", "on", "true", "yes"}
+    return os.getenv(name, default).lower() in enable_variants
+
+
+def _get_env_convert(
+    name: str, converter: Callable[..., T], default: T,
+) -> T:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return converter(value)
+
+
 class Entrypoint:
+    DEFAULT_LOG_LEVEL: str = os.getenv(
+        "AIOMISC_LOG_LEVEL", LogLevel.default(),
+    )
+    DEFAULT_LOG_FORMAT: str = os.getenv(
+        "AIOMISC_LOG_FORMAT", LogFormat.default(),
+    )
+
+    DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
+    DEFAULT_AIOMISC_LOG_CONFIG: bool = _get_env_bool(
+        "AIOMISC_LOG_CONFIG", "1",
+    )
+    DEFAULT_AIOMISC_LOG_FLUSH: float = _get_env_convert(
+        "AIOMISC_LOG_FLUSH", float, 0.2,
+    )
+    DEFAULT_AIOMISC_BUFFERING: bool = _get_env_bool(
+        "AIOMISC_LOG_BUFFERING", "1",
+    )
+    DEFAULT_AIOMISC_BUFFER_SIZE: int = _get_env_convert(
+        "AIOMISC_LOG_BUFFER", int, 1024,
+    )
+    DEFAULT_AIOMISC_POOL_SIZE: Optional[int] = _get_env_convert(
+        "AIOMISC_POOL_SIZE", int, None,
+    )
 
     PRE_START = Signal()
     POST_STOP = Signal()
+    POST_START = Signal()
+    PRE_STOP = Signal()
 
     async def _start(self) -> None:
         if self.log_config:
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                buffered=True,
+                buffered=self.log_buffering,
                 loop=self.loop,
                 buffer_size=self.log_buffer_size,
                 flush_interval=self.log_flush_interval,
             )
 
-        for signal in (self.pre_start, self.post_stop):
+        for signal in (
+            self.pre_start, self.post_stop,
+            self.pre_stop, self.post_start,
+        ):
             signal.freeze()
 
         await self.pre_start.call(entrypoint=self, services=self.services)
@@ -48,16 +96,19 @@ class Entrypoint:
             *[self._start_service(svc) for svc in self.services],
         )
 
+        await self.post_start.call(entrypoint=self, services=self.services)
+
     def __init__(
         self, *services: Service, loop: asyncio.AbstractEventLoop = None,
         pool_size: int = None,
-        log_level: t.Union[int, str] = logging.INFO,
-        log_format: t.Union[str, LogFormat] = "color",
-        log_buffer_size: int = 1024,
-        log_flush_interval: float = 0.2,
-        log_config: bool = True,
+        log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
+        log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
+        log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
+        log_buffer_size: int = DEFAULT_AIOMISC_BUFFER_SIZE,
+        log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
+        log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
-        debug: bool = False
+        debug: bool = DEFAULT_AIOMISC_DEBUG
     ):
 
         """
@@ -76,12 +127,13 @@ class Entrypoint:
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
-        self._tasks: t.MutableSet[asyncio.Task] = WeakSet()
-        self._thread_pool: t.Optional[ExecutorType] = None
-        self._closing: t.Optional[asyncio.Event] = None
+        self._tasks: MutableSet[asyncio.Task] = WeakSet()
+        self._thread_pool: Optional[ExecutorType] = None
+        self._closing: Optional[asyncio.Event] = None
 
-        self.ctx: t.Optional[Context] = None
+        self.ctx: Optional[Context] = None
         self.log_buffer_size = log_buffer_size
+        self.log_buffering = log_buffering
         self.log_config = log_config
         self.log_flush_interval = log_flush_interval
         self.log_format = log_format
@@ -91,13 +143,14 @@ class Entrypoint:
         self.services = services
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
+        self.post_start = self.POST_START.copy()
+        self.pre_stop = self.PRE_STOP.copy()
         self.post_stop = self.POST_STOP.copy()
 
         if self.log_config:
-            basic_config(
+            aiomisc_log.basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                buffered=False,
             )
 
     async def closing(self) -> None:
@@ -131,10 +184,17 @@ class Entrypoint:
         return self.loop
 
     def __exit__(
-        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any,
+        self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
         if self.loop.is_closed():
             return
+
+        if self.log_config:
+            basic_config(
+                level=self.log_level,
+                log_format=self.log_format,
+                buffered=False,
+            )
 
         self.loop.run_until_complete(
             self.__aexit__(exc_type, exc_val, exc_tb),
@@ -153,8 +213,10 @@ class Entrypoint:
         return self
 
     async def __aexit__(
-        self, exc_type: t.Any, exc_val: t.Any, exc_tb: t.Any,
+        self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
+        await self.pre_stop.call(entrypoint=self)
+
         try:
             if self.loop.is_closed():
                 return
@@ -224,4 +286,13 @@ class Entrypoint:
 entrypoint = Entrypoint
 
 
-__all__ = ("entrypoint", "Entrypoint", "get_context")
+def run(
+    coro: Coroutine[None, Any, T],
+    *services: Service,
+    **kwargs: Any
+) -> T:
+    with entrypoint(*services, **kwargs) as loop:
+        return loop.run_until_complete(coro)
+
+
+__all__ = ("entrypoint", "Entrypoint", "get_context", "run")

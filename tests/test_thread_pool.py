@@ -146,7 +146,7 @@ async def test_cancel(executor, loop, timer):
 
     async with timeout(2):
         with timer(1, dispersion=2):
-            tasks = [loop.create_task(sleep(1)) for _ in range(1000)]
+            tasks = [asyncio.ensure_future(sleep(1)) for _ in range(1000)]
 
             await asyncio.sleep(1)
 

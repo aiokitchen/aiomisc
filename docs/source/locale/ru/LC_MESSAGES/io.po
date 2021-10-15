@@ -1,13 +1,89 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/io.rst:2
 msgid "asynchronous file operations"
 msgstr "асинхронные операции с файлами"
 
 #: ../../source/io.rst:4
-msgid "Asynchronous files operations. Based on thread-pool under the hood."
-msgstr "Асинхронные файловые операции запускающиеся в пуле потоков \"под капотом\"."
+msgid "Asynchronous files operations. Based on the thread pool under the hood."
+msgstr ""
+"Асинхронные файловые операции запускающиеся в пуле потоков \"под "
+"капотом\"."
 
+#: ../../source/io.rst:31
+msgid ""
+"This is the way to working with files based on threads. It's very similar"
+" to `aiofiles`_ project and same limitations."
+msgstr ""
+"Этот способ работы с файлами основан на потоках. Это очень похоже на то "
+"как сделано в библиотеке `aiofiles`_ с теми-же ограничениями."
+
+#: ../../source/io.rst:34
+msgid ""
+"Of course, you can use `aiofile`_ project for this. But it's not a silver"
+" bullet and has OS API-related limitations."
+msgstr ""
+"Разумеется вы можете использовать библиотеку `aiofile`_ для этого. Но это"
+" не панацея, так как имеет ограничения связанные с API операционной "
+"системы."
+
+#: ../../source/io.rst:37
+msgid ""
+"In general, for light loads, I would advise you to adhere to the "
+"following rules:"
+msgstr ""
+"В основном, для небольших нагрузок приложений, я рекомендую "
+"придерживаться следующих правил:"
+
+#: ../../source/io.rst:39
+msgid ""
+"If reading and writing small or big chunks from files with random access "
+"is the main task in your project, use `aiofile`_."
+msgstr ""
+"Если чтение и запись маленьких или больших кусочков в файлы со случайным "
+"доступом основная задача приложения - стоит использовать `aiofile`_."
+
+#: ../../source/io.rst:41
+msgid "Otherwise use this module or `aiofiles`_"
+msgstr "Иначе можно взять этот модуль или `aiofiles`_"
+
+#: ../../source/io.rst:42
+msgid ""
+"If the main task is to read large chunks of files for processing, both of"
+" the above methods are not optimal cause you will switch context each IO "
+"operation, it's often suboptimal for file cache and you will be lost "
+"execution time for context switches. In case for thread-based IO executor"
+" implementation thread context switches cost might be more expensive than"
+" IO operation time in summary."
+msgstr ""
+"Если основная задача читать большие куски файлов для дальнейшей их "
+"обработки оба вышеописанных метода будут не оптимальны, так как "
+"переключения контекста каждую IO операцию - это скорее всего не будет "
+"оптимально для файлового кеша и можно потерять бóльшую часть времени "
+"исполнения на переключение контекста исполнения. В случае имплементации "
+"асинхронного IO на основе потоков цена переключения контектса между "
+"потоками может оказаться выше чем суммарно время исполнения всех IO "
+"операций."
+
+#: ../../source/io.rst:50
+msgid ""
+"Just try pack all blocking staff in separate functions and call it in a "
+"thread pool, see the example bellow:"
+msgstr ""
+"Просто попробуйте завернуть все блокирующие вызовы в отдельные функции и "
+"вызывайте их используя пул потоков (см. пример ниже):"

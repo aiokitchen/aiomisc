@@ -1,7 +1,7 @@
 timeout decorator
 =================
 
-Decorator that ensures the execution time limit for decorated function is met.
+Decorator that ensures the execution time limit for the decorated function is met.
 
 .. code-block:: python
 

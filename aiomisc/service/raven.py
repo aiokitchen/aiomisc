@@ -2,8 +2,8 @@ import asyncio
 import inspect
 import logging
 import socket
-import typing as t
 from types import MappingProxyType
+from typing import Any, Iterable, Mapping
 
 import yarl
 from aiohttp import ClientSession, TCPConnector
@@ -32,13 +32,13 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
     QUEUE_SIZE = 1000
 
     def __init__(
-        self, *args: t.Any, family: int = socket.AF_UNSPEC,
+        self, *args: Any, family: int = socket.AF_UNSPEC,
         loop: asyncio.AbstractEventLoop = None,
         dns_cache: bool = DNS_CACHE,
         dns_cache_ttl: int = DNS_CACHE_TTL,
         connection_limit: int = TCP_CONNECTION_LIMIT,
         connection_limit_host: int = TCP_CONNECTION_LIMIT_HOST,
-        workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs: t.Any
+        workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs: Any
     ):
         self.connection_limit = connection_limit
         self.connection_limit_host = connection_limit_host
@@ -77,13 +77,11 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
 class RavenSender(Service):
     __required__ = "sentry_dsn",
 
-    sentry_dsn = None  # type: yarl.URL
-    min_level = logging.WARNING  # type: int
-    client_options = MappingProxyType({})  # type: t.Mapping
-
-    client = None  # type: Client
-
-    filters = ()  # type: t.Iterable[logging.Filter]
+    sentry_dsn: yarl.URL
+    min_level: int = logging.WARNING
+    client_options: Mapping[str, Any] = MappingProxyType({})
+    client: Client
+    filters: Iterable[logging.Filter] = ()
 
     async def start(self) -> None:
         self.client = Client(
@@ -114,7 +112,7 @@ class RavenSender(Service):
             handler,
         )
 
-    async def stop(self, *_: t.Any) -> None:
+    async def stop(self, *_: Any) -> None:
         transport = self.client.remote.get_transport()
         self.client.set_dsn("", transport=DummyTransport)
 

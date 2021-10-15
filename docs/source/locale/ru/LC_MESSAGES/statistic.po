@@ -1,21 +1,19 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2021, Dmitry Orlov
-# This file is distributed under the same license as the aiomisc package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
-#
-#, fuzzy
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
 msgid ""
 msgstr ""
-"Project-Id-Version: aiomisc 14.1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-13 16:20+0300\n"
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/statistic.rst:2
 msgid "Statistic counters"
@@ -31,14 +29,13 @@ msgstr ""
 
 #: ../../source/statistic.rst:7
 msgid ""
-"Statistic instances creates dynamically. You might set custom names for "
+"Statistic instances create dynamically. You might set custom names for "
 "this using ``statistic_name: Optional[str] = None`` argument for "
 "compatible entities."
 msgstr ""
-"Экземпляры классов статистики создаются динамически. Вы можете использовать "
-"определяемые пользователем имена для них добавляя "
-"аргумент ``statistic_name: Optional[str] = None`` в сущьности "
-"поддерживающе это."
+"Экземпляры классов статистики создаются динамически. Вы можете "
+"использовать определяемые пользователем имена для них добавляя аргумент "
+"``statistic_name: Optional[str] = None`` в сущьности поддерживающе это."
 
 #: ../../source/statistic.rst:29
 msgid "This code will print something like this:"

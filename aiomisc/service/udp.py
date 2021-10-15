@@ -1,15 +1,15 @@
 import asyncio
 import socket
-import typing as t
 from functools import partial
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
 
-_TransportType = t.Optional[asyncio.DatagramTransport]
-HandleDatagramType = t.Callable[
-    [bytes, tuple], t.Union[t.Awaitable[None], None],
+TransportType = Optional[asyncio.DatagramTransport]
+HandleDatagramType = Callable[
+    [bytes, tuple], Union[Awaitable[None], None],
 ]
 
 
@@ -18,15 +18,15 @@ class UDPServer(SimpleServer):
 
         def __init__(
             self, handle_datagram: HandleDatagramType,
-            task_factory: t.Callable[..., asyncio.Task],
+            task_factory: Callable[..., asyncio.Task],
         ):
             super().__init__()
             self.task_factory = task_factory
             self.handler = awaitable(handle_datagram)
-            self.transport = None   # type: _TransportType
-            self.loop = None  # type: t.Optional[asyncio.AbstractEventLoop]
+            self.transport: TransportType = None
+            self.loop: Optional[asyncio.AbstractEventLoop] = None
 
-        def connection_made(self, transport: t.Any) -> None:
+        def connection_made(self, transport: Any) -> None:
             self.transport = transport
             self.loop = asyncio.get_event_loop()
 
@@ -36,7 +36,7 @@ class UDPServer(SimpleServer):
     def __init__(
         self, address: str = None, port: int = None,
         options: OptionsType = (), sock: socket.socket = None,
-        **kwargs: t.Any
+        **kwargs: Any
     ):
         if not sock:
             if not (address and port):
@@ -58,12 +58,12 @@ class UDPServer(SimpleServer):
         else:
             self.make_socket = lambda: sock     # type: ignore
 
-        self._transport = None  # type: t.Optional[asyncio.DatagramTransport]
-        self._protocol = None   # type: t.Optional[asyncio.DatagramProtocol]
-        self.socket = None      # type: t.Optional[socket.socket]
+        self._transport: TransportType = None
+        self._protocol: Optional[asyncio.DatagramProtocol] = None
+        self.socket: Optional[socket.socket] = None
         super().__init__(**kwargs)
 
-    def sendto(self, data: bytes, addr: tuple) -> t.Any:
+    def sendto(self, data: bytes, addr: tuple) -> Any:
         if self._transport is None:
             raise RuntimeError
 

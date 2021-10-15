@@ -1,89 +1,103 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/pytest.rst:2
 msgid "Pytest plugin"
-msgstr ""
+msgstr "Плагин для Pytest"
 
 #: ../../source/pytest.rst:4
-msgid "This package contains plugin for pytest."
-msgstr ""
+msgid "This package contains a plugin for pytest."
+msgstr "Этот пакет содержит plugin для pytest."
 
 #: ../../source/pytest.rst:7
 msgid "Basic usage"
-msgstr ""
+msgstr "Простой пример"
 
 #: ../../source/pytest.rst:9
 msgid "Simple usage example:"
-msgstr ""
+msgstr "Простой пример использования:"
 
 #: ../../source/pytest.rst:24
-msgid "asynchronous fuxture example:"
-msgstr ""
+msgid "asynchronous fixture example:"
+msgstr "пример асинхронной фикстуры:"
 
 #: ../../source/pytest.rst:42
 msgid "pytest markers"
-msgstr ""
+msgstr "маркеры pytest"
 
 #: ../../source/pytest.rst:44
 msgid "Package contains some useful markers for pytest:"
-msgstr ""
+msgstr "Пакет содержит несколько полезных маркеров для pytest:"
 
 #: ../../source/pytest.rst:46
 msgid ""
 "``catch_loop_exceptions`` - uncaught event loop exceptions will failling "
 "test."
 msgstr ""
+"``catch_loop_exceptions`` - непойманные исклбчения в event loop сломают тест."
 
 #: ../../source/pytest.rst:47
 msgid ""
 "``forbid_get_event_loop`` - forbids call ``asyncio.get_event_loop`` "
 "during test case."
 msgstr ""
+"``forbid_get_event_loop`` - запрещает вызов ``asyncio.get_event_loop`` "
+"при прогоне теста."
 
 #: ../../source/pytest.rst:82
 msgid "Passing default context"
-msgstr ""
+msgstr "Передача контекста по умолчанию"
 
 #: ../../source/pytest.rst:98
 msgid "Testing services"
-msgstr ""
+msgstr "Тестирование сервисов"
 
 #: ../../source/pytest.rst:100
 msgid "Redefine ``services`` fixture in your test module:"
-msgstr ""
+msgstr "Переопределите фикстуру ``services`` в вашем тестовом модуле:"
 
 #: ../../source/pytest.rst:116
 msgid "Event loop policy overriding"
-msgstr ""
+msgstr "Переопределение политики создания цикла событий"
 
 #: ../../source/pytest.rst:134
 msgid "Thread pool overriding"
-msgstr ""
+msgstr "Переопределение пула потоков"
 
 #: ../../source/pytest.rst:149
 msgid "entrypoint arguments"
-msgstr ""
+msgstr "агрументы entrypoint"
 
 #: ../../source/pytest.rst:161
 msgid "aiohttp test client"
-msgstr ""
+msgstr "тестовый класс для aiohttp"
 
 #: ../../source/pytest.rst:197
 msgid "TCPProxy"
-msgstr ""
+msgstr "TCPProxy"
 
 #: ../../source/pytest.rst:199
-msgid "Simple TCP proxy for emulate network problems."
+msgid ""
+"Simple TCP proxy for emulate network problems. Available as fixture "
+"`tcp_proxy`"
 msgstr ""
+"Простой TCP proxy для эмуляции сетевых проблем. Доступен как фикстура "
+"`tcp_proxy`"
 
-#: ../../source/pytest.rst:201
-msgid "Awailable as fixture `tcp_proxy`"
-msgstr ""
-
-#: ../../source/pytest.rst:205
+#: ../../source/pytest.rst:202
 msgid "Examples:"
-msgstr ""
-
+msgstr "Примеры:"

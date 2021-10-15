@@ -1,7 +1,19 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/utils.rst:2
 msgid "Utilities"
@@ -13,30 +25,35 @@ msgstr "Select"
 
 #: ../../source/utils.rst:7
 msgid ""
-"In some cases you should wait only one of multiple tasks. ``select`` "
-"waits first passed awaitable object and returns list of results."
+"In some cases, you should wait for only one of multiple tasks. ``select``"
+" waits first passed awaitable object and returns the list of results."
 msgstr ""
-"Иногда требуется дождаться выполнения хотя-бы одной задачи из многих. ``select`` "
-"ожидает выполнения одной из переданных сопрограмм (или объектов с реализованным методом `__await__`) "
-"И возвращает список результатов."
+"Иногда требуется дождаться выполнения хотя-бы одной задачи из многих. "
+"``select`` ожидает выполнения одной из переданных сопрограмм (или "
+"объектов с реализованным методом `__await__`) И возвращает список "
+"результатов."
 
 #: ../../source/utils.rst:45
 msgid ""
 "When you don't want to cancel pending tasks pass ``cancel=False`` "
-"argument. In this case you have to handle task completion manually or get"
-" warnings."
+"argument. In this case, you have to handle task completion manually or "
+"get warnings."
 msgstr ""
-"В случае если вы не желаете отменять запущенные задачии передайте аргумент ``cancel=False``. "
-"Но в этом случае вам придется разобраться с завершением или отменой самостоятельон иначе "
-"будет предупреждение от интерпретатора."
+"В случае если вы не желаете отменять запущенные задачии передайте "
+"аргумент ``cancel=False``. Но в этом случае вам придется разобраться с "
+"завершением или отменой самостоятельон иначе будет предупреждение от "
+"интерпретатора."
 
 #: ../../source/utils.rst:50
 msgid "cancel_tasks"
 msgstr "cancel_tasks"
 
 #: ../../source/utils.rst:52
-msgid "All passed tasks will be cancelled and task will be returned:"
-msgstr "Все переданные задачи будут отменены, при это функция возвращает `asyncio.Task`:"
+#, fuzzy
+msgid "All passed tasks will be canceled and the task will be returned:"
+msgstr ""
+"Все переданные задачи будут отменены, при это функция возвращает "
+"`asyncio.Task`:"
 
 #: ../../source/utils.rst:74
 msgid "awaitable"
@@ -44,20 +61,22 @@ msgstr "awaitable"
 
 #: ../../source/utils.rst:76
 msgid ""
-"Decorator wraps function and returns a function which returns awaitable "
-"object. In case than a function returns a future, the original future "
-"will be returned. In case then the function returns a coroutine, the "
-"original coroutine will be returned. In case than function returns non-"
-"awaitable object, it's will be wrapped to a new coroutine which just "
-"returns this object. It's useful when you don't want to check function "
-"result before use it in ``await`` expression."
+"Decorator wraps function and returns a function that returns awaitable "
+"object. In case a function returns a future, the original future will be "
+"returned. In case then the function returns a coroutine, the original "
+"coroutine will be returned. In case than function returns a non-awaitable"
+" object, it's will be wrapped to a new coroutine that just returns this "
+"object. It's useful when you don't want to check function results before "
+"use it in ``await`` expression."
 msgstr ""
 "Оборачивает функции таким образом что они всегда возвращают сопрограмму. "
-"Если функция возвращает объект `asyncio.Future`, будет возвращен оригинальный объект. "
-"Если функция итак возвращает сопрограмму, или объект с реализованным методом `__await__` "
-"будет возвращен оригинальный объект."
-"В противном случае возвращаемый объект будет тобернут в сопрограмму, которая вернет этот объект."
-"Это полезно если не хочется проверять возврат из функции перед тем как использовать ее в `await` выражении."
+"Если функция возвращает объект `asyncio.Future`, будет возвращен "
+"оригинальный объект. Если функция итак возвращает сопрограмму, или объект"
+" с реализованным методом `__await__` будет возвращен оригинальный "
+"объект.В противном случае возвращаемый объект будет тобернут в "
+"сопрограмму, которая вернет этот объект.Это полезно если не хочется "
+"проверять возврат из функции перед тем как использовать ее в `await` "
+"выражении."
 
 #: ../../source/utils.rst:100
 msgid "Bind socket"
@@ -66,11 +85,11 @@ msgstr "Bind socket"
 #: ../../source/utils.rst:102
 msgid ""
 "Bind socket and set ``setblocking(False)`` for just created socket. This "
-"detects ``address`` format and select socket family automatically."
+"detects ``address`` format and selects the socket family automatically."
 msgstr ""
-"Создает сокет и устанавливает для него необходимые для работы с asyncio флаги "
-"(вроде ``setblocking(False)``). Так-же определяет семейство адресов "
-"(IPv6/IPv4) из формата аргумента ``address`` автоматически."
+"Создает сокет и устанавливает для него необходимые для работы с asyncio "
+"флаги (вроде ``setblocking(False)``). Так-же определяет семейство адресов"
+" (IPv6/IPv4) из формата аргумента ``address`` автоматически."
 
 #: ../../source/utils.rst:117
 msgid "Periodic callback"
@@ -81,8 +100,8 @@ msgid ""
 "Runs coroutine function periodically with an optional delay of the first "
 "execution."
 msgstr ""
-"Запускает сопрограммы переодически с заданным периодом времени, "
-"и необязательной задержкой при первом запуске."
+"Запускает сопрограммы переодически с заданным периодом времени, и "
+"необязательной задержкой при первом запуске."
 
 #: ../../source/utils.rst:144
 msgid "Cron callback"

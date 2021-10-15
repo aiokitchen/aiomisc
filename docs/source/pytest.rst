@@ -1,7 +1,7 @@
 Pytest plugin
 =============
 
-This package contains plugin for pytest.
+This package contains a plugin for pytest.
 
 Basic usage
 +++++++++++
@@ -21,7 +21,7 @@ Simple usage example:
         assert await f
 
 
-asynchronous fuxture example:
+asynchronous fixture example:
 
 
 .. code-block:: python
@@ -196,10 +196,7 @@ aiohttp test client
 TCPProxy
 ++++++++
 
-Simple TCP proxy for emulate network problems.
-
-Awailable as fixture `tcp_proxy`
-
+Simple TCP proxy for emulate network problems. Available as fixture `tcp_proxy`
 
 
 Examples:

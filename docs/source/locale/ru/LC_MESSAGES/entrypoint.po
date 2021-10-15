@@ -1,7 +1,19 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/entrypoint.rst:2
 msgid "entrypoint"
@@ -9,16 +21,68 @@ msgstr "Точка входа (`entrypoint`)"
 
 #: ../../source/entrypoint.rst:4
 msgid ""
-"In generic case the entrypoint helper creates event loop and cancels "
-"already running coroutines on exit."
-msgstr "В общем случае точка входа это сущность помогающая создать event "
-"loop и закрыть все еще запущенные корутины при выходе."
+"In the generic case, the entrypoint helper creates an event loop and "
+"cancels already running coroutines on exit."
+msgstr ""
+"В общем случае точка входа это сущность помогающая создать event loop и "
+"закрыть все еще запущенные корутины при выходе."
 
-#: ../../source/entrypoint.rst:19
+#: ../../source/entrypoint.rst:20
 msgid "Complete example:"
 msgstr "Пример целиком:"
 
 #: ../../source/entrypoint.rst:45
 msgid "Running entrypoint from async code"
 msgstr "Запуск точки входа (`entrypoint`) из асинхронного кода"
+
+#: ../../source/entrypoint.rst:77
+msgid "Configuration from environment"
+msgstr "Конфигурация из переменных окружения"
+
+#: ../../source/entrypoint.rst:79
+msgid "Module support configuration from environment variables:"
+msgstr "Модуль поддерживает конфигурацию из переменных окружения:"
+
+#: ../../source/entrypoint.rst:81
+msgid "`AIOMISC_LOG_LEVEL` - default logging level"
+msgstr "`AIOMISC_LOG_LEVEL` - уровень логирования по умолчанию"
+
+#: ../../source/entrypoint.rst:82
+msgid "`AIOMISC_LOG_FORMAT` - default log format"
+msgstr "`AIOMISC_LOG_FORMAT` - формат логирования по умолчанию"
+
+#: ../../source/entrypoint.rst:83
+msgid "`AIOMISC_LOG_CONFIG` - should logging be configured"
+msgstr "`AIOMISC_LOG_CONFIG` - следует ли настраивать логирование"
+
+#: ../../source/entrypoint.rst:84
+msgid "`AIOMISC_LOG_FLUSH` - interval between logs flushing from buffer"
+msgstr "`AIOMISC_LOG_FLUSH` - интервал сброса буфера логов logs"
+
+#: ../../source/entrypoint.rst:85
+msgid "`AIOMISC_LOG_BUFFERING` - следует ли включать буфферизацию логирования"
+msgstr ""
+
+#: ../../source/entrypoint.rst:86
+msgid "`AIOMISC_LOG_BUFFER_SIZE` - maximum log buffer size"
+msgstr "`AIOMISC_LOG_BUFFER_SIZE` - максимальный размер буфера логов"
+
+#: ../../source/entrypoint.rst:87
+msgid "`AIOMISC_POOL_SIZE` - thread pool size"
+msgstr "`AIOMISC_POOL_SIZE` - размер пула потоков"
+
+#: ../../source/entrypoint.rst:91
+msgid "``run()`` shortcut"
+msgstr "Функция ``run()``"
+
+#: ../../source/entrypoint.rst:93
+msgid ""
+"``aiomisc.run()`` - it's the short way to create and destroy "
+"``aiomisc.entrypoint``. It's very similar to ``asyncio.run()`` but handle"
+" ``Service``'s and other ``entrypoint``'s kwargs."
+msgstr ""
+"``aiomisc.run()`` - это простой способ создать и разрушить "
+"``aiomisc.entrypoint``. Это очень похоже на ``asyncio.run()`` но "
+"управляет сервисами ``aiomisc.Service`` и принимает прочие аргументы "
+"entrypoint."
 

@@ -18,7 +18,7 @@ async def test_cron(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 2
 
@@ -29,17 +29,23 @@ async def test_cron(loop):
 
 async def test_long_func(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     async def task():
         nonlocal counter
-        counter += 1
-        await asyncio.sleep(1)
+        async with condition:
+            counter += 1
+            await asyncio.sleep(1)
+            condition.notify_all()
 
     cron = CronCallback(task)
     cron.start("* * * * * *", loop)
 
-    await asyncio.sleep(1.5)
-    cron.stop()
+    async with condition:
+        await condition.wait_for(lambda: counter == 1)
+
+    await cron.stop()
+    await asyncio.sleep(2)
 
     assert counter == 1
 
@@ -98,7 +104,7 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 2
 
@@ -109,7 +115,7 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    cron.stop()
+    await cron.stop()
 
     assert counter == 4
 

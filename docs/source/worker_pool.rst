@@ -2,23 +2,23 @@ Worker Pool
 ===========
 
 Python has the ``multiprocessing`` module with ``Pool`` class which
-implements similar worker pool. The IPC in this case use completely
-synchronous communication method. This module reimplements the process
-based worker pool but IPC is completely asynchronous on caller side,
-meanwhile workers in separate processes aren't asynchronous.
+implements a similar worker pool. The IPC in this case uses a completely
+synchronous communication method. This module reimplements the process-based
+worker pool but IPC is completely asynchronous on the caller side,
+meanwhile, workers in separate processes aren't asynchronous.
 
 Example
 +++++++
 
 This would be useful when you want to process the data in a separate process,
-and the input and output data are not very large. Otherwise it will work
+and the input and output data are not very large. Otherwise, it will work
 fine, of course, but you would have to spend time transmitting the data
 over IPC.
 
 A good example is parallel image processing. Of course, you can transfer bytes
-of images through the IPC of the working pool, but in general case passing the
-file name to the worker will be better. Exception will be cases when the
-image payload significantly smaller the 1KB for example.
+of images through the IPC of the working pool, but in general, case passing the
+file name to the worker will be better. The exception will be cases when the
+image payload is significantly smaller the 1KB for example.
 
 Let's write a program that accepts images in JPEG format and creates thumbnails
 for this. In this case, you have a file with the original image, and you should
@@ -26,7 +26,7 @@ generate the output path for the 'thumbnail' function.
 
 .. note::
 
-    You have to install Pillow image processing library to run this example.
+    You have to install the Pillow image processing library to run this example.
 
     Installing pillow with pip:
 
@@ -111,7 +111,7 @@ generate the output path for the 'thumbnail' function.
             loop.run_until_complete(amain(image_dir))
 
 
-This example takes the image directory as the first command-line argument, and
+This example takes the image directory as the first command-line argument and
 creates directories for the thumbnails. After that, a ``WorkerPool`` is started
 with as many processes as the processor has cores.
 
@@ -120,4 +120,4 @@ one file to one size, after which all tasks fall into the ``WorkerPool``
 instance.
 
 The ``WorkerPool`` processes the tasks concurrently, but only one job for one
-worker at the same time.
+a worker at the same time.

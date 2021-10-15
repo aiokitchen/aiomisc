@@ -11,7 +11,7 @@ from aiomisc.process_pool import ProcessPoolExecutor
 
 @pytest.fixture
 def pool():
-    pool = ProcessPoolExecutor(8)
+    pool = ProcessPoolExecutor(4)
     try:
         yield pool
     finally:
@@ -26,7 +26,7 @@ async def test_simple(pool, loop, timer):
         with timer(1):
             await asyncio.gather(
                 *[
-                    loop.run_in_executor(pool, sleep, 1) for _ in range(8)
+                    loop.run_in_executor(pool, sleep, 1) for _ in range(4)
                 ]
             )
 
@@ -44,5 +44,5 @@ async def test_exit(pool, loop):
     async with timeout(2):
         with pytest.raises(asyncio.CancelledError):
             await asyncio.gather(
-                *[loop.run_in_executor(pool, suicide) for _ in range(8)]
+                *[loop.run_in_executor(pool, suicide) for _ in range(4)]
             )

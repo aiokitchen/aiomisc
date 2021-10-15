@@ -1,15 +1,17 @@
 import asyncio
 import logging
-import typing as t
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
+from typing import (
+    Any, Awaitable, Callable, DefaultDict, NoReturn, Set, TypeVar, Union,
+)
 
 from .utils import cancel_tasks
 
 
-T = t.TypeVar("T")
-Number = t.Union[int, float]
+T = TypeVar("T")
+Number = Union[int, float]
 
 
 try:
@@ -19,14 +21,14 @@ except ImportError:
     class AsyncContextManager(ABC):     # type: ignore
 
         @abstractmethod
-        async def __aenter__(self) -> t.Any:
+        async def __aenter__(self) -> Any:
             raise NotImplementedError
 
         @abstractmethod
         async def __aexit__(
-            self, exc_type: t.Any, exc_val: t.Any,
-            exc_tb: t.Any,
-        ) -> t.Any:
+            self, exc_type: Any, exc_val: Any,
+            exc_tb: Any,
+        ) -> Any:
             raise NotImplementedError
 
 
@@ -39,8 +41,8 @@ class ContextManager(AsyncContextManager):
     sentinel = object()
 
     def __init__(
-        self, aenter: t.Callable[..., t.Awaitable[T]],
-        aexit: t.Callable[..., t.Awaitable[T]],
+        self, aenter: Callable[..., Awaitable[T]],
+        aexit: Callable[..., Awaitable[T]],
     ):
         self.__aenter = aenter
         self.__aexit = aexit
@@ -54,9 +56,9 @@ class ContextManager(AsyncContextManager):
         return self.__instance
 
     async def __aexit__(
-        self, exc_type: t.Any, exc_value: t.Any,
-        traceback: t.Any,
-    ) -> t.Any:
+        self, exc_type: Any, exc_value: Any,
+        traceback: Any,
+    ) -> Any:
         await self.__aexit(self.__instance)
 
 
@@ -74,6 +76,11 @@ class PoolBase(ABC):
         "_used",
     )
 
+    _tasks: Set[Any]
+    _used: Set[Any]
+    _instances: asyncio.Queue
+    _recycle_bin: asyncio.Queue
+
     def __init__(self, maxsize: int = 10, recycle: int = None):
         assert (
             recycle is None or recycle > 0
@@ -81,31 +88,31 @@ class PoolBase(ABC):
 
         self._loop = asyncio.get_event_loop()
 
-        self._instances = asyncio.Queue()       # type: asyncio.Queue
-        self._recycle_bin = asyncio.Queue()     # type: asyncio.Queue
+        self._instances = asyncio.Queue()
+        self._recycle_bin = asyncio.Queue()
 
         self._semaphore = asyncio.Semaphore(maxsize)
         self._len = 0
 
         self._recycle = recycle
 
-        self._tasks = set()                     # type: t.Set[t.Any]
-        self._used = set()                      # type: t.Set[t.Any]
+        self._tasks = set()
+        self._used = set()
 
         self._create_lock = asyncio.Lock()
-        self._recycle_times = defaultdict(
+        self._recycle_times: DefaultDict[float, Any] = defaultdict(
             self._loop.time,
-        )  # type: t.DefaultDict[float, t.Any]
+        )
 
         self.__create_task(self.__recycler())
 
-    def __create_task(self, coro: t.Awaitable[T]) -> asyncio.Task:
+    def __create_task(self, coro: Awaitable[T]) -> asyncio.Task:
         task = self._loop.create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._tasks.remove)
         return task
 
-    async def __recycler(self) -> t.NoReturn:
+    async def __recycler(self) -> NoReturn:
         while True:
             instance = await self._recycle_bin.get()
 
@@ -121,18 +128,18 @@ class PoolBase(ABC):
         pass
 
     @abstractmethod
-    async def _destroy_instance(self, instance: t.Any) -> None:
+    async def _destroy_instance(self, instance: Any) -> None:
         pass
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     @abstractmethod
-    async def _check_instance(self, instance: t.Any) -> bool:
+    async def _check_instance(self, instance: Any) -> bool:
         return True
 
     def __len__(self) -> int:
         return self._len
 
-    def __recycle_instance(self, instance: t.Any) -> None:
+    def __recycle_instance(self, instance: Any) -> None:
         self._len -= 1
         self._semaphore.release()
         if instance in self._recycle_times:
@@ -146,7 +153,7 @@ class PoolBase(ABC):
     async def __create_new_instance(self) -> None:
         await self._semaphore.acquire()
 
-        instance = await self._create_instance()    # type: t.Any
+        instance: Any = await self._create_instance()
         self._len += 1
 
         if self._recycle:
@@ -155,7 +162,7 @@ class PoolBase(ABC):
 
         await self._instances.put(instance)
 
-    async def __acquire(self) -> t.Any:
+    async def __acquire(self) -> Any:
         if not self._semaphore.locked():
             await self.__create_new_instance()
 
@@ -174,7 +181,7 @@ class PoolBase(ABC):
         self._used.add(instance)
         return instance
 
-    async def __release(self, instance: t.Any) -> None:
+    async def __release(self, instance: Any) -> None:
         self._used.remove(instance)
 
         if self._recycle and self._recycle_times[instance] < self._loop.time():
@@ -196,7 +203,7 @@ class PoolBase(ABC):
             except asyncio.QueueEmpty:
                 break
 
-        async def log_exception(coro: t.Awaitable[t.Any]) -> None:
+        async def log_exception(coro: Awaitable[Any]) -> None:
             try:
                 await coro
             except Exception:

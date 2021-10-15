@@ -3,7 +3,6 @@ import inspect
 import logging
 from asyncio import CancelledError, Event, Future, Lock, wait_for
 from inspect import Parameter
-from time import monotonic
 from typing import (
     Any, Awaitable, Callable, Iterable, List, NamedTuple, Optional, Union,
 )
@@ -67,6 +66,7 @@ class Aggregator:
         if leeway_ms <= 0:
             raise ValueError("leeway_ms must be positive float")
 
+        self._loop = asyncio.get_event_loop()
         self._func = func
         self._max_count = max_count
         self._leeway = leeway_ms / 1000
@@ -124,7 +124,7 @@ class Aggregator:
 
     async def aggregate(self, arg: Any) -> Any:
         if self._first_call_at is None:
-            self._first_call_at = monotonic()
+            self._first_call_at = self._loop.time()
         first_call_at = self._first_call_at
 
         args: list = self._args
@@ -143,14 +143,14 @@ class Aggregator:
             try:
                 await wait_for(
                     event.wait(),
-                    timeout=first_call_at + self._leeway - monotonic(),
+                    timeout=first_call_at + self._leeway - self._loop.time(),
                 )
             except asyncio.TimeoutError:
                 log.debug(
                     "Aggregation timeout of %s for batch started at %.4f "
                     "with %d calls after %.2f ms",
                     self._func.__name__, first_call_at, len(futures),
-                    (monotonic() - first_call_at) * 1000,
+                    (self._loop.time() - first_call_at) * 1000,
                 )
 
         # Clear only if not cleared already

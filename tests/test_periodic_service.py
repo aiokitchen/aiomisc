@@ -17,14 +17,18 @@ def test_str_representation():
     assert str(svc) == "FooPeriodicService(interval=42,delay=4815162342)"
 
 
-def test_periodic():
+def test_periodic(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
             nonlocal counter
-            counter += 1
-            await asyncio.sleep(0)
+            nonlocal condition
+
+            async with condition:
+                counter += 1
+                condition.notify_all()
 
     svc = CountPeriodicService(interval=0.1)
 
@@ -32,26 +36,38 @@ def test_periodic():
         nonlocal counter, svc
 
         counter = 0
-        await asyncio.sleep(0.5)
-        assert 4 <= counter <= 7
 
-        await svc.stop(None)
+        for i in (5, 10):
+            await svc.start()
+            async with condition:
+                await asyncio.wait_for(
+                    condition.wait_for(lambda: counter == i),
+                    timeout=10,
+                )
 
-        await asyncio.sleep(0.5)
-        assert 4 <= counter <= 7
+            await svc.stop(None)
+            assert counter == i
 
-    with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
+    with aiomisc.entrypoint(svc, loop=loop) as loop:
+        loop.run_until_complete(
+            asyncio.wait_for(
+                assert_counter(),
+                timeout=10,
+            ),
+        )
 
 
-def test_delay():
+def test_delay(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
             nonlocal counter
-            counter += 1
-            await asyncio.sleep(0)
+
+            async with condition:
+                counter += 1
+                condition.notify_all()
 
     svc = CountPeriodicService(interval=0.1, delay=0.5)
 
@@ -62,11 +78,13 @@ def test_delay():
         await asyncio.sleep(0.25)
         assert not counter
 
-        await asyncio.sleep(0.5)
+        async with condition:
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter == 5),
+                timeout=5,
+            )
 
         await svc.stop(None)
 
-        assert 1 < counter < 4
-
-    with aiomisc.entrypoint(svc) as loop:
+    with aiomisc.entrypoint(svc, loop=loop) as loop:
         loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))

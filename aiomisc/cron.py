@@ -1,8 +1,8 @@
 import asyncio
 import logging
-import typing as t
 from datetime import datetime, timezone
 from functools import partial
+from typing import Any, Awaitable, Callable, Optional, Tuple, Type, Union
 
 from croniter import croniter
 
@@ -37,8 +37,8 @@ class CronCallback:
 
     def __init__(
         self,
-        coroutine_func: t.Callable[..., t.Union[t.Any, t.Awaitable[t.Any]]],
-        *args: t.Any, **kwargs: t.Any
+        coroutine_func: Callable[..., Union[Any, Awaitable[Any]]],
+        *args: Any, **kwargs: Any
     ):
         self.__name = repr(coroutine_func)
         self._cb = partial(
@@ -46,12 +46,12 @@ class CronCallback:
         )
         self._statistic = CronCallbackStatistic()
         self._closed = False
-        self._handle = None     # type: t.Optional[asyncio.Handle]
-        self._task = None       # type: t.Optional[asyncio.Future]
+        self._handle: Optional[asyncio.Handle] = None
+        self._task: Optional[asyncio.Future] = None
 
     async def _run(
         self,
-        suppress_exceptions: t.Tuple[t.Type[Exception], ...] = (),
+        suppress_exceptions: Tuple[Type[Exception], ...] = (),
     ) -> None:
         delta = -self._loop.time()
         try:
@@ -97,7 +97,7 @@ class CronCallback:
         spec: str,
         loop: asyncio.AbstractEventLoop = None,
         *, shield: bool = False,
-        suppress_exceptions: t.Tuple[t.Type[Exception], ...] = ()
+        suppress_exceptions: Tuple[Type[Exception], ...] = ()
     ) -> None:
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError
@@ -130,7 +130,7 @@ class CronCallback:
             if self._closed:
                 return
 
-            runner = self._run  # type: t.Callable[..., t.Awaitable[t.Any]]
+            runner: Callable[..., Awaitable[Any]] = self._run
             if shield:
                 runner = utils.shield(runner)
 
@@ -138,7 +138,7 @@ class CronCallback:
 
             call_next()
 
-        def call_next(*_: t.Any) -> None:
+        def call_next(*_: Any) -> None:
             if self._handle is not None:
                 self._handle.cancel()
                 del self._handle
@@ -170,5 +170,5 @@ class CronCallback:
         return "%s(%s)" % (self.__class__.__name__, self._cb.func.__name__)
 
     @property
-    def task(self) -> t.Optional[asyncio.Future]:
+    def task(self) -> Optional[asyncio.Future]:
         return self._task

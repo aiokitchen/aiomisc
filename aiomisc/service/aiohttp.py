@@ -1,5 +1,5 @@
 import socket
-import typing as t
+from typing import Any, Optional, Tuple
 
 from aiohttp.web import Application, AppRunner, BaseRunner, SockSite  # noqa
 
@@ -16,14 +16,17 @@ except ImportError:         # pragma: nocover
 
 
 class AIOHTTPService(Service):
-    __async_required__ = (
+    __async_required__: Tuple[str, ...] = (
         "start", "create_application",
-    )   # type: t.Tuple[str, ...]
+    )
+
+    site: SockSite
+    runner: BaseRunner
 
     def __init__(
-        self, address: t.Optional[str] = "localhost", port: int = None,
+        self, address: Optional[str] = "localhost", port: int = None,
         sock: socket.socket = None, shutdown_timeout: int = 5,
-        **kwds: t.Any
+        **kwds: Any
     ):
 
         if not sock:
@@ -44,8 +47,6 @@ class AIOHTTPService(Service):
         else:
             self.socket = sock
 
-        self.runner = None      # type: t.Optional[BaseRunner]
-        self.site = None        # type: t.Optional[SockSite]
         self.shutdown_timeout = shutdown_timeout
 
         super().__init__(**kwds)
@@ -54,8 +55,8 @@ class AIOHTTPService(Service):
         return Application()
 
     async def create_site(self) -> SockSite:
-        if self.runner is None:
-            raise RuntimeError
+        if getattr(self, "runner", None) is None:
+            raise RuntimeError("runner already created")
 
         return SockSite(
             self.runner, self.socket,
@@ -63,7 +64,7 @@ class AIOHTTPService(Service):
         )
 
     async def start(self) -> None:
-        if self.runner is not None:
+        if hasattr(self, "runner"):
             raise RuntimeError("Can not start twice")
 
         self.runner = AppRunner(
@@ -83,7 +84,7 @@ class AIOHTTPService(Service):
             if self.site:
                 await self.site.stop()
         finally:
-            if self.runner:
+            if hasattr(self, "runner"):
                 await self.runner.cleanup()
 
 
@@ -92,7 +93,7 @@ class AIOHTTPSSLService(AIOHTTPService):
         self, cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
         address: str = None, port: int = None, verify: bool = True,
         sock: socket.socket = None, shutdown_timeout: int = 5,
-        require_client_cert: bool = False, **kwds: t.Any
+        require_client_cert: bool = False, **kwds: Any
     ):
 
         super().__init__(

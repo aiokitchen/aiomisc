@@ -1,12 +1,12 @@
 Services
 ========
 
-``Services`` is abstraction to help organize lots of different
+``Services`` is an abstraction to help organize lots of different
 tasks in one process. Each service must implement ``start()`` method and can
 implement ``stop()`` method.
 
 Service instance should be passed to the ``entrypoint``, and will be started
-after event loop has been created.
+after the event loop has been created.
 
 .. note::
 
@@ -17,21 +17,26 @@ after event loop has been created.
    ``start()`` method. Use ``self.loop`` instead:
 
    .. code-block:: python
+      :name: test_service_start_event
 
+      import asyncio
+      from threading import Event
       from aiomisc import entrypoint, Service
 
+      event = Event()
 
       class MyService(Service):
         async def start(self):
             # Send signal to entrypoint for continue running
             self.start_event.set()
 
+            event.set()
             # Start service task
-            await asyncio.sleep(3600, loop=self.loop)
+            await asyncio.sleep(3600)
 
 
       with entrypoint(MyService()) as loop:
-          loop.run_forever()
+          assert event.is_set()
 
 
 Method ``start()`` creates as a separate task that can run forever. But in
@@ -39,7 +44,7 @@ this case ``self.start_event.set()`` should be called for notifying
 ``entrypoint``.
 
 During graceful shutdown method ``stop()`` will be called first,
-and after that all running tasks will be cancelled (including ``start()``).
+and after that, all running tasks will be canceled (including ``start()``).
 
 
 This package contains some useful base classes for simple services writing.
@@ -51,16 +56,42 @@ TCPServer
 Just implement ``handle_client(reader, writer)`` to use it.
 
 .. code-block:: python
+    :name: test_service_echo_tcp_server
+
+    import asyncio
+    import logging
+    from aiomisc import entrypoint
+    from aiomisc.service import TCPServer
+
+
+    log = logging.getLogger(__name__)
+
 
     class EchoServer(TCPServer):
         async def handle_client(self, reader: asyncio.StreamReader,
                                 writer: asyncio.StreamWriter):
-            while True:
-                writer.write(await reader.readline())
+            while not reader.at_eof():
+                writer.write(await reader.read(255))
+
+            log.info("Client connection closed")
 
 
-    with entrypoint(EchoServer(address='::1', port=8901)) as loop:
-        loop.run_forever()
+    async def echo_client(host, port):
+        reader, writer = await asyncio.open_connection(host=host, port=port)
+        writer.write(b"hello\n")
+        assert await reader.readline() == b"hello\n"
+
+        writer.write(b"world\n")
+        assert await reader.readline() == b"world\n"
+
+        writer.close()
+        await writer.wait_closed()
+
+
+    with entrypoint(
+        EchoServer(address='::1', port=8901),
+    ) as loop:
+        loop.run_until_complete(echo_client("::1", 8901))
 
 
 UDPServer
@@ -111,7 +142,7 @@ PeriodicService
 +++++++++++++++
 
 ``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for
-running callback to complete on stop. You need to use ``PeriodicService``
+the running callback to complete on the stop method. You need to use ``PeriodicService``
 as a base class and override ``callback`` async coroutine method.
 
 Service class accepts required ``interval`` argument - periodic interval
@@ -141,7 +172,7 @@ CronService
 .. _croniter: https://github.com/taichino/croniter
 
 ``CronService`` runs ``CronCallback's`` as a service and waits for
-running callbacks to complete on stop.
+running callbacks to complete on the stop method.
 
 It's based on croniter_. You can register async coroutine method with ``spec`` argument - cron like format:
 
@@ -342,7 +373,7 @@ aiohttp application can be started as a service:
         loop.run_forever()
 
 
-Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates HTTPS
+Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates an HTTPS
 server. You must pass SSL-required options (see ``TLSServer`` class).
 
 
@@ -461,7 +492,7 @@ Profiler
 Simple service for profiling.
 Optional `path` argument can be provided to dump complete profiling data,
 which can be later used by, for example, snakeviz.
-Also can change ordering with `order` argument ("cumulative" by default).
+Also can change ordering with the `order` argument ("cumulative" by default).
 
 
 .. code-block:: python
@@ -607,6 +638,69 @@ Full configuration:
    with entrypoint(raven_sender) as loop:
        loop.run_until_complete(main())
 
-You will find full specification of options in the `Raven documentation`_.
+You will find the full specification of options in the `Raven documentation`_.
 
 .. _Raven documentation: https://docs.sentry.io/clients/python/advanced/#client-arguments
+
+
+SDWatchdogService
++++++++++++++++++
+
+Service just adding to your entrypoint and notifying SystemD
+service watchdog timer.
+
+This can be safely added at any time, since if the service does not detect
+systemd-related environment variables, then its initialization is skipped.
+
+Example of python file:
+
+.. code-block:: python
+    :name: test_sdwatchdog
+
+    import logging
+    from time import sleep
+
+    from aiomisc import entrypoint
+    from aiomisc.service.sdwatchdog import SDWatchdogService
+
+
+    if __name__ == '__main__':
+        with entrypoint(SDWatchdogService()) as loop:
+            pass
+
+
+Example of systemd service file:
+
+.. code-block:: ini
+
+    [Service]
+    # Activating the notification mechanism
+    Type=notify
+
+    # Command which should be started
+    ExecStart=/home/mosquito/.venv/aiomisc/bin/python /home/mosquito/scratch.py
+
+    # Set journald logging handler
+    Environment=AIOMISC_LOG_FORMAT=journald
+
+    # The time for which the program must send a watchdog notification
+    WatchdogSec=5
+
+    # Kill the process if it has stopped responding to the watchdog timer
+    WatchdogSignal=SIGKILL
+
+    # The service should be restarted on failure
+    Restart=on-failure
+
+    # Try to kill the process instead of cgroup
+    KillMode=process
+
+    # Trying to stop service properly
+    KillSignal=SIGINT
+
+    # Trying to restart service properly
+    RestartKillSignal=SIGINT
+
+    # Send SIGKILL when timeouts are exceeded
+    FinalKillSignal=SIGKILL
+    SendSIGKILL=yes

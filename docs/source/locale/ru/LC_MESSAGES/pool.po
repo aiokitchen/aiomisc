@@ -1,16 +1,29 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/pool.rst:2
 msgid "Abstract connection pool"
 msgstr "Абстрактный пул соединений"
 
 #: ../../source/pool.rst:4
+#, fuzzy
 msgid ""
-"``aiomisc.PoolBase`` is an abstract class for implementation user defined"
-" connection pool."
+"``aiomisc.PoolBase`` is an abstract class for implementing user-defined "
+"connection pool."
 msgstr ""
 "``Aiomisc.PoolBase`` - абстрактный класс для реализации определяемого "
 "пользователем пула соединений."

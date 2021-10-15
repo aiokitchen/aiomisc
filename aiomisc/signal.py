@@ -1,10 +1,10 @@
 import inspect
-import typing as t
+from typing import Any, Callable, FrozenSet, Set, TypeVar, Union
 
 
-T = t.TypeVar("T")
-ReceiverType = t.Callable[..., t.Any]
-_ReceiverSetType = t.Union[t.Set[ReceiverType], t.FrozenSet[ReceiverType]]
+T = TypeVar("T")
+ReceiverType = Callable[..., Any]
+_ReceiverSetType = Union[Set[ReceiverType], FrozenSet[ReceiverType]]
 
 
 class Signal:
@@ -26,7 +26,7 @@ class Signal:
 
         self._receivers.add(receiver)   # type: ignore
 
-    async def call(self, *args: t.Any, **kwargs: t.Any) -> None:
+    async def call(self, *args: Any, **kwargs: Any) -> None:
         for receiver in self._receivers:
             await receiver(*args, **kwargs)
 
@@ -44,8 +44,8 @@ class Signal:
         self._receivers = frozenset(self._receivers)
 
 
-def receiver(s: Signal) -> t.Callable[..., t.Callable[..., T]]:
-    def decorator(func: t.Callable[..., T]) -> t.Callable[..., T]:
+def receiver(s: Signal) -> Callable[..., Callable[..., T]]:
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
         s.connect(func)
         return func
 

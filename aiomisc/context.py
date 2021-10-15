@@ -1,12 +1,12 @@
 import asyncio
-import typing as t
 from collections import defaultdict
+from typing import Any, DefaultDict, Dict
 
 from aiomisc.counters import Statistic
 
 
-_StorageType = t.DefaultDict[t.Any, asyncio.Future]
-_EventObjectStoreType = t.Dict[
+_StorageType = DefaultDict[Any, asyncio.Future]
+_EventObjectStoreType = Dict[
     asyncio.AbstractEventLoop, "Context",
 ]
 
@@ -31,15 +31,15 @@ class Context:
         self._EVENT_OBJECTS[loop] = self
         self._statistic = ContextStatistic()
 
-    def __getitem__(self, item: t.Any) -> t.Any:
+    def __getitem__(self, item: Any) -> Any:
         self._statistic.get += 1
         return self._storage[item]
 
-    def __setitem__(self, item: t.Any, value: t.Any) -> None:
+    def __setitem__(self, item: Any, value: Any) -> None:
         self._statistic.set += 1
         self._loop.call_soon_threadsafe(self.__setter, item, value)
 
-    def __setter(self, item: t.Any, value: t.Any) -> None:
+    def __setter(self, item: Any, value: Any) -> None:
         if self._storage[item].done():
             del self._storage[item]
 

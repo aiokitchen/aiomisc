@@ -1,30 +1,33 @@
 import asyncio
 import socket
 import ssl
-import typing as t
 from functools import partial
 from pathlib import Path
+from typing import Any, Optional, Union
 
 from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
 
-PathOrStr = t.Union[Path, str]
+PathOrStr = Union[Path, str]
 
 
 def get_ssl_context(
-    cert: str, key: str, ca: str, verify: bool, require_client_cert: bool,
+    cert: str, key: str, ca: Optional[str], verify: bool,
+    require_client_cert: bool,
 ) -> ssl.SSLContext:
     cert, key, ca = map(str, (cert, key, ca))
 
     context = ssl.create_default_context(
-        (
-            ssl.Purpose.SERVER_AUTH
-            if require_client_cert
-            else ssl.Purpose.CLIENT_AUTH
-        ),
-        capath=ca,
+        ssl.Purpose.CLIENT_AUTH,
+        cafile=ca,
     )
+
+    if ca and not Path(ca).exists():
+        raise FileNotFoundError("CA file doesn't exists")
+
+    if require_client_cert:
+        context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
 
     if key:
         context.load_cert_chain(
@@ -34,7 +37,6 @@ def get_ssl_context(
 
     if not verify:
         context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
 
     return context
 
@@ -46,7 +48,7 @@ class TLSServer(SimpleServer):
         self, *, address: str = None, port: int = None,
         cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
         require_client_cert: bool = False, verify: bool = True,
-        options: OptionsType = (), sock: socket.socket = None, **kwargs: t.Any
+        options: OptionsType = (), sock: socket.socket = None, **kwargs: Any
     ):
 
         self.__ssl_options = cert, key, ca, verify, require_client_cert
@@ -69,7 +71,7 @@ class TLSServer(SimpleServer):
         else:
             self.make_socket = lambda: sock     # type: ignore
 
-        self.socket = None      # type: t.Optional[socket.socket]
+        self.socket: Optional[socket.socket] = None
 
         super().__init__(**kwargs)
 
@@ -82,7 +84,7 @@ class TLSServer(SimpleServer):
     async def handle_client(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
-    ) -> t.Any:
+    ) -> Any:
         raise NotImplementedError
 
     async def start(self) -> None:

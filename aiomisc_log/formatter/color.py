@@ -1,15 +1,15 @@
 import logging
 import sys
-import typing as t
+from typing import IO, Any
 
 from colorlog import ColoredFormatter
 
-from aiomisc.log.enum import DateFormat
+from ..enum import DateFormat
 
 
 def color_formatter(
-    stream: t.IO[str] = None,
-    date_format: str = None, **_: t.Any
+    stream: IO[str] = None,
+    date_format: str = None, **_: Any
 ) -> logging.Handler:
 
     date_format = (

@@ -1,13 +1,22 @@
 import asyncio
+import platform
+
 import math
+import time
 from asyncio import Event, wait
-from time import monotonic
-from typing import List
+from typing import Any, List
 
 import pytest
 from aiocontextvars import ContextVar
 
 from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
+
+
+pytestmark = pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="Skip flapping tests on windows because it "
+           "system timer hasn't enough resolution",
+)
 
 
 async def test_invalid_func():
@@ -46,17 +55,16 @@ async def test_error(loop):
     leeway = 0.1
 
     @aggregate(leeway * 1000)
-    async def pow(*args: float, power: float = 2) -> List[float]:
+    async def pow(*args: float, power: float = 2) -> Any:
         nonlocal t_exec
-        t_exec = monotonic()
+        t_exec = time.time()
         event.set()
-
         raise ValueError
 
     async def pho(num: int):
         return await pow(float(num))
 
-    t = monotonic()
+    t = time.time()
 
     tasks = []
     for i in range(10):
@@ -80,12 +88,12 @@ async def test_leeway_ok(loop):
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
-        t_exec = monotonic()
+        t_exec = time.time()
         event.set()
 
         return [math.pow(num, power) for num in args]
 
-    t = monotonic()
+    t = time.time()
 
     tasks = []
     for i in range(9):
@@ -114,12 +122,12 @@ async def test_max_count(loop):
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
         await asyncio.sleep(0.03)
-        t_exec = monotonic()
+        t_exec = time.time()
         event.set()
 
         return [math.pow(num, power) for num in args]
 
-    t = monotonic()
+    t = time.time()
 
     tasks = []
     for i in range(5):
@@ -127,7 +135,7 @@ async def test_max_count(loop):
 
     await event.wait()
     elapsed = t_exec - t
-    assert 0 < elapsed < leeway
+    assert 0 < elapsed < leeway * 2
 
     await wait(tasks)
     for i, task in enumerate(tasks):
@@ -145,12 +153,12 @@ async def test_max_count_multiple_batches(loop):
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal t_exec
         await asyncio.sleep(0.03)
-        t_exec = monotonic()
+        t_exec = time.time()
         event.set()
 
         return [math.pow(num, power) for num in args]
 
-    t = monotonic()
+    t = time.time()
 
     tasks = []
     for i in range(9):
@@ -160,7 +168,7 @@ async def test_max_count_multiple_batches(loop):
     await event.wait()
     event.clear()
     elapsed = t_exec - t
-    assert 0 < elapsed < leeway
+    assert 0 < elapsed < leeway * 2
 
     await wait(tasks[:5])
     for i in range(5):
@@ -192,7 +200,7 @@ async def test_leeway_cancel(loop):
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
-        t_exec = monotonic()
+        t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -204,7 +212,7 @@ async def test_leeway_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
-    t = monotonic()
+    t = time.time()
 
     for i in range(9):
         tasks.append(loop.create_task(pho(i)))
@@ -252,7 +260,7 @@ async def test_max_count_cancel(loop):
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
         await asyncio.sleep(0.03)
-        t_exec = monotonic()
+        t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -264,7 +272,7 @@ async def test_max_count_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
-    t = monotonic()
+    t = time.time()
 
     tasks = []
     for i in range(5):
@@ -313,7 +321,7 @@ async def test_max_count_multiple_batches_cancel(loop):
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
         nonlocal executions, executing_task, t_exec, delay_exec
-        t_exec = monotonic()
+        t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -325,7 +333,7 @@ async def test_max_count_multiple_batches_cancel(loop):
         arg.set(num)
         return await pow(float(num))
 
-    t = monotonic()
+    t = time.time()
 
     tasks = []
     for i in range(9):

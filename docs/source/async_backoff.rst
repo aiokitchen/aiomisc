@@ -6,9 +6,9 @@ function execution and retrying policy.
 
 The main principle might be described in five rules:
 
-* function will be cancelled when executed longer than
+* function will be canceled when executed longer than
   ``deadline`` (if specified)
-* function will be cancelled when executed longer than
+* function will be canceled when executed longer than
   ``attempt_timeout`` (if specified) and will be retried
 * Reattempts performs after ``pause`` seconds (if specified, default is ``0``)
 * Reattempts will be performed not more than ``max_tries`` times.
@@ -21,16 +21,15 @@ Arguments description:
 
 * ``attempt_timeout`` is maximum execution time for one execution attempt.
 * ``deadline`` is maximum execution time for all execution attempts.
-* ``pause`` is time gap between execution attempts.
-* ``exceptions`` retrying when this exceptions was raised.
-* ``giveup`` (keyword only) is a predicate function which can decide by a given
-  exception if we should continue to do retries.
+* ``pause`` is the time gap between execution attempts.
+* ``exceptions`` retrying when these exceptions were raised.
+* ``giveup`` (keyword only) is a predicate function that can decide by a given exception if we should continue to do retries.
 * ``max_tries`` (keyword only) is maximum count of execution attempts (>= 1).
 
 Decorator that ensures that ``attempt_timeout`` and ``deadline`` time
 limits are met by decorated function.
 
-In case of exception function will be called again with similar arguments after
+In case of exception, the function will be called again with similar arguments after
 ``pause`` seconds.
 
 
@@ -112,9 +111,9 @@ Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just retries
 .. note::
 
     By default will be retry when any Exception. It's very simple and useful
-    in generic cases, but you should specify an exception list when your wrapped
+    in generic cases, but you should specify an exception list when you're wrapped
     functions calling hundreds of times per second, cause you have a risk be
-    the reason of denial of service in case your function calls remote service.
+    the reason for denial of service in case your function calls remote service.
 
 .. code-block:: python
 

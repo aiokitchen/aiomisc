@@ -7,9 +7,6 @@ from async_timeout import timeout
 import aiomisc
 
 
-pytestmark = pytest.mark.catch_loop_exceptions
-
-
 async def test_kwargs(loop):
     mana = 0
 
@@ -27,16 +24,16 @@ async def test_kwargs(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    t = time.monotonic()
+    t = time.time()
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t2 = time.monotonic() - t
+    t2 = time.time() - t
     assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t3 = time.monotonic() - t
+    t3 = time.time() - t
     assert t3 > 0.8
 
     assert mana < 3.8
@@ -136,43 +133,61 @@ async def test_exit(loop):
 
 async def test_pause(loop):
     mana = 0
+    condition = asyncio.Condition()
 
-    @aiomisc.asyncbackoff(0.05, 0.5, 0.35)
+    @aiomisc.asyncbackoff(0.05, 1.2, 0.35)
     async def test():
         nonlocal mana
 
-        mana += 1
-        await asyncio.sleep(0.2)
+        async with condition:
+            mana += 1
+            condition.notify_all()
 
+        await asyncio.sleep(0.2)
         raise ValueError("Not enough mana")
 
-    with pytest.raises(asyncio.TimeoutError):
-        await test()
+    task = loop.create_task(test())
 
-    assert mana == 2
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: mana == 2),
+            timeout=5,
+        )
+
+    with pytest.raises(asyncio.TimeoutError):
+        await task
 
 
 async def test_no_waterline(loop):
     mana = 0
+    condition = asyncio.Condition()
 
     @aiomisc.asyncbackoff(None, 1, 0, Exception)
     async def test():
         nonlocal mana
 
-        mana += 1
-        await asyncio.sleep(0.2)
+        async with condition:
+            mana += 1
+            await asyncio.sleep(0.1)
+            condition.notify_all()
+            raise ValueError("RETRY")
 
-        raise ValueError("RETRY")
+    task = loop.create_task(test())
+
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: mana >= 5),
+            timeout=2,
+        )
 
     with pytest.raises(ValueError, match="^RETRY$"):
-        await test()
-
-    assert mana == 5
+        await task
 
 
 @pytest.mark.parametrize("max_sleep", (0.5, 1))
 async def test_no_deadline(loop, max_sleep):
     mana = 0
+    condition = asyncio.Condition()
 
     @aiomisc.asyncbackoff(0.15, None, 0, Exception)
     async def test():
@@ -181,9 +196,18 @@ async def test_no_deadline(loop, max_sleep):
         mana += 1
         await asyncio.sleep(max_sleep - (mana - 1) * 0.1)
 
-    await test()
+        async with condition:
+            condition.notify_all()
 
-    assert mana == max_sleep * 10
+    task = loop.create_task(test())
+
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: mana == max_sleep * 10),
+            timeout=max_sleep * 10,
+        )
+
+    await asyncio.wait_for(task, timeout=max_sleep)
 
 
 def test_values(loop):
@@ -212,16 +236,16 @@ async def test_too_long_multiple(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    t = time.monotonic()
+    t = time.time()
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t2 = time.monotonic() - t
+    t2 = time.time() - t
     assert t2 > 0.4
     with pytest.raises(asyncio.TimeoutError):
         await test()
 
-    t3 = time.monotonic() - t
+    t3 = time.time() - t
     assert t3 > 0.8
 
     assert mana < 3.8

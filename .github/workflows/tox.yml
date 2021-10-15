@@ -65,10 +65,10 @@ jobs:
           - python: '3.9'
             toxenv: py39
             os: ubuntu-latest
-          - python: '3.8'
+          - python: '3.9'
             toxenv: rpc
             os: ubuntu-latest
-          - python: '3.8'
+          - python: '3.9'
             toxenv: rpc_udp
             os: ubuntu-latest
           - python: '3.6'

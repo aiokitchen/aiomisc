@@ -8,8 +8,8 @@ from os import urandom
 from types import FrameType
 from typing import Any, Optional, Tuple, Union
 
-from aiomisc.log import basic_config
-from aiomisc.worker_pool.constants import (
+from aiomisc_log import basic_config
+from aiomisc_worker import (
     HASHER, INET_AF, SALT_SIZE, SIGNAL, Header, PacketTypes,
 )
 
@@ -27,11 +27,7 @@ def main() -> Optional[int]:
         address, cookie, identity, log_level, log_format,
     ) = pickle.load(sys.stdin.buffer)
 
-    basic_config(
-        level=log_level,
-        log_format=log_format,
-        buffered=False,
-    )
+    basic_config(level=log_level, log_format=log_format)
 
     family = (
         socket.AF_UNIX if isinstance(address, str) else INET_AF

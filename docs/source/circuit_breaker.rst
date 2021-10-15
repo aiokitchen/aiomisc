@@ -4,20 +4,21 @@ Circuit Breaker
 `Circuit breaker is a design pattern`_ used in software development.
 It is used to detect failures and encapsulates the logic of preventing a
 failure from constantly recurring, during maintenance, temporary external
-system failure or unexpected system difficulties.
+system failure, or unexpected system difficulties.
 
 The following example demonstrates the simple usage of the current
 implementation of ``aiomisc.CircuitBreaker``.
 An instance of ``CircuitBreaker`` collecting function call statistics.
 That contains counters mapping with successful and failed function calls.
 Function calls must be wrapped by the `CircuitBreaker.call`
-the method in order to gather it.
+the method to gather it.
 
 Usage example:
 
 .. code-block:: python
+    :name: test_circuit_breaker
 
-    from aiohttp import web
+    from aiohttp import web, ClientSession
     from aiomisc.service.aiohttp import AIOHTTPService
     import aiohttp
     import aiomisc
@@ -54,9 +55,15 @@ Usage example:
             return app
 
 
+    async def main():
+        async with ClientSession() as session:
+            async with session.get("http://localhost:8080/") as response:
+                assert response.headers
+
+
     if __name__ == '__main__':
         with aiomisc.entrypoint(API(port=8080)) as loop:
-            loop.run_forever()
+            loop.run_until_complete(main())
 
 
 .. _Circuit breaker is a design pattern: http://bit.ly/aimcbwiki
@@ -71,13 +78,13 @@ The `CircuitBreaker` object might be one of three states:
 .. image:: /_static/cb-states.svg
 
 **PASSING** means all calls will be passed as is and statistics will be gathered.
-Next state will be determined after collecting statistics for
+The next state will be determined after collecting statistics for
 ``passing_time`` seconds. If an effective error ratio is greater
-than `error_ratio` then the next state will be set to **BROKEN**, otherwise
+than `error_ratio` then the next state will be set to **BROKEN**, otherwise,
 it will remain unchanged.
 
-**BROKEN** means the wrapped function wont be called and ``CircuitBroken``
-exception will be raised instead. **BROKEN** state will be kept
+**BROKEN** means the wrapped function won't be called and ``CircuitBroken``
+an exception will be raised instead. **BROKEN** state will be kept
 for ``broken_time`` seconds.
 
 .. note::
@@ -85,8 +92,8 @@ for ``broken_time`` seconds.
     ``CircuitBroken`` exception is a consequence of **BROKEN** or **RECOVERY**
     state and never be accounted for in the statistic.
 
-After that, it changes to **RECOVERING** state. While in that state, small sample
-of the wrapped function calls will actually be executed and statistics will be
+After that, it changes to **RECOVERING** state. While in that state, a small sample
+of the wrapped function calls will be executed and statistics will be
 gathered. If the effective error ratio after ``recovery_time`` is lower than
 ``error_ratio`` then the next state will be set to **PASSING**, and
 otherwise - to **BROKEN**.
@@ -104,8 +111,9 @@ cutout
 Decorator for ``CircuitBreaker`` which wrapping functions.
 
 .. code-block:: python
+    :name: test_cutout
 
-    from aiohttp import web
+    from aiohttp import web, ClientSession
     from aiomisc.service.aiohttp import AIOHTTPService
     import aiohttp
     import aiomisc
@@ -139,6 +147,12 @@ Decorator for ``CircuitBreaker`` which wrapping functions.
             return app
 
 
+    async def main():
+        async with ClientSession() as session:
+            async with session.get("http://localhost:8080/") as response:
+                assert response.headers
+
+
     if __name__ == '__main__':
         with aiomisc.entrypoint(API(port=8080)) as loop:
-            loop.run_forever()
+            loop.run_until_complete(main())

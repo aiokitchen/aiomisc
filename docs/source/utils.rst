@@ -4,8 +4,8 @@ Utilities
 Select
 ++++++
 
-In some cases you should wait only one of multiple tasks. ``select``
-waits first passed awaitable object and returns list of results.
+In some cases, you should wait for only one of multiple tasks. ``select``
+waits first passed awaitable object and returns the list of results.
 
 .. code-block:: python
 
@@ -43,13 +43,13 @@ waits first passed awaitable object and returns list of results.
 .. warning::
 
     When you don't want to cancel pending tasks pass ``cancel=False`` argument.
-    In this case you have to handle task completion manually or get warnings.
+    In this case, you have to handle task completion manually or get warnings.
 
 
 cancel_tasks
 ++++++++++++
 
-All passed tasks will be cancelled and task will be returned:
+All passed tasks will be canceled and the task will be returned:
 
 .. code-block:: python
 
@@ -73,12 +73,12 @@ All passed tasks will be cancelled and task will be returned:
 awaitable
 +++++++++
 
-Decorator wraps function and returns a function which returns awaitable object.
-In case than a function returns a future, the original future will be returned.
+Decorator wraps function and returns a function that returns awaitable object.
+In case a function returns a future, the original future will be returned.
 In case then the function returns a coroutine, the original coroutine will
-be returned. In case than function returns non-awaitable object, it's will
-be wrapped to a new coroutine which just returns this object. It's useful
-when you don't want to check function result before
+be returned. In case than function returns a non-awaitable object, it's will
+be wrapped to a new coroutine that just returns this object. It's useful
+when you don't want to check function results before
 use it in ``await`` expression.
 
 .. code-block:: python
@@ -100,7 +100,7 @@ Bind socket
 +++++++++++
 
 Bind socket and set ``setblocking(False)`` for just created socket.
-This detects ``address`` format and select socket family automatically.
+This detects ``address`` format and selects the socket family automatically.
 
 .. code-block:: python
 

@@ -1,7 +1,7 @@
 Abstract connection pool
 ========================
 
-``aiomisc.PoolBase`` is an abstract class for implementation user defined
+``aiomisc.PoolBase`` is an abstract class for implementing user-defined
 connection pool.
 
 
