@@ -61,7 +61,7 @@ class JournaldLogHandler(logging.Handler):
     @classmethod
     def _encode_long(cls, key: str, value: bytes) -> bytes:
         length = cls.VALUE_LEN_STRUCT.pack(len(value))
-        return key.upper().encode() + b"\n" + length + value + b'\n'
+        return key.upper().encode() + b"\n" + length + value + b"\n"
 
     @classmethod
     def pack(cls, fp: BinaryIO, key: str, value: Any) -> None:
@@ -138,15 +138,19 @@ class JournaldLogHandler(logging.Handler):
             self.pack(fp, "message_raw", record.msg)
             self.pack(fp, "priority", self.LEVELS[record.levelno])
             self.pack(fp, "syslog_facility", self.__facility)
-            self.pack(fp, "code", "{}.{}:{}".format(
-                record.module, record.funcName, record.lineno
-            ))
-            self.pack(fp, "code", {
-                "func": record.funcName,
-                "file": record.pathname,
-                "line": record.lineno,
-                "module": record.module
-            })
+            self.pack(
+                fp, "code", "{}.{}:{}".format(
+                    record.module, record.funcName, record.lineno,
+                ),
+            )
+            self.pack(
+                fp, "code", {
+                    "func": record.funcName,
+                    "file": record.pathname,
+                    "line": record.lineno,
+                    "module": record.module,
+                },
+            )
             self.pack(fp, "logger_name", record.name)
             self.pack(fp, "pid", record.process)
             self.pack(fp, "process_name", record.processName)
