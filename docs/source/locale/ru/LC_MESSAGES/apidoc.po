@@ -1,4 +1,7 @@
-
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"

@@ -1,39 +1,77 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/signal.rst:2
 msgid "Signal"
-msgstr ""
+msgstr "Сигнал"
 
 #: ../../source/signal.rst:4
 msgid ""
 "You can register async callback functions for specific events of an "
 "entrypoint."
 msgstr ""
-"Позволяет зарегистрировать асинхронный callback для определенных событий entrypoint."
+"Позволяет зарегистрировать асинхронный callback для определенных событий "
+"entrypoint."
 
 #: ../../source/signal.rst:7
 msgid "pre_start"
-msgstr ""
+msgstr "pre_start"
 
 #: ../../source/signal.rst:9
 msgid ""
-"``pre_start`` signal occurs on entrypoint start up before any service "
-"have started."
+"``pre_start`` signal occurs on entrypoint starting up before any service "
+"has started."
 msgstr ""
 "``pre_start`` сигнал происходящий когда entrypoint запусается но до "
 "запуска всех сервисов."
 
 #: ../../source/signal.rst:24
-msgid "post_stop"
-msgstr ""
+msgid "post_start"
+msgstr "post_start"
 
 #: ../../source/signal.rst:26
+msgid ""
+"``post_start`` signal occurs next entrypoint starting up after all "
+"services have been started."
+msgstr ""
+"``post_start`` сигнал происходящий после того как entrypoint "
+"запустит все сервисы."
+
+#: ../../source/signal.rst:42
+msgid "pre_stop"
+msgstr "pre_stop"
+
+#: ../../source/signal.rst:44
+msgid ""
+"``pre_stop`` signal occurs on entrypoint shutdown before any service have"
+" been stopped."
+msgstr ""
+"``pre_stop`` сигнал происходящий когда entrypoint завершается "
+"до остановки всех сервисов."
+
+#: ../../source/signal.rst:60
+msgid "post_stop"
+msgstr "post_stop"
+
+#: ../../source/signal.rst:62
 msgid ""
 "``post_stop`` signal occurs on entrypoint shutdown after all services "
 "have been stopped."
 msgstr ""
-"``post_stop`` сигнал происходящий когда entrypoint завершается запусается "
-"после остановки всех сервисов."
+"``post_stop`` сигнал происходящий когда entrypoint завершается запусается"
+" после остановки всех сервисов."
+

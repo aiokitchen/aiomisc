@@ -1,7 +1,19 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2020, Dmitry Orlov
-# This file is distributed under the same license as the aiomisc package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 12.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov me@mosquito.su\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/async_backoff.rst:2
 msgid "Async backoff"
@@ -22,7 +34,7 @@ msgstr "Основной принцип может быть описан пят�
 
 #: ../../source/async_backoff.rst:9
 msgid ""
-"function will be cancelled when executed longer than ``deadline`` (if "
+"function will be canceled when executed longer than ``deadline`` (if "
 "specified)"
 msgstr ""
 "функция будет отменена, если она будет выполнена дольше, чем ``deadline``"
@@ -30,7 +42,7 @@ msgstr ""
 
 #: ../../source/async_backoff.rst:11
 msgid ""
-"function will be cancelled when executed longer than ``attempt_timeout`` "
+"function will be canceled when executed longer than ``attempt_timeout`` "
 "(if specified) and will be retried"
 msgstr ""
 "функция будет отменена при выполнении дольше, чем ``attempt_timeout` "
@@ -41,7 +53,8 @@ msgid ""
 "Reattempts performs after ``pause`` seconds (if specified, default is "
 "``0``)"
 msgstr ""
-"Попытки выполняются после ``pausea`` секунд (если указано, по умолчанию ``0``)"
+"Попытки выполняются после ``pause`` секунд (если указано, по умолчанию "
+"``0``)"
 
 #: ../../source/async_backoff.rst:14
 msgid "Reattempts will be performed not more than ``max_tries`` times."
@@ -52,8 +65,8 @@ msgid ""
 "``giveup`` argument is a function that decides should give up the "
 "reattempts or continue retrying."
 msgstr ""
-"аргумент ``giveup`` - это функция, которая решает, следует ли \"сдаться\" "
-"и прекратить дальнейшие попыток или продолжать."
+"аргумент ``giveup`` - это функция, которая решает, следует ли \"сдаться\""
+" и прекратить дальнейшие попыток или продолжать."
 
 #: ../../source/async_backoff.rst:18
 msgid "All these rules work at the same time."
@@ -72,25 +85,25 @@ msgid "``deadline`` is maximum execution time for all execution attempts."
 msgstr "``deadline`` максимально допустимое время выполнения всех попыток."
 
 #: ../../source/async_backoff.rst:24
-msgid "``pause`` is time gap between execution attempts."
+msgid "``pause`` is the time gap between execution attempts."
 msgstr "``pause`` промежуток времени между попытками."
 
 #: ../../source/async_backoff.rst:25
-msgid "``exceptions`` retrying when this exceptions was raised."
+msgid "``exceptions`` retrying when these exceptions were raised."
 msgstr ""
 "``exceptions`` делает последующие попытки только если эти будут брошены "
 "эти исключения."
 
 #: ../../source/async_backoff.rst:26
 msgid ""
-"``giveup`` (keyword only) is a predicate function which can decide by a "
+"``giveup`` (keyword only) is a predicate function that can decide by a "
 "given exception if we should continue to do retries."
 msgstr ""
 "``giveup`` (именовынный аргумент) это функция-предикат, которая может "
 "решить по данному исключению, следует ли нам продолжать повторять "
 "попытки."
 
-#: ../../source/async_backoff.rst:28
+#: ../../source/async_backoff.rst:27
 msgid ""
 "``max_tries`` (keyword only) is maximum count of execution attempts (>= "
 "1)."
@@ -98,7 +111,7 @@ msgstr ""
 "``max_tries`` (именовынный аргумент) - максимальное количество попыток (>"
 " = 1)."
 
-#: ../../source/async_backoff.rst:30
+#: ../../source/async_backoff.rst:29
 msgid ""
 "Decorator that ensures that ``attempt_timeout`` and ``deadline`` time "
 "limits are met by decorated function."
@@ -106,28 +119,28 @@ msgstr ""
 "Декоратор, обеспечивающий соблюдение временных ограничений "
 "\"attempt_timeout\" и \"deadline\" декорированной функцией."
 
-#: ../../source/async_backoff.rst:33
+#: ../../source/async_backoff.rst:32
 msgid ""
-"In case of exception function will be called again with similar arguments"
-" after ``pause`` seconds."
+"In case of exception, the function will be called again with similar "
+"arguments after ``pause`` seconds."
 msgstr ""
 "В случае возникновения исключения функция будет вызвана снова с "
 "аналогичными аргументами через кол-во секунд переданное в аргументе "
 "\"pause\"."
 
-#: ../../source/async_backoff.rst:37
+#: ../../source/async_backoff.rst:36
 msgid "Position arguments notation:"
 msgstr "Объявление через позиционные аргументы:"
 
-#: ../../source/async_backoff.rst:63
+#: ../../source/async_backoff.rst:62
 msgid "Keyword arguments notation:"
 msgstr "Объявление через именованные аргументы"
 
-#: ../../source/async_backoff.rst:107
+#: ../../source/async_backoff.rst:106
 msgid "asyncretry"
 msgstr "asyncretry"
 
-#: ../../source/async_backoff.rst:109
+#: ../../source/async_backoff.rst:108
 msgid ""
 "Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just "
 "retries ``max_tries`` times."
@@ -135,12 +148,12 @@ msgstr ""
 "Аналог ``asyncbackoff(None, None, 0, *args, **kwargs)``. Прсто повторяет "
 "выполнение функции ``max_tries`` раз."
 
-#: ../../source/async_backoff.rst:114
+#: ../../source/async_backoff.rst:113
 msgid ""
 "By default will be retry when any Exception. It's very simple and useful "
-"in generic cases, but you should specify an exception list when your "
+"in generic cases, but you should specify an exception list when you're "
 "wrapped functions calling hundreds of times per second, cause you have a "
-"risk be the reason of denial of service in case your function calls "
+"risk be the reason for denial of service in case your function calls "
 "remote service."
 msgstr ""
 "По умолчанию будет повторена попытка при любом исключении. Это очень "

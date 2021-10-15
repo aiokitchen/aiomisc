@@ -1,19 +1,29 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/threads.rst:2
 msgid "Working with threads"
 msgstr "Работа с потоками"
 
 #: ../../source/threads.rst:4
-msgid ""
-"Wraps blocking function and runs it in the different thread or thread "
-"pool."
+msgid "Wraps blocking function and run it in the different thread or thread pool."
 msgstr ""
-"Можно обернуть блокирующую функцию и запустить ее в отдельном потоке "
-"или пуле потоков."
+"Можно обернуть блокирующую функцию и запустить ее в отдельном потоке или "
+"пуле потоков."
 
 #: ../../source/threads.rst:8
 msgid "contextvars support"
@@ -22,12 +32,12 @@ msgstr "Поддержка contextvars"
 #: ../../source/threads.rst:10
 msgid ""
 "All following decorators and functions support ``contextvars`` module, "
-"from PyPI for python earlier 3.7 and builtin standard library for python "
-"3.7."
+"from PyPI for python earlier 3.7 and builtin a standard library for "
+"python 3.7."
 msgstr ""
-"Все нижеописанные декоратоы и функции поддерживают модуль ``contextvars``, "
-"из PyPI для python моложе 3.7 так и встроенный в стандартную библиотеку "
-"модуль для python 3.7."
+"Все нижеописанные декоратоы и функции поддерживают модуль "
+"``contextvars``, из PyPI для python моложе 3.7 так и встроенный в "
+"стандартную библиотеку модуль для python 3.7."
 
 #: ../../source/threads.rst:57
 msgid "Example output:"
@@ -36,53 +46,53 @@ msgstr "Пример вывода"
 #: ../../source/threads.rst:70
 msgid ""
 "``contextvars`` has different use cases then ``Context`` class. "
-"``contextvars`` applicable for passing context variables through the "
+"``contextvars``are applicable for passing context variables through the "
 "execution stack but created task can not change parent context variables "
-"because ``contextvars`` creates lightweight copy. ``Context`` class "
-"allows it because do not copying context variables."
+"because ``contextvars``create lightweight copy. ``Context`` class allows "
+"it because does not copy context variables."
 msgstr ""
 "``contextvars`` нужны для другого случая нежели класс ``Context``. "
-"``contextvars`` хорошо применимы для передачи контекстных переменных сквозь "
-"стек вызовов, однако дочерние задачи не смогут модифицировать контекстные "
-"переменные родительских задач потому, что ``contextvars`` "
-"делает их \"легкие копии\" перед запуском новой задачи. Класс ``Context`` "
-"наоборот позволяет модификацию отовсюду так как не копирует ничего."
+"``contextvars`` хорошо применимы для передачи контекстных переменных "
+"сквозь стек вызовов, однако дочерние задачи не смогут модифицировать "
+"контекстные переменные родительских задач потому, что ``contextvars`` "
+"делает их \"легкие копии\" перед запуском новой задачи. Класс ``Context``"
+" наоборот позволяет модификацию отовсюду так как не копирует ничего."
 
 #: ../../source/threads.rst:78
 msgid "@threaded"
-msgstr ""
+msgstr "@threaded"
 
 #: ../../source/threads.rst:80
-msgid "Wraps blocking function and runs it in the current thread pool."
+msgid "Wraps blocking function and run it in the current thread pool."
 msgstr "Оборачивает блокирующую функцию и запускает ее в пуле потоков."
 
 #: ../../source/threads.rst:107
 msgid ""
-"In case function is a generator function ``@threaded`` decorator will "
-"return ``IteratorWrapper`` (see Threaded generator decorator)."
+"In case the function is a generator function ``@threaded`` decorator will"
+" return ``IteratorWrapper`` (see Threaded generator decorator)."
 msgstr ""
-"В случае если функция это генератор тогда декоратор ``@threaded`` "
-"вернет ``IteratorWrapper`` (см Threaded generator decorator)."
+"В случае если функция это генератор тогда декоратор ``@threaded`` вернет "
+"``IteratorWrapper`` (см Threaded generator decorator)."
 
 #: ../../source/threads.rst:112
 msgid "@threaded_separate"
-msgstr ""
+msgstr "@threaded_separate"
 
 #: ../../source/threads.rst:114
 msgid ""
-"Wraps blocking function and runs it in a new separate thread. Highly "
+"Wraps blocking function and run it in a new separate thread. Highly "
 "recommended for long background tasks:"
 msgstr ""
-"Оборачивает блокирующую функцию и запускает ее в отдельном новом потоке."
-"Крайне рекомендовано для длительных фоновых задач:"
+"Оборачивает блокирующую функцию и запускает ее в отдельном новом "
+"потоке.Крайне рекомендовано для длительных фоновых задач:"
 
 #: ../../source/threads.rst:157
 msgid "Threaded iterator decorator"
-msgstr ""
+msgstr "Threaded iterator decorator"
 
 #: ../../source/threads.rst:159
 msgid ""
-"Wraps blocking generator function and runs it in the current thread pool "
+"Wraps blocking generator function and run it in the current thread pool "
 "or on a new separate thread."
 msgstr ""
 "Оборачивает блокирующую функцию-генератор и запусакет ее в текущем пуле "
@@ -90,26 +100,28 @@ msgstr ""
 
 #: ../../source/threads.rst:162
 msgid ""
-"Following example reads itself file, chains hashes of every line with "
-"hash of previous line and sends hash and content via TCP:"
+"Following example reads itself file, chains hashes of every line with the"
+" hash of the previous line and sends hash and content via TCP:"
 msgstr ""
 "Следующий пример читает свой собственный код, и обновляет хеш для каждой "
 "следующей строки от предидущих строк, и отправляет все это по TCP:"
 
-
 #: ../../source/threads.rst:199
 msgid "Run ``netcat`` listener in the terminal and run this example"
-msgstr "Запустим TCP сервер с помощью ``netcat`` в терминале, и после запустим этот пример."
+msgstr ""
+"Запустим TCP сервер с помощью ``netcat`` в терминале, и после запустим "
+"этот пример."
 
 #: ../../source/threads.rst:237
 msgid ""
-"You should use async context managers in case when your generator works "
-"infinity, or you have to await the ``.close()`` method when you avoid "
-"context managers."
+"You should use async context managers in the case when your generator "
+"works infinity, or you have to await the ``.close()`` method when you "
+"avoid context managers."
 msgstr ""
-"Придется использовать асинхронный контекст-менеджер в случае если генератор "
-"бесконечный или придется явно вызвать и дождаться метода ``.close()`` если вы "
-"избегаете использование асинхронных контекст-менеджеров."
+"Придется использовать асинхронный контекст-менеджер в случае если "
+"генератор бесконечный или придется явно вызвать и дождаться метода "
+"``.close()`` если вы избегаете использование асинхронных "
+"контекст-менеджеров."
 
 #: ../../source/threads.rst:300
 msgid "aiomisc.IteratorWrapper"
@@ -124,7 +136,7 @@ msgid "aiomisc.IteratorWrapperSeparate"
 msgstr ""
 
 #: ../../source/threads.rst:347
-msgid "Run iterables on separate thread:"
+msgid "Run iterables on a separate thread:"
 msgstr "Запускает блокирующий итераторы в отдельном новом потоке:"
 
 #: ../../source/threads.rst:388
@@ -145,7 +157,9 @@ msgstr "``entrypoint`` установит это по умолчанию."
 
 #: ../../source/threads.rst:408
 msgid "``entrypoint``'s argument ``pool_size`` limits thread pool size."
-msgstr "Аргумент ``pool_size`` в ``entrypoint`` ограничивает кол-во потоков п пуле."
+msgstr ""
+"Аргумент ``pool_size`` в ``entrypoint`` ограничивает кол-во потоков п "
+"пуле."
 
 #: ../../source/threads.rst:412
 msgid "aiomisc.sync_wait_coroutine"
@@ -153,10 +167,11 @@ msgstr ""
 
 #: ../../source/threads.rst:414
 msgid ""
-"Functions running in thread can't call and wait result from coroutines by"
-" default. This function is helper for send coroutine to event loop and "
-"wait it in current thread."
+"Functions running in thread can't call and wait for a result from "
+"coroutines by default. This function is the helper for send coroutine to "
+"the event loop and waits for it in the current thread."
 msgstr ""
 "Функции запущенные в потоке не могут вызывать и дожидаться сопрограмм по "
-"умолчанию. Эта функция это хелпер позволяет отправить сопрограмму в event loop "
-"и дождаться ее результата из текущего потока."
+"умолчанию. Эта функция это хелпер позволяет отправить сопрограмму в event"
+" loop и дождаться ее результата из текущего потока."
+

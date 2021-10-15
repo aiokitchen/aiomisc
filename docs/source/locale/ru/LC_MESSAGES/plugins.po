@@ -1,7 +1,19 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version:  14\n"
+"Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/plugins.rst:2
 msgid "Plugins"
@@ -12,24 +24,24 @@ msgid ""
 "aiomisc can be extended with plugins as separate packages. Plugins can "
 "enhance aiomisc by mean of signals_."
 msgstr ""
-"aiomisc можно расширить с помощью плагинов в виде отдельных python пакетов. "
-"Плагины взаимодействуют с aiomisc с помощью signals_."
+"aiomisc можно расширить с помощью плагинов в виде отдельных python "
+"пакетов. Плагины взаимодействуют с aiomisc с помощью signals_."
 
 #: ../../source/plugins.rst:9
 msgid ""
-"In order to make your plugin discoverable by aiomisc you should add "
+"To make your plugin discoverable by aiomisc you should add "
 "``aiomisc.plugins`` entry to entry to ``entry_points`` argument of "
 "``setup`` call in ``setup.py`` of a plugin."
 msgstr ""
-"Чтобы сделать ваш плагин доступным для обнаружения с помощью aiomisc, "
-"вы должны добавить запись ``aiomisc.plugins`` к записи аргумента "
+"Чтобы сделать ваш плагин доступным для обнаружения с помощью aiomisc, вы "
+"должны добавить запись ``aiomisc.plugins`` к записи аргумента "
 "``entry_points`` вызова ``setup`` в ``setup.py`` вашего python пакета."
 
 #: ../../source/plugins.rst:26
 msgid ""
-"Modules which provided in ``entry_points`` should have ``setup`` "
-"function. This functions would be called by aiomisc and must contain "
-"signals connecting."
+"Modules provided in ``entry_points`` should have ``setup`` function. "
+"These functions would be called by aiomisc and must contain signals "
+"connecting."
 msgstr ""
-"Модули, представленные в `entry_points``, должны иметь функцию ``setup``. "
-"Эти функции будут вызываться aiomisc и должны поддерживать сигналы."
+"Модули, представленные в `entry_points``, должны иметь функцию ``setup``."
+" Эти функции будут вызываться aiomisc и должны поддерживать сигналы."

@@ -1,15 +1,19 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <me@mosquito.su>, 2021.
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2021.
 msgid ""
 msgstr ""
-"Project-Id-Version: 14\n"
+"Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
+"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../source/circuit_breaker.rst:2
 msgid "Circuit Breaker"
@@ -20,7 +24,7 @@ msgid ""
 "`Circuit breaker is a design pattern`_ used in software development. It "
 "is used to detect failures and encapsulates the logic of preventing a "
 "failure from constantly recurring, during maintenance, temporary external"
-" system failure or unexpected system difficulties."
+" system failure, or unexpected system difficulties."
 msgstr ""
 "`Предохранитель - это шаблон проектирования`_, используемый при "
 "разработке программного обеспечения. Он используется для обнаружения "
@@ -34,8 +38,8 @@ msgid ""
 "implementation of ``aiomisc.CircuitBreaker``. An instance of "
 "``CircuitBreaker`` collecting function call statistics. That contains "
 "counters mapping with successful and failed function calls. Function "
-"calls must be wrapped by the `CircuitBreaker.call` the method in order to"
-" gather it."
+"calls must be wrapped by the `CircuitBreaker.call` the method to gather "
+"it."
 msgstr ""
 "Следующий пример демонстрирует простое использование текущей реализации "
 "``aiomisc.CircuitBreaker``. Экземпляр ``CircuitBreaker``, собирает "
@@ -47,29 +51,29 @@ msgstr ""
 msgid "Usage example:"
 msgstr "Пример использования:"
 
-#: ../../source/circuit_breaker.rst:65
+#: ../../source/circuit_breaker.rst:72
 msgid "The `CircuitBreaker` object might be one of three states:"
 msgstr "Объект `CircuitBreaker` может находится в одном из трех состояний:"
 
-#: ../../source/circuit_breaker.rst:67
+#: ../../source/circuit_breaker.rst:74
 msgid "**PASSING**"
 msgstr "**PASSING** - аналогия с \"ток протекает\" (прим. пер.)"
 
-#: ../../source/circuit_breaker.rst:68
+#: ../../source/circuit_breaker.rst:75
 msgid "**BROKEN**"
 msgstr "**BROKEN** - аналогия со \"сгоревшим предохранителем\" (прим. пер.)"
 
-#: ../../source/circuit_breaker.rst:69
+#: ../../source/circuit_breaker.rst:76
 msgid "**RECOVERING**"
 msgstr "**RECOVERING** - восстанавливается"
 
-#: ../../source/circuit_breaker.rst:73
+#: ../../source/circuit_breaker.rst:80
 msgid ""
 "**PASSING** means all calls will be passed as is and statistics will be "
-"gathered. Next state will be determined after collecting statistics for "
-"``passing_time`` seconds. If an effective error ratio is greater than "
-"`error_ratio` then the next state will be set to **BROKEN**, otherwise it"
-" will remain unchanged."
+"gathered. The next state will be determined after collecting statistics "
+"for ``passing_time`` seconds. If an effective error ratio is greater than"
+" `error_ratio` then the next state will be set to **BROKEN**, otherwise, "
+"it will remain unchanged."
 msgstr ""
 "**PASSING** означает, что все вызовы будут переданы как есть, но будет "
 "собираться статистика. Следующее состояние будет определено после сбора "
@@ -78,17 +82,17 @@ msgstr ""
 "установлено как **BROKEN** (предохранитель перегорел, прим. пер.), в "
 "противном случае оно останется неизменным."
 
-#: ../../source/circuit_breaker.rst:79
+#: ../../source/circuit_breaker.rst:86
 msgid ""
-"**BROKEN** means the wrapped function wont be called and "
-"``CircuitBroken`` exception will be raised instead. **BROKEN** state will"
-" be kept for ``broken_time`` seconds."
+"**BROKEN** means the wrapped function won't be called and "
+"``CircuitBroken`` an exception will be raised instead. **BROKEN** state "
+"will be kept for ``broken_time`` seconds."
 msgstr ""
 "**BROKEN** означает, что обернутая функция не будет вызываться и вместо "
 "нее будет брошено исключение ``CircuitBroken``. Состояние **BROKEN** "
 "будет сохраняться в течение ``broken_time`` секунд."
 
-#: ../../source/circuit_breaker.rst:85
+#: ../../source/circuit_breaker.rst:92
 msgid ""
 "``CircuitBroken`` exception is a consequence of **BROKEN** or "
 "**RECOVERY** state and never be accounted for in the statistic."
@@ -96,10 +100,10 @@ msgstr ""
 "Исключение ``CircuitBroken`` является следствием состояния **BROKEN** или"
 " **RECOVERY** и никогда не учитывается в статистике."
 
-#: ../../source/circuit_breaker.rst:88
+#: ../../source/circuit_breaker.rst:95
 msgid ""
-"After that, it changes to **RECOVERING** state. While in that state, "
-"small sample of the wrapped function calls will actually be executed and "
+"After that, it changes to **RECOVERING** state. While in that state, a "
+"small sample of the wrapped function calls will be executed and "
 "statistics will be gathered. If the effective error ratio after "
 "``recovery_time`` is lower than ``error_ratio`` then the next state will "
 "be set to **PASSING**, and otherwise - to **BROKEN**."
@@ -111,21 +115,21 @@ msgstr ""
 "следующее состояние будет установлено в **PASSING**, в противном случае "
 "снова **BROKEN**."
 
-#: ../../source/circuit_breaker.rst:94
+#: ../../source/circuit_breaker.rst:101
 msgid ""
 "Argument ``exception_inspector`` is a function that is called whenever an"
 " exception from the list of monitored exceptions occurs. When ``False`` "
 "will be returned, this exception will be ignored."
 msgstr ""
-"Аргумент ``exception_inspector`` это функция, которая вызывается всякий раз, "
-"когда происходит исключение из списка отслеживаемых исключений. "
-"Если она возвращает ``False`` - исключение будет проигнорировано."
+"Аргумент ``exception_inspector`` это функция, которая вызывается всякий "
+"раз, когда происходит исключение из списка отслеживаемых исключений. Если"
+" она возвращает ``False`` - исключение будет проигнорировано."
 
-#: ../../source/circuit_breaker.rst:102
+#: ../../source/circuit_breaker.rst:109
 msgid "cutout"
 msgstr "Декоратор ``cutout`` - \"рубильник\""
 
-#: ../../source/circuit_breaker.rst:104
+#: ../../source/circuit_breaker.rst:111
 msgid "Decorator for ``CircuitBreaker`` which wrapping functions."
 msgstr ""
 "Декоратор оборачивающий функцию таким образом, что все вызовы проходят "
