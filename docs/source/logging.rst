@@ -51,6 +51,12 @@ JournalD
 `JournalD`_ daemon for collecting logs. It's a part of systemd.
 `aiomisc.basic_config` has support for using `JournalD`_ for store logs.
 
+.. note::
+
+    This handler is the default when the program starting as systemd service.
+
+    `aiomisc.log.LogFormat.default()` will returns `journald`  in this case.
+
 .. code-block:: python
     import logging
     from aiomisc.log import basic_config
@@ -74,6 +80,10 @@ But it isn't dependency and you have install `Rich`_ manually.
 .. code-block:: bash
 
     pip install rich
+
+.. note::
+
+    This handler is the default when the `Rich` has been installed.
 
 .. code-block:: python
     :name: test_rich_handlers
