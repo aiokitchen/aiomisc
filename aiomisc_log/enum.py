@@ -1,4 +1,6 @@
 import logging
+import os
+import sys
 from enum import Enum, IntEnum, unique
 from typing import Tuple
 
@@ -20,6 +22,12 @@ class LogFormat(IntEnum):
 
     @classmethod
     def default(cls) -> str:
+        journal_stream = os.getenv("JOURNAL_STREAM", "")
+        if journal_stream:
+            st_dev, st_ino = map(int, journal_stream.split(":", 1))
+            stat = os.stat(sys.stderr.fileno())
+            if stat.st_ino == st_ino and stat.st_dev == st_dev:
+                return cls.journald.name
         try:
             import rich  # noqa
 

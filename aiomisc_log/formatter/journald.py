@@ -7,7 +7,7 @@ from enum import IntEnum, unique
 from io import BytesIO
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, BinaryIO, Mapping
+from typing import Any, BinaryIO
 
 
 @unique
@@ -54,14 +54,36 @@ class JournaldLogHandler(logging.Handler):
 
     __slots__ = ("__facility", "socket", "__identifier")
 
+    @staticmethod
+    def _encode_short(key: str, value: Any) -> bytes:
+        return "{}={}\n".format(key.upper(), value).encode()
+
+    @classmethod
+    def _encode_long(cls, key: str, value: bytes) -> bytes:
+        length = cls.VALUE_LEN_STRUCT.pack(len(value))
+        return key.upper().encode() + b"\n" + length + value + b'\n'
+
     @classmethod
     def pack(cls, fp: BinaryIO, key: str, value: Any) -> None:
-        value_bytes = str(value).encode()
-        fp.write(key.upper().encode())
-        fp.write(b"\n")
-        fp.write(cls.VALUE_LEN_STRUCT.pack(len(value_bytes)))
-        fp.write(value_bytes)
-        fp.write(b"\n")
+        if not value:
+            return
+        elif isinstance(value, (int, float)):
+            fp.write(cls._encode_short(key, value))
+            return
+        elif isinstance(value, bytes):
+            fp.write(cls._encode_long(key, value))
+            return
+        elif isinstance(value, (list, tuple)):
+            for idx, item in enumerate(value):
+                cls.pack(fp, "{}_{}".format(key, idx), item)
+            return
+        elif isinstance(value, dict):
+            for d_key, d_value in value.items():
+                cls.pack(fp, "{}_{}".format(key, d_key), d_value)
+            return
+
+        cls.pack(fp, key, str(value).encode())
+        return
 
     def __init__(
         self, identifier: str = None,
@@ -74,7 +96,7 @@ class JournaldLogHandler(logging.Handler):
         self.__facility = int(facility)
 
     @staticmethod
-    def _to_microsecond(ts: float) -> int:
+    def _to_usec(ts: float) -> int:
         return int(ts * 1000000)
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -89,7 +111,7 @@ class JournaldLogHandler(logging.Handler):
         message += "\n"
         message += tb_message
 
-        ts = self._to_microsecond(record.created)
+        ts = self._to_usec(record.created)
 
         hash_fields = (
             message,
@@ -112,38 +134,33 @@ class JournaldLogHandler(logging.Handler):
             ).hex
 
             self.pack(fp, "message", self.format(record))
+            self.pack(fp, "message_id", message_id)
+            self.pack(fp, "message_raw", record.msg)
             self.pack(fp, "priority", self.LEVELS[record.levelno])
             self.pack(fp, "syslog_facility", self.__facility)
-            self.pack(fp, "code_file", record.filename)
-            self.pack(fp, "code_line", record.lineno)
-            self.pack(fp, "code_func", record.funcName)
-            self.pack(fp, "code_module", record.module)
+            self.pack(fp, "code", "{}.{}:{}".format(
+                record.module, record.funcName, record.lineno
+            ))
+            self.pack(fp, "code", {
+                "func": record.funcName,
+                "file": record.pathname,
+                "line": record.lineno,
+                "module": record.module
+            })
             self.pack(fp, "logger_name", record.name)
             self.pack(fp, "pid", record.process)
-            self.pack(fp, "proccess_name", record.processName)
+            self.pack(fp, "process_name", record.processName)
+            self.pack(fp, "thread_id", record.thread)
             self.pack(fp, "thread_name", record.threadName)
-            self.pack(fp, "message_id", message_id)
             self.pack(
-                fp, "relative_ts",
-                self._to_microsecond(record.relativeCreated),
+                fp, "relative_usec", self._to_usec(record.relativeCreated),
             )
 
-            if self.__identifier:
-                self.pack(fp, "syslog_identifier", self.__identifier)
-
-            if record.msg:
-                self.pack(fp, "message_raw", record.msg)
-
-            if isinstance(record.args, Mapping):
-                for key, value in record.args.items():
-                    self.pack(fp, "argument_%s" % key, value)
-            else:
-                for idx, item in enumerate(record.args):
-                    self.pack(fp, "argument_%d" % idx, item)
-
-            if tb_message:
-                self.pack(fp, "traceback", tb_message)
-
+            self.pack(fp, "syslog_identifier", self.__identifier)
+            self.pack(fp, "created_usec", self._to_usec(record.created))
+            self.pack(fp, "arguments", record.args)
+            self.pack(fp, "stack_info", record.stack_info)
+            self.pack(fp, "traceback", tb_message)
             self.socket.sendall(fp.getvalue())
 
 
