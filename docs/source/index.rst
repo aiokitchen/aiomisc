@@ -70,28 +70,24 @@ Async entrypoint with logging and useful arguments:
 
     import argparse
     import asyncio
-    import os
     import logging
 
     from aiomisc import entrypoint
+    from aiomisc.log import LogLevel, LogFormat
 
 
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "-L", "--log-level", help="Log level",
-        default=os.getenv('LOG_LEVEL', 'info'),
-        choices=(
-            'critical', 'fatal', 'error', 'warning',
-            'warn', 'info', 'debug', 'notset'
-        ),
+        default=LogLevel.default(),
+        choices=LogLevel.choices(),
     )
 
     parser.add_argument(
         "--log-format", help="Log format",
-        default=os.getenv('LOG_FORMAT', 'color'),
-        choices=aiomisc.log.LogFormat.choices(),
-        metavar='LOG_FORMAT',
+        default=LogFormat.default(),
+        choices=LogFormat.choices(),
     )
 
     parser.add_argument(
@@ -102,7 +98,7 @@ Async entrypoint with logging and useful arguments:
 
     parser.add_argument(
         "--pool-size", help="Thread pool size",
-        default=os.getenv('THREAD_POOL'), type=int,
+        default=4, type=int,
     )
 
 
@@ -118,8 +114,10 @@ Async entrypoint with logging and useful arguments:
     if __name__ == '__main__':
         arg = parser.parse_args()
 
-        with entrypoint(log_level=arg.log_level,
-                        log_format=arg.log_format) as loop:
+        with entrypoint(
+            log_level=arg.log_level,
+            log_format=arg.log_format
+        ) as loop:
             loop.run_until_complete(main())
 
 
