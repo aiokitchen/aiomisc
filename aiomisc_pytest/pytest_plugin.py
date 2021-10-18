@@ -11,7 +11,6 @@ from typing import Callable, Coroutine, NamedTuple, Optional, Tuple, Type, Union
 from unittest.mock import MagicMock
 
 import pytest
-
 import aiomisc
 from aiomisc.utils import bind_socket
 from aiomisc_log import LOG_LEVEL, basic_config
@@ -574,7 +573,7 @@ def entrypoint_kwargs() -> dict:
 
 
 @pytest.fixture(name="loop", autouse=loop_autouse)
-def _loop(event_loop_policy, caplog: pytest.LogCaptureFixture):
+def _loop(event_loop_policy, caplog):
     basic_config(
         log_format="plain",
         stream=caplog.handler.stream,
