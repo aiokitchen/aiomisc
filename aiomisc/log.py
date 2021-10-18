@@ -12,12 +12,6 @@ from aiomisc_log.enum import LogFormat, LogLevel
 from .thread_pool import run_in_new_thread
 
 
-try:
-    from typing import TypedDict
-except ImportError:
-    from typing_extensions import TypedDict
-
-
 def _thread_flusher(
     handler: logging.handlers.MemoryHandler,
     flush_interval: Union[float, int],
@@ -65,17 +59,6 @@ def wrap_logging_handler(
     return buffered_handler
 
 
-class AsyncioExceptionContext(TypedDict):
-    message: str
-    exception: Optional[BaseException]
-    future: Optional[asyncio.Future]
-    task: Optional[asyncio.Task]
-    handle: Optional[asyncio.Handle]
-    protocol: Optional[asyncio.Protocol]
-    transport: Optional[asyncio.Transport]
-    socket: Optional[socket]
-
-
 class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
     LOGGER_NAME = "asyncio.unhandled"
 
@@ -99,7 +82,7 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
 
     def __call__(
         self, loop: asyncio.AbstractEventLoop,
-        context: AsyncioExceptionContext,
+        context: Dict[str, Any],
     ) -> None:
         context = dict(context)
         message: str = context.pop("message", "unhandled loop exception")
@@ -161,7 +144,7 @@ def basic_config(
         **kwargs
     )
 
-    loop.set_exception_handler(unhandled_hook)     # type: ignore
+    loop.set_exception_handler(unhandled_hook)
 
 
 __all__ = (

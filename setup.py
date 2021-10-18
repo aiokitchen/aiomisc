@@ -70,7 +70,6 @@ setup(
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
         'cron': ['croniter~=0.3.34'],
-        ':python_version < "3.8"': 'typing-extensions',
     },
     entry_points={
         "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
