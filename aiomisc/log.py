@@ -3,7 +3,6 @@ import logging
 import logging.handlers
 import time
 from contextlib import suppress
-from functools import partial
 from socket import socket
 from typing import Any, Dict, Optional, Union
 
@@ -78,6 +77,8 @@ class AsyncioExceptionContext(TypedDict):
 
 
 class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
+    LOGGER_NAME = "asyncio.unhandled"
+
     @staticmethod
     def _fill_transport_extra(
         transport: Optional[asyncio.Transport],
@@ -100,22 +101,23 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
         self, loop: asyncio.AbstractEventLoop,
         context: AsyncioExceptionContext,
     ) -> None:
-        message: str = context.get("message", "unhandled loop exception")
-        exception: Optional[BaseException] = context.get("exception")
-        future: Optional[asyncio.Future] = context.get("future")
-        task: Optional[asyncio.Task] = context.get("task")
-        handle: Optional[asyncio.Handle] = context.get("handle")
-        protocol: Optional[asyncio.Protocol] = context.get("protocol")
-        transport: Optional[asyncio.Transport] = context.get("transport")
-        sock: Optional[socket] = context.get("socket")
+        context = dict(context)
+        message: str = context.pop("message", "unhandled loop exception")
+        exception: Optional[BaseException] = context.pop("exception", None)
+        future: Optional[asyncio.Future] = context.pop("future", None)
+        task: Optional[asyncio.Task] = context.pop("task", None)
+        handle: Optional[asyncio.Handle] = context.pop("handle", None)
+        protocol: Optional[asyncio.Protocol] = context.pop("protocol", None)
+        transport: Optional[asyncio.Transport] = context.pop("transport", None)
+        sock: Optional[socket] = context.pop("socket", None)
 
         if exception is None:
             if future is not None:
                 exception = future.exception()
-            elif task is not None:
+            elif task is not None and task.done():
                 exception = task.exception()
 
-        extra = {}
+        extra = context
         if handle is not None:
             extra["handle"] = repr(handle)
         if protocol is not None:
@@ -135,26 +137,31 @@ def basic_config(
     loop: asyncio.AbstractEventLoop = None,
     **kwargs: Any
 ) -> None:
-    wrapper = aiomisc_log.pass_wrapper
-
     loop = loop or asyncio.get_event_loop()
+    unhandled_hook = UnhandledLoopHook()
 
-    if buffered:
-        wrapper = partial(
-            wrap_logging_handler,
-            buffer_size=buffer_size,
-            flush_interval=flush_interval,
-            loop=loop,
-        )
+    def wrap_handler(handler: logging.Handler) -> logging.Handler:
+        nonlocal buffer_size, buffered, loop, unhandled_hook
 
-    loop.set_exception_handler(UnhandledLoopHook())     # type: ignore
+        unhandled_hook.set_handler(handler)
 
-    return aiomisc_log.basic_config(
+        if buffered:
+            return wrap_logging_handler(
+                handler=handler,
+                buffer_size=buffer_size,
+                flush_interval=flush_interval,
+                loop=loop,
+            )
+        return handler
+
+    aiomisc_log.basic_config(
         level=level,
         log_format=log_format,
-        handler_wrapper=wrapper,
+        handler_wrapper=wrap_handler,
         **kwargs
     )
+
+    loop.set_exception_handler(unhandled_hook)     # type: ignore
 
 
 __all__ = (
