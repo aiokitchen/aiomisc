@@ -87,7 +87,7 @@ async def test_from_thread_channel_close(loop):
         channel.put(2)
 
     channel = FromThreadChannel(maxsize=1, loop=loop)
-    task = asyncio.create_task(channel.get())
+    task = loop.create_task(channel.get())
 
     with pytest.raises(asyncio.TimeoutError):
         await asyncio.wait_for(task, timeout=1)

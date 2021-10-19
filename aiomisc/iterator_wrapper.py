@@ -185,13 +185,22 @@ class IteratorWrapper(AsyncIterator):
                 self.loop.call_soon_threadsafe(self.__close_event.set)
 
     async def _run(self) -> Any:
-        return await self.loop.run_in_executor(self.executor, self._in_thread)
+        return await self.loop.run_in_executor(
+            self.executor, self._in_thread,
+        )
 
-    def close(self) -> None:
+    def close(self) -> Awaitable[None]:
         self.__channel.close()
 
         if self.__gen_task is not None and not self.__gen_task.done():
             self.__gen_task.cancel()
+
+        return asyncio.ensure_future(self.wait_closed())
+
+    async def wait_closed(self) -> None:
+        await self.__close_event.wait()
+        if self.__gen_task:
+            await asyncio.gather(self.__gen_task, return_exceptions=True)
 
     def __aiter__(self) -> AsyncIterator[Any]:
         if self.__gen_task is None:
@@ -202,10 +211,11 @@ class IteratorWrapper(AsyncIterator):
         try:
             item, is_exc = await self.__channel.get()
         except ChannelClosed:
+            await self.wait_closed()
             raise StopAsyncIteration
 
         if is_exc:
-            self.close()
+            await self.close()
             raise item from item
 
         self._statistic.yielded += 1
@@ -221,16 +231,13 @@ class IteratorWrapper(AsyncIterator):
         if self.closed:
             return
 
-        self.close()
-
-        if self.__gen_task:
-            await asyncio.gather(self.__gen_task, return_exceptions=True)
+        await self.close()
 
 
 class IteratorProxy(AsyncIterator):
     def __init__(
         self, iterator: AsyncIterator,
-        finalizer: Callable[[], None],
+        finalizer: Callable[[], Any],
     ):
         self.__iterator = iterator
         finalize(self, finalizer)
