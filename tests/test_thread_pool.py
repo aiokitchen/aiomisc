@@ -10,6 +10,7 @@ import pytest
 from async_timeout import timeout
 
 import aiomisc
+from aiomisc.iterator_wrapper import ChannelClosed, FromThreadChannel
 
 
 try:
@@ -38,6 +39,62 @@ def executor(loop: asyncio.AbstractEventLoop):
             thread_pool.shutdown(wait=True)
 
         thread_pool.shutdown(wait=True)
+
+
+async def test_from_thread_channel(loop, threaded_decorator):
+    channel = FromThreadChannel(maxsize=2, loop=loop)
+
+    @threaded_decorator
+    def in_thread():
+        with channel:
+            for i in range(10):
+                channel.put(i)
+
+    in_thread()
+    result = []
+    with pytest.raises(ChannelClosed):
+        while True:
+            result.append(await asyncio.wait_for(channel.get(), timeout=5))
+
+    assert result == list(range(10))
+
+
+async def test_from_thread_channel_wait_before(loop, threaded_decorator):
+    channel = FromThreadChannel(maxsize=1, loop=loop)
+
+    @threaded_decorator
+    def in_thread():
+        with channel:
+            for i in range(10):
+                channel.put(i)
+
+    loop.call_later(0.1, in_thread)
+
+    result = []
+    with pytest.raises(ChannelClosed):
+        while True:
+            result.append(await asyncio.wait_for(channel.get(), timeout=5))
+
+    assert result == list(range(10))
+
+
+async def test_from_thread_channel_close(loop):
+    channel = FromThreadChannel(maxsize=1, loop=loop)
+    with channel:
+        channel.put(1)
+
+    with pytest.raises(ChannelClosed):
+        channel.put(2)
+
+    channel = FromThreadChannel(maxsize=1, loop=loop)
+    task = asyncio.create_task(channel.get())
+
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(task, timeout=1)
+
+    loop.call_soon(channel.put, 1)
+
+    assert await channel.get() == 1
 
 
 async def test_future_gc(thread_pool_executor, loop):
