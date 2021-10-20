@@ -25,10 +25,10 @@ in this document.
 ------
 
 * Split `aiomisc` into three python packages:
-    * `aiomisc` - still contains entrypoint, service, etc.
+    * `aiomisc` - still contains entrypoint, services, etc.
     * `aiomisc_log` - logging related code.
     * `aiomisc_worket` - worker-pools worker related code/
-* splited plugins related code to `aiomisc.plugins` module from `__init__.py`
+* split plugins related code to `aiomisc.plugins` module from `__init__.py`
 * `port=0` is a default for `aiomisc.utils.bind_socket()`
 * `aiomisc.run()` function for running coroutine
   similar like `asuncio.run` but does all entrypoint work:
