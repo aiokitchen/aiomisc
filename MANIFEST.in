@@ -2,4 +2,4 @@ include README.rst
 include aiomisc/py.typed
 include requirements.dev.txt
 include requirements.txt
-recursive-exclude tests *.
+recursive-exclude tests *.*
