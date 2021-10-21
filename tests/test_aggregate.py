@@ -1,7 +1,6 @@
 import asyncio
-import platform
-
 import math
+import platform
 import time
 from asyncio import Event, wait
 from typing import Any, List

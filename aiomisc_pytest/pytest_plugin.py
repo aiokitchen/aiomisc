@@ -11,6 +11,7 @@ from typing import Callable, Coroutine, NamedTuple, Optional, Tuple, Type, Union
 from unittest.mock import MagicMock
 
 import pytest
+
 import aiomisc
 from aiomisc.utils import bind_socket
 from aiomisc_log import LOG_LEVEL, basic_config
