@@ -12,6 +12,8 @@ in this document.
 15.2.x
 ------
 
+* Change order of detection for `aiomisc_log.LogFormat.default()` in case
+  the stderr is not a tty. Fixes `journald` formatter auto detection.
 * Rewritten `aiomisc.iterator_wrapper.IteratorWrapper`  to avoid unnecessary
   context switches. Now, `__in_thread` method switches only when writing is
   possible instead of retrying every 100ms.

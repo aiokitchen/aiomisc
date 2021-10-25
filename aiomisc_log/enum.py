@@ -22,15 +22,16 @@ class LogFormat(IntEnum):
 
     @classmethod
     def default(cls) -> str:
-        if not os.isatty(sys.stderr.fileno()):
-            return cls.plain.name
-
         journal_stream = os.getenv("JOURNAL_STREAM", "")
         if journal_stream:
             st_dev, st_ino = map(int, journal_stream.split(":", 1))
             stat = os.stat(sys.stderr.fileno())
             if stat.st_ino == st_ino and stat.st_dev == st_dev:
                 return cls.journald.name
+
+        if not os.isatty(sys.stderr.fileno()):
+            return cls.plain.name
+
         try:
             import rich  # noqa
 
