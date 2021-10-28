@@ -733,13 +733,16 @@ and by termination when the parent process is stopped.
             cls, *, bitcoin: bool, monero: bool, dogiecoin: bool
         ) -> Any:
             if bitcoin:
-                return Miner(kind="bitcoin")
+                miner = Miner(kind="bitcoin")
+            elif monero:
+                miner Miner(kind="monero")
+            elif dogiecoin:
+                miner = Miner(kind="dogiecoin")
+            else:
+                # Nothing to do
+                return
 
-            if monero:
-                return Miner(kind="monero")
-
-            if dogiecoin:
-                return Miner(kind="dogiecoin")
+            miner.do_mining()
 
     services = [
         MiningService(bitcoin=True),
