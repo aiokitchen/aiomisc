@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2021-10-28 23:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,8 +60,8 @@ msgid "`AIOMISC_LOG_FLUSH` - interval between logs flushing from buffer"
 msgstr "`AIOMISC_LOG_FLUSH` - интервал сброса буфера логов logs"
 
 #: ../../source/entrypoint.rst:85
-msgid "`AIOMISC_LOG_BUFFERING` - следует ли включать буфферизацию логирования"
-msgstr ""
+msgid "`AIOMISC_LOG_BUFFERING` - should logging be buffered"
+msgstr "`AIOMISC_LOG_BUFFERING` - следует ли включать буфферизацию логирования"
 
 #: ../../source/entrypoint.rst:86
 msgid "`AIOMISC_LOG_BUFFER_SIZE` - maximum log buffer size"
@@ -85,4 +85,3 @@ msgstr ""
 "``aiomisc.entrypoint``. Это очень похоже на ``asyncio.run()`` но "
 "управляет сервисами ``aiomisc.Service`` и принимает прочие аргументы "
 "entrypoint."
-

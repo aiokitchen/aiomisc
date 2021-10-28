@@ -701,3 +701,51 @@ Example of systemd service file:
     # Send SIGKILL when timeouts are exceeded
     FinalKillSignal=SIGKILL
     SendSIGKILL=yes
+
+ProcessService
+++++++++++++++
+
+A base class for launching a function by a separate system process,
+and by termination when the parent process is stopped.
+
+.. code-block:: python
+
+    import aiomisc
+
+    # Fictional miner implementation
+    from .my_miner import Miner
+
+
+    class MiningService(ProcessService):
+        bitcoin: bool = False
+        monero: bool = False
+        dogiecoin: bool = False
+
+        def get_process_kwargs(self) -> Dict[str, Any]:
+            return dict(
+                bitcoin=self.bitcoin,
+                monero=self.monero,
+                dogiecoin=self.dogiecoin,
+            )
+
+        @classmethod
+        def in_process(
+            cls, *, bitcoin: bool, monero: bool, dogiecoin: bool
+        ) -> Any:
+            if bitcoin:
+                return Miner(kind="bitcoin")
+
+            if monero:
+                return Miner(kind="monero")
+
+            if dogiecoin:
+                return Miner(kind="dogiecoin")
+
+    services = [
+        MiningService(bitcoin=True),
+        MiningService(monero=True),
+        MiningService(dogiecoin=True),
+    ]
+
+    with aiomisc.entrypoint(*services) as loop:
+        loop.run_forever()
