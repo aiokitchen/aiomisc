@@ -1,7 +1,7 @@
 import logging
 import os
 import signal
-from multiprocessing import Process, Event
+from multiprocessing import Process, Event, synchronize
 from typing import Any, Dict, Callable
 from aiomisc_log import basic_config, LOG_LEVEL, LOG_FORMAT, LogFormat
 
@@ -15,8 +15,8 @@ def _process_inner(
     function: Callable[..., Any],
     log_level: str,
     log_format: str,
-    start_event: Event,
-    stop_event: Event,
+    start_event: synchronize.Event,
+    stop_event: synchronize.Event,
     **kwargs: Any
 ) -> None:
     basic_config(level=log_level, format=log_format)
@@ -29,8 +29,8 @@ def _process_inner(
 
 class ProcessService(Service):
     process: Process
-    process_start_event: Event
-    process_stop_event: Event
+    process_start_event: synchronize.Event
+    process_stop_event: synchronize.Event
 
     def get_process_kwargs(self) -> Dict[str, Any]:
         return {}
