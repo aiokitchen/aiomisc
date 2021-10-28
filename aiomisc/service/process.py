@@ -1,9 +1,10 @@
 import logging
 import os
 import signal
-from multiprocessing import Process, Event, synchronize
-from typing import Any, Dict, Callable
-from aiomisc_log import basic_config, LOG_LEVEL, LOG_FORMAT, LogFormat
+from multiprocessing import Event, Process, synchronize
+from typing import Any, Callable, Dict
+
+from aiomisc_log import LOG_FORMAT, LOG_LEVEL, LogFormat, basic_config
 
 from .base import Service
 
