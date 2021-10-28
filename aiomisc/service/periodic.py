@@ -1,4 +1,5 @@
 import logging
+from abc import abstractmethod
 from typing import Any
 
 from aiomisc import PeriodicCallback, Service
@@ -28,6 +29,7 @@ class PeriodicService(Service):
         self.periodic.stop()
         log.info("Periodic service %s is stopped", self)
 
+    @abstractmethod
     async def callback(self) -> Any:
         raise NotImplementedError
 

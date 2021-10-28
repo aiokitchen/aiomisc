@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 from aiohttp.web import Application
 from aiohttp_asgi import ASGIResource
 from aiohttp_asgi.resource import ASGIApplicationType
@@ -29,6 +31,7 @@ class ASGIHTTPService(AIOHTTPService):
 class ASGIHTTPSSLService(AIOHTTPSSLService):
     __async_required__ = "start", "create_application", "create_asgi_app"
 
+    @abstractmethod
     async def create_asgi_app(self) -> ASGIApplicationType:
         raise NotImplementedError(
             "You must implement "

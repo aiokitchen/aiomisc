@@ -1,6 +1,7 @@
 import asyncio
 import socket
 import ssl
+from abc import abstractmethod
 from functools import partial
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -81,6 +82,7 @@ class TLSServer(SimpleServer):
     ) -> asyncio.Task:
         return self.create_task(awaitable(self.handle_client)(reader, writer))
 
+    @abstractmethod
     async def handle_client(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,

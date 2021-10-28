@@ -11,7 +11,8 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 def test_str_representation():
     class FooCronService(CronService):
-        ...
+        async def callback(self):
+            pass
 
     svc = FooCronService()
 

@@ -1,15 +1,16 @@
 import asyncio
+from abc import ABCMeta, abstractmethod
 from typing import Any, Awaitable, Dict, Optional, Set, Tuple
 
 from ..context import Context, get_context
 from ..utils import cancel_tasks
 
 
-class ServiceMeta(type):
+class ServiceMeta(ABCMeta):
     def __new__(
         cls, name: str, bases: Tuple, namespace: Dict, **kwds: Any
     ) -> Any:
-        instance = type.__new__(
+        instance = super().__new__(
             cls, name, bases, dict(namespace),
         )
 
@@ -68,6 +69,7 @@ class Service(metaclass=ServiceMeta):
         for name, value in kwargs.items():
             setattr(self, name, value)
 
+    @abstractmethod
     async def start(self) -> Any:
         raise NotImplementedError
 
@@ -87,6 +89,7 @@ class SimpleServer(Service):
         task.add_done_callback(self.tasks.remove)
         return task
 
+    @abstractmethod
     async def start(self) -> None:
         raise NotImplementedError
 

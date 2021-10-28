@@ -1,5 +1,6 @@
 import asyncio
 import socket
+from abc import abstractmethod
 from functools import partial
 from typing import Any, Optional
 
@@ -36,6 +37,7 @@ class TCPServer(SimpleServer):
 
         super().__init__(**kwargs)
 
+    @abstractmethod
     async def handle_client(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,

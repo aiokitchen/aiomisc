@@ -1,5 +1,6 @@
 import asyncio
 import socket
+from abc import abstractmethod
 from functools import partial
 from typing import Any, Awaitable, Callable, Optional, Union
 
@@ -69,6 +70,7 @@ class UDPServer(SimpleServer):
 
         return self._transport.sendto(data, addr)
 
+    @abstractmethod
     def handle_datagram(self, data: bytes, addr: tuple) -> None:
         raise NotImplementedError
 
