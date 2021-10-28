@@ -1,6 +1,7 @@
 import logging
 import os
 import signal
+from abc import abstractclassmethod
 from multiprocessing import Event, Process, synchronize
 from typing import Any, Callable, Dict
 
@@ -36,6 +37,7 @@ class ProcessService(Service):
     def get_process_kwargs(self) -> Dict[str, Any]:
         return {}
 
+    @abstractclassmethod
     def in_process(cls, **kwargs: Any) -> Any:
         pass
 

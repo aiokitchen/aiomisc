@@ -24,6 +24,11 @@ class TestProcessService(ProcessService):
             fp.write("Hello world\n")
 
 
+def test_abstractmethod_exception():
+    with pytest.raises(TypeError):
+        ProcessService()
+
+
 def test_service(tmpdir):
     tmp_path = Path(tmpdir)
     test_file = tmp_path / "test.txt"
