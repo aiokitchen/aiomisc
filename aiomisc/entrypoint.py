@@ -153,12 +153,6 @@ class Entrypoint:
                 log_format=self.log_format,
             )
 
-            if aiomisc_log.LOG_LEVEL is not None:
-                aiomisc_log.LOG_LEVEL.set(self.log_level)
-
-            if aiomisc_log.LOG_FORMAT is not None:
-                aiomisc_log.LOG_FORMAT.set(self.log_format)
-
     async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
         if self._closing is None:

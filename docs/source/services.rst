@@ -710,13 +710,15 @@ and by termination when the parent process is stopped.
 
 .. code-block:: python
 
-    import aiomisc
+    from typing import Dict, Any
+
+    import aiomisc.service
 
     # Fictional miner implementation
     from .my_miner import Miner
 
 
-    class MiningService(ProcessService):
+    class MiningService(aiomisc.service.ProcessService):
         bitcoin: bool = False
         monero: bool = False
         dogiecoin: bool = False
@@ -735,7 +737,7 @@ and by termination when the parent process is stopped.
             if bitcoin:
                 miner = Miner(kind="bitcoin")
             elif monero:
-                miner Miner(kind="monero")
+                miner = Miner(kind="monero")
             elif dogiecoin:
                 miner = Miner(kind="dogiecoin")
             else:
@@ -744,11 +746,45 @@ and by termination when the parent process is stopped.
 
             miner.do_mining()
 
+
     services = [
         MiningService(bitcoin=True),
         MiningService(monero=True),
         MiningService(dogiecoin=True),
     ]
 
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_forever()
+    if __name__ == '__main__':
+        with aiomisc.entrypoint(*services) as loop:
+            loop.run_forever()
+
+
+RespawningProcessService
+++++++++++++++++++++++++
+
+A base class for launching a function by a separate system process,
+and by termination when the parent process is stopped, It's pretty
+like `ProcessService` but have one difference when the process
+unexpectedly exited this will be respawned.
+
+.. code-block:: python
+
+    import logging
+    from typing import Any
+
+    import aiomisc
+
+    from time import sleep
+
+
+    class SuicideService(aiomisc.service.RespawningProcessService):
+        @classmethod
+        def in_process(cls) -> Any:
+            sleep(10)
+            logging.warning("Goodbye mad world")
+            exit(42)
+
+
+    if __name__ == '__main__':
+        with aiomisc.entrypoint(SuicideService()) as loop:
+            loop.run_forever()
+

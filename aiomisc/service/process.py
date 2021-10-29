@@ -1,9 +1,10 @@
+import asyncio
 import logging
 import os
 import signal
-from abc import abstractclassmethod
+from abc import ABC, abstractclassmethod
 from multiprocessing import Event, Process, synchronize
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL, LogFormat, basic_config
 
@@ -21,7 +22,7 @@ def _process_inner(
     stop_event: synchronize.Event,
     **kwargs: Any
 ) -> None:
-    basic_config(level=log_level, format=log_format)
+    basic_config(level=log_level, log_format=log_format)
     start_event.set()
     try:
         function(**kwargs)
@@ -30,6 +31,7 @@ def _process_inner(
 
 
 class ProcessService(Service):
+    name: Optional[str] = None
     process: Process
     process_start_event: synchronize.Event
     process_stop_event: synchronize.Event
@@ -65,11 +67,22 @@ class ProcessService(Service):
                 self.process_stop_event,
             ),
             kwargs=self.get_process_kwargs(),
+            name=self.name,
         )
 
         process.start()
 
         await self.loop.run_in_executor(None, self.process_start_event.wait)
+        self.process = process
+
+    def __repr__(self) -> str:
+        pid: Optional[int] = None
+        if hasattr(self, "process"):
+            pid = self.process.pid
+
+        return "<{} object at {}: name={!r}, pid={}>".format(
+            self.__class__.__name__, hex(id(self)), self.name, pid,
+        )
 
     async def stop(self, exception: Exception = None) -> Any:
         if not self.process.is_alive() or not self.process.pid:
@@ -80,4 +93,37 @@ class ProcessService(Service):
         await self.loop.run_in_executor(None, self.process_stop_event.wait)
 
 
-__all__ = ("ProcessService",)
+class RespawningProcessService(ProcessService, ABC):
+    process_poll_timeout: int = 5
+
+    _is_running: bool
+
+    async def __is_alive(self) -> Optional[bool]:
+        if not hasattr(self, "process"):
+            return None
+
+        return await self.loop.run_in_executor(None, self.process.is_alive)
+
+    async def start(self) -> None:
+        self._is_running = True
+
+        while self._is_running:
+            await super().start()
+
+            if not self.start_event.is_set():
+                self.start_event.set()
+
+            while await self.__is_alive():
+                await asyncio.sleep(self.process_poll_timeout)
+
+            log.info(
+                "Process in service %r exited with code %r, respawning.",
+                self, self.process.exitcode,
+            )
+
+    async def stop(self, exception: Exception = None) -> Any:
+        self._is_running = False
+        await super().stop(exception)
+
+
+__all__ = ("ProcessService", "RespawningProcessService")

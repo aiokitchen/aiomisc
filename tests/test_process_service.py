@@ -1,10 +1,14 @@
+import asyncio
+import os
+from multiprocessing import Queue
 from pathlib import Path
 from typing import Any, Dict
 
 import pytest
 
 import aiomisc
-from aiomisc.service.process import ProcessService
+from aiomisc import threaded
+from aiomisc.service import ProcessService, RespawningProcessService
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -42,3 +46,37 @@ def test_service(tmpdir):
 
     with open(test_file) as fp:
         assert fp.readline() == "Hello world\n"
+
+
+class TestRespawningProcessService(RespawningProcessService):
+    __required__ = ("queue",)
+
+    queue: Queue
+
+    def get_process_kwargs(self) -> Dict[str, Any]:
+        return dict(queue=self.queue)
+
+    @classmethod
+    def in_process(cls, *, queue: Queue) -> Any:
+        queue.put(os.getpid())
+
+
+def test_respawning_service(tmpdir):
+    queue = Queue()
+    svc = TestRespawningProcessService(queue=queue, process_poll_timeout=0.5)
+
+    async def go():
+        pids = []
+
+        @threaded
+        def getter():
+            return queue.get()
+
+        for _ in range(2):
+            pids.append(await getter())
+
+        assert len(pids) == 2
+        assert pids[0] != pids[1]
+
+    with aiomisc.entrypoint(svc) as loop:
+        loop.run_until_complete(asyncio.wait_for(go(), timeout=5))
