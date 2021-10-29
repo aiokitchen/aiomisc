@@ -8,8 +8,8 @@ from typing import Any, Callable, Dict, Optional
 
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL, LogFormat, basic_config
 
-from .base import Service
-
+from aiomisc.service.base import Service
+from aiomisc.periodic import PeriodicCallback
 
 log = logging.getLogger(__name__)
 
@@ -96,33 +96,30 @@ class ProcessService(Service):
 class RespawningProcessService(ProcessService, ABC):
     process_poll_timeout: int = 5
 
-    _is_running: bool
+    _supervisor: PeriodicCallback
 
-    async def __is_alive(self) -> Optional[bool]:
+    async def __supervise(self) -> None:
         if not hasattr(self, "process"):
-            return None
+            return
 
-        return await self.loop.run_in_executor(None, self.process.is_alive)
+        if await self.loop.run_in_executor(None, self.process.is_alive):
+            return
+
+        log.info(
+            "Process in service %r exited with code %r, respawning.",
+            self, self.process.exitcode,
+        )
+        await super().start()
 
     async def start(self) -> None:
-        self._is_running = True
-
-        while self._is_running:
-            await super().start()
-
-            if not self.start_event.is_set():
-                self.start_event.set()
-
-            while await self.__is_alive():
-                await asyncio.sleep(self.process_poll_timeout)
-
-            log.info(
-                "Process in service %r exited with code %r, respawning.",
-                self, self.process.exitcode,
-            )
+        await super().start()
+        self._supervisor = PeriodicCallback(self.__supervise)
+        self._supervisor.start(
+            self.process_poll_timeout,
+        )
 
     async def stop(self, exception: Exception = None) -> Any:
-        self._is_running = False
+        await self._supervisor.stop()
         await super().stop(exception)
 
 
