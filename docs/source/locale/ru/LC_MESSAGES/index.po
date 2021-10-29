@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2021-10-28 23:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,48 +62,48 @@ msgstr ""
 "Асинхронная точка входа (entrypoint) с логированием и полезными "
 "аргументами"
 
-#: ../../source/index.rst:126
+#: ../../source/index.rst:124
 msgid "Install event loop on program start:"
 msgstr "Установка event loop на старте программы:"
 
-#: ../../source/index.rst:150
+#: ../../source/index.rst:148
 msgid "Close current event loop and install a new one:"
 msgstr "Закрываем текущий event loop и устанавлиаем новый:"
 
-#: ../../source/index.rst:168
+#: ../../source/index.rst:166
 msgid "Table Of Contents"
 msgstr "Содержание"
 
-#: ../../source/index.rst:195
+#: ../../source/index.rst:193
 msgid "Versioning"
 msgstr "Версионирование"
 
-#: ../../source/index.rst:197
+#: ../../source/index.rst:195
 msgid "This software follows `Semantic Versioning`_"
 msgstr ""
 "Это программное обеспечение следует методологиии `Семантического "
 "Версионирования`_"
 
-#: ../../source/index.rst:201
+#: ../../source/index.rst:199
 msgid "How to develop?"
 msgstr "Как начать разработку?"
 
-#: ../../source/index.rst:203
+#: ../../source/index.rst:201
 msgid "Should be installed:"
 msgstr "Должно быть установлено"
 
-#: ../../source/index.rst:205
+#: ../../source/index.rst:203
 msgid "`virtualenv`"
 msgstr "`virtualenv`"
 
-#: ../../source/index.rst:206
+#: ../../source/index.rst:204
 msgid "GNU Make as `make`"
 msgstr "GNU Make как `make`"
 
-#: ../../source/index.rst:207
+#: ../../source/index.rst:205
 msgid "Python 3.5+ as `python3`"
 msgstr "Python 3.5+ как `python3`"
 
-#: ../../source/index.rst:210
+#: ../../source/index.rst:208
 msgid "For setting up developer environment just type"
 msgstr "Для настройки окружения разработчика просто наберите"

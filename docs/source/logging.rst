@@ -58,6 +58,7 @@ JournalD
     `aiomisc.log.LogFormat.default()` will returns `journald`  in this case.
 
 .. code-block:: python
+
     import logging
     from aiomisc.log import basic_config
 
@@ -66,7 +67,7 @@ JournalD
 
     logging.info("JournalD log record")
 
-.. _JournalD:: https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html
+.. _JournalD: https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html
 
 
 Rich
