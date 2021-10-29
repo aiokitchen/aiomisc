@@ -3,7 +3,6 @@ import logging
 import pickle
 import signal
 import socket
-import sys
 from os import urandom
 from types import FrameType
 from typing import Any, Optional, Tuple, Union
@@ -18,14 +17,10 @@ def on_signal(signum: int, frame: FrameType) -> None:
     raise asyncio.CancelledError
 
 
-def main() -> Optional[int]:
-    address: Union[str, Tuple[str, int]]
-    cookie: bytes
-    identity: str
-
-    (
-        address, cookie, identity, log_level, log_format,
-    ) = pickle.load(sys.stdin.buffer)
+def process(
+    address: Union[str, Tuple[str, int]],
+    cookie: bytes, identity: str, log_level: str, log_format: str,
+) -> Optional[int]:
 
     basic_config(level=log_level, log_format=log_format)
 
@@ -116,8 +111,3 @@ def main() -> Optional[int]:
             return 0
         except KeyboardInterrupt:
             return 1
-
-
-if __name__ == "__main__":
-    rc = main()
-    exit(rc or 0)
