@@ -12,6 +12,8 @@ in this document.
 15.2.x
 ------
 
+* `aiomisc.ServiceMeta` is now inherited from `abc.ABCMeta`. It means 
+  the decorations like `@abc.abstractmethod` will work with service classes.
 * Added `aiomisc.service.ProcessService` for running python function in
   separate process.
 * Change order of detection for `aiomisc_log.LogFormat.default()` in case

@@ -3,6 +3,7 @@ import os
 import socket
 from contextlib import ExitStack
 from tempfile import mktemp
+from typing import Any
 
 import aiohttp.web
 import fastapi
@@ -67,7 +68,7 @@ def unix_socket_tcp():
 
 
 def test_service_class():
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         services = (
             aiomisc.Service(running=False, stopped=False),
             aiomisc.Service(running=False, stopped=False),
@@ -259,7 +260,8 @@ def test_udp_server(aiomisc_unused_port):
 
 def test_udp_without_port_or_socket():
     class TestService(UDPServer):
-        pass
+        async def handle_datagram(self, data: bytes, addr: tuple) -> None:
+            pass
 
     with pytest.raises(RuntimeError):
         TestService()
@@ -267,7 +269,11 @@ def test_udp_without_port_or_socket():
 
 def test_tcp_without_port_or_socket():
     class TestService(TCPServer):
-        pass
+        async def handle_client(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ) -> Any:
+            pass
 
     with pytest.raises(RuntimeError):
         TestService()

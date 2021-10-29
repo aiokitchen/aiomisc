@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 
 import pytest
 
@@ -11,7 +12,8 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 def test_str_representation():
     class FooPeriodicService(PeriodicService):
-        ...
+        async def callback(self) -> Any:
+            pass
 
     svc = FooPeriodicService(interval=42, delay=4815162342)
     assert str(svc) == "FooPeriodicService(interval=42,delay=4815162342)"
