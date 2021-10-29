@@ -99,6 +99,8 @@ class WorkerPool:
             ),
         )
 
+        process.start()
+
         self.__spawning[identity] = process
         log.debug("Spawning new worker pool process PID: %s", process.pid)
 
