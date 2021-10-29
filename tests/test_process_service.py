@@ -1,4 +1,3 @@
-import asyncio
 import os
 from multiprocessing import Queue
 from pathlib import Path
@@ -7,7 +6,7 @@ from typing import Any, Dict
 import pytest
 
 import aiomisc
-from aiomisc import threaded
+from aiomisc import threaded, timeout
 from aiomisc.service import ProcessService, RespawningProcessService
 
 
@@ -63,8 +62,12 @@ class TestRespawningProcessService(RespawningProcessService):
 
 def test_respawning_service(tmpdir):
     queue = Queue()
-    svc = TestRespawningProcessService(queue=queue, process_poll_timeout=0.5)
+    svc = TestRespawningProcessService(
+        queue=queue,
+        process_poll_timeout=0.5
+    )
 
+    @timeout(5)
     async def go():
         pids = []
 
@@ -79,4 +82,4 @@ def test_respawning_service(tmpdir):
         assert pids[0] != pids[1]
 
     with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(asyncio.wait_for(go(), timeout=5))
+        loop.run_until_complete(go())
