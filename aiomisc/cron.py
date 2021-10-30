@@ -80,7 +80,8 @@ class CronCallback:
         next_start = self._croniter.get_next(
             float,
             start_time=now_dt
-        )
+        )  # type: ignore
+        # FIXME https://github.com/python/typeshed/issues/6212
         interval = next_start - now_dt.timestamp()
         if interval < 0:
             raise asyncio.InvalidStateError
