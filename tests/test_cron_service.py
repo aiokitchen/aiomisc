@@ -34,39 +34,22 @@ def test_cron():
             condition.notify_all()
 
     svc = CronService()
-
     svc.register(callback, spec="* * * * * *")
 
     async def assert_counter():
         nonlocal counter, svc
 
         counter = 0
-        async with condition:
-            await asyncio.wait_for(
-                condition.wait_for(lambda: counter == 1),
-                timeout=2,
-            )
-
-        await svc.stop()
-
         await asyncio.sleep(1)
         async with condition:
-            await asyncio.wait_for(
-                condition.wait_for(lambda: counter == 1),
-                timeout=2,
-            )
+            await svc.stop()
 
+        await asyncio.sleep(1)
         assert counter == 1
 
     with aiomisc.entrypoint(svc) as loop:
         condition = asyncio.Condition()
-
-        loop.run_until_complete(
-            asyncio.wait_for(
-                assert_counter(),
-                timeout=10,
-            ),
-        )
+        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
 
 
 def test_register():
@@ -81,11 +64,6 @@ def test_register():
 
     svc = CronService()
 
-    class My(CronService):
-        async def start(self):
-            self.register()
-            await super().start()
-
     svc.register(callback, spec="* * * * * *")
     svc.register(callback, spec="* * * * * */2")  # even second
     svc.register(callback, spec="* * * * * *")
@@ -94,13 +72,9 @@ def test_register():
         nonlocal counter, svc
 
         counter = 0
+        await asyncio.sleep(2)
         async with condition:
-            await asyncio.wait_for(
-                condition.wait_for(lambda: counter == 5),
-                timeout=10,
-            )
-
-        await svc.stop()
+            await svc.stop()
 
         await asyncio.sleep(1)
         assert counter == 5

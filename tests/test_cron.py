@@ -9,16 +9,21 @@ from aiomisc.cron import CronCallback
 
 async def test_cron(loop):
     counter = 0
+    condition = asyncio.Condition()
 
-    def task():
+    async def task():
         nonlocal counter
-        counter += 1
+        async with condition:
+            counter += 1
+            await asyncio.sleep(0)
+            condition.notify_all()
 
     cron = CronCallback(task)
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    await cron.stop()
+    async with condition:
+        await cron.stop()
 
     assert counter == 2
 
@@ -35,16 +40,15 @@ async def test_long_func(loop):
         nonlocal counter
         async with condition:
             counter += 1
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.1)
             condition.notify_all()
 
     cron = CronCallback(task)
     cron.start("* * * * * *", loop)
 
+    await asyncio.sleep(1)
     async with condition:
-        await condition.wait_for(lambda: counter == 1)
-
-    await cron.stop()
+        await cron.stop()
     await asyncio.sleep(2)
 
     assert counter == 1
@@ -52,11 +56,14 @@ async def test_long_func(loop):
 
 async def test_shield(loop):
     counter = 0
+    condition = asyncio.Condition()
 
     async def task():
         nonlocal counter
-        await asyncio.sleep(1)
-        counter += 1
+        async with condition:
+            await asyncio.sleep(1.1)
+            counter += 1
+            condition.notify_all()
 
     cron = CronCallback(task)
     cron.start("* * * * * *", loop, shield=True)
@@ -65,11 +72,12 @@ async def test_shield(loop):
     while cron.task is None:
         await asyncio.sleep(0.1)
 
-    with pytest.raises(asyncio.CancelledError):
-        await cron.stop()
+    async with condition:
+        with pytest.raises(asyncio.CancelledError):
+            await cron.stop()
 
     # Wait for counter to increment
-    await asyncio.sleep(1)
+    await asyncio.sleep(1.1)
 
     # Shielded
     assert counter == 1
@@ -83,8 +91,9 @@ async def test_shield(loop):
     while cron.task is None:
         await asyncio.sleep(0.1)
 
-    with pytest.raises(asyncio.CancelledError):
-        await cron.stop()
+    async with condition:
+        with pytest.raises(asyncio.CancelledError):
+            await cron.stop()
 
     # Wait for counter to increment
     await asyncio.sleep(1)
@@ -95,19 +104,20 @@ async def test_shield(loop):
 
 async def test_restart(loop):
     counter = 0
+    condition = asyncio.Condition()
 
-    def task():
+    async def task():
         nonlocal counter
-        counter += 1
+        async with condition:
+            counter += 1
+            condition.notify_all()
 
     cron = CronCallback(task)
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    await cron.stop()
-
-    assert counter == 2
-
+    async with condition:
+        await cron.stop()
     await asyncio.sleep(2)
 
     assert counter == 2
@@ -115,10 +125,8 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    await cron.stop()
-
-    assert counter == 4
-
+    async with condition:
+        await cron.stop()
     await asyncio.sleep(2)
 
     assert counter == 4
