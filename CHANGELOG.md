@@ -12,6 +12,7 @@ in this document.
 15.2.x
 ------
 
+* fixed (cron): is now set current datetime as start point #120
 * `aiomisc.ServiceMeta` is now inherited from `abc.ABCMeta`. It means 
   the decorations like `@abc.abstractmethod` will work with service classes.
 * Added `aiomisc.service.ProcessService` for running python function in
