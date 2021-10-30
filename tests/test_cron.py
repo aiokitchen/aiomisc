@@ -21,7 +21,7 @@ async def test_cron(loop):
 
     await asyncio.sleep(2)
 
-    with suppress(asyncio.CancelledError):
+    with suppress(Exception):
         await cron.stop()
 
     assert counter == 2
@@ -48,7 +48,7 @@ async def test_long_func(loop):
     async with condition:
         await condition.wait_for(lambda: counter == 1)
 
-    with suppress(asyncio.CancelledError):
+    with suppress(Exception):
         await cron.stop()
     await asyncio.sleep(2)
 
@@ -70,7 +70,7 @@ async def test_shield(loop):
     while cron.task is None:
         await asyncio.sleep(0.1)
 
-    with suppress(asyncio.CancelledError):
+    with suppress(Exception):
         await cron.stop()
 
     # Wait for counter to increment
@@ -88,7 +88,7 @@ async def test_shield(loop):
     while cron.task is None:
         await asyncio.sleep(0.1)
 
-    with pytest.raises(asyncio.CancelledError):
+    with suppress(Exception):
         await cron.stop()
 
     # Wait for counter to increment
@@ -110,7 +110,7 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    with suppress(asyncio.CancelledError):
+    with suppress(Exception):
         await cron.stop()
 
     assert counter == 2
@@ -122,7 +122,8 @@ async def test_restart(loop):
     cron.start("* * * * * *", loop)
 
     await asyncio.sleep(2)
-    await cron.stop()
+    with suppress(Exception):
+        await cron.stop()
 
     assert counter == 4
 
