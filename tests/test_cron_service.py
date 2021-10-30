@@ -56,7 +56,7 @@ def test_cron():
                 timeout=2,
             )
 
-        assert counter == 1
+        assert 0 < counter < 3
 
     with aiomisc.entrypoint(svc) as loop:
         condition = asyncio.Condition()
@@ -103,7 +103,7 @@ def test_register():
         await svc.stop()
 
         await asyncio.sleep(1)
-        assert counter == 5
+        assert 4 < counter < 7
 
     with aiomisc.entrypoint(svc) as loop:
         condition = asyncio.Condition()
