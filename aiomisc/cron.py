@@ -76,8 +76,11 @@ class CronCallback:
         if not self._loop or not self._croniter:
             raise asyncio.InvalidStateError
         loop_time = self._loop.time()
-        timestamp = datetime.now(timezone.utc).timestamp()
-        interval = self._croniter.get_next(float) - timestamp
+        dt_now = datetime.now(timezone.utc)
+        interval = (
+            self._croniter.get_next(float, start_time=dt_now)
+            - dt_now.timestamp()
+        )
         if interval < 0:
             raise asyncio.InvalidStateError
         return loop_time + interval
