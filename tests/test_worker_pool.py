@@ -10,6 +10,7 @@ from time import sleep
 import pytest
 from setproctitle import setproctitle
 
+import aiomisc
 from aiomisc import WorkerPool
 
 
@@ -30,6 +31,7 @@ async def worker_pool(request, loop) -> WorkerPool:
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_success(worker_pool):
     results = await asyncio.gather(
         *[
@@ -44,6 +46,7 @@ async def test_success(worker_pool):
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_incomplete_task_kill(worker_pool):
 
     await asyncio.gather(
@@ -75,6 +78,7 @@ async def test_incomplete_task_kill(worker_pool):
     platform.system() == "Windows", reason="Flapping on windows",
 )
 @skipif
+@aiomisc.timeout(5)
 async def test_incomplete_task_pool_reuse(worker_pool):
     pids_start = set(process.pid for process in worker_pool.processes)
 
@@ -108,6 +112,7 @@ async def test_incomplete_task_pool_reuse(worker_pool):
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_exceptions(worker_pool):
     results = await asyncio.gather(
         *[
@@ -123,6 +128,7 @@ async def test_exceptions(worker_pool):
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_exit(worker_pool):
     exceptions = await asyncio.wait_for(
         asyncio.gather(
@@ -140,15 +146,14 @@ async def test_exit(worker_pool):
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_exit_respawn(worker_pool):
-    exceptions = await asyncio.wait_for(
-        asyncio.gather(
-            *[
-                worker_pool.create_task(exit, 1)
-                for _ in range(worker_pool.workers * 3)
-            ],
-            return_exceptions=True
-        ), timeout=5,
+    exceptions = await asyncio.gather(
+        *[
+            worker_pool.create_task(exit, 1)
+            for _ in range(worker_pool.workers * 3)
+        ],
+        return_exceptions=True
     )
     assert len(exceptions) == worker_pool.workers * 3
 
@@ -171,6 +176,7 @@ def get_initializer_args():
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_initializer(worker_pool):
     pool = WorkerPool(
         1, initializer=initializer, initializer_args=("foo",),
@@ -200,6 +206,7 @@ def bad_initializer():
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_bad_initializer(worker_pool):
     pool = WorkerPool(1, initializer=bad_initializer)
 
@@ -209,6 +216,7 @@ async def test_bad_initializer(worker_pool):
 
 
 @skipif
+@aiomisc.timeout(5)
 async def test_threads_active_count_in_pool(worker_pool):
     threads = await worker_pool.create_task(threading.active_count)
     assert threads == 1
