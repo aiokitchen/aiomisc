@@ -102,7 +102,7 @@ class WorkerPool:
         process.start()
 
         self.__spawning[identity] = process
-        log.debug("Spawning new worker pool process PID: %s", process.pid)
+        log.debug("Started worker pool process PID: %s", process.pid)
 
         return process
 
@@ -235,6 +235,7 @@ class WorkerPool:
                     await initializer_done
                 except Exception as e:
                     starting.set_exception(e)
+                    self._kill_process(process)
                     raise
                 else:
                     starting.set_result(None)
@@ -327,11 +328,17 @@ class WorkerPool:
         await asyncio.gather(*tasks)
 
     def __on_exit(self, process: Process) -> None:
+        log.debug(
+            "Process %r exit with code %r, respawning",
+            process.pid, process.exitcode
+        )
+
         async def respawn() -> None:
-            if self.__closing:
-                return None
             self.processes.remove(process)
             await self.__spawn_process()
+
+        if self.__closing:
+            return
 
         self.__task(respawn())
 
@@ -342,8 +349,8 @@ class WorkerPool:
         start_future = self.__create_future()
         self.__starting[identity] = start_future
         process = await self.__create_process(identity)
-        await start_future
         self.processes.add(process)
+        await start_future
 
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
@@ -359,23 +366,23 @@ class WorkerPool:
 
     @shield
     async def close(self) -> None:
+        log.debug("Closing worker pool %r", self)
+
         @threaded
         def killer() -> None:
             while self.processes:
                 self._kill_process(self.processes.pop())
-
-        killer_task = killer()
 
         if self.__closing:
             return
 
         self.__closing = True
 
+        await killer()
+
         await cancel_tasks(
             chain(tuple(self.__task_store), tuple(self.__futures)),
         )
-
-        await killer_task
 
     async def create_task(
         self, func: Callable[..., T],

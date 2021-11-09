@@ -13,7 +13,7 @@ from aiomisc.service import ProcessService, RespawningProcessService
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
-class TestProcessService(ProcessService):
+class SampleProcessService(ProcessService):
     __required__ = ("path",)
 
     path: Path
@@ -35,7 +35,7 @@ def test_abstractmethod_exception():
 def test_service(tmpdir):
     tmp_path = Path(tmpdir)
     test_file = tmp_path / "test.txt"
-    svc = TestProcessService(path=test_file)
+    svc = SampleProcessService(path=test_file)
 
     async def wait(loop):
         loop.run_in_executor(None, svc.process_stop_event.wait)
