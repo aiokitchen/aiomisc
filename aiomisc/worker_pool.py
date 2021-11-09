@@ -229,7 +229,8 @@ class WorkerPool:
             starting: asyncio.Future = self.__starting.pop(identity)
 
             if starting.done():
-                self._kill_process(process)
+                # Starting future
+                await self.__wait_process_exit(process)
                 return await starting
 
             if self.initializer is not None:
@@ -337,7 +338,7 @@ class WorkerPool:
 
         log.debug(
             "Process %r exit with code %r, respawning",
-            process.pid, process.exitcode
+            process.pid, process.exitcode,
         )
 
         await self.__spawn_process()

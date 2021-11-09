@@ -5,10 +5,10 @@ from abc import ABC, abstractclassmethod
 from multiprocessing import Event, Process, synchronize
 from typing import Any, Callable, Dict, Optional
 
+from aiomisc.periodic import PeriodicCallback
+from aiomisc.service.base import Service
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL, LogFormat, basic_config
 
-from aiomisc.service.base import Service
-from aiomisc.periodic import PeriodicCallback
 
 log = logging.getLogger(__name__)
 

@@ -64,7 +64,7 @@ def test_respawning_service(tmpdir):
     queue = Queue()
     svc = TestRespawningProcessService(
         queue=queue,
-        process_poll_timeout=0.5
+        process_poll_timeout=0.5,
     )
 
     @timeout(5)

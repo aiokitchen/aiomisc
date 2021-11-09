@@ -6,9 +6,9 @@ import threading
 from multiprocessing.context import ProcessError
 from os import getpid
 from time import sleep
-from setproctitle import setproctitle
 
 import pytest
+from setproctitle import setproctitle
 
 from aiomisc import WorkerPool
 
@@ -24,7 +24,7 @@ async def worker_pool(request, loop) -> WorkerPool:
     async with WorkerPool(
         4,
         initializer=setproctitle,
-        initializer_args=(f'[WorkerPool] {request.node.name}',)
+        initializer_args=(f"[WorkerPool] {request.node.name}",),
     ) as pool:
         yield pool
 
@@ -131,7 +131,7 @@ async def test_exit(worker_pool):
                 for _ in range(worker_pool.workers)
             ],
             return_exceptions=True
-        ), timeout=5
+        ), timeout=5,
     )
 
     assert len(exceptions) == worker_pool.workers
@@ -148,7 +148,7 @@ async def test_exit_respawn(worker_pool):
                 for _ in range(worker_pool.workers * 3)
             ],
             return_exceptions=True
-        ), timeout=5
+        ), timeout=5,
     )
     assert len(exceptions) == worker_pool.workers * 3
 
