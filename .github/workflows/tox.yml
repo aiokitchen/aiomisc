@@ -151,18 +151,10 @@ jobs:
       - name: Run tox
         run: tox
         env:
-          FORCE_COLOR: yes
-          TOXENV: ${{ matrix.toxenv }}
-
-      - name: Coveralls install
-        run: python -m pip install coveralls
-
-      - name: Coveralls
-        continue-on-error: true
-        env:
           COVERALLS_PARALLEL: 'true'
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: coveralls
+          FORCE_COLOR: yes
+          TOXENV: ${{ matrix.toxenv }}
 
   finish:
     needs: tests
