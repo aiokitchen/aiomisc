@@ -19,7 +19,7 @@ def on_signal(signum: int, frame: FrameType) -> None:
 
 def process(
     address: Union[str, Tuple[str, int]],
-    cookie: bytes, identity: str, log_level: str, log_format: str,
+    cookie: bytes, identity: int, log_level: str, log_format: str,
 ) -> Optional[int]:
 
     basic_config(level=log_level, log_format=log_format)
@@ -100,10 +100,9 @@ def process(
 
         del cookie
 
+        signal.signal(SIGNAL, on_signal)
         send(PacketTypes.IDENTITY, identity)
         logging.debug("Worker ready")
-
-        signal.signal(SIGNAL, on_signal)
 
         try:
             while step():

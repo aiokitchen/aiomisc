@@ -6,6 +6,7 @@ import threading
 from multiprocessing.context import ProcessError
 from os import getpid
 from time import sleep
+from setproctitle import setproctitle
 
 import pytest
 
@@ -19,8 +20,12 @@ skipif = pytest.mark.skipif(
 
 
 @pytest.fixture
-async def worker_pool(loop) -> WorkerPool:
-    async with WorkerPool(4) as pool:
+async def worker_pool(request, loop) -> WorkerPool:
+    async with WorkerPool(
+        4,
+        initializer=setproctitle,
+        initializer_args=(f'[WorkerPool] {request.node.name}',)
+    ) as pool:
         yield pool
 
 
@@ -119,12 +124,14 @@ async def test_exceptions(worker_pool):
 
 @skipif
 async def test_exit(worker_pool):
-    exceptions = await asyncio.gather(
-        *[
-            worker_pool.create_task(exit, 1)
-            for _ in range(worker_pool.workers)
-        ],
-        return_exceptions=True
+    exceptions = await asyncio.wait_for(
+        asyncio.gather(
+            *[
+                worker_pool.create_task(exit, 1)
+                for _ in range(worker_pool.workers)
+            ],
+            return_exceptions=True
+        ), timeout=5
     )
 
     assert len(exceptions) == worker_pool.workers
@@ -134,17 +141,20 @@ async def test_exit(worker_pool):
 
 @skipif
 async def test_exit_respawn(worker_pool):
-    exceptions = await asyncio.gather(
-        *[
-            worker_pool.create_task(exit, 1)
-            for _ in range(worker_pool.workers * 3)
-        ],
-        return_exceptions=True
+    exceptions = await asyncio.wait_for(
+        asyncio.gather(
+            *[
+                worker_pool.create_task(exit, 1)
+                for _ in range(worker_pool.workers * 3)
+            ],
+            return_exceptions=True
+        ), timeout=5
     )
-
     assert len(exceptions) == worker_pool.workers * 3
+
     for exc in exceptions:
         assert isinstance(exc, ProcessError)
+
 
 
 INITIALIZER_ARGS = None
