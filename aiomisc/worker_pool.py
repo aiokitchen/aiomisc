@@ -214,7 +214,7 @@ class WorkerPool:
             hasher.update(self.__cookie)
 
             if digest != hasher.digest():
-                exc = AuthenticationError("Invalid cookie")
+                exc: Exception = AuthenticationError("Invalid cookie")
                 self._statistic.bad_auth += 1
                 await send(PacketTypes.EXCEPTION, exc)
                 raise exc
@@ -281,12 +281,13 @@ class WorkerPool:
                         await self.__on_exit(process)
 
                         if not result_future.done():
-                            exc = ProcessError(
-                                "Process {!r} exited with code {!r}".format(
-                                    process, process.exitcode,
+                            result_future.set_exception(
+                                ProcessError(
+                                    "Process {!r} exited with code {!r}".format(
+                                        process, process.exitcode,
+                                    ),
                                 ),
                             )
-                            result_future.set_exception(exc)
                         break
                     except Exception as e:
                         if not result_future.done():

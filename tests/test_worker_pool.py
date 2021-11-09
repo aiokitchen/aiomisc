@@ -156,7 +156,6 @@ async def test_exit_respawn(worker_pool):
         assert isinstance(exc, ProcessError)
 
 
-
 INITIALIZER_ARGS = None
 INITIALIZER_KWARGS = None
 
