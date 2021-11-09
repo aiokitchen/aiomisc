@@ -3,12 +3,11 @@ import os
 import pickle
 import socket
 import sys
-import uuid
 import warnings
 from inspect import Traceback
-from itertools import chain
 from multiprocessing import AuthenticationError, Process, ProcessError
 from os import chmod, urandom
+from random import getrandbits
 from tempfile import mktemp
 from types import MappingProxyType
 from typing import (
@@ -79,7 +78,7 @@ class WorkerPool:
         process.kill()
 
     @threaded
-    def __create_process(self, identity: str) -> Process:
+    def __create_process(self, identity: int) -> Process:
         if self.__closing:
             raise RuntimeError("Pool closed")
 
@@ -99,9 +98,11 @@ class WorkerPool:
             ),
         )
 
+        self.__spawning[identity] = process
+        self.processes.add(process)
+
         process.start()
 
-        self.__spawning[identity] = process
         log.debug("Started worker pool process PID: %s", process.pid)
 
         return process
@@ -117,10 +118,11 @@ class WorkerPool:
         self.__cookie = urandom(COOKIE_SIZE)
         self.__loop: Optional[asyncio.AbstractEventLoop] = None
         self.__futures: Set[asyncio.Future] = set()
-        self.__spawning: Dict[str, Process] = dict()
+        self.__spawning: Dict[int, Process] = dict()
         self.__task_store: Set[asyncio.Task] = set()
         self.__closing = False
-        self.__starting: Dict[str, asyncio.Future] = dict()
+        self.__closing_lock = asyncio.Lock()
+        self.__starting: Dict[int, asyncio.Future] = dict()
         self._statistic = WorkerPoolStatistic()
         self.processes: Set[Process] = set()
         self.workers = workers
