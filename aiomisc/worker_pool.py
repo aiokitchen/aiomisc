@@ -288,17 +288,17 @@ class WorkerPool:
                             continue
 
                         await step(func, args, kwargs, result_future)
-                    except asyncio.IncompleteReadError:
+                    except (asyncio.IncompleteReadError, ConnectionError):
                         await self.__wait_process(process)
                         await self.__on_exit(process)
 
-                        result_future.set_exception(
-                            ProcessError(
-                                "Process {!r} exited with code {!r}".format(
-                                    process, process.returncode,
+                        if not result_future.done():
+                            result_future.set_exception(
+                                ProcessError(
+                                    f"Process {process!r} exited with "
+                                    f"code {process.returncode!r}",
                                 ),
-                            ),
-                        )
+                            )
                         break
                     except Exception as e:
                         if not result_future.done():

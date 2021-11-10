@@ -82,7 +82,9 @@ if hasattr(socket, "SO_REUSEPORT"):
         )
 else:
     def _sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
-        log.warning("SO_REUSEPORT is not implemented by underlying library.")
+        log.debug(
+            "SO_REUSEPORT is not implemented by underlying library. Skipping.",
+        )
 
 
 def bind_socket(
