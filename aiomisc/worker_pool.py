@@ -5,20 +5,19 @@ import socket
 import sys
 import warnings
 from inspect import Traceback
-from itertools import chain
 from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
 from subprocess import PIPE, Popen
 from tempfile import mktemp
 from types import MappingProxyType
 from typing import (
-    Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
-    Awaitable,
+    Any, Awaitable, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple,
+    Type,
 )
 
 from aiomisc.counters import Statistic
 from aiomisc.thread_pool import threaded
-from aiomisc.utils import bind_socket, cancel_tasks, shield, fast_uuid4
+from aiomisc.utils import bind_socket, cancel_tasks, fast_uuid4, shield
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL
 from aiomisc_worker import (
     COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header, PacketTypes, T,
@@ -237,7 +236,7 @@ class WorkerPool:
             if self.initializer is not None:
                 log.debug(
                     "Sending initializer %r to the process PID: %d",
-                    self.initializer, process.pid
+                    self.initializer, process.pid,
                 )
                 initializer_done = self.__create_future()
 

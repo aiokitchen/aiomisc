@@ -2,6 +2,7 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
+import uuid
 from functools import wraps
 from multiprocessing import cpu_count
 from random import getrandbits
@@ -9,7 +10,6 @@ from time import time_ns
 from typing import (
     Any, Awaitable, Callable, Iterable, List, Optional, Tuple, TypeVar, Union,
 )
-import uuid
 
 from .thread_pool import ThreadPoolExecutor
 
