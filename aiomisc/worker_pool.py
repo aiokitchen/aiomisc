@@ -135,7 +135,7 @@ class WorkerPool:
         self.initializer_kwargs = initializer_kwargs
 
     async def __wait_process(self, process: Popen) -> None:
-        self.loop.run_in_executor(None, process.kill)
+        await self.loop.run_in_executor(None, process.kill)
 
         while process.poll() is None:
             await asyncio.sleep(self.process_poll_time)
