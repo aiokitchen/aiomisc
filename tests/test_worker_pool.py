@@ -60,7 +60,7 @@ async def test_incomplete_task_kill(worker_pool):
         await asyncio.wait_for(
             asyncio.gather(
                 *[
-                    worker_pool.create_task(sleep, 3600)
+                    worker_pool.create_task(sleep, 600)
                     for _ in range(worker_pool.workers)
                 ]
             ), timeout=1,
@@ -93,7 +93,7 @@ async def test_incomplete_task_pool_reuse(worker_pool):
         await asyncio.wait_for(
             asyncio.gather(
                 *[
-                    worker_pool.create_task(sleep, 3600)
+                    worker_pool.create_task(sleep, 600)
                     for _ in range(worker_pool.workers)
                 ]
             ), timeout=1,
