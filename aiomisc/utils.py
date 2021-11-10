@@ -6,7 +6,6 @@ import uuid
 from functools import wraps
 from multiprocessing import cpu_count
 from random import getrandbits
-from time import time_ns
 from typing import (
     Any, Awaitable, Callable, Iterable, List, Optional, Tuple, TypeVar, Union,
 )
@@ -16,6 +15,14 @@ from .thread_pool import ThreadPoolExecutor
 
 T = TypeVar("T")
 TimeoutType = Union[int, float]
+
+try:
+    from time import time_ns
+except ImportError:
+    from time import time
+
+    def time_ns() -> int:
+        return int(time() * 1000000000)
 
 try:
     import uvloop  # type: ignore
@@ -28,6 +35,7 @@ log = logging.getLogger(__name__)
 
 
 def fast_uuid4() -> uuid.UUID:
+    """ Fast UUID4 like identifier """
     return uuid.UUID(int=getrandbits(128), version=4)
 
 
@@ -35,9 +43,10 @@ __NODE = uuid.getnode()
 
 
 def fast_uuid1() -> uuid.UUID:
-    """ UUID1 like identifier, very fast but not completely compatible
-    with UUID1"""
-    value = (time_ns() << 64) + (getrandbits(16) << 16) + __NODE
+    """ Fast UUID1 like identifier """
+    value = time_ns()
+    value = (value << 16) + getrandbits(16)
+    value = (value << 48) + __NODE
     return uuid.UUID(int=value, version=1)
 
 
