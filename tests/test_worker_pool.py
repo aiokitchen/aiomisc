@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import operator
 import platform
 import sys
@@ -169,6 +170,7 @@ def initializer(*args, **kwargs):
     global INITIALIZER_ARGS, INITIALIZER_KWARGS
     INITIALIZER_ARGS = args
     INITIALIZER_KWARGS = kwargs
+    logging.info("Initializer done")
 
 
 def get_initializer_args():
@@ -176,7 +178,7 @@ def get_initializer_args():
 
 
 @skipif
-@aiomisc.timeout(5)
+@aiomisc.timeout(10)
 async def test_initializer(worker_pool):
     pool = WorkerPool(
         1, initializer=initializer, initializer_args=("foo",),

@@ -47,7 +47,7 @@ def test_service(tmpdir):
         assert fp.readline() == "Hello world\n"
 
 
-class TestRespawningProcessService(RespawningProcessService):
+class SimpleRespawningProcessService(RespawningProcessService):
     __required__ = ("queue",)
 
     queue: Queue
@@ -62,7 +62,7 @@ class TestRespawningProcessService(RespawningProcessService):
 
 def test_respawning_service(tmpdir):
     queue = Queue()
-    svc = TestRespawningProcessService(
+    svc = SimpleRespawningProcessService(
         queue=queue,
         process_poll_timeout=0.5,
     )

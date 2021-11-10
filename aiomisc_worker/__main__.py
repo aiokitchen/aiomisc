@@ -73,6 +73,7 @@ def main() -> Optional[int]:
         def step() -> bool:
             try:
                 packet_type, (func, args, kwargs) = receive()
+                logging.debug("Got task %r", func)
             except ConnectionError:
                 logging.error("Pool connection closed")
                 return False
@@ -90,7 +91,11 @@ def main() -> Optional[int]:
                     result = e
                     logging.exception("Exception when processing request")
 
-                send(response_type, result)
+                try:
+                    send(response_type, result)
+                except ConnectionError:
+                    logging.warning("IPC connection error, exitting.")
+                    return False
             return True
 
         logging.debug("Starting authorization")
