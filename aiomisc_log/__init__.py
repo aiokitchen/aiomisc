@@ -160,4 +160,6 @@ __all__ = (
     "LogFormat",
     "LogLevel",
     "basic_config",
+    "LOG_FORMAT",
+    "LOG_LEVEL",
 )
