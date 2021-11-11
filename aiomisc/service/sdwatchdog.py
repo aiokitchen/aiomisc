@@ -26,7 +26,7 @@ class SDWatchdogService(Service):
     watchdog_interval: Optional[TimeoutType]
     _watchdog_timer: PeriodicCallback
 
-    async def _send(self, payload: str):
+    async def _send(self, payload: str) -> None:
         try:
             await self.loop.sock_sendall(
                 self.socket,
@@ -78,7 +78,7 @@ class SDWatchdogService(Service):
             return None
 
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        self.socket.connect(self._get_socket_addr())
+        self.socket.connect(addr)
         self.socket.setblocking(False)
 
         await self._send("STATUS=starting")
