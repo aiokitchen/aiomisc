@@ -1,5 +1,6 @@
 import asyncio
 import os
+import platform
 from collections import Counter, defaultdict, deque
 from pathlib import Path
 from socket import AF_UNIX, SOCK_DGRAM
@@ -12,7 +13,10 @@ from aiomisc import bind_socket
 from aiomisc.service import UDPServer, sdwatchdog
 
 
-pytestmark = pytest.mark.catch_loop_exceptions
+pytestmark = pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="Unix only tests",
+)
 
 
 def test_sdwatchdog_service(loop):
@@ -22,7 +26,7 @@ def test_sdwatchdog_service(loop):
 
         packets = deque()
 
-        class FakeJournald(UDPServer):
+        class FakeSystemd(UDPServer):
             def handle_datagram(self, data: bytes, addr: tuple) -> None:
                 packets.append((data.decode().split("=", 1), addr))
 
@@ -38,7 +42,7 @@ def test_sdwatchdog_service(loop):
                 assert service.watchdog_interval == 0.1
 
                 with aiomisc.entrypoint(
-                    FakeJournald(sock=sock), service, loop=loop,
+                    FakeSystemd(sock=sock), service, loop=loop,
                 ):
                     loop.run_until_complete(asyncio.sleep(1))
             finally:
