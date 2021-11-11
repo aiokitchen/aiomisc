@@ -129,9 +129,10 @@ async def test_simple(loop):
     assert responses[True]
 
     responses.clear()
+    ctx.failed = False
 
     # PASSING state
-    for _ in range(10):
+    for _ in range(20):
         PatchedCircuitBreaker.tick()
 
         try:
