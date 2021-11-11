@@ -6,7 +6,7 @@ from typing import Any, Optional, Tuple
 from aiomisc.entrypoint import entrypoint
 from aiomisc.periodic import PeriodicCallback
 from aiomisc.service.base import Service
-from aiomisc.utils import TimeoutType, bind_socket
+from aiomisc.utils import TimeoutType
 
 log = logging.getLogger(__name__)
 
@@ -15,8 +15,7 @@ def _get_watchdog_interval() -> Optional[TimeoutType]:
     value = os.getenv("WATCHDOG_USEC")
     if value is None:
         return None
-    # Send notifications twice as often
-    return int(value) / 1000000. / 2
+    return int(value) / 1000000.
 
 
 WATCHDOG_INTERVAL: Optional[TimeoutType] = _get_watchdog_interval()
@@ -28,10 +27,13 @@ class SDWatchdogService(Service):
     _watchdog_timer: PeriodicCallback
 
     async def _send(self, payload: str):
-        await self.loop.sock_sendall(
-            self.socket,
-            payload.encode(),
-        )
+        try:
+            await self.loop.sock_sendall(
+                self.socket,
+                payload.encode(),
+            )
+        except (ConnectionError, OSError) as e:
+            log.warning("SystemD notify socket communication problem: %r", e)
 
     async def _post_start(
         self, services: Tuple[Service, ...], **__: Any
@@ -75,10 +77,10 @@ class SDWatchdogService(Service):
             )
             return None
 
-        self.socket = bind_socket(
-            socket.AF_UNIX, socket.SOCK_DGRAM,
-            address=self._get_socket_addr()
-        )
+        self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        self.socket.connect(self._get_socket_addr())
+        self.socket.setblocking(False)
+
         await self._send("STATUS=starting")
 
         if self.watchdog_interval is None:
@@ -92,7 +94,8 @@ class SDWatchdogService(Service):
         self._watchdog_timer = PeriodicCallback(
             self._send, "WATCHDOG=1",
         )
-        self._watchdog_timer.start(self.watchdog_interval)
+        # Send notifications twice as often
+        self._watchdog_timer.start(self.watchdog_interval / 2)
 
     async def stop(self, exception: Exception = None) -> Any:
         await self._watchdog_timer.stop()
