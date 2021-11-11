@@ -62,7 +62,7 @@ class JournaldLogHandler(logging.Handler):
         "levelname": None,
         "levelno": None,
         "lineno": None,
-        "message" : None,
+        "message": None,
         "module": None,
         "msecs": None,
         "msg": "message_raw",
