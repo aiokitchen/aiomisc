@@ -1,11 +1,11 @@
 import logging
 import os
 import platform
+import socket
 import struct
 from collections import deque
 from io import BytesIO
 from pathlib import Path
-from socket import AF_UNIX, SOCK_DGRAM
 from tempfile import TemporaryDirectory
 
 import pytest
@@ -82,7 +82,7 @@ def test_journald_logger(loop, subtests):
             except ZeroDivisionError:
                 log.exception("Sample exception")
 
-        with bind_socket(AF_UNIX, SOCK_DGRAM, address=str(sock_path)) as sock:
+        with bind_socket(socket.AF_UNIX, socket.SOCK_DGRAM, address=str(sock_path)) as sock:
             JournaldLogHandler.SOCKET_PATH = sock_path
 
             with aiomisc.entrypoint(FakeJournald(sock=sock), loop=loop):
