@@ -50,7 +50,9 @@ def main() -> Optional[int]:
             header = sock.recv(Header.size)
 
             if not header:
-                raise ConnectionAbortedError("Packet header")
+                raise ConnectionAbortedError(
+                    "Connection aborted when receiving packet header"
+                )
 
             packet_type, payload_length = Header.unpack(header)
             payload = sock.recv(payload_length)
