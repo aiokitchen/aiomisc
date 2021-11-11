@@ -52,6 +52,29 @@ class JournaldLogHandler(logging.Handler):
     VALUE_LEN_STRUCT = struct.Struct("<Q")
     SOCKET_PATH = Path("/run/systemd/journal/socket")
 
+    RECORD_FIELDS_MAP = MappingProxyType({
+        "args": "arguments",
+        "created": None,
+        "exc_info": None,
+        "exc_text": None,
+        "filename": None,
+        "funcName": None,
+        "levelname": None,
+        "levelno": None,
+        "lineno": None,
+        "message" : None,
+        "module": None,
+        "msecs": None,
+        "msg": "message_raw",
+        "name": "logger_name",
+        "pathname": None,
+        "process": "pid",
+        "processName": "process_name",
+        "relativeCreated": None,
+        "thread": "thread_id",
+        "threadName": "thread_name",
+    })
+
     __slots__ = ("__facility", "socket", "__identifier")
 
     @staticmethod
@@ -68,6 +91,12 @@ class JournaldLogHandler(logging.Handler):
         if not value:
             return
         elif isinstance(value, (int, float)):
+            fp.write(cls._encode_short(key, value))
+            return
+        elif isinstance(value, str):
+            if "\n" in value:
+                fp.write(cls._encode_long(key, value.encode()))
+                return
             fp.write(cls._encode_short(key, value))
             return
         elif isinstance(value, bytes):
@@ -100,49 +129,34 @@ class JournaldLogHandler(logging.Handler):
         return int(ts * 1000000)
 
     def emit(self, record: logging.LogRecord) -> None:
-        message = str(record.getMessage())
-
-        tb_message = ""
-        if record.exc_info:
-            tb_message = "\n".join(
-                traceback.format_exception(*record.exc_info),
-            )
-
-        message += "\n"
-        message += tb_message
-
-        ts = self._to_usec(record.created)
-
-        hash_fields = (
-            message,
-            record.funcName,
-            record.levelno,
-            record.process,
-            record.processName,
-            record.levelname,
-            record.pathname,
-            record.name,
-            record.thread,
-            record.lineno,
-            ts,
-            tb_message,
-        )
-
         with BytesIO() as fp:
-            message_id = uuid.uuid3(
-                uuid.NAMESPACE_OID, "$".join(str(x) for x in hash_fields),
-            ).hex
+            message_id = uuid.uuid1().hex
 
             self.pack(fp, "message", self.format(record))
             self.pack(fp, "message_id", message_id)
-            self.pack(fp, "message_raw", record.msg)
+
+            if record.exc_info:
+                exc_type, exc_value, exc_tb = record.exc_info
+                self.pack(
+                    fp, "exception", {
+                        "type": exc_type,
+                        "value": exc_value,
+                    },
+                )
+                tb_message = "\n".join(
+                    traceback.format_exception(*record.exc_info),
+                )
+                self.pack(fp, "traceback", tb_message)
+
             self.pack(fp, "priority", self.LEVELS[record.levelno])
             self.pack(fp, "syslog_facility", self.__facility)
+            self.pack(fp, "syslog_identifier", self.__identifier)
             self.pack(
                 fp, "code", "{}.{}:{}".format(
                     record.module, record.funcName, record.lineno,
                 ),
             )
+
             self.pack(
                 fp, "code", {
                     "func": record.funcName,
@@ -151,20 +165,22 @@ class JournaldLogHandler(logging.Handler):
                     "module": record.module,
                 },
             )
-            self.pack(fp, "logger_name", record.name)
-            self.pack(fp, "pid", record.process)
-            self.pack(fp, "process_name", record.processName)
-            self.pack(fp, "thread_id", record.thread)
-            self.pack(fp, "thread_name", record.threadName)
+
+            self.pack(fp, "created_usec", self._to_usec(record.created))
             self.pack(
                 fp, "relative_usec", self._to_usec(record.relativeCreated),
             )
 
-            self.pack(fp, "syslog_identifier", self.__identifier)
-            self.pack(fp, "created_usec", self._to_usec(record.created))
-            self.pack(fp, "arguments", record.args)
-            self.pack(fp, "stack_info", record.stack_info)
-            self.pack(fp, "traceback", tb_message)
+            source = dict(record.__dict__)
+
+            for field, name in self.RECORD_FIELDS_MAP.items():
+                value = source.pop(field, None)
+                if name is None or value is None:
+                    continue
+                self.pack(fp, name, value)
+
+            self.pack(fp, "extra", source)
+
             self.socket.sendall(fp.getvalue())
 
 

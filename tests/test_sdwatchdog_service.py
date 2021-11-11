@@ -1,9 +1,9 @@
 import asyncio
 import os
 import platform
+import socket
 from collections import Counter, defaultdict, deque
 from pathlib import Path
-from socket import AF_UNIX, SOCK_DGRAM
 from tempfile import TemporaryDirectory
 
 import pytest
@@ -30,7 +30,9 @@ def test_sdwatchdog_service(loop):
             def handle_datagram(self, data: bytes, addr: tuple) -> None:
                 packets.append((data.decode().split("=", 1), addr))
 
-        with bind_socket(AF_UNIX, SOCK_DGRAM, address=sock_path) as sock:
+        with bind_socket(
+            socket.AF_UNIX, socket.SOCK_DGRAM, address=sock_path,
+        ) as sock:
             try:
                 os.environ["NOTIFY_SOCKET"] = sock_path
                 os.environ["WATCHDOG_USEC"] = "100000"

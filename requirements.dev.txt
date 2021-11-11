@@ -13,6 +13,7 @@ pytest
 pytest-cov~=2.5.1
 pytest-freezegun~=0.4.2
 pytest-rst
+pytest-subtests
 rich
 sphinx-autobuild
 sphinx-intl
