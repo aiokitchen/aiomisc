@@ -8,6 +8,7 @@ from aiomisc.periodic import PeriodicCallback
 from aiomisc.service.base import Service
 from aiomisc.utils import TimeoutType
 
+
 log = logging.getLogger(__name__)
 
 
