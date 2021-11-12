@@ -46,7 +46,7 @@ class ProcessService(Service):
     def in_process(cls, **kwargs: Any) -> Any:
         pass
 
-    def _is_alive(self):
+    def _is_alive(self) -> bool:
         with self._lock:
             if not hasattr(self, "process"):
                 return False
@@ -105,6 +105,9 @@ class ProcessService(Service):
             return
 
         process = self.process
+        if not process.pid:
+            return
+
         del self.process
 
         os.kill(process.pid, signal.SIGINT)
