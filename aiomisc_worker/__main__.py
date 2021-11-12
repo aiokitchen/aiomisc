@@ -51,7 +51,7 @@ def main() -> Optional[int]:
 
             if not header:
                 raise ConnectionAbortedError(
-                    "Connection aborted when receiving packet header"
+                    "Connection aborted when receiving packet header",
                 )
 
             packet_type, payload_length = Header.unpack(header)

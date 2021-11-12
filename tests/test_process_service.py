@@ -32,13 +32,13 @@ def test_abstractmethod_exception():
         ProcessService()
 
 
-def test_service(tmpdir):
+def test_process_service(tmpdir):
     tmp_path = Path(tmpdir)
     test_file = tmp_path / "test.txt"
     svc = SampleProcessService(path=test_file)
 
     async def wait(loop):
-        loop.run_in_executor(None, svc.process_stop_event.wait)
+        loop.run_in_executor(None, svc._process_stop_event.wait)
 
     with aiomisc.entrypoint(svc) as loop:
         loop.run_until_complete(wait(loop))
@@ -60,7 +60,7 @@ class SimpleRespawningProcessService(RespawningProcessService):
         queue.put(os.getpid())
 
 
-def test_respawning_service(tmpdir):
+def test_respawning_process_service(tmpdir):
     queue = Queue()
     svc = SimpleRespawningProcessService(
         queue=queue,
