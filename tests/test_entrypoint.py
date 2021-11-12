@@ -234,7 +234,7 @@ def test_tls_server(
 
 
 def test_udp_server(aiomisc_socket_factory):
-    port, sock = aiomisc_socket_factory()
+    port, sock = aiomisc_socket_factory(socket.AF_INET, socket.SOCK_DGRAM)
 
     class TestService(UDPServer):
         DATA = []
