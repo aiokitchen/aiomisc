@@ -233,21 +233,23 @@ def test_tls_server(
     assert TestService.DATA == [b"hello server\n"]
 
 
-def test_udp_server(aiomisc_unused_port):
+def test_udp_server(aiomisc_socket_factory):
+    port, sock = aiomisc_socket_factory()
+
     class TestService(UDPServer):
         DATA = []
 
         async def handle_datagram(self, data: bytes, addr: tuple):
             self.DATA.append(data)
 
-    service = TestService("127.0.0.1", aiomisc_unused_port)
+    service = TestService("127.0.0.1", sock=sock)
 
     @aiomisc.threaded
     def writer():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         with sock:
-            sock.sendto(b"hello server\n", ("127.0.0.1", aiomisc_unused_port))
+            sock.sendto(b"hello server\n", ("127.0.0.1", port))
 
     with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(

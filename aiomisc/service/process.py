@@ -105,10 +105,10 @@ class ProcessService(Service):
             return
 
         process = self.process
+        del self.process
+
         if not process.pid:
             return
-
-        del self.process
 
         os.kill(process.pid, signal.SIGINT)
         stop_result: bool = await self.loop.run_in_executor(
