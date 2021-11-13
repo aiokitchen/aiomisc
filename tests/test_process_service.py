@@ -32,7 +32,6 @@ class SampleProcessService(ProcessService):
             fp.write("Hello world\n")
 
 
-@pytest.mark.skip("temporary skip")
 def test_process_service(tmpdir):
     tmp_path = Path(tmpdir)
     test_file = tmp_path / "test.txt"
