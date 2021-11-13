@@ -1,4 +1,5 @@
 import os
+import platform
 from multiprocessing import Queue
 from pathlib import Path
 from typing import Any, Dict
@@ -10,7 +11,10 @@ from aiomisc import threaded, timeout
 from aiomisc.service import ProcessService, RespawningProcessService
 
 
-pytestmark = pytest.mark.catch_loop_exceptions
+pytestmark = pytest.mark.skipif(
+    platform.system() == "Windows",
+    reason="Temporary skip on windows",
+)
 
 
 def test_abstractmethod_exception():
@@ -32,7 +36,6 @@ class SampleProcessService(ProcessService):
             fp.write("Hello world\n")
 
 
-@pytest.mark.skip("temporary skip")
 def test_process_service(tmpdir):
     tmp_path = Path(tmpdir)
     test_file = tmp_path / "test.txt"
