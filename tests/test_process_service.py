@@ -2,7 +2,7 @@ import os
 import platform
 from multiprocessing import Queue
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -27,12 +27,8 @@ class SampleProcessService(ProcessService):
 
     path: Path
 
-    def get_process_kwargs(self) -> Dict[str, Any]:
-        return dict(path=str(self.path))
-
-    @classmethod
-    def in_process(cls, *, path: str) -> Any:
-        with open(path, "w") as fp:
+    def in_process(self) -> Any:
+        with open(self.path, "w") as fp:
             fp.write("Hello world\n")
 
 
@@ -56,12 +52,8 @@ class SimpleRespawningProcessService(RespawningProcessService):
 
     queue: Queue
 
-    def get_process_kwargs(self) -> Dict[str, Any]:
-        return dict(queue=self.queue)
-
-    @classmethod
-    def in_process(cls, *, queue: Queue) -> Any:
-        queue.put(os.getpid())
+    def in_process(self) -> Any:
+        self.queue.put(os.getpid())
 
 
 def test_respawning_process_service(tmpdir):

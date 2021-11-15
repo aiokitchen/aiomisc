@@ -1,7 +1,7 @@
 import logging
 import os
 import signal
-from abc import ABC, abstractclassmethod
+from abc import ABC, abstractmethod
 from multiprocessing import Event, Process, synchronize
 from threading import Lock
 from typing import Any, Callable, Dict, Optional
@@ -38,12 +38,13 @@ class ProcessService(Service):
     _process_start_event: synchronize.Event
     _process_stop_event: synchronize.Event
     _lock: Lock
+    _instance_params: Dict[str, Any]
 
     def get_process_kwargs(self) -> Dict[str, Any]:
         return {}
 
-    @abstractclassmethod
-    def in_process(cls, **kwargs: Any) -> Any:
+    @abstractmethod
+    def in_process(self) -> Any:
         pass
 
     def _is_alive(self) -> bool:
