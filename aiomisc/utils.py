@@ -2,8 +2,10 @@ import asyncio
 import itertools
 import logging.handlers
 import socket
+import uuid
 from functools import wraps
 from multiprocessing import cpu_count
+from random import getrandbits
 from typing import (
     Any, Awaitable, Callable, Iterable, List, Optional, Tuple, TypeVar, Union,
 )
@@ -15,6 +17,14 @@ T = TypeVar("T")
 TimeoutType = Union[int, float]
 
 try:
+    from time import time_ns
+except ImportError:
+    from time import time
+
+    def time_ns() -> int:
+        return int(time() * 1000000000)
+
+try:
     import uvloop  # type: ignore
     event_loop_policy = uvloop.EventLoopPolicy()
 except ImportError:
@@ -22,6 +32,22 @@ except ImportError:
 
 
 log = logging.getLogger(__name__)
+
+
+def fast_uuid4() -> uuid.UUID:
+    """ Fast UUID4 like identifier """
+    return uuid.UUID(int=getrandbits(128), version=4)
+
+
+__NODE = uuid.getnode()
+
+
+def fast_uuid1() -> uuid.UUID:
+    """ Fast UUID1 like identifier """
+    value = time_ns()
+    value = (value << 16) + getrandbits(16)
+    value = (value << 48) + __NODE
+    return uuid.UUID(int=value, version=1)
 
 
 def chunk_list(iterable: Iterable[T], size: int) -> Iterable[List[T]]:
@@ -56,7 +82,9 @@ if hasattr(socket, "SO_REUSEPORT"):
         )
 else:
     def _sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
-        log.warning("SO_REUSEPORT is not implemented by underlying library.")
+        log.debug(
+            "SO_REUSEPORT is not implemented by underlying library. Skipping.",
+        )
 
 
 def bind_socket(

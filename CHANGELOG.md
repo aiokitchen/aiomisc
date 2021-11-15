@@ -12,8 +12,13 @@ in this document.
 15.2.x
 ------
 
+* Added `aiomisc.service.RespawningProcessService` for running python function in
+  separate process and restart it when exiting.
+* Rewrite `aiomisc.WorkerPool` using `multiprocessing.Process`
+  instead of `subprocess.Popen`.
+* `aiomisc.ServiceMeta` is now inherited from `abc.ABCMeta`. It means
 * fixed (cron): is now set current datetime as start point #120
-* `aiomisc.ServiceMeta` is now inherited from `abc.ABCMeta`. It means 
+* `aiomisc.ServiceMeta` is now inherited from `abc.ABCMeta`. It means
   the decorations like `@abc.abstractmethod` will work with service classes.
 * Added `aiomisc.service.ProcessService` for running python function in
   separate process.

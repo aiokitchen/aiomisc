@@ -17,7 +17,9 @@ LOG_FORMAT: Optional[Any] = None
 try:
     import contextvars
     LOG_LEVEL = contextvars.ContextVar("LOG_LEVEL", default=logging.INFO)
-    LOG_FORMAT = contextvars.ContextVar("LOG_FORMAT", default=LogFormat.color)
+    LOG_FORMAT = contextvars.ContextVar(
+        "LOG_FORMAT", default=LogFormat.default(),
+    )
 except ImportError:
     pass
 
@@ -158,4 +160,6 @@ __all__ = (
     "LogFormat",
     "LogLevel",
     "basic_config",
+    "LOG_FORMAT",
+    "LOG_LEVEL",
 )

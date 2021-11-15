@@ -3,22 +3,21 @@ import os
 import pickle
 import socket
 import sys
-import uuid
 import warnings
 from inspect import Traceback
-from itertools import chain
 from multiprocessing import AuthenticationError, ProcessError
 from os import chmod, urandom
 from subprocess import PIPE, Popen
 from tempfile import mktemp
 from types import MappingProxyType
 from typing import (
-    Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
+    Any, Awaitable, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple,
+    Type,
 )
 
 from aiomisc.counters import Statistic
 from aiomisc.thread_pool import threaded
-from aiomisc.utils import bind_socket, cancel_tasks, shield
+from aiomisc.utils import bind_socket, cancel_tasks, fast_uuid4, shield
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL
 from aiomisc_worker import (
     COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header, PacketTypes, T,
@@ -91,6 +90,8 @@ class WorkerPool:
             stdin=PIPE, env=env,
         )
         self.__spawning[identity] = process
+        self.processes.add(process)
+
         log.debug("Spawning new worker pool process PID: %s", process.pid)
 
         assert process.stdin
@@ -124,6 +125,7 @@ class WorkerPool:
         self.__spawning: Dict[str, Popen] = dict()
         self.__task_store: Set[asyncio.Task] = set()
         self.__closing = False
+        self.__closing_lock = asyncio.Lock()
         self.__starting: Dict[str, asyncio.Future] = dict()
         self._statistic = WorkerPoolStatistic()
         self.processes: Set[Popen] = set()
@@ -134,7 +136,13 @@ class WorkerPool:
         self.initializer_args = initializer_args
         self.initializer_kwargs = initializer_kwargs
 
+    async def __check_is_closed(self) -> bool:
+        async with self.__closing_lock:
+            return self.__closing
+
     async def __wait_process(self, process: Popen) -> None:
+        await self.loop.run_in_executor(None, process.kill)
+
         while process.poll() is None:
             await asyncio.sleep(self.process_poll_time)
 
@@ -226,6 +234,10 @@ class WorkerPool:
             starting: asyncio.Future = self.__starting.pop(identity)
 
             if self.initializer is not None:
+                log.debug(
+                    "Sending initializer %r to the process PID: %d",
+                    self.initializer, process.pid,
+                )
                 initializer_done = self.__create_future()
 
                 await step(
@@ -237,15 +249,20 @@ class WorkerPool:
 
                 try:
                     await initializer_done
+                    log.debug("Initializer done")
                 except Exception as e:
-                    starting.set_exception(e)
+                    log.debug("Initializer fails")
+                    if not starting.done():
+                        starting.set_exception(e)
                     raise
                 else:
-                    starting.set_result(None)
+                    if not starting.done():
+                        starting.set_result(None)
                 finally:
                     start_event.set()
             else:
-                starting.set_result(None)
+                if not starting.done():
+                    starting.set_result(None)
                 start_event.set()
 
             try:
@@ -271,17 +288,17 @@ class WorkerPool:
                             continue
 
                         await step(func, args, kwargs, result_future)
-                    except asyncio.IncompleteReadError:
+                    except (asyncio.IncompleteReadError, ConnectionError):
                         await self.__wait_process(process)
-                        self.__on_exit(process)
+                        await self.__on_exit(process)
 
-                        result_future.set_exception(
-                            ProcessError(
-                                "Process {!r} exited with code {!r}".format(
-                                    process, process.returncode,
+                        if not result_future.done():
+                            result_future.set_exception(
+                                ProcessError(
+                                    f"Process {process!r} exited with "
+                                    f"code {process.returncode!r}",
                                 ),
-                            ),
-                        )
+                            )
                         break
                     except Exception as e:
                         if not result_future.done():
@@ -291,7 +308,7 @@ class WorkerPool:
                             self.loop.call_soon(writer.close)
 
                         await self.__wait_process(process)
-                        self.__on_exit(process)
+                        await self.__on_exit(process)
 
                         raise
                     finally:
@@ -330,24 +347,22 @@ class WorkerPool:
 
         await asyncio.gather(*tasks)
 
-    def __on_exit(self, process: Popen) -> None:
-        async def respawn() -> None:
-            if self.__closing:
-                return None
-            self.processes.remove(process)
-            await self.__spawn_process()
+    async def __on_exit(self, process: Popen) -> None:
+        self.processes.remove(process)
 
-        self.__task(respawn())
+        if await self.__check_is_closed():
+            return None
 
-    async def __spawn_process(self) -> None:
+        await self.__spawn_process()
+
+    def __spawn_process(self) -> Awaitable[None]:
         log.debug("Spawning new process")
 
-        identity = uuid.uuid4().hex
+        identity = fast_uuid4().hex
         start_future = self.__create_future()
         self.__starting[identity] = start_future
-        process = await self.__create_process(identity)
-        await start_future
-        self.processes.add(process)
+        self.__create_process(identity)
+        return start_future
 
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
@@ -368,18 +383,15 @@ class WorkerPool:
             while self.processes:
                 self._kill_process(self.processes.pop())
 
-        killer_task = killer()
+        async with self.__closing_lock:
+            if self.__closing:
+                return
 
-        if self.__closing:
-            return
+            self.__closing = True
 
-        self.__closing = True
-
-        await cancel_tasks(
-            chain(tuple(self.__task_store), tuple(self.__futures)),
-        )
-
-        await killer_task
+            await cancel_tasks(tuple(self.__task_store))
+            await killer()
+            await cancel_tasks(tuple(self.__futures))
 
     async def create_task(
         self, func: Callable[..., T],

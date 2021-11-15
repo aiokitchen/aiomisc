@@ -50,7 +50,9 @@ def main() -> Optional[int]:
             header = sock.recv(Header.size)
 
             if not header:
-                raise ValueError("No data")
+                raise ConnectionAbortedError(
+                    "Connection aborted when receiving packet header",
+                )
 
             packet_type, payload_length = Header.unpack(header)
             payload = sock.recv(payload_length)
@@ -73,10 +75,9 @@ def main() -> Optional[int]:
         def step() -> bool:
             try:
                 packet_type, (func, args, kwargs) = receive()
-            except ConnectionResetError:
+                logging.debug("Got task %r", func)
+            except ConnectionError:
                 logging.error("Pool connection closed")
-                return False
-            except ValueError:
                 return False
 
             if packet_type == packet_type.REQUEST:
@@ -92,23 +93,27 @@ def main() -> Optional[int]:
                     result = e
                     logging.exception("Exception when processing request")
 
-                send(response_type, result)
+                try:
+                    send(response_type, result)
+                except ConnectionError:
+                    logging.warning("IPC connection error, exitting.")
+                    return False
             return True
 
         logging.debug("Starting authorization")
 
         try:
             auth(cookie)
-        except ConnectionResetError:
+        except ConnectionError:
             logging.error("Failed to authorize process in pool. Exiting")
             return 3
 
         del cookie
 
+        signal.signal(SIGNAL, on_signal)
+
         send(PacketTypes.IDENTITY, identity)
         logging.debug("Worker ready")
-
-        signal.signal(SIGNAL, on_signal)
 
         try:
             while step():
