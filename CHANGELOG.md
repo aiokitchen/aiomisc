@@ -9,6 +9,18 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+15.4.x
+------
+
+* Added `RespawningProcessService` service class
+* `Service` instances are now serializable by pickle.
+
+15.3.x
+------
+
+* Tests for `JournaldLogHandler` and `SDWatchdogService` has been written
+* `loop.sock_sendall` now used for `SDWatchdogService`
+
 15.2.x
 ------
 
