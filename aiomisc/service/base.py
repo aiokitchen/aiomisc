@@ -38,6 +38,8 @@ class Service(metaclass=ServiceMeta):
     __async_required__: Tuple[str, ...] = ("start", "stop")
     __required__: Tuple[str, ...] = ()
 
+    __instance_params: Dict[str, Any]
+
     def __init__(self, **kwargs: Any):
         lost_kw = self.__required__ - kwargs.keys()
         if lost_kw:
@@ -66,8 +68,16 @@ class Service(metaclass=ServiceMeta):
         self.__start_event = asyncio.Event()
 
     def _set_params(self, **kwargs: Any) -> None:
+        self.__instance_params = kwargs
+
         for name, value in kwargs.items():
             setattr(self, name, value)
+
+    def __getstate__(self):
+        return self.__instance_params
+
+    def __setstate__(self, state: Dict[str, Any]):
+        self._set_params(**state)
 
     @abstractmethod
     async def start(self) -> Any:
