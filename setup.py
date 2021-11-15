@@ -74,5 +74,5 @@ setup(
     entry_points={
         "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
     },
-    url='https://github.com/mosquito/aiomisc'
+    url='https://github.com/aiokitchen/aiomisc'
 )

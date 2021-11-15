@@ -1,8 +1,8 @@
 aiomisc - miscellaneous utils for asyncio
 =========================================
 
-.. image:: https://coveralls.io/repos/github/mosquito/aiomisc/badge.svg?branch=master
-   :target: https://coveralls.io/github/mosquito/aiomisc
+.. image:: https://coveralls.io/repos/github/aiokitchen/aiomisc/badge.svg?branch=master
+   :target: https://coveralls.io/github/aiokitchen/aiomisc
    :alt: Coveralls
 
 .. image:: https://github.com/aiokitchen/aiomisc/workflows/tox/badge.svg
