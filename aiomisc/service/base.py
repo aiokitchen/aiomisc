@@ -73,10 +73,10 @@ class Service(metaclass=ServiceMeta):
         for name, value in kwargs.items():
             setattr(self, name, value)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         return self.__instance_params
 
-    def __setstate__(self, state: Dict[str, Any]):
+    def __setstate__(self, state: Dict[str, Any]) -> None:
         self._set_params(**state)
 
     @abstractmethod
