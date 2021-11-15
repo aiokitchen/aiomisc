@@ -723,22 +723,12 @@ and by termination when the parent process is stopped.
         monero: bool = False
         dogiecoin: bool = False
 
-        def get_process_kwargs(self) -> Dict[str, Any]:
-            return dict(
-                bitcoin=self.bitcoin,
-                monero=self.monero,
-                dogiecoin=self.dogiecoin,
-            )
-
-        @classmethod
-        def in_process(
-            cls, *, bitcoin: bool, monero: bool, dogiecoin: bool
-        ) -> Any:
-            if bitcoin:
+        def in_process(self) -> Any:
+            if self.bitcoin:
                 miner = Miner(kind="bitcoin")
-            elif monero:
+            elif self.monero:
                 miner = Miner(kind="monero")
-            elif dogiecoin:
+            elif self.dogiecoin:
                 miner = Miner(kind="dogiecoin")
             else:
                 # Nothing to do
@@ -777,8 +767,7 @@ unexpectedly exited this will be respawned.
 
 
     class SuicideService(aiomisc.service.RespawningProcessService):
-        @classmethod
-        def in_process(cls) -> Any:
+        def in_process(self) -> Any:
             sleep(10)
             logging.warning("Goodbye mad world")
             exit(42)
