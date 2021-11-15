@@ -161,17 +161,8 @@ jobs:
     needs: tests
     runs-on: ubuntu-latest
     steps:
-      - name: Setup python${{ matrix.python }}
-        uses: actions/setup-python@v2
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
         with:
-          python-version: "3.9"
-
-      - name: Coveralls install
-        run: python -m pip install coveralls
-
-      - name: Coveralls
-        env:
-          COVERALLS_PARALLEL: 'true'
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --finish
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
