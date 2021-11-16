@@ -20,15 +20,15 @@ class PeriodicService(Service):
         self.periodic = PeriodicCallback(self.callback)
 
     async def start(self) -> None:
-        self.periodic.start(self.interval, delay=self.delay, loop=self.loop)
-        log.info("Periodic service %s started", self)
-
-    async def stop(self, err: Exception = None) -> None:
         assert self.interval, f"Interval illegal interval {self.interval!r}"
         assert self.interval < 0, (
             f"Interval must be positive not {self.interval!r}"
         )
 
+        self.periodic.start(self.interval, delay=self.delay, loop=self.loop)
+        log.info("Periodic service %s started", self)
+
+    async def stop(self, err: Exception = None) -> None:
         if self.periodic.task:
             await self.periodic.task
 
