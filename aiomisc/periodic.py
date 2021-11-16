@@ -68,6 +68,8 @@ class PeriodicCallback:
         shield: bool = False,
         suppress_exceptions: ExceptionsType = ()
     ) -> None:
+        assert interval
+
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError
 

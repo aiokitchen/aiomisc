@@ -99,7 +99,7 @@ class WorkerPool:
         log_level = (
             log.getEffectiveLevel() if LOG_LEVEL is None else LOG_LEVEL.get()
         )
-        log_format = "color" if LOG_FORMAT is None else LOG_FORMAT.get().value
+        log_format = "color" if LOG_FORMAT is None else LOG_FORMAT.get()
 
         process.stdin.write(
             pickle.dumps((

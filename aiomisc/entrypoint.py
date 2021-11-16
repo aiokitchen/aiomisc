@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import sys
 from concurrent.futures import Executor
@@ -19,6 +20,7 @@ from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
 
 ExecutorType = Executor
 T = TypeVar("T")
+log = logging.getLogger(__name__)
 
 
 if sys.version_info < (3, 7):
@@ -267,9 +269,17 @@ class Entrypoint:
         if self._closing:
             self._closing.set()
 
-        tasks = [
-            asyncio.shield(svc.stop(exception)) for svc in self.services
-        ]
+        tasks = []
+        for svc in self.services:
+            try:
+                coro = svc.stop(exception)
+            except TypeError as e:
+                log.warning(
+                    "Failed to stop service %r:\n%r", svc, e
+                )
+                log.debug("Service stop failed traceback", exc_info=True)
+            else:
+                tasks.append(asyncio.shield(coro))
 
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
