@@ -21,7 +21,7 @@ class PeriodicService(Service):
 
     async def start(self) -> None:
         assert self.interval, f"Interval illegal interval {self.interval!r}"
-        assert self.interval < 0, (
+        assert self.interval > 0, (
             f"Interval must be positive not {self.interval!r}"
         )
 
