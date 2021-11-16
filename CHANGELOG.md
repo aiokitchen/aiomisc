@@ -14,6 +14,9 @@ in this document.
 
 * Added `RespawningProcessService` service class
 * `Service` instances are now serializable by pickle.
+* `PeriodicService` now checks the `interval` argument before starting.
+* `entrypoint` not failing to stop when service instance implements
+  `.stop()` method not properly.
 
 15.3.x
 ------
