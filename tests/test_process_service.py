@@ -1,5 +1,6 @@
 import os
 import platform
+import sys
 from multiprocessing import Queue
 from pathlib import Path
 from typing import Any
@@ -12,8 +13,8 @@ from aiomisc.service import ProcessService, RespawningProcessService
 
 
 pytestmark = pytest.mark.skipif(
-    platform.system() == "Windows",
-    reason="Temporary skip on windows",
+    platform.system() == "Windows" or sys.version_info < (3, 7),
+    reason="Temporary skip on windows and python < 3.7",
 )
 
 

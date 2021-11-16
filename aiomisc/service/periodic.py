@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Union
 
 from aiomisc import PeriodicCallback, Service
 
@@ -12,21 +12,27 @@ class PeriodicService(Service):
 
     __required__ = ("interval",)
 
-    interval = None  # type: float # in seconds
-    delay = 0  # type: float # in seconds
+    interval: Union[int, float]
+    delay: Union[int, float] = 0
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.periodic = PeriodicCallback(self.callback)
 
     async def start(self) -> None:
+        assert self.interval, f"Interval illegal interval {self.interval!r}"
+        assert self.interval > 0, (
+            f"Interval must be positive not {self.interval!r}"
+        )
+
         self.periodic.start(self.interval, delay=self.delay, loop=self.loop)
         log.info("Periodic service %s started", self)
 
     async def stop(self, err: Exception = None) -> None:
         if self.periodic.task:
             await self.periodic.task
-        self.periodic.stop()
+
+        await self.periodic.stop()
         log.info("Periodic service %s is stopped", self)
 
     @abstractmethod
