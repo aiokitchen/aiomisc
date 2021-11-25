@@ -1,7 +1,7 @@
 import asyncio
 import os
 import socket
-from asyncio import Event, wait_for
+from asyncio import Event
 from asyncio.tasks import create_task, Task, wait
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
@@ -17,7 +17,6 @@ from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from tests import unix_only
-
 
 try:
     import uvloop
