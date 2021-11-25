@@ -1,13 +1,16 @@
 import asyncio
 import os
 import socket
-from contextlib import ExitStack
+from asyncio import Event, wait_for
+from asyncio.tasks import create_task, Task, wait
+from contextlib import ExitStack, suppress
 from tempfile import mktemp
 from typing import Any
 
 import aiohttp.web
 import fastapi
 import pytest
+from aiomisc_dependency import dependency
 
 import aiomisc
 from aiomisc.service import TCPServer, TLSServer, UDPServer
@@ -593,3 +596,27 @@ async def test_entrypoint_with_with_async():
         assert service.ctx == 1
 
     assert service.ctx == 2
+
+
+async def test_entrypoint_graceful_shutdown_loop_owner():
+    event = Event()
+    task: Task
+
+    async def func():
+        nonlocal event
+        await event.wait()
+
+    @dependency
+    async def dep():
+        nonlocal task
+        task = create_task(func())
+        yield
+        event.set()
+        with suppress(asyncio.TimeoutError):
+            await wait([task], timeout=1.0)
+
+    async with aiomisc.entrypoint() as loop:
+        loop._loop_owner = True
+
+    assert task.done()
+    assert not task.cancelled()
