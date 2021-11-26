@@ -1,8 +1,8 @@
 import asyncio
 import os
 import socket
-from asyncio import Event
-from asyncio.tasks import create_task, Task, wait
+from asyncio import Event, get_event_loop
+from asyncio.tasks import Task, wait
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
 from typing import Any
@@ -10,9 +10,9 @@ from typing import Any
 import aiohttp.web
 import fastapi
 import pytest
-from aiomisc_dependency import dependency
 
 import aiomisc
+from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
@@ -605,14 +605,18 @@ async def test_entrypoint_graceful_shutdown_loop_owner():
         nonlocal event
         await event.wait()
 
-    @dependency
-    async def dep():
+    async def pre_start(**_):
         nonlocal task
-        task = create_task(func())
-        yield
+        task = get_event_loop().create_task(func())
+
+    async def post_stop(**_):
+        nonlocal event, task
         event.set()
         with suppress(asyncio.TimeoutError):
             await wait([task], timeout=1.0)
+
+    Entrypoint.PRE_START.connect(pre_start)
+    Entrypoint.POST_STOP.connect(post_stop)
 
     async with aiomisc.entrypoint() as loop:
         loop._loop_owner = True
