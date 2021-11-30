@@ -450,6 +450,9 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
         if "loop" not in request.fixturenames:
             raise Exception("`loop` fixture required")
 
+        request._get_active_fixturedef("loop").addfinalizer(
+            partial(fixturedef.finish, request=request)
+        )
         event_loop = request.getfixturevalue("loop")
 
         if not is_async_gen:
