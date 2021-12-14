@@ -286,10 +286,10 @@ class Entrypoint:
 
         await cancel_tasks(set(self._tasks))
 
+        await self.post_stop.call(entrypoint=self)
+
         if self._loop_owner:
             await self._cancel_background_tasks()
-
-        await self.post_stop.call(entrypoint=self)
         await self.loop.shutdown_asyncgens()
 
 

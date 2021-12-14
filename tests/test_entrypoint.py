@@ -1,7 +1,9 @@
 import asyncio
 import os
 import socket
-from contextlib import ExitStack
+from asyncio import Event, get_event_loop
+from asyncio.tasks import Task, wait
+from contextlib import ExitStack, suppress
 from tempfile import mktemp
 from typing import Any
 
@@ -10,11 +12,11 @@ import fastapi
 import pytest
 
 import aiomisc
+from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from tests import unix_only
-
 
 try:
     import uvloop
@@ -593,3 +595,31 @@ async def test_entrypoint_with_with_async():
         assert service.ctx == 1
 
     assert service.ctx == 2
+
+
+async def test_entrypoint_graceful_shutdown_loop_owner():
+    event = Event()
+    task: Task
+
+    async def func():
+        nonlocal event
+        await event.wait()
+
+    async def pre_start(**_):
+        nonlocal task
+        task = get_event_loop().create_task(func())
+
+    async def post_stop(**_):
+        nonlocal event, task
+        event.set()
+        with suppress(asyncio.TimeoutError):
+            await wait([task], timeout=1.0)
+
+    Entrypoint.PRE_START.connect(pre_start)
+    Entrypoint.POST_STOP.connect(post_stop)
+
+    async with aiomisc.entrypoint() as loop:
+        loop._loop_owner = True
+
+    assert task.done()
+    assert not task.cancelled()
