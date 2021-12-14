@@ -321,3 +321,13 @@ async def test_awaitable_decorator(loop):
     assert (await coro()) == 654321
     assert (await pass_future()) == 654321
     assert (await no_awaitable()) == 654321
+
+
+def test_create_default_event_loop():
+    loop, _ = aiomisc.utils.create_default_event_loop()
+
+    async def run():
+        with pytest.raises(RuntimeError):
+            aiomisc.utils.create_default_event_loop()
+
+    loop.run_until_complete(run())

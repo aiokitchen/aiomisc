@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-30 00:28+0300\n"
+"POT-Creation-Date: 2021-12-14 22:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-msgid "Latest Version"
-msgstr "Актуальная версия"
+msgid "Актуальная версия"
+msgstr ""
 
 #: ../../source/index.rst:26
 msgid "Miscellaneous utils for asyncio."
@@ -107,3 +107,7 @@ msgstr "Python 3.5+ как `python3`"
 #: ../../source/index.rst:208
 msgid "For setting up developer environment just type"
 msgstr "Для настройки окружения разработчика просто наберите"
+
+#~ msgid "Latest Version"
+#~ msgstr "Актуальная версия"
+

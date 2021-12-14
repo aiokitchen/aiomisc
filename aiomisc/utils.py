@@ -162,10 +162,14 @@ def create_default_event_loop(
     :param policy: event loop policy
     :param debug: set ``loop.set_debug(True)`` if True
     """
-    try:
-        asyncio.get_event_loop().close()
-    except RuntimeError:
-        pass  # event loop is not created yet
+
+    current_loop = asyncio.get_event_loop()
+    if current_loop.is_running():
+        raise RuntimeError(
+            "Trying to create new event loop instance but another "
+            "default loop in this thread is running right now."
+        )
+    del current_loop
 
     asyncio.set_event_loop_policy(policy)
 

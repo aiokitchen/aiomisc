@@ -9,6 +9,16 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+15.5.x
+------
+
+* Changed behavior in default event loop creation. In previous releases the
+  function ``aiomisc.utils.create_default_event_loop()`` silently closes
+  already created event loop. Now it checks is current event loop running,
+  and raises an ``RuntimeError`` in this case.
+* #126 reorder shutdown routines
+* #128 session-scope agen fixture
+
 15.4.x
 ------
 
@@ -27,8 +37,8 @@ in this document.
 15.2.x
 ------
 
-* Added `aiomisc.service.RespawningProcessService` for running python function in
-  separate process and restart it when exiting.
+* Added `aiomisc.service.RespawningProcessService` for running python function
+  in separate process and restart it when exiting.
 * Rewrite `aiomisc.WorkerPool` using `multiprocessing.Process`
   instead of `subprocess.Popen`.
 * `aiomisc.ServiceMeta` is now inherited from `abc.ABCMeta`. It means
@@ -72,7 +82,8 @@ in this document.
 
   It reduces system calls and slightly improves performance.
 * Used to modern syntax old python 3.5 `# type:` hints.
-* Added `__slots__` to `aiomisc.counters.Metric` and `aiomisc.counters.Statistic`
+* Added `__slots__` to `aiomisc.counters.Metric`
+  and `aiomisc.counters.Statistic`
 * Added entrypoint configuration from environment variables:
     * `AIOMISC_LOG_LEVEL`
     * `AIOMISC_LOG_FORMAT`
@@ -81,7 +92,8 @@ in this document.
     * `AIOMISC_LOG_BUFFERING`
     * `AIOMISC_LOG_BUFFER`
     * `AIOMISC_POOL_SIZE`
-* Added `aiomisc.entrypoint.POST_START` and `aiomisc.entrypoint.PRE_STOP` signals.
+* Added `aiomisc.entrypoint.POST_START` and
+  `aiomisc.entrypoint.PRE_STOP` signals.
 * Python 3.10 compatibility
 * Changed logging configuration behavior, now uncaught exceptions will be
   passed to root handler and log formatter which configured by
@@ -116,7 +128,8 @@ in this document.
 * Removed `async_generator` module support. Because python 3.5 is not
   supported anymore.
 * Fixed "IO operation on closed file" error in pytest plugin.
-* Refactored `get_unused_port` function and `aiomisc_unused_port_factory` fixture
+* Refactored `get_unused_port` function and
+  `aiomisc_unused_port_factory` fixture
 * Added `aiomisc_socket_factory` fixture which returns port number
   and socket object pair.
 * Added tests for documentation examples through `pytest-rst` module

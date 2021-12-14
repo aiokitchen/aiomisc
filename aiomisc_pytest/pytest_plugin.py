@@ -428,7 +428,7 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_fixture_setup(fixturedef):  # type: ignore
+def pytest_fixture_setup(fixturedef, request):  # type: ignore
     func = fixturedef.func
 
     is_async_gen = isasyncgenerator(func)
@@ -441,18 +441,18 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
         fixturedef.argnames += ("request",)
         strip_request = True
 
+    if "loop" not in request.fixturenames:
+        raise Exception("`loop` fixture required")
+
+    # noinspection PyProtectedMember
+    loop_fixturedef = request._get_active_fixturedef("loop")
+
     def wrapper(*args, **kwargs):  # type: ignore
         if strip_request:
             request = kwargs.pop("request")
         else:
             request = kwargs["request"]
 
-        if "loop" not in request.fixturenames:
-            raise Exception("`loop` fixture required")
-
-        request._get_active_fixturedef("loop").addfinalizer(
-            partial(fixturedef.finish, request=request)
-        )
         event_loop = request.getfixturevalue("loop")
 
         if not is_async_gen:
@@ -465,6 +465,10 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
                 return event_loop.run_until_complete(gen.__anext__())
             except StopAsyncIteration:  # NOQA
                 pass
+
+        loop_fixturedef.addfinalizer(
+            partial(fixturedef.finish, request=request)
+        )
 
         request.addfinalizer(finalizer)
         return event_loop.run_until_complete(gen.__anext__())

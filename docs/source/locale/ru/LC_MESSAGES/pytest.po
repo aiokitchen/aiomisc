@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2021-12-14 22:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,22 +35,46 @@ msgstr "Простой пример использования:"
 msgid "asynchronous fixture example:"
 msgstr "пример асинхронной фикстуры:"
 
-#: ../../source/pytest.rst:42
+#: ../../source/pytest.rst:40
+msgid ""
+"In case you have to save an instance of an async fixture between tests, "
+"the wrong solution is just changing the fixture scope. But why it "
+"wouldn't work? That's because, in the base scenario, the ``loop`` fixture"
+" creates a new event loop instance per test which will be closed after "
+"test teardown. When you have to use an async fixture any caller of "
+"``asyncio.get_event_loop()`` will get the current event loop instance "
+"which will be closed and the next test will run in another event loop. So"
+" the solution is to redefine the ``loop`` fixture with the required scope"
+" and custom fixture with the required scope."
+msgstr ""
+"В случае, если вам необходимо сохранить экземпляр асинхронной фиксуры между "
+"тестами, неправильным решением будет просто изменить scope фикстуры."
+"Но почему это не сработает? Это связано с тем, что в базовом сценарии "
+"фикстура ``loop`` создает новый экземпляр event-loop для каждого теста, и он "
+"будет закрыт по завершении теста. Когда нужно использовать "
+"асинхронную фикстуру, любой вызов ``asyncio.get_event_loop()`` вернет текущий "
+"экземпляр event-loop, который будет закрыт, и следующий тест будет "
+"выполняться в другом экземпляре event-loop."
+"Таким образом, решение заключается в переопределении фикстуры ``loop`` "
+"с требуемым scope и пользовательской фиктуры."
+
+#: ../../source/pytest.rst:83
 msgid "pytest markers"
 msgstr "маркеры pytest"
 
-#: ../../source/pytest.rst:44
+#: ../../source/pytest.rst:85
 msgid "Package contains some useful markers for pytest:"
 msgstr "Пакет содержит несколько полезных маркеров для pytest:"
 
-#: ../../source/pytest.rst:46
+#: ../../source/pytest.rst:87
 msgid ""
 "``catch_loop_exceptions`` - uncaught event loop exceptions will failling "
 "test."
 msgstr ""
-"``catch_loop_exceptions`` - непойманные исклбчения в event loop сломают тест."
+"``catch_loop_exceptions`` - непойманные исклбчения в event loop сломают "
+"тест."
 
-#: ../../source/pytest.rst:47
+#: ../../source/pytest.rst:88
 msgid ""
 "``forbid_get_event_loop`` - forbids call ``asyncio.get_event_loop`` "
 "during test case."
@@ -58,39 +82,39 @@ msgstr ""
 "``forbid_get_event_loop`` - запрещает вызов ``asyncio.get_event_loop`` "
 "при прогоне теста."
 
-#: ../../source/pytest.rst:82
+#: ../../source/pytest.rst:123
 msgid "Passing default context"
 msgstr "Передача контекста по умолчанию"
 
-#: ../../source/pytest.rst:98
+#: ../../source/pytest.rst:139
 msgid "Testing services"
 msgstr "Тестирование сервисов"
 
-#: ../../source/pytest.rst:100
+#: ../../source/pytest.rst:141
 msgid "Redefine ``services`` fixture in your test module:"
 msgstr "Переопределите фикстуру ``services`` в вашем тестовом модуле:"
 
-#: ../../source/pytest.rst:116
+#: ../../source/pytest.rst:157
 msgid "Event loop policy overriding"
 msgstr "Переопределение политики создания цикла событий"
 
-#: ../../source/pytest.rst:134
+#: ../../source/pytest.rst:175
 msgid "Thread pool overriding"
 msgstr "Переопределение пула потоков"
 
-#: ../../source/pytest.rst:149
+#: ../../source/pytest.rst:190
 msgid "entrypoint arguments"
 msgstr "агрументы entrypoint"
 
-#: ../../source/pytest.rst:161
+#: ../../source/pytest.rst:202
 msgid "aiohttp test client"
 msgstr "тестовый класс для aiohttp"
 
-#: ../../source/pytest.rst:197
+#: ../../source/pytest.rst:238
 msgid "TCPProxy"
 msgstr "TCPProxy"
 
-#: ../../source/pytest.rst:199
+#: ../../source/pytest.rst:240
 msgid ""
 "Simple TCP proxy for emulate network problems. Available as fixture "
 "`tcp_proxy`"
@@ -98,6 +122,7 @@ msgstr ""
 "Простой TCP proxy для эмуляции сетевых проблем. Доступен как фикстура "
 "`tcp_proxy`"
 
-#: ../../source/pytest.rst:202
+#: ../../source/pytest.rst:243
 msgid "Examples:"
 msgstr "Примеры:"
+

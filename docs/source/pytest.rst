@@ -37,6 +37,47 @@ asynchronous fixture example:
         # Requires python 3.6+
         yield
 
+In case you have to save an instance of an async fixture between tests,
+the wrong solution is just changing the fixture scope.
+But why it wouldn't work? That's because, in the base scenario, the ``loop``
+fixture creates a new event loop instance per test which will be closed after
+test teardown. When you have to use an async fixture any caller of
+``asyncio.get_event_loop()`` will get the current event loop instance which
+will be closed and the next test will run in another event loop.
+So the solution is to redefine the ``loop`` fixture with the required scope
+and custom fixture with the required scope.
+
+.. code-block:: python
+
+    import asyncio
+    import pytest
+    from aiomisc import entrypoint
+
+
+    @pytest.fixture(scope='module')
+    def loop():
+        with entrypoint() as loop:
+            asyncio.set_event_loop(loop)
+            yield loop
+
+
+    @pytest.fixture(scope='module')
+    async def sample_fixture(loop):
+        yield 1
+
+
+    LOOP_ID = None
+
+
+    async def test_using_fixture(sample_fixture):
+        global LOOP_ID
+        LOOP_ID = id(asyncio.get_event_loop())
+        assert sample_fixture == 1
+
+
+    async def test_not_using_fixture(loop):
+        assert id(loop) == LOOP_ID
+
 
 pytest markers
 ++++++++++++++
