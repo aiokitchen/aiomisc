@@ -14,7 +14,7 @@ from aiomisc_worker import (
 )
 
 
-def on_signal(signum: int, frame: FrameType) -> None:
+def on_signal(signum: int, frame: Optional[FrameType]) -> None:
     raise asyncio.CancelledError
 
 

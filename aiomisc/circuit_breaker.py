@@ -355,11 +355,11 @@ class CircuitBreaker:
             return func(*args, **kwargs)
 
     async def call_async(
-        self, func: Callable[..., Awaitable[Any]],
+        self, func: Callable[..., Awaitable[T]],
         *args: Any, **kwargs: Any
     ) -> T:
         with self.context():
-            return await awaitable(func)(*args, **kwargs)
+            return await awaitable(func)(*args, **kwargs)   # type: ignore
 
     def __repr__(self) -> str:
         return "<{}: state={!r} recovery_ratio={!s}>".format(
