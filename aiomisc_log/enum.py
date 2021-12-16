@@ -18,7 +18,7 @@ class LogFormat(IntEnum):
 
     @classmethod
     def choices(cls) -> Tuple[str, ...]:
-        return tuple(cls._member_names_)    # type: ignore
+        return tuple(cls._member_names_)
 
     @classmethod
     def default(cls) -> str:
@@ -50,7 +50,7 @@ class LogLevel(IntEnum):
 
     @classmethod
     def choices(cls) -> Tuple[str, ...]:
-        return tuple(cls._member_names_)    # type: ignore
+        return tuple(cls._member_names_)
 
     @classmethod
     def default(cls) -> str:
