@@ -9,13 +9,18 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
-15.5.x
+15.6.x
 ------
 
 * Changed behavior in default event loop creation. In previous releases the
   function ``aiomisc.utils.create_default_event_loop()`` silently closes
   already created event loop. Now it checks is current event loop running,
   and raises an ``RuntimeError`` in this case.
+
+
+15.5.x
+------
+
 * #126 reorder shutdown routines
 * #128 session-scope agen fixture
 
