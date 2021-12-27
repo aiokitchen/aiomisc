@@ -33,7 +33,7 @@ class Signal:
                 receiver,
             )
 
-        self._receivers.remove(receiver)
+        self._receivers.remove(receiver)  # type: ignore
 
     async def call(self, *args: Any, **kwargs: Any) -> None:
         for receiver in self._receivers:
