@@ -140,7 +140,7 @@ def basic_config(
 
     raw_handler = create_logging_handler(log_format, **kwargs)
     unhandled_hook = UnhandledHook()
-    sys.excepthook = unhandled_hook
+    sys.excepthook = unhandled_hook     # type: ignore
 
     handler = handler_wrapper(raw_handler)
 

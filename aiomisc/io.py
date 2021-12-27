@@ -99,7 +99,7 @@ class AsyncFileIOBase:
         if self.fp is not None:
             return
 
-        self.fp = await self.__opener()
+        self.fp = await self.__opener()     # type: ignore
 
     def __await__(self) -> Generator[Any, Any, "AsyncFileIOBase"]:
         yield from self.open().__await__()
