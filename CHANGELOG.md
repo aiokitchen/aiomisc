@@ -12,6 +12,8 @@ in this document.
 15.6.x
 ------
 
+* Fix tests
+* Fix ``aiomisc.run`` in python 3.10
 * Changed behavior in default event loop creation. In previous releases the
   function ``aiomisc.utils.create_default_event_loop()`` silently closes
   already created event loop. Now it checks is current event loop running,
