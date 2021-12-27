@@ -98,5 +98,10 @@ class SDWatchdogService(Service):
         # Send notifications twice as often
         self._watchdog_timer.start(self.watchdog_interval / 2)
 
+        # Removing signals from entrypoint factory because the currently
+        # running entrypoint instance has been cloned the signals.
+        entrypoint.POST_START.disconnect(self._post_start)
+        entrypoint.PRE_STOP.disconnect(self._pre_stop)
+
     async def stop(self, exception: Exception = None) -> Any:
         await self._watchdog_timer.stop()

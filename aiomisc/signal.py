@@ -26,6 +26,15 @@ class Signal:
 
         self._receivers.add(receiver)   # type: ignore
 
+    def disconnect(self, receiver: ReceiverType) -> None:
+        if self.is_frozen:
+            raise RuntimeError(
+                "Can't connect receiver (%r) to the frozen signal",
+                receiver,
+            )
+
+        self._receivers.remove(receiver)
+
     async def call(self, *args: Any, **kwargs: Any) -> None:
         for receiver in self._receivers:
             await receiver(*args, **kwargs)

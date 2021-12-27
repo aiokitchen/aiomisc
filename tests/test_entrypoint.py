@@ -12,6 +12,7 @@ import fastapi
 import pytest
 
 import aiomisc
+from aiomisc import Signal
 from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
@@ -598,6 +599,12 @@ async def test_entrypoint_with_with_async():
 
 
 async def test_entrypoint_graceful_shutdown_loop_owner():
+    class MyEntrypoint(Entrypoint):
+        PRE_START = Signal()
+        POST_STOP = Signal()
+        POST_START = Signal()
+        PRE_STOP = Signal()
+
     event = Event()
     task: Task
 
@@ -615,11 +622,11 @@ async def test_entrypoint_graceful_shutdown_loop_owner():
         with suppress(asyncio.TimeoutError):
             await wait([task], timeout=1.0)
 
-    Entrypoint.PRE_START.connect(pre_start)
-    Entrypoint.POST_STOP.connect(post_stop)
+    MyEntrypoint.PRE_START.connect(pre_start)
+    MyEntrypoint.POST_STOP.connect(post_stop)
 
-    async with aiomisc.entrypoint() as loop:
-        loop._loop_owner = True
+    async with MyEntrypoint() as entrypoint:
+        entrypoint._loop_owner = True
 
     assert task.done()
     assert not task.cancelled()

@@ -614,7 +614,8 @@ def _loop(event_loop_policy, caplog):
 @pytest.fixture(autouse=loop_autouse)
 def loop(
     request, services, loop_debug, default_context, entrypoint_kwargs,
-    thread_pool_size, thread_pool_executor, loop, caplog,
+    thread_pool_size, thread_pool_executor,
+    loop: asyncio.AbstractEventLoop, caplog: pytest.LogCaptureFixture,
 ):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint

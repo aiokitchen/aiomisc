@@ -38,11 +38,10 @@ def test_process_service(tmpdir):
     test_file = tmp_path / "test.txt"
     svc = SampleProcessService(path=test_file)
 
-    async def wait(loop):
-        loop.run_in_executor(None, svc._process_stop_event.wait)
-
     with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(wait(loop))
+        loop.run_until_complete(
+            loop.run_in_executor(None, svc._process_stop_event.wait)
+        )
 
     with open(test_file) as fp:
         assert fp.readline() == "Hello world\n"
