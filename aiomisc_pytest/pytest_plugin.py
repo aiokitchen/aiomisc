@@ -8,7 +8,7 @@ from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
 from typing import (
-    Awaitable, Callable, Coroutine, NamedTuple, Optional, Tuple, Type, Union,
+    Awaitable, Callable, NamedTuple, Optional, Tuple, Type, Union
 )
 from unittest.mock import MagicMock
 
