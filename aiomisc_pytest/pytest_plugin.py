@@ -180,13 +180,16 @@ class TCPProxyClient:
             while not reader.at_eof():
                 chunk = await reader.read(self.chunk_size)
 
+                if not chunk:
+                    break
+
                 if delay.timeout > 0:
                     log.debug(
                         "%r sleeping %.3f seconds on %s",
                         self, delay.timeout, processor,
                     )
 
-                await delay.wait()
+                    await delay.wait()
 
                 writer.write(await self.__processors[processor](chunk))
 
