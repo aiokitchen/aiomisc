@@ -7,7 +7,9 @@ from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
-from typing import Callable, Coroutine, NamedTuple, Optional, Tuple, Type, Union
+from typing import (
+    Awaitable, Callable, NamedTuple, Optional, Tuple, Type, Union
+)
 from unittest.mock import MagicMock
 
 import pytest
@@ -48,7 +50,7 @@ def delayed_future(
     return future
 
 
-ProxyProcessorType = Coroutine[bytes, None, bytes]
+ProxyProcessorType = Callable[[bytes], Awaitable[bytes]]
 DelayType = Union[int, float]
 
 
@@ -178,13 +180,16 @@ class TCPProxyClient:
             while not reader.at_eof():
                 chunk = await reader.read(self.chunk_size)
 
+                if not chunk:
+                    break
+
                 if delay.timeout > 0:
                     log.debug(
                         "%r sleeping %.3f seconds on %s",
                         self, delay.timeout, processor,
                     )
 
-                await delay.wait()
+                    await delay.wait()
 
                 writer.write(await self.__processors[processor](chunk))
 
@@ -467,7 +472,7 @@ def pytest_fixture_setup(fixturedef, request):  # type: ignore
                 pass
 
         loop_fixturedef.addfinalizer(
-            partial(fixturedef.finish, request=request)
+            partial(fixturedef.finish, request=request),
         )
 
         request.addfinalizer(finalizer)

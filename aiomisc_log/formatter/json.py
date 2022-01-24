@@ -9,7 +9,7 @@ from typing import IO, Any, Callable, Dict, List, Union
 try:
     from typing import Literal
 
-    StyleType = Union[Literal['%'], Literal['{'], Literal['$']]
+    StyleType = Union[Literal["%"], Literal["{"], Literal["$"]]
 except ImportError:
     StyleType = str     # type: ignore
 
