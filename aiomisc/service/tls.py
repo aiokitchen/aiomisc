@@ -119,8 +119,8 @@ class TLSClient(TCPClient, ABC):
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
         ca: PathOrStr = None, verify: bool = True,
-        **kwargs
-    ):
+        **kwargs: Any
+    ) -> None:
         self.__ssl_options = (
             cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
         )
@@ -139,7 +139,7 @@ class TLSClient(TCPClient, ABC):
         )
 
 
-class RobustTLSClient(RobustTCPClient):
+class RobustTLSClient(RobustTCPClient, ABC):
     __slots__ = "__ssl_options", "__server_hostname"
 
     ssl_handshake_timeout: TimeoutType = 5
@@ -148,7 +148,7 @@ class RobustTLSClient(RobustTCPClient):
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
         ca: PathOrStr = None, verify: bool = True,
-        **kwargs
+        **kwargs: Any
     ):
         self.__ssl_options = (
             cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
