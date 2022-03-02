@@ -112,7 +112,7 @@ class TCPClient(SimpleClient, ABC):
                 last_error = e
                 await asyncio.sleep(self.connect_retry_timeout)
 
-        raise last_error
+        raise last_error or RuntimeError("Unknown exception occurred")
 
     @abstractmethod
     async def handle_connection(

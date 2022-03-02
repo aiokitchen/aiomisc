@@ -151,7 +151,7 @@ class TLSClient(TCPClient, ABC):
                 last_error = e
                 await asyncio.sleep(self.connect_retry_timeout)
 
-        raise last_error
+        raise last_error or RuntimeError("Unknown exception occurred")
 
 
 class RobustTLSClient(RobustTCPClient, ABC):
@@ -193,4 +193,4 @@ class RobustTLSClient(RobustTCPClient, ABC):
                 last_error = e
                 await asyncio.sleep(self.connect_retry_timeout)
 
-        raise last_error
+        raise last_error or RuntimeError("Unknown exception occurred")
