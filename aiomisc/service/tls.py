@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import socket
 import ssl
 from abc import ABC, abstractmethod
@@ -6,12 +7,13 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 
-from ..utils import OptionsType, awaitable, bind_socket
+from ..utils import OptionsType, TimeoutType, awaitable, bind_socket
 from .base import SimpleServer
 from .tcp import RobustTCPClient, TCPClient
 
 
 PathOrStr = Union[Path, str]
+log = logging.getLogger(__name__)
 
 
 def get_ssl_context(
@@ -113,6 +115,9 @@ class TLSServer(SimpleServer):
 class TLSClient(TCPClient, ABC):
     __slots__ = "__ssl_options", "__server_hostname"
 
+    connect_attempts: int = 5
+    connect_retry_timeout: TimeoutType = 3
+
     def __init__(
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
@@ -128,16 +133,32 @@ class TLSClient(TCPClient, ABC):
     async def connect(self) -> Tuple[
         asyncio.StreamReader, asyncio.StreamWriter,
     ]:
-        return await asyncio.open_connection(
-            self.address, self.port,
-            ssl=await self.loop.run_in_executor(
-                None, get_ssl_context, *self.__ssl_options,
-            ),
-        )
+        last_error: Optional[Exception] = None
+        for _ in range(self.connect_attempts):
+            try:
+                reader, writer = await asyncio.open_connection(
+                    self.address, self.port,
+                    ssl=await self.loop.run_in_executor(
+                        None, get_ssl_context, *self.__ssl_options,
+                    ),
+                )
+                log.info(
+                    "Connected to %s://%s:%d",
+                    self.PROTO_NAME, self.address, self.port,
+                )
+                return reader, writer
+            except ConnectionError as e:
+                last_error = e
+                await asyncio.sleep(self.connect_retry_timeout)
+
+        raise last_error
 
 
 class RobustTLSClient(RobustTCPClient, ABC):
     __slots__ = "__ssl_options", "__server_hostname"
+
+    connect_attempts: int = 5
+    connect_retry_timeout: TimeoutType = 3
 
     def __init__(
         self, address: str, port: int, *,
@@ -154,9 +175,22 @@ class RobustTLSClient(RobustTCPClient, ABC):
     async def connect(self) -> Tuple[
         asyncio.StreamReader, asyncio.StreamWriter,
     ]:
-        return await asyncio.open_connection(
-            self.address, self.port,
-            ssl=await self.loop.run_in_executor(
-                None, get_ssl_context, *self.__ssl_options,
-            ),
-        )
+        last_error: Optional[Exception] = None
+        for _ in range(self.connect_attempts):
+            try:
+                reader, writer = await asyncio.open_connection(
+                    self.address, self.port,
+                    ssl=await self.loop.run_in_executor(
+                        None, get_ssl_context, *self.__ssl_options,
+                    ),
+                )
+                log.info(
+                    "Connected to %s://%s:%d",
+                    self.PROTO_NAME, self.address, self.port,
+                )
+                return reader, writer
+            except ConnectionError as e:
+                last_error = e
+                await asyncio.sleep(self.connect_retry_timeout)
+
+        raise last_error

@@ -76,6 +76,9 @@ class TCPClient(SimpleClient, ABC):
     port: int
     path: Path
 
+    connect_attempts: int = 5
+    connect_retry_timeout: TimeoutType = 3
+
     def __init__(
         self,
         address: str = None,
@@ -91,17 +94,25 @@ class TCPClient(SimpleClient, ABC):
     async def connect(self) -> Tuple[
         asyncio.StreamReader, asyncio.StreamWriter,
     ]:
-        try:
-            return await self.create_task(
-                asyncio.open_connection(
-                    self.address, self.port,
-                ),
-            )
-        finally:
-            log.info(
-                "Connected to %s://%s:%d",
-                self.PROTO_NAME, self.address, self.port,
-            )
+        last_error: Optional[Exception] = None
+
+        for _ in range(self.connect_attempts):
+            try:
+                reader, writer = await self.create_task(
+                    asyncio.open_connection(
+                        self.address, self.port,
+                    ),
+                )
+                log.info(
+                    "Connected to %s://%s:%d",
+                    self.PROTO_NAME, self.address, self.port,
+                )
+                return reader, writer
+            except ConnectionError as e:
+                last_error = e
+                await asyncio.sleep(self.connect_retry_timeout)
+
+        raise last_error
 
     @abstractmethod
     async def handle_connection(
