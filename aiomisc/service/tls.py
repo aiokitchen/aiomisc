@@ -1,13 +1,14 @@
 import asyncio
 import socket
 import ssl
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Tuple, Union
 
-from ..utils import OptionsType, awaitable, bind_socket
+from ..utils import OptionsType, TimeoutType, awaitable, bind_socket
 from .base import SimpleServer
+from .tcp import RobustTCPClient, TCPClient
 
 
 PathOrStr = Union[Path, str]
@@ -15,14 +16,11 @@ PathOrStr = Union[Path, str]
 
 def get_ssl_context(
     cert: str, key: str, ca: Optional[str], verify: bool,
-    require_client_cert: bool,
+    require_client_cert: bool, purpose: ssl.Purpose,
 ) -> ssl.SSLContext:
     cert, key, ca = map(str, (cert, key, ca))
 
-    context = ssl.create_default_context(
-        ssl.Purpose.CLIENT_AUTH,
-        cafile=ca,
-    )
+    context = ssl.create_default_context(purpose=purpose, cafile=ca)
 
     if ca and not Path(ca).exists():
         raise FileNotFoundError("CA file doesn't exists")
@@ -52,7 +50,10 @@ class TLSServer(SimpleServer):
         options: OptionsType = (), sock: socket.socket = None, **kwargs: Any
     ):
 
-        self.__ssl_options = cert, key, ca, verify, require_client_cert
+        self.__ssl_options = (
+            cert, key, ca, verify, require_client_cert,
+            ssl.Purpose.CLIENT_AUTH,
+        )
 
         if not sock:
             if not (address and port):
@@ -107,3 +108,61 @@ class TLSServer(SimpleServer):
 
         if self.server:
             await self.server.wait_closed()
+
+
+class TLSClient(TCPClient, ABC):
+    __slots__ = "__ssl_options", "__server_hostname"
+
+    ssl_handshake_timeout: TimeoutType = 5
+
+    def __init__(
+        self, address: str, port: int, *,
+        cert: PathOrStr, key: PathOrStr,
+        ca: PathOrStr = None, verify: bool = True,
+        **kwargs
+    ):
+        self.__ssl_options = (
+            cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
+        )
+
+        super().__init__(address, port, **kwargs)
+
+    async def connect(self) -> Tuple[
+        asyncio.StreamReader, asyncio.StreamWriter,
+    ]:
+        return await asyncio.open_connection(
+            self.address, self.port,
+            ssl_handshake_timeout=self.ssl_handshake_timeout,
+            ssl=await self.loop.run_in_executor(
+                None, get_ssl_context, *self.__ssl_options,
+            ),
+        )
+
+
+class RobustTLSClient(RobustTCPClient):
+    __slots__ = "__ssl_options", "__server_hostname"
+
+    ssl_handshake_timeout: TimeoutType = 5
+
+    def __init__(
+        self, address: str, port: int, *,
+        cert: PathOrStr, key: PathOrStr,
+        ca: PathOrStr = None, verify: bool = True,
+        **kwargs
+    ):
+        self.__ssl_options = (
+            cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
+        )
+
+        super().__init__(address, port, **kwargs)
+
+    async def connect(self) -> Tuple[
+        asyncio.StreamReader, asyncio.StreamWriter,
+    ]:
+        return await asyncio.open_connection(
+            self.address, self.port,
+            ssl_handshake_timeout=self.ssl_handshake_timeout,
+            ssl=await self.loop.run_in_executor(
+                None, get_ssl_context, *self.__ssl_options,
+            ),
+        )

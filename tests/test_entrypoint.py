@@ -17,7 +17,10 @@ from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
+from aiomisc.service.tcp import RobustTCPClient, TCPClient
+from aiomisc.service.tls import RobustTLSClient, TLSClient
 from tests import unix_only
+
 
 try:
     import uvloop
@@ -189,6 +192,100 @@ def test_tcp_server(aiomisc_unused_port):
     assert TestService.DATA == [b"hello server\n"]
 
 
+def test_tcp_client(aiomisc_socket_factory, localhost):
+    class TestService(TCPServer):
+        DATA = []
+
+        async def handle_client(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ):
+            self.DATA.append(await reader.readline())
+
+    class TestClient(TCPClient):
+        event: asyncio.Event
+
+        async def handle_connection(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ) -> None:
+            writer.write(b"hello server\n")
+            await writer.drain()
+            self.loop.call_soon(self.event.set)
+
+    port, sock = aiomisc_socket_factory()
+    event = asyncio.Event()
+    services = [
+        TestService(sock=sock),
+        TestClient(address=localhost, port=port, event=event),
+    ]
+
+    async def go():
+        await event.wait()
+
+    with aiomisc.entrypoint(*services) as loop:
+        loop.run_until_complete(
+            asyncio.wait_for(go(), timeout=10),
+        )
+
+    assert TestService.DATA
+    assert TestService.DATA == [b"hello server\n"]
+
+
+def test_robust_tcp_client(aiomisc_socket_factory, localhost):
+    condition = asyncio.Condition()
+
+    class TestService(TCPServer):
+        DATA = []
+        condition: asyncio.Condition
+
+        async def handle_client(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ):
+            self.DATA.append(await reader.readline())
+            async with self.condition:
+                self.condition.notify_all()
+            writer.write_eof()
+            writer.close()
+
+    class TestClient(RobustTCPClient):
+        async def handle_connection(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ) -> None:
+            writer.write(b"hello server\n")
+            await writer.drain()
+            await reader.readexactly(1)
+
+    port, sock = aiomisc_socket_factory()
+    services = [
+        TestService(
+            sock=sock,
+            condition=condition,
+        ),
+        TestClient(
+            address=localhost,
+            port=port,
+            reconnect_timeout=0.1,
+        ),
+    ]
+
+    async def go():
+        async with condition:
+            await condition.wait_for(
+                lambda: len(TestService.DATA) >= 3,
+            )
+
+    with aiomisc.entrypoint(*services) as loop:
+        loop.run_until_complete(
+            asyncio.wait_for(go(), timeout=10),
+        )
+
+    assert TestService.DATA
+    assert TestService.DATA == [b"hello server\n"] * 3
+
+
 @pytest.mark.parametrize("client_cert_required", [False, True])
 def test_tls_server(
     client_cert_required, certs, ssl_client_context, aiomisc_unused_port,
@@ -234,6 +331,118 @@ def test_tls_server(
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
+
+
+def test_tls_client(certs, localhost, aiomisc_socket_factory):
+    class TestService(TLSServer):
+        DATA = []
+
+        async def handle_client(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ):
+            self.DATA.append(await reader.readline())
+            writer.close()
+
+    class TestClient(TLSClient):
+        event: asyncio.Event()
+
+        async def handle_connection(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ) -> None:
+            writer.write(b"hello server\n")
+            await writer.drain()
+            self.event.set()
+
+    event = asyncio.Event()
+    port, sock = aiomisc_socket_factory()
+    services = [
+        TestService(
+            sock=sock,
+            ca=certs / "ca.pem",
+            key=certs / "server.key",
+            cert=certs / "server.pem",
+        ),
+        TestClient(
+            address=localhost,
+            port=port,
+            ca=certs / "ca.pem",
+            key=certs / "client.key",
+            cert=certs / "client.pem",
+            event=event,
+        ),
+    ]
+
+    async def go():
+        await event.wait()
+
+    with aiomisc.entrypoint(*services) as loop:
+        loop.run_until_complete(
+            asyncio.wait_for(go(), timeout=10),
+        )
+
+    assert TestService.DATA
+    assert TestService.DATA == [b"hello server\n"]
+
+
+def test_robust_tls_client(aiomisc_socket_factory, localhost, certs):
+    condition = asyncio.Condition()
+
+    class TestService(TLSServer):
+        DATA = []
+        condition: asyncio.Condition
+
+        async def handle_client(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ):
+            self.DATA.append(await reader.readline())
+            async with self.condition:
+                self.condition.notify_all()
+            writer.close()
+
+    class TestClient(RobustTLSClient):
+        async def handle_connection(
+            self, reader: asyncio.StreamReader,
+            writer: asyncio.StreamWriter,
+        ) -> None:
+            writer.write(b"hello server\n")
+            await writer.drain()
+            await reader.readexactly(1)
+
+    port, sock = aiomisc_socket_factory()
+    services = [
+        TestService(
+            sock=sock,
+            ca=certs / "ca.pem",
+            key=certs / "server.key",
+            cert=certs / "server.pem",
+            condition=condition,
+        ),
+        TestClient(
+            address=localhost,
+            port=port,
+            ca=certs / "ca.pem",
+            key=certs / "client.key",
+            cert=certs / "client.pem",
+            reconnect_timeout=0.1,
+        ),
+    ]
+
+    async def go():
+        async with condition:
+            await condition.wait_for(
+                lambda: len(TestService.DATA) >= 3,
+            )
+
+    with aiomisc.entrypoint(*services) as loop:
+        loop.run_until_complete(
+            asyncio.wait_for(go(), timeout=10),
+        )
+
+    assert TestService.DATA
+    assert TestService.DATA == [b"hello server\n"] * 3
 
 
 def test_udp_server(aiomisc_socket_factory):

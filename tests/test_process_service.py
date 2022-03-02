@@ -40,7 +40,7 @@ def test_process_service(tmpdir):
 
     with aiomisc.entrypoint(svc) as loop:
         loop.run_until_complete(
-            loop.run_in_executor(None, svc._process_stop_event.wait)
+            loop.run_in_executor(None, svc._process_stop_event.wait),
         )
 
     with open(test_file) as fp:

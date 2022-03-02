@@ -138,6 +138,217 @@ Just implement ``handle_client(reader, writer)`` to use it.
         loop.run_forever()
 
 
+TCPClient
++++++++++
+
+``TCPClient`` - it's a base class for writing TCP clients.
+Just implement ``handle_connection(reader, writer)`` to use it.
+
+.. code-block:: python
+    :name: test_service_echo_tcp_client
+
+    import asyncio
+    import logging
+    from aiomisc import entrypoint
+    from aiomisc.service import TCPServer, TCPClient
+
+    log = logging.getLogger(__name__)
+
+
+    class EchoServer(TCPServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while not reader.at_eof():
+                writer.write(await reader.read(255))
+
+            log.info("Client connection closed")
+
+
+    class EchoClient(TCPClient):
+
+        async def handle_connection(self, reader: asyncio.StreamReader,
+                                    writer: asyncio.StreamWriter) -> None:
+            writer.write(b"hello\n")
+            assert await reader.readline() == b"hello\n"
+
+            writer.write(b"world\n")
+            assert await reader.readline() == b"world\n"
+
+            writer.write_eof()
+            writer.close()
+            await writer.wait_closed()
+
+
+    with entrypoint(
+        EchoServer(address='::1', port=8901),
+        EchoClient(address='::1', port=8901),
+    ) as loop:
+        loop.run_until_complete(asyncio.sleep(0.1))
+
+
+TLSClient
++++++++++
+
+``TLSClient`` - it's a base class for writing TLS clients.
+Just implement ``handle_connection(reader, writer)`` to use it.
+
+.. code-block:: python
+
+    import asyncio
+    import logging
+    from aiomisc import entrypoint
+    from aiomisc.service import TCPServer, TCPClient
+
+    log = logging.getLogger(__name__)
+
+
+    class EchoServer(TLSServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while not reader.at_eof():
+                writer.write(await reader.read(255))
+
+            log.info("Client connection closed")
+
+
+    class EchoClient(TLSClient):
+
+        async def handle_connection(self, reader: asyncio.StreamReader,
+                                    writer: asyncio.StreamWriter) -> None:
+            writer.write(b"hello\n")
+            assert await reader.readline() == b"hello\n"
+
+            writer.write(b"world\n")
+            assert await reader.readline() == b"world\n"
+
+            writer.write_eof()
+            writer.close()
+            await writer.wait_closed()
+
+
+    with entrypoint(
+        EchoServer(
+            address='::1', port=8901,
+            ca='ca.pem',
+            cert='server.pem',
+            key='server.key',
+        ),
+        EchoClient(
+            address='::1', port=8901,
+            ca='ca.pem',
+            cert='client.pem',
+            key='client.key',
+        ),
+    ) as loop:
+        loop.run_until_complete(asyncio.sleep(0.1))
+
+
+RobustTCPClient
++++++++++++++++
+
+``RobustTCPClient`` - it's a base class for writing TCP clients with
+auto-reconnection when connection lost.
+Just implement ``handle_connection(reader, writer)`` to use it.
+
+.. code-block:: python
+    :name: test_service_echo_robust_tcp_client
+
+    import asyncio
+    import logging
+    from aiomisc import entrypoint
+    from aiomisc.service import TCPServer, RobustTCPClient
+
+    log = logging.getLogger(__name__)
+
+
+    class EchoServer(TCPServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while not reader.at_eof():
+                writer.write(await reader.read(255))
+
+            log.info("Client connection closed")
+
+
+    class EchoClient(RobustTCPClient):
+
+        async def handle_connection(self, reader: asyncio.StreamReader,
+                                    writer: asyncio.StreamWriter) -> None:
+            writer.write(b"hello\n")
+            assert await reader.readline() == b"hello\n"
+
+            writer.write(b"world\n")
+            assert await reader.readline() == b"world\n"
+
+            writer.write_eof()
+            writer.close()
+            await writer.wait_closed()
+
+
+    with entrypoint(
+        EchoServer(address='::1', port=8901),
+        EchoClient(address='::1', port=8901),
+    ) as loop:
+        loop.run_until_complete(asyncio.sleep(0.1))
+
+
+RobustTLSClient
++++++++++++++++
+
+``RobustTLSClient`` - it's a base class for writing TLS clients with
+auto-reconnection when connection lost.
+Just implement ``handle_connection(reader, writer)`` to use it.
+
+.. code-block:: python
+
+    import asyncio
+    import logging
+    from aiomisc import entrypoint
+    from aiomisc.service import TCPServer, RobustTCPClient
+
+    log = logging.getLogger(__name__)
+
+
+    class EchoServer(TLSServer):
+        async def handle_client(self, reader: asyncio.StreamReader,
+                                writer: asyncio.StreamWriter):
+            while not reader.at_eof():
+                writer.write(await reader.read(255))
+
+            log.info("Client connection closed")
+
+
+    class EchoClient(RobustTLSClient):
+
+        async def handle_connection(self, reader: asyncio.StreamReader,
+                                    writer: asyncio.StreamWriter) -> None:
+            writer.write(b"hello\n")
+            assert await reader.readline() == b"hello\n"
+
+            writer.write(b"world\n")
+            assert await reader.readline() == b"world\n"
+
+            writer.write_eof()
+            writer.close()
+            await writer.wait_closed()
+
+
+    with entrypoint(
+        EchoServer(
+            address='::1', port=8901,
+            ca='ca.pem',
+            cert='server.pem',
+            key='server.key',
+        ),
+        EchoClient(
+            address='::1', port=8901,
+            ca='ca.pem',
+            cert='client.pem',
+            key='client.key',
+        ),
+    ) as loop:
+        loop.run_until_complete(asyncio.sleep(0.1))
+
 PeriodicService
 +++++++++++++++
 
