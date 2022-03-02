@@ -383,7 +383,7 @@ async def test_tls_client(loop, certs, localhost, aiomisc_socket_factory):
 
 
 async def test_robust_tls_client(
-    loop, aiomisc_socket_factory, localhost, certs
+    loop, aiomisc_socket_factory, localhost, certs,
 ):
     condition = asyncio.Condition()
 

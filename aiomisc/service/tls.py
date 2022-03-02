@@ -6,7 +6,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 
-from ..utils import OptionsType, TimeoutType, awaitable, bind_socket
+from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 from .tcp import RobustTCPClient, TCPClient
 
