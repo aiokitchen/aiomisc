@@ -232,7 +232,7 @@ def test_tcp_client(aiomisc_socket_factory, localhost):
     assert TestService.DATA == [b"hello server\n"]
 
 
-def test_robust_tcp_client(aiomisc_socket_factory, localhost):
+async def test_robust_tcp_client(loop, aiomisc_socket_factory, localhost):
     condition = asyncio.Condition()
 
     class TestService(TCPServer):
@@ -277,10 +277,8 @@ def test_robust_tcp_client(aiomisc_socket_factory, localhost):
                 lambda: len(TestService.DATA) >= 3,
             )
 
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_until_complete(
-            asyncio.wait_for(go(), timeout=10),
-        )
+    async with aiomisc.entrypoint(*services):
+        await asyncio.wait_for(go(), timeout=10)
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"] * 3
@@ -333,7 +331,7 @@ def test_tls_server(
     assert TestService.DATA == [b"hello server\n"]
 
 
-def test_tls_client(certs, localhost, aiomisc_socket_factory):
+async def test_tls_client(loop, certs, localhost, aiomisc_socket_factory):
     class TestService(TLSServer):
         DATA = []
 
@@ -377,16 +375,16 @@ def test_tls_client(certs, localhost, aiomisc_socket_factory):
     async def go():
         await event.wait()
 
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_until_complete(
-            asyncio.wait_for(go(), timeout=10),
-        )
+    async with aiomisc.entrypoint(*services):
+        await asyncio.wait_for(go(), timeout=10)
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
 
 
-def test_robust_tls_client(aiomisc_socket_factory, localhost, certs):
+async def test_robust_tls_client(
+    loop, aiomisc_socket_factory, localhost, certs
+):
     condition = asyncio.Condition()
 
     class TestService(TLSServer):
@@ -436,10 +434,8 @@ def test_robust_tls_client(aiomisc_socket_factory, localhost, certs):
                 lambda: len(TestService.DATA) >= 3,
             )
 
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_until_complete(
-            asyncio.wait_for(go(), timeout=10),
-        )
+    async with aiomisc.entrypoint(*services):
+        await asyncio.wait_for(go(), timeout=10)
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"] * 3

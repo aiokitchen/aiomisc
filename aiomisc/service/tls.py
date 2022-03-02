@@ -113,8 +113,6 @@ class TLSServer(SimpleServer):
 class TLSClient(TCPClient, ABC):
     __slots__ = "__ssl_options", "__server_hostname"
 
-    ssl_handshake_timeout: TimeoutType = 5
-
     def __init__(
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
@@ -132,7 +130,6 @@ class TLSClient(TCPClient, ABC):
     ]:
         return await asyncio.open_connection(
             self.address, self.port,
-            ssl_handshake_timeout=self.ssl_handshake_timeout,
             ssl=await self.loop.run_in_executor(
                 None, get_ssl_context, *self.__ssl_options,
             ),
@@ -141,8 +138,6 @@ class TLSClient(TCPClient, ABC):
 
 class RobustTLSClient(RobustTCPClient, ABC):
     __slots__ = "__ssl_options", "__server_hostname"
-
-    ssl_handshake_timeout: TimeoutType = 5
 
     def __init__(
         self, address: str, port: int, *,
@@ -161,7 +156,6 @@ class RobustTLSClient(RobustTCPClient, ABC):
     ]:
         return await asyncio.open_connection(
             self.address, self.port,
-            ssl_handshake_timeout=self.ssl_handshake_timeout,
             ssl=await self.loop.run_in_executor(
                 None, get_ssl_context, *self.__ssl_options,
             ),
