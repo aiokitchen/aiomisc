@@ -20,6 +20,7 @@ jobs:
           - pylava
           - checkdoc
           - mypy
+          - pydoc
 
     steps:
 
