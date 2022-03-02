@@ -275,7 +275,7 @@ class Entrypoint:
                 coro = svc.stop(exception)
             except TypeError as e:
                 log.warning(
-                    "Failed to stop service %r:\n%r", svc, e
+                    "Failed to stop service %r:\n%r", svc, e,
                 )
                 log.debug("Service stop failed traceback", exc_info=True)
             else:
