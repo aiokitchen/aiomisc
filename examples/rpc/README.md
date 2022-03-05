@@ -2,7 +2,7 @@
 RPC Server
 ==========
 
-Simple RPC server and client implementation using `msgpack-python`
+Simple two-way RPC server and client implementation using `msgspec`
 
 Requirements
 -----------------
@@ -10,7 +10,7 @@ Requirements
 Install dependencies:
 
 ```bash
-pip install aiomisc msgspec
+pip install aiomisc msgspec rich
 ```
 
 Start server
@@ -18,7 +18,8 @@ Start server
 
 ```bash
 $ python3 -m rpc.server
-[T:MainThread] INFO:aiomisc.utils: Listening tcp://[::]:5678
+[22:25:24] INFO     Listening tcp://[::]:5678                       utils.py:144
+[22:25:29] INFO     Start communication with tcp://[::1]:62121       spec.py:154
 ```
 
 Start client
@@ -26,9 +27,11 @@ Start client
 
 ```bash
 $ python3 -m rpc.client
-[T:MainThread] INFO:client: Connecting to ::1:5678
-[T:MainThread] INFO:client: Total executed 90000 requests on 4.419
-[T:MainThread] INFO:client: RPS: 20368.524
-[T:MainThread] INFO:client: Close connection
+[22:25:29] INFO     Connected to tcp://::1:5678                       tcp.py:106
+           INFO     Start communication with tcp://[::1]:5678        spec.py:154
+[22:25:40] INFO     Communication with tcp://[::1]:5678 finished     spec.py:176
+[22:25:40] INFO     Total executed 1000000 requests on 10.623       client.py:38
+           INFO     RPS: 94139.165                                  client.py:39
+           INFO     Close connection                                client.py:40
 ```
 

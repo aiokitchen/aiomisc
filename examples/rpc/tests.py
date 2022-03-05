@@ -23,28 +23,25 @@ def handlers():
 
 
 @pytest.fixture
-def services(server_port, handlers):
-    return [
-        RPCServer(
-            handlers=handlers,
-            address='localhost',
-            port=server_port
-        )
-    ]
+def server_sock_port(aiomisc_socket_factory):
+    return aiomisc_socket_factory()
 
 
 @pytest.fixture
-async def rpc_client(server_port) -> RPCClient:
-    reader, writer = await asyncio.open_connection(
-        'localhost', server_port
-    )
+def rpc_server(server_sock_port, handlers):
+    _, sock = server_sock_port
+    return RPCServer(handlers=handlers, sock=sock)
 
-    client = RPCClient(reader, writer)
 
-    try:
-        yield client
-    finally:
-        await client.close()
+@pytest.fixture
+async def rpc_client(server_sock_port, localhost, handlers) -> RPCClient:
+    port, _ = server_sock_port
+    return RPCClient(address=localhost, port=port, handlers=handlers)
+
+
+@pytest.fixture
+def services(rpc_server, rpc_client):
+    return [rpc_server, rpc_client]
 
 
 async def test_foo(rpc_client):

@@ -127,6 +127,8 @@ class TCPClient(SimpleClient, ABC):
             await self.create_task(self.handle_connection(reader, writer))
         except Exception:
             log.exception("Error when handle TCP connection")
+        else:
+            log.info("Client %r communication has been ended", self)
 
 
 class RobustTCPClient(TCPClient, ABC):
