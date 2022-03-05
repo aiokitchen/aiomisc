@@ -73,3 +73,10 @@ async def test_many(rpc_client):
     results = await asyncio.gather(*calls)
 
     assert results == expected
+
+
+async def test_two_way(rpc_client, rpc_server):
+    assert (
+        await rpc_server("div", a=100, b=10) ==
+        await rpc_client("div", a=100, b=10)
+    )
