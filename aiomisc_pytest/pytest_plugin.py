@@ -1,8 +1,11 @@
+import abc
 import asyncio
 import logging
 import os
+import platform
 import socket
 import sys
+import warnings
 from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
@@ -674,6 +677,11 @@ def loop(
 
 
 def get_unused_port(*args) -> int:
+    warnings.warn(
+        "Do not use get_unused_port directly, use fixture",
+        DeprecationWarning, stacklevel=2,
+    )
+
     with socket.socket(*args) as sock:
         sock.bind(("", 0))
         port = sock.getsockname()[1]
@@ -699,11 +707,64 @@ def aiomisc_socket_factory(request, localhost) -> Callable[..., PortSocket]:
     return factory
 
 
-@pytest.fixture
-def aiomisc_unused_port_factory() -> Callable[[], int]:
-    return get_unused_port
+class SocketWrapper:
+    socket: socket.socket
+    _address: str
+    _port: int
+
+    def __init__(self, *args):
+        self.socket = socket.socket(*args)
+        self._address = ""
+        self._port = 0
+
+    def close(self):
+        self.socket.close()
+
+    @property
+    def address(self) -> str:
+        return self._address
+
+    @property
+    def port(self) -> int:
+        return self._port
+
+    @abc.abstractmethod
+    def prepare(self, address: str) -> None:
+        raise NotImplementedError
+
+
+class SocketWrapperUnix(SocketWrapper):
+    def prepare(self, address: str) -> None:
+        self.socket.bind((address, 0))
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        self._address, self._port = self.socket.getsockname()[:2]
+        self.socket.detach()
+
+
+class SocketWrapperWindows(SocketWrapper):
+    def prepare(self, address: str) -> None:
+        self.socket.bind((address, 0))
+        self._address, self._port = self.socket.getsockname()[:2]
+        self.socket.close()
+
+
+if platform.platform() == "Windows":
+    socket_wrapper = SocketWrapperWindows
+else:
+    socket_wrapper = SocketWrapperUnix
 
 
 @pytest.fixture
-def aiomisc_unused_port() -> int:
-    return get_unused_port()
+def aiomisc_unused_port_factory(request, localhost) -> Callable[[], int]:
+    def port_factory(*args) -> int:
+        factory = socket_wrapper(*args)
+        factory.prepare("::" if ":" in localhost else "0.0.0.0")
+        request.addfinalizer(factory.close)
+        return factory.port
+    return port_factory
+
+
+@pytest.fixture
+def aiomisc_unused_port(aiomisc_unused_port_factory) -> int:
+    return aiomisc_unused_port_factory()
