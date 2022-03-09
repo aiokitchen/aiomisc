@@ -21,7 +21,7 @@ class TCPServer(SimpleServer):
         options: OptionsType = (), sock: socket.socket = None, **kwargs: Any
     ):
         if not sock:
-            if not (address and port):
+            if address is None or port is None:
                 raise RuntimeError(
                     "You should pass socket instance or "
                     '"address" and "port" couple',
