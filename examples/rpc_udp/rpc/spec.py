@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 import msgspec
 
@@ -18,3 +18,8 @@ class Response(msgspec.Struct):
     id: int
     result: Optional[Any] = None
     error: Optional[Error] = None
+
+
+class Payload(msgspec.Struct):
+    request: Optional[Request] = None
+    response: Optional[Response] = None

@@ -1,78 +1,16 @@
 import asyncio
 import logging
-import socket
-from collections import defaultdict
 from time import monotonic
-
-import msgspec
 
 from aiomisc.entrypoint import entrypoint
 
-from .spec import Response, Request
+from .server import RPCServer
 
 
 log = logging.getLogger("client")
 
 
-def get_random_port():
-    with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as sock:
-        sock.bind(("::1", 0))
-        sock.listen()
-        return sock.getsockname()[1]
-
-
-class RPCCallError(RuntimeError):
-    pass
-
-
-class RPCClientUDPProtocol(asyncio.BaseProtocol):
-    def __init__(self, loop: asyncio.AbstractEventLoop = None):
-        self.loop = loop or asyncio.get_event_loop()
-        self.closing = self.loop.create_future()
-        self.transport = None
-        self.last_id = 1
-        self.waiting = defaultdict(dict)
-        self.encoder = msgspec.Encoder()
-        self.decoder = msgspec.Decoder(Response)
-
-    def _get_id(self):
-        self.last_id += 1
-        return self.last_id
-
-    def connection_made(self, transport):
-        self.transport = transport
-
-    def datagram_received(self, data, addr):
-        response: Response = self.decoder.decode(data)
-        future = self.waiting[addr[:2]][response.id]
-
-        if response.error:
-            future.set_exception(RPCCallError(response.error, response))
-        else:
-            future.set_result(response.result)
-
-    def rpc(self, addr, method, **kwargs):
-        call_id = self._get_id()
-        future = self.loop.create_future()
-        self.waiting[addr][call_id] = future
-
-        payload = Request(id=call_id, method=method, params=kwargs)
-        self.transport.sendto(self.encoder.encode(payload), addr)
-        return future
-
-    def connection_lost(self, exc):
-        self.closing.set_exception(exc)
-
-
-async def main(server_host, server_port, local_host, local_port):
-    log.info("Starting reply server at udp://[%s]:%d", local_host, local_port)
-    loop = asyncio.get_event_loop()
-
-    transport, protocol = await loop.create_datagram_endpoint(
-        RPCClientUDPProtocol,
-        local_addr=(local_host, local_port),
-    )
-
+async def main(rpc: RPCServer, server_host: str, server_port: int) -> None:
     call_count = 300
 
     delta = - monotonic()
@@ -80,9 +18,11 @@ async def main(server_host, server_port, local_host, local_port):
     for i in range(call_count):
         await asyncio.gather(
             *[
-                protocol.rpc(
-                    (server_host, server_port),
-                    "multiply", x=120000, y=1000000,
+                asyncio.wait_for(
+                    rpc(
+                        server_host, server_port,
+                        "multiply", x=120000, y=1000000,
+                    ), timeout=5,
                 ) for _ in range(call_count)
             ]
         )
@@ -98,10 +38,8 @@ async def main(server_host, server_port, local_host, local_port):
 
 
 if __name__ == "__main__":
-    with entrypoint() as loop:
+    service = RPCServer(address="::", port=0, handlers={})
+    with entrypoint(service) as loop:
         loop.run_until_complete(
-            main(
-                "::1", 15678,
-                "::1", get_random_port(),
-            ),
+            main(service, "::1", 15678),
         )

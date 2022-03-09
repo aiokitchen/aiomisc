@@ -3,9 +3,8 @@ import operator
 from functools import reduce
 
 import pytest
-
-from rpc.server import RPCServer
 from rpc.client import RPCClient
+from rpc.server import RPCServer
 
 
 @pytest.fixture
@@ -16,26 +15,26 @@ def server_port(aiomisc_unused_port):
 @pytest.fixture
 def handlers():
     return {
-        'foo': lambda: 'bar',
-        'mul': lambda **a: reduce(operator.mul, a.values()),
-        'div': lambda **a: reduce(operator.truediv, a.values()),
+        "foo": lambda: "bar",
+        "mul": lambda **a: reduce(operator.mul, a.values()),
+        "div": lambda **a: reduce(operator.truediv, a.values()),
     }
 
 
 @pytest.fixture
-def server_sock_port(aiomisc_socket_factory):
+def server_port_sock(aiomisc_socket_factory):
     return aiomisc_socket_factory()
 
 
 @pytest.fixture
-def rpc_server(server_sock_port, handlers):
-    _, sock = server_sock_port
+def rpc_server(server_port_sock, handlers):
+    _, sock = server_port_sock
     return RPCServer(handlers=handlers, sock=sock)
 
 
 @pytest.fixture
-async def rpc_client(server_sock_port, localhost, handlers) -> RPCClient:
-    port, _ = server_sock_port
+async def rpc_client(server_port_sock, localhost, handlers) -> RPCClient:
+    port, _ = server_port_sock
     return RPCClient(address=localhost, port=port, handlers=handlers)
 
 
@@ -45,18 +44,18 @@ def services(rpc_server, rpc_client):
 
 
 async def test_foo(rpc_client):
-    assert await rpc_client('foo') == 'bar'
+    assert await rpc_client("foo") == "bar"
 
 
 async def test_multiply(rpc_client):
-    assert await rpc_client('mul', a=1, b=3) == 3
+    assert await rpc_client("mul", a=1, b=3) == 3
 
 
 async def test_division(rpc_client):
     with pytest.raises(Exception):
-        assert await rpc_client('div', a=1, b=0)
+        assert await rpc_client("div", a=1, b=0)
 
-    assert await rpc_client('div', a=10, b=5) == 2.
+    assert await rpc_client("div", a=10, b=5) == 2.
 
 
 async def test_many(rpc_client):
@@ -64,8 +63,8 @@ async def test_many(rpc_client):
     expected = []
 
     for i in range(100):
-        calls.append(rpc_client('div', a=i, b=5))
-        calls.append(rpc_client('mul', a=i, b=5))
+        calls.append(rpc_client("div", a=i, b=5))
+        calls.append(rpc_client("mul", a=i, b=5))
 
         expected.append(i / 5)
         expected.append(i * 5)
