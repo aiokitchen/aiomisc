@@ -2,7 +2,7 @@ import asyncio
 import os
 import socket
 from asyncio import Event, get_event_loop
-from asyncio.tasks import Task, wait
+from asyncio.tasks import Task
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
 from typing import Any

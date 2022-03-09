@@ -183,4 +183,3 @@ class RPCBase(TaskStoreBase):
 
             await cancel_tasks([request_writer_task])
             await writer.wait_closed()
-
