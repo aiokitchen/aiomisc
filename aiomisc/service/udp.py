@@ -90,6 +90,24 @@ class UDPServer(SimpleServer):
             )
         )
 
+    @property
+    def __sockname(self) -> Optional[tuple]:
+        if self._transport:
+            return self._transport.get_extra_info("sockname")
+        return None
+
+    @property
+    def address(self) -> Optional[str]:
+        if self.__sockname:
+            return self.__sockname[0]
+        return None
+
+    @property
+    def port(self) -> Optional[int]:
+        if self.__sockname:
+            return self.__sockname[1]
+        return None
+
     async def stop(self, exc: Exception = None) -> None:
         await super().stop(exc)
         if self._transport:

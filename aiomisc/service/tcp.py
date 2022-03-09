@@ -68,6 +68,24 @@ class TCPServer(SimpleServer):
         if self.server:
             await self.server.wait_closed()
 
+    @property
+    def __sockname(self) -> Optional[tuple]:
+        if self.socket:
+            return self.socket.getsockname()
+        return None
+
+    @property
+    def address(self) -> Optional[str]:
+        if self.__sockname:
+            return self.__sockname[0]
+        return None
+
+    @property
+    def port(self) -> Optional[int]:
+        if self.__sockname:
+            return self.__sockname[1]
+        return None
+
 
 class TCPClient(SimpleClient, ABC):
     PROTO_NAME = "tcp"
