@@ -164,7 +164,7 @@ def test_required_kwargs():
     assert Svc(foo="bar").foo == "bar"
 
 
-def test_tcp_server(aiomisc_unused_port):
+def test_tcp_server():
     class TestService(TCPServer):
         DATA = []
 
@@ -175,17 +175,16 @@ def test_tcp_server(aiomisc_unused_port):
             self.DATA.append(await reader.readline())
             writer.close()
 
-    service = TestService("127.0.0.1", aiomisc_unused_port)
+    service = TestService("127.0.0.1", 0)
 
     @aiomisc.threaded
-    def writer():
-        port = aiomisc_unused_port
+    def writer(port):
         with socket.create_connection(("127.0.0.1", port)) as sock:
             sock.send(b"hello server\n")
 
     with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(
-            asyncio.wait_for(writer(), timeout=10),
+            asyncio.wait_for(writer(service.port), timeout=10),
         )
 
     assert TestService.DATA
