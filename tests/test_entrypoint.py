@@ -825,13 +825,16 @@ async def test_entrypoint_graceful_shutdown_loop_owner():
         nonlocal event, task
         event.set()
         with suppress(asyncio.TimeoutError):
-            await wait([task], timeout=1.0)
+            await asyncio.wait_for(task, timeout=1.0)
 
     MyEntrypoint.PRE_START.connect(pre_start)
     MyEntrypoint.POST_STOP.connect(post_stop)
 
     async with MyEntrypoint() as entrypoint:
+        # mark as loop owner
         entrypoint._loop_owner = True
 
+    # unmark as loop owner
+    entrypoint._loop_owner = False
     assert task.done()
     assert not task.cancelled()
