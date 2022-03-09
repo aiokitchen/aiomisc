@@ -802,12 +802,16 @@ async def test_entrypoint_with_with_async():
     assert service.ctx == 2
 
 
-async def test_entrypoint_graceful_shutdown_loop_owner():
+async def test_entrypoint_graceful_shutdown_loop_owner(loop):
     class MyEntrypoint(Entrypoint):
         PRE_START = Signal()
         POST_STOP = Signal()
         POST_START = Signal()
         PRE_STOP = Signal()
+
+        def __del__(self):
+            # No close event loop when del
+            pass
 
     event = Event()
     task: Task
@@ -830,10 +834,7 @@ async def test_entrypoint_graceful_shutdown_loop_owner():
     MyEntrypoint.POST_STOP.connect(post_stop)
 
     async with MyEntrypoint() as entrypoint:
-        # mark as loop owner
-        entrypoint._loop_owner = True
+        assert entrypoint.loop is loop
 
-    # unmark as loop owner
-    entrypoint._loop_owner = False
     assert task.done()
     assert not task.cancelled()
