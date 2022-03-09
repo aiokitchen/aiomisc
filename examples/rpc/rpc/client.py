@@ -32,13 +32,14 @@ async def main(client: RPCClient):
     for i in range(call_count):
         await asyncio.gather(
             *[
-                client("multiply", x=120000, y=1000000) for _ in range(call_count)
+                client("multiply", x=120000, y=1000000)
+                for _ in range(call_count)
             ]
         )
 
     delta += monotonic()
 
-    total_request_sent = (call_count ** 2)
+    total_request_sent = call_count ** 2
 
     log.info("Total executed %d requests on %.3f", total_request_sent, delta)
     log.info("RPS: %.3f", total_request_sent / delta)

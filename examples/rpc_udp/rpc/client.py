@@ -29,7 +29,7 @@ async def main(rpc: RPCServer, server_host: str, server_port: int) -> None:
 
     delta += monotonic()
 
-    total_request_sent = (call_count ** 2)
+    total_request_sent = call_count ** 2
 
     log.info("Total executed %d requests on %.3f", total_request_sent, delta)
     log.info("RPS: %.3f", total_request_sent / delta)
