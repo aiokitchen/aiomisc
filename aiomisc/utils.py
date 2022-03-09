@@ -174,7 +174,7 @@ def create_default_event_loop(
     if current_loop_is_running:
         raise RuntimeError(
             "Trying to create new event loop instance but another "
-            "default loop in this thread is running right now."
+            "default loop in this thread is running right now.",
         )
 
     asyncio.set_event_loop_policy(policy)

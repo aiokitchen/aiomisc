@@ -1,16 +1,18 @@
 import asyncio
+
 import pytest
+
 from aiomisc import entrypoint
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def loop():
     with entrypoint() as loop:
         asyncio.set_event_loop(loop)
         yield loop
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 async def sample_fixture(loop):
     yield 1
 

@@ -40,7 +40,7 @@ class UDPServer(SimpleServer):
         **kwargs: Any
     ):
         if not sock:
-            if not (address and port):
+            if address is None or port is None:
                 raise RuntimeError(
                     "You should pass socket instance or "
                     '"address" and "port" couple',
@@ -89,6 +89,24 @@ class UDPServer(SimpleServer):
                 sock=self.socket,
             )
         )
+
+    @property
+    def __sockname(self) -> Optional[tuple]:
+        if self._transport:
+            return self._transport.get_extra_info("sockname")
+        return None
+
+    @property
+    def address(self) -> Optional[str]:
+        if self.__sockname:
+            return self.__sockname[0]
+        return None
+
+    @property
+    def port(self) -> Optional[int]:
+        if self.__sockname:
+            return self.__sockname[1]
+        return None
 
     async def stop(self, exc: Exception = None) -> None:
         await super().stop(exc)

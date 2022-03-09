@@ -5,12 +5,12 @@ from aiomisc import entrypoint
 
 class TestSessionScopeAsyncGenFixture:
 
-    @pytest.fixture(scope='session')
+    @pytest.fixture(scope="session")
     def loop(self):
         with entrypoint() as loop:
             yield loop
 
-    @pytest.fixture(scope='session')
+    @pytest.fixture(scope="session")
     async def fixture(self):
         yield
 

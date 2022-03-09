@@ -1,5 +1,5 @@
 import asyncio
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from typing import Any, Awaitable, Dict, Optional, Set, Tuple
 
 from ..context import Context, get_context
@@ -87,9 +87,8 @@ class Service(metaclass=ServiceMeta):
         pass
 
 
-class SimpleServer(Service):
+class TaskStoreBase(Service, ABC):
     def __init__(self, **kwargs: Any):
-        self.server: Optional[asyncio.AbstractServer] = None
         self.tasks: Set[asyncio.Task] = set()
         super().__init__(**kwargs)
 
@@ -99,12 +98,28 @@ class SimpleServer(Service):
         task.add_done_callback(self.tasks.remove)
         return task
 
+    async def stop(self, exc: Exception = None) -> None:
+        await cancel_tasks(self.tasks)
+
+
+class SimpleServer(TaskStoreBase):
+    def __init__(self, **kwargs: Any):
+        self.server: Optional[asyncio.AbstractServer] = None
+        self.tasks: Set[asyncio.Task] = set()
+        super().__init__(**kwargs)
+
     @abstractmethod
     async def start(self) -> None:
         raise NotImplementedError
 
     async def stop(self, exc: Exception = None) -> None:
-        await cancel_tasks(self.tasks)
+        await super().stop(exc)
 
         if self.server:
             self.server.close()
+
+
+class SimpleClient(TaskStoreBase):
+    @abstractmethod
+    async def start(self) -> None:
+        raise NotImplementedError
