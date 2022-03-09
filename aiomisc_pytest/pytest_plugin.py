@@ -1,8 +1,6 @@
-import abc
 import asyncio
 import logging
 import os
-import platform
 import socket
 import sys
 import warnings
@@ -10,13 +8,15 @@ from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
-from typing import Awaitable, Callable, NamedTuple, Optional, Tuple, Type, Union
+from typing import (
+    Awaitable, Callable, NamedTuple, Optional, Tuple, Type, Union
+)
 from unittest.mock import MagicMock
 
 import pytest
 
 import aiomisc
-from aiomisc.utils import bind_socket
+from aiomisc.utils import _sock_set_reuseport, bind_socket
 from aiomisc_log import LOG_LEVEL, basic_config
 
 
@@ -728,37 +728,19 @@ class SocketWrapper:
     def port(self) -> int:
         return self._port
 
-    @abc.abstractmethod
-    def prepare(self, address: str) -> None:
-        raise NotImplementedError
-
-
-class SocketWrapperUnix(SocketWrapper):
     def prepare(self, address: str) -> None:
         self.socket.bind((address, 0))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        _sock_set_reuseport(self.socket, True)
+
         self._address, self._port = self.socket.getsockname()[:2]
         self.socket.detach()
-
-
-class SocketWrapperWindows(SocketWrapper):
-    def prepare(self, address: str) -> None:
-        self.socket.bind((address, 0))
-        self._address, self._port = self.socket.getsockname()[:2]
-        self.socket.close()
-
-
-if platform.platform() == "Windows":
-    socket_wrapper = SocketWrapperWindows
-else:
-    socket_wrapper = SocketWrapperUnix
 
 
 @pytest.fixture
 def aiomisc_unused_port_factory(request, localhost) -> Callable[[], int]:
     def port_factory(*args) -> int:
-        factory = socket_wrapper(*args)
+        factory = SocketWrapper(*args)
         factory.prepare("::" if ":" in localhost else "0.0.0.0")
         request.addfinalizer(factory.close)
         return factory.port
