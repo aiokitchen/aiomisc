@@ -10,7 +10,7 @@ else:
     MAX_FILES = 1024
 
     # Ignore opened files by pytest and others
-    NFILE_SHIFT = 32
+    NFILE_SHIFT = 256
     resource.setrlimit(
         resource.RLIMIT_NOFILE, (MAX_FILES + NFILE_SHIFT, 65535)
     )
