@@ -714,29 +714,13 @@ def aiomisc_socket_factory(request, localhost) -> Callable[..., PortSocket]:
 
 
 class SocketWrapper(abc.ABC):
-    __address: str
-    __port: int
+    address: str
+    port: int
 
     def __init__(self, *args):
         self._socket_args = args
-        self.__address = ""
-        self.__port = 0
-
-    @property
-    def address(self) -> str:
-        return self.__address
-
-    @address.setter
-    def address(self, value: str) -> None:
-        self.__address = value
-
-    @property
-    def port(self) -> int:
-        return self.__port
-
-    @port.setter
-    def port(self, value: int) -> None:
-        self.__port = value
+        self.address = ""
+        self.port = 0
 
     @abc.abstractmethod
     def prepare(self, address: str) -> None:
