@@ -166,3 +166,4 @@ tags
 .mypy_cache
 *.cprof
 /aiomisc/version.py
+scratch*.py
