@@ -732,20 +732,25 @@ class SocketWrapper(abc.ABC):
 
 class SocketWrapperUnix(SocketWrapper):
     socket: socket.socket
+    fd: int
 
     def __init__(self, *args):
         super().__init__(*args)
         self.socket = socket.socket(*args)
+        self.fd = -1
 
     def close(self):
         self.socket.close()
+        if self.fd > 0:
+            os.close(self.fd)
 
     def prepare(self, address: str) -> None:
         self.socket.bind((address, 0))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock_set_reuseport(self.socket, True)
         self.address, self.port = self.socket.getsockname()[:2]
-        self.socket.detach()
+        # detach socket object and save file descriptor
+        self.fd = self.socket.detach()
 
 
 class SocketWrapperWindows(SocketWrapper):
@@ -761,12 +766,14 @@ else:
 
 
 @pytest.fixture
-def aiomisc_unused_port_factory(request, localhost) -> Callable[[], int]:
+def aiomisc_unused_port_factory(
+    request: pytest.FixtureRequest, localhost: str
+) -> Callable[[], int]:
     def port_factory(*args) -> int:
-        factory = socket_wrapper(*args)
-        factory.prepare("::" if ":" in localhost else "0.0.0.0")
-        request.addfinalizer(factory.close)
-        return factory.port
+        wrapper = socket_wrapper(*args)
+        wrapper.prepare("::" if ":" in localhost else "0.0.0.0")
+        request.addfinalizer(wrapper.close)
+        return wrapper.port
     return port_factory
 
 

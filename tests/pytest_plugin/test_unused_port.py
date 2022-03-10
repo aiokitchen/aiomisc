@@ -1,8 +1,23 @@
+import platform
 import socket
 
 
+if platform.system() == "Windows":
+    MAX_FILES = 1024
+else:
+    import resource
+
+    MAX_FILES = 1024
+
+    # Ignore opened files by pytest and others
+    NFILE_SHIFT = 32
+    resource.setrlimit(
+        resource.RLIMIT_NOFILE, (MAX_FILES + NFILE_SHIFT, 65535)
+    )
+
+
 async def test_many_ports(aiomisc_unused_port_factory, localhost):
-    tries = 1024
+    tries = MAX_FILES
     ports = set()
 
     for _ in range(tries):
