@@ -173,13 +173,14 @@ def test_configure_logging_stderr(capsys):
     logging.basicConfig(handlers=[])
 
 
-@pytest.mark.parametrize(
-    "address,family", [
-        ("127.0.0.1", socket.AF_INET),
-        ("0.0.0.0", socket.AF_INET),
-        ("::", socket.AF_INET6),
-    ],
-)
+BIND_CASES = [
+    ("127.0.0.1", socket.AF_INET),
+    ("0.0.0.0", socket.AF_INET),
+    ("::", socket.AF_INET6),
+]
+
+
+@pytest.mark.parametrize("address,family", BIND_CASES)
 def test_bind_address(address, family, aiomisc_unused_port):
     sock = aiomisc.bind_socket(address=address, port=aiomisc_unused_port)
 

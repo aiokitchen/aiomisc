@@ -676,16 +676,22 @@ def loop(
         del loop
 
 
-def get_unused_port(*args) -> int:
-    warnings.warn(
-        "Do not use get_unused_port directly, use fixture",
-        DeprecationWarning, stacklevel=2,
-    )
-
+def _unused_port(*args) -> int:
     with socket.socket(*args) as sock:
         sock.bind(("", 0))
         port = sock.getsockname()[1]
     return port
+
+
+def get_unused_port(*args) -> int:
+    warnings.warn(
+        (
+            "Do not use get_unused_port directly, use fixture "
+            "'aiomisc_unused_port_factory'"
+        ),
+        DeprecationWarning, stacklevel=2,
+    )
+    return _unused_port(*args)
 
 
 class PortSocket(NamedTuple):
@@ -707,49 +713,64 @@ def aiomisc_socket_factory(request, localhost) -> Callable[..., PortSocket]:
     return factory
 
 
-class SocketWrapper:
-    socket: socket.socket
-    _address: str
-    _port: int
+class SocketWrapper(abc.ABC):
+    __address: str
+    __port: int
 
     def __init__(self, *args):
-        self.socket = socket.socket(*args)
-        self._address = ""
-        self._port = 0
-
-    def close(self):
-        self.socket.close()
+        self._socket_args = args
+        self.__address = ""
+        self.__port = 0
 
     @property
     def address(self) -> str:
-        return self._address
+        return self.__address
+
+    @address.setter
+    def address(self, value: str) -> None:
+        self.__address = value
 
     @property
     def port(self) -> int:
-        return self._port
+        return self.__port
+
+    @port.setter
+    def port(self, value: int) -> None:
+        self.__port = value
 
     @abc.abstractmethod
     def prepare(self, address: str) -> None:
         raise NotImplementedError
 
+    def close(self):
+        pass
+
 
 class SocketWrapperUnix(SocketWrapper):
+    socket: socket.socket
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.socket = socket.socket(*args)
+
+    def close(self):
+        self.socket.close()
+
     def prepare(self, address: str) -> None:
         self.socket.bind((address, 0))
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock_set_reuseport(self.socket, True)
-        self._address, self._port = self.socket.getsockname()[:2]
+        self.address, self.port = self.socket.getsockname()[:2]
         self.socket.detach()
 
 
 class SocketWrapperWindows(SocketWrapper):
     def prepare(self, address: str) -> None:
-        with self.socket:
-            self.socket.bind((address, 0))
-            self._address, self._port = self.socket.getsockname()[:2]
+        self.address = address
+        self.port = _unused_port(*self._socket_args)
 
 
-if platform.platform() == "Windows":
+if platform.system() == "Windows":
     socket_wrapper = SocketWrapperWindows
 else:
     socket_wrapper = SocketWrapperUnix
