@@ -67,21 +67,21 @@ OptionsType = Iterable[Tuple[int, int, int]]
 
 
 if hasattr(socket, "TCP_NODELAY"):
-    def _sock_set_nodelay(sock: socket.socket) -> None:
+    def sock_set_nodelay(sock: socket.socket) -> None:
         if sock.proto != socket.IPPROTO_TCP:
             return None
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 else:
-    def _sock_set_nodelay(sock: socket.socket) -> None:
+    def sock_set_nodelay(sock: socket.socket) -> None:
         return None
 
 if hasattr(socket, "SO_REUSEPORT"):
-    def _sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
+    def sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
         sock.setsockopt(
             socket.SOL_SOCKET, socket.SO_REUSEPORT, int(reuse_port),
         )
 else:
-    def _sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
+    def sock_set_reuseport(sock: socket.socket, reuse_port: bool) -> None:
         log.debug(
             "SO_REUSEPORT is not implemented by underlying library. Skipping.",
         )
@@ -122,8 +122,8 @@ def bind_socket(
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, reuse_addr.real)
 
-    _sock_set_reuseport(sock, reuse_port)
-    _sock_set_nodelay(sock)
+    sock_set_reuseport(sock, reuse_port)
+    sock_set_nodelay(sock)
 
     for level, option, value in options:
         sock.setsockopt(level, option, value)

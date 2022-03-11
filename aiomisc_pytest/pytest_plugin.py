@@ -1,8 +1,11 @@
+import abc
 import asyncio
 import logging
 import os
+import platform
 import socket
 import sys
+import warnings
 from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
@@ -13,7 +16,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import aiomisc
-from aiomisc.utils import bind_socket
+from aiomisc.utils import bind_socket, sock_set_reuseport
 from aiomisc_log import LOG_LEVEL, basic_config
 
 
@@ -673,11 +676,22 @@ def loop(
         del loop
 
 
-def get_unused_port(*args) -> int:
+def _unused_port(*args) -> int:
     with socket.socket(*args) as sock:
         sock.bind(("", 0))
         port = sock.getsockname()[1]
     return port
+
+
+def get_unused_port(*args) -> int:
+    warnings.warn(
+        (
+            "Do not use get_unused_port directly, use fixture "
+            "'aiomisc_unused_port_factory'"
+        ),
+        DeprecationWarning, stacklevel=2,
+    )
+    return _unused_port(*args)
 
 
 class PortSocket(NamedTuple):
@@ -699,11 +713,70 @@ def aiomisc_socket_factory(request, localhost) -> Callable[..., PortSocket]:
     return factory
 
 
-@pytest.fixture
-def aiomisc_unused_port_factory() -> Callable[[], int]:
-    return get_unused_port
+class SocketWrapper(abc.ABC):
+    address: str
+    port: int
+
+    def __init__(self, *args):
+        self._socket_args = args
+        self.address = ""
+        self.port = 0
+
+    @abc.abstractmethod
+    def prepare(self, address: str) -> None:
+        raise NotImplementedError
+
+    def close(self):
+        pass
+
+
+class SocketWrapperUnix(SocketWrapper):
+    socket: socket.socket
+    fd: int
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.socket = socket.socket(*args)
+        self.fd = -1
+
+    def close(self):
+        self.socket.close()
+        if self.fd > 0:
+            os.close(self.fd)
+
+    def prepare(self, address: str) -> None:
+        self.socket.bind((address, 0))
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock_set_reuseport(self.socket, True)
+        self.address, self.port = self.socket.getsockname()[:2]
+        # detach socket object and save file descriptor
+        self.fd = self.socket.detach()
+
+
+class SocketWrapperWindows(SocketWrapper):
+    def prepare(self, address: str) -> None:
+        self.address = address
+        self.port = _unused_port(*self._socket_args)
+
+
+if platform.system() == "Windows":
+    socket_wrapper = SocketWrapperWindows
+else:
+    socket_wrapper = SocketWrapperUnix
 
 
 @pytest.fixture
-def aiomisc_unused_port() -> int:
-    return get_unused_port()
+def aiomisc_unused_port_factory(
+    request: pytest.FixtureRequest, localhost: str
+) -> Callable[[], int]:
+    def port_factory(*args) -> int:
+        wrapper = socket_wrapper(*args)
+        wrapper.prepare("::" if ":" in localhost else "0.0.0.0")
+        request.addfinalizer(wrapper.close)
+        return wrapper.port
+    return port_factory
+
+
+@pytest.fixture
+def aiomisc_unused_port(aiomisc_unused_port_factory) -> int:
+    return aiomisc_unused_port_factory()

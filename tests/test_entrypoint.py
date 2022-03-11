@@ -285,7 +285,7 @@ async def test_robust_tcp_client(loop, aiomisc_socket_factory, localhost):
 
 @pytest.mark.parametrize("client_cert_required", [False, True])
 def test_tls_server(
-    client_cert_required, certs, ssl_client_context, aiomisc_unused_port,
+    client_cert_required, certs, ssl_client_context, localhost,
 ):
     class TestService(TLSServer):
         DATA = []
@@ -298,7 +298,7 @@ def test_tls_server(
             writer.close()
 
     service = TestService(
-        address="127.0.0.1", port=aiomisc_unused_port,
+        address="127.0.0.1", port=0,
         ca=certs / "ca.pem",
         key=certs / "server.key",
         cert=certs / "server.pem",
@@ -306,7 +306,7 @@ def test_tls_server(
     )
 
     @aiomisc.threaded
-    def writer():
+    def writer(port):
         with ExitStack() as stack:
             sock = stack.enter_context(
                 socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0),
@@ -318,12 +318,13 @@ def test_tls_server(
                 ),
             )
 
-            ssock.connect(("127.0.0.1", aiomisc_unused_port))
+            ssock.connect(("127.0.0.1", port))
             ssock.send(b"hello server\n")
 
     with aiomisc.entrypoint(service) as loop:
+        assert service.address == localhost
         loop.run_until_complete(
-            asyncio.wait_for(writer(), timeout=10),
+            asyncio.wait_for(writer(service.port), timeout=10),
         )
 
     assert TestService.DATA
