@@ -4,6 +4,7 @@ from functools import partial
 from typing import Any, Awaitable, Callable, Optional, Tuple, Type, Union
 
 from . import utils
+from .compat import EventLoopMixin
 from .counters import Statistic
 
 
@@ -19,7 +20,7 @@ class PeriodicCallbackStatistic(Statistic):
     sum_time: float
 
 
-class PeriodicCallback:
+class PeriodicCallback(EventLoopMixin):
     """
     .. note::
 
@@ -29,9 +30,9 @@ class PeriodicCallback:
     """
 
     __slots__ = (
-        "_cb", "_closed", "_task", "_loop", "_handle", "__name",
+        "_cb", "_closed", "_task", "_handle", "__name",
         "_statistic",
-    )
+    ) + EventLoopMixin.__slots__
 
     _closed: Optional[bool]
     _handle: Optional[asyncio.Handle]
@@ -73,13 +74,12 @@ class PeriodicCallback:
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError
 
-        current_loop = loop or asyncio.get_event_loop()
-        # noinspection PyAttributeOutsideInit
-        self._loop = current_loop   # type: asyncio.AbstractEventLoop
+        # Explicit get current but probably not running loop
+        self._loop = loop or asyncio.get_event_loop()
         self._closed = False
 
         def periodic() -> None:
-            if self._loop.is_closed():
+            if self.loop.is_closed():
                 return
 
             if self._task and not self._task.done():
@@ -93,18 +93,18 @@ class PeriodicCallback:
                 return
 
             runner = utils.shield(self._run) if shield else self._run
-            self._task = self._loop.create_task(
+            self._task = self.loop.create_task(
                 runner(suppress_exceptions),        # type: ignore
             )
 
-            start_time = self._loop.time()
+            start_time = self.loop.time()
 
             self._task.add_done_callback(call)
             self._task.add_done_callback(lambda t: do_stat(t, start_time))
 
         def do_stat(task: asyncio.Task, start_time: float) -> None:
             self._statistic.call_count += 1
-            self._statistic.sum_time += self._loop.time() - start_time
+            self._statistic.sum_time += self.loop.time() - start_time
 
             if task.cancelled():
                 self._statistic.fail += 1
@@ -118,17 +118,17 @@ class PeriodicCallback:
                 self._handle.cancel()
                 del self._handle
 
-            self._handle = self._loop.call_later(
+            self._handle = self.loop.call_later(
                 interval, periodic,
             )
 
-        self._loop.call_later(delay, self._loop.call_soon_threadsafe, periodic)
+        self.loop.call_later(delay, self.loop.call_soon_threadsafe, periodic)
 
     def stop(self) -> asyncio.Future:
         self._closed = True
 
         if self._task is None:
-            self._task = self._loop.create_future()
+            self._task = self.loop.create_future()
             self._task.set_exception(
                 RuntimeError("Callback not started"),
             )

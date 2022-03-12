@@ -7,6 +7,7 @@ from typing import Any, Awaitable, Callable, Optional, Tuple, Type, Union
 from croniter import croniter
 
 from . import utils
+from .compat import EventLoopMixin
 from .counters import Statistic
 
 
@@ -21,7 +22,7 @@ class CronCallbackStatistic(Statistic):
     call_suppressed: int
 
 
-class CronCallback:
+class CronCallback(EventLoopMixin):
     """
     .. note::
 
@@ -31,9 +32,9 @@ class CronCallback:
     """
 
     __slots__ = (
-        "_cb", "_closed", "_task", "_loop", "_handle", "__name",
+        "_cb", "_closed", "_task", "_handle", "__name",
         "_croniter", "_statistic",
-    )
+    ) + EventLoopMixin.__slots__
 
     def __init__(
         self,
@@ -53,7 +54,7 @@ class CronCallback:
         self,
         suppress_exceptions: Tuple[Type[Exception], ...] = (),
     ) -> None:
-        delta = -self._loop.time()
+        delta = -self.loop.time()
         try:
             await self._cb()
             self._statistic.call_ok += 1
@@ -68,14 +69,14 @@ class CronCallback:
             self._statistic.call_failed += 1
             log.exception("Cron task error:")
         finally:
-            delta += self._loop.time()
+            delta += self.loop.time()
             self._statistic.sum_time += delta
             self._statistic.call_count += 1
 
     def get_next(self) -> float:
-        if not self._loop or not self._croniter:
+        if not self._croniter:
             raise asyncio.InvalidStateError
-        loop_time = self._loop.time()
+        loop_time = self.loop.time()
         timestamp = datetime.now(timezone.utc).timestamp()
         interval = self._croniter.get_next(float) - timestamp
         if interval < 0:
@@ -83,9 +84,9 @@ class CronCallback:
         return loop_time + interval
 
     def get_current(self) -> float:
-        if not self._loop or not self._croniter:
+        if not self.loop or not self._croniter:
             raise asyncio.InvalidStateError
-        loop_time = self._loop.time()
+        loop_time = self.loop.time()
         timestamp = datetime.now(timezone.utc).timestamp()
         interval = self._croniter.get_current(float) - timestamp
         if interval < 0:
@@ -102,9 +103,7 @@ class CronCallback:
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError
 
-        current_loop = loop or asyncio.get_event_loop()
-        # noinspection PyAttributeOutsideInit
-        self._loop = current_loop       # type: asyncio.AbstractEventLoop
+        self._loop = loop
 
         # noinspection PyAttributeOutsideInit
         self._croniter = croniter(
@@ -114,15 +113,13 @@ class CronCallback:
         self._closed = False
 
         def cron() -> None:
-            if self._loop.is_closed():
+            if self.loop.is_closed():
                 return
 
             if self._task and not self._task.done():
                 log.warning("Task %r still running skipping", self)
                 call_next()
                 return
-
-            loop = self._loop   # type: asyncio.AbstractEventLoop
 
             del self._task
             self._task = None
@@ -134,7 +131,7 @@ class CronCallback:
             if shield:
                 runner = utils.shield(runner)
 
-            self._task = loop.create_task(runner(suppress_exceptions))
+            self._task = self.loop.create_task(runner(suppress_exceptions))
 
             call_next()
 
@@ -143,16 +140,17 @@ class CronCallback:
                 self._handle.cancel()
                 del self._handle
 
-            self._handle = self._loop.call_at(self.get_next(), cron)
-        self._loop.call_at(
-            self.get_next(), self._loop.call_soon_threadsafe, cron,
+            self._handle = self.loop.call_at(self.get_next(), cron)
+
+        self.loop.call_at(
+            self.get_next(), self.loop.call_soon_threadsafe, cron,
         )
 
     def stop(self) -> asyncio.Future:
         self._closed = True
 
         if self._task is None:
-            self._task = self._loop.create_future()
+            self._task = self.loop.create_future()
             self._task.set_exception(RuntimeError("Callback not started"))
 
         elif not self._task.done():

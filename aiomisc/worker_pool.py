@@ -1,28 +1,31 @@
 import asyncio
+import hashlib
+import hmac
 import os
-import pickle
 import socket
 import sys
 import warnings
 from inspect import Traceback
-from multiprocessing import AuthenticationError, ProcessError
+from multiprocessing import ProcessError
 from os import chmod, urandom
 from subprocess import PIPE, Popen
 from tempfile import mktemp
 from types import MappingProxyType
 from typing import (
-    Any, Awaitable, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple,
-    Type,
+    Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
 )
 
+from aiomisc.compat import get_running_loop
 from aiomisc.counters import Statistic
 from aiomisc.thread_pool import threaded
-from aiomisc.utils import bind_socket, cancel_tasks, fast_uuid4, shield
+from aiomisc.utils import (
+    bind_socket, cancel_tasks, fast_uuid4, set_exception, shield,
+)
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL
 from aiomisc_worker import (
-    COOKIE_SIZE, HASHER, INET_AF, SIGNAL, AddressType, Header, PacketTypes, T,
-    log,
+    COOKIE_SIZE, INET_AF, INT_SIGNAL, SIGNAL, AddressType, PacketTypes, T, log,
 )
+from aiomisc_worker.protocol import AsyncProtocol, FileIOProtocol
 
 
 if sys.version_info < (3, 7):
@@ -34,6 +37,7 @@ if sys.version_info < (3, 7):
 
 class WorkerPoolStatistic(Statistic):
     processes: int
+    spawning: int
     queue_size: int
     submitted: int
     sum_time: float
@@ -52,6 +56,10 @@ class WorkerPool:
     initializer_args: Tuple[Any, ...]
     initializer_kwargs: Mapping[str, Any]
 
+    _supervisor: Popen
+    worker_ids: Tuple[bytes, ...]
+    pids: Set[int]
+
     if hasattr(socket, "AF_UNIX"):
         def _create_socket(self) -> None:
             path = mktemp(suffix=".sock", prefix="worker-")
@@ -68,6 +76,8 @@ class WorkerPool:
                 INET_AF,
                 socket.SOCK_STREAM,
                 address="localhost",
+                reuse_addr=False,
+                reuse_port=False,
             )
             self.address = self.socket.getsockname()[:2]
 
@@ -79,249 +89,172 @@ class WorkerPool:
         process.kill()
 
     @threaded
-    def __create_process(self, identity: str) -> Popen:
+    def __create_supervisor(self, *identity: str) -> Popen:
         if self.__closing:
             raise RuntimeError("Pool closed")
 
         env = dict(os.environ)
         env["AIOMISC_NO_PLUGINS"] = ""
         process = Popen(
-            [sys.executable, "-m", "aiomisc_worker"],
-            stdin=PIPE, env=env,
+            [sys.executable, "-m", "aiomisc_worker"], stdin=PIPE, env=env,
         )
-        self.__spawning[identity] = process
-        self.processes.add(process)
-
-        log.debug("Spawning new worker pool process PID: %s", process.pid)
 
         assert process.stdin
 
         log_level = (
-            log.getEffectiveLevel() if LOG_LEVEL is None else LOG_LEVEL.get()
+            log.getEffectiveLevel()
+            if LOG_LEVEL is None
+            else LOG_LEVEL.get()
         )
+
         log_format = "color" if LOG_FORMAT is None else LOG_FORMAT.get()
 
-        process.stdin.write(
-            pickle.dumps((
-                self.address, self.__cookie, identity,
-                log_level, log_format,
-            )),
-        )
-        process.stdin.close()
+        proto_stdin = FileIOProtocol(process.stdin)
 
+        proto_stdin.send((log_level, log_format))
+        proto_stdin.send(self.address)
+        proto_stdin.send(self.__cookie)
+        proto_stdin.send(identity)
+        proto_stdin.send((
+            self.initializer,
+            self.initializer_args,
+            dict(self.initializer_kwargs),
+        ))
+        process.stdin.close()
         return process
 
     def __init__(
         self, workers: int, max_overflow: int = 0, *,
-        process_poll_time: float = 0.1,
         initializer: Optional[Callable[[], Any]] = None,
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
+        statistic_name: Optional[str] = None,
     ):
         self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
         self.__loop: Optional[asyncio.AbstractEventLoop] = None
         self.__futures: Set[asyncio.Future] = set()
-        self.__spawning: Dict[str, Popen] = dict()
         self.__task_store: Set[asyncio.Task] = set()
         self.__closing = False
         self.__closing_lock = asyncio.Lock()
-        self.__starting: Dict[str, asyncio.Future] = dict()
-        self._statistic = WorkerPoolStatistic()
-        self.processes: Set[Popen] = set()
+        self._statistic = WorkerPoolStatistic(name=statistic_name)
+        self.__max_overflow = max_overflow
         self.workers = workers
-        self.tasks = asyncio.Queue(maxsize=max_overflow)
-        self.process_poll_time = process_poll_time
+        self.pids = set()
         self.initializer = initializer
         self.initializer_args = initializer_args
         self.initializer_kwargs = initializer_kwargs
 
-    async def __check_is_closed(self) -> bool:
-        async with self.__closing_lock:
-            return self.__closing
-
-    async def __wait_process(self, process: Popen) -> None:
-        await self.loop.run_in_executor(None, process.kill)
-
-        while process.poll() is None:
-            await asyncio.sleep(self.process_poll_time)
-
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
         if self.__loop is None:
-            self.__loop = asyncio.get_event_loop()
+            self.__loop = get_running_loop()
         return self.__loop
-
-    @staticmethod
-    async def __wait_closed(writer: asyncio.StreamWriter) -> None:
-        if writer.is_closing():
-            return
-
-        writer.close()
-
-        if hasattr(writer, "wait_closed"):
-            await writer.wait_closed()
 
     async def __handle_client(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
     ) -> None:
-        async def receive() -> Tuple[PacketTypes, Any]:
-            header = await reader.readexactly(Header.size)
-            packet_type, payload_length = Header.unpack(header)
-            payload = await reader.readexactly(payload_length)
-            data = pickle.loads(payload)
-            return PacketTypes(packet_type), data
+        proto = AsyncProtocol(reader, writer)
+        packet_type, worker_id, digest, pid = await proto.receive()
 
-        async def send(packet_type: PacketTypes, data: Any) -> None:
-            payload = pickle.dumps(data)
-            header = Header.pack(packet_type.value, len(payload))
-            writer.write(header)
-            writer.write(payload)
+        async with self.__closing_lock:
+            if self.__closing:
+                proto.close()
 
-        async def step(
-            func: Callable, args: Tuple[Any, ...],
-            kwargs: Dict[str, Any], result_future: asyncio.Future,
-        ) -> None:
-            await send(PacketTypes.REQUEST, (func, args, kwargs))
-            self._statistic.submitted += 1
+        if packet_type == PacketTypes.BAD_INITIALIZER:
+            packet_type, exc = await proto.receive()
+            if packet_type != PacketTypes.EXCEPTION:
+                await proto.send(PacketTypes.BAD_PACKET)
+            else:
+                set_exception(self.__futures, exc)
+            await self.close()
+            return
 
-            packet_type, result = await receive()
-            self._statistic.done += 1
+        if packet_type != PacketTypes.AUTH:
+            await proto.send(PacketTypes.BAD_PACKET)
+            if writer.can_write_eof():
+                writer.write_eof()
+            return
 
-            if packet_type == PacketTypes.RESULT:
-                result_future.set_result(result)
-                self._statistic.success += 1
-                return None
+        if worker_id not in self.worker_ids:
+            log.error("Unknown worker with id %r", worker_id)
+            return
 
-            if packet_type == PacketTypes.EXCEPTION:
-                result_future.set_exception(result)
-                self._statistic.error += 1
-                return None
+        expected_digest = hmac.HMAC(
+            self.__cookie,
+            worker_id,
+            digestmod=hashlib.sha256,
+        ).digest()
 
-            if packet_type == PacketTypes.CANCELLED:
-                if not result_future.done():
-                    result_future.set_exception(asyncio.CancelledError)
-                return None
+        if expected_digest != digest:
+            await proto.send(PacketTypes.AUTH_FAIL)
+            if writer.can_write_eof():
+                writer.write_eof()
+            log.debug("Bad digest %r expected %r", digest, expected_digest)
+            return
 
-            raise ValueError("Unknown packet type")
+        await proto.send(PacketTypes.AUTH_OK)
+        self._statistic.processes += 1
+        self._statistic.spawning += 1
+        self.pids.add(pid)
 
-        async def handler(start_event: asyncio.Event) -> None:
-            log.debug("Starting to handle client")
+        try:
+            while not reader.at_eof():
+                func: Callable
+                args: Tuple[Any, ...]
+                kwargs: Dict[str, Any]
+                result_future: asyncio.Future
+                process_future: asyncio.Future
 
-            packet_type, salt = await receive()
-            assert packet_type == PacketTypes.AUTH_SALT
+                (
+                    func, args, kwargs, result_future, process_future,
+                ) = await self.tasks.get()
 
-            packet_type, digest = await receive()
-            assert packet_type == PacketTypes.AUTH_DIGEST
-
-            hasher = HASHER()
-            hasher.update(salt)
-            hasher.update(self.__cookie)
-
-            if digest != hasher.digest():
-                exc = AuthenticationError("Invalid cookie")
-                self._statistic.bad_auth += 1
-                await send(PacketTypes.EXCEPTION, exc)
-                raise exc
-
-            await send(PacketTypes.AUTH_OK, True)
-
-            log.debug("Client authorized")
-
-            packet_type, identity = await receive()
-            assert packet_type == PacketTypes.IDENTITY
-            process = self.__spawning.pop(identity)
-            starting: asyncio.Future = self.__starting.pop(identity)
-
-            if self.initializer is not None:
-                log.debug(
-                    "Sending initializer %r to the process PID: %d",
-                    self.initializer, process.pid,
-                )
-                initializer_done = self.__create_future()
-
-                await step(
-                    self.initializer,
-                    self.initializer_args,
-                    dict(self.initializer_kwargs),
-                    initializer_done,
-                )
+                if process_future.done() or result_future.done():
+                    continue
 
                 try:
-                    await initializer_done
-                    log.debug("Initializer done")
+                    process_future.set_result(pid)
+                    await proto.send((PacketTypes.REQUEST, func, args, kwargs))
+                    packet_type, payload = await proto.receive()
+
+                    if result_future.done():
+                        log.debug(
+                            "Result future %r already done, skipping",
+                            result_future,
+                        )
+                        continue
+
+                    if packet_type == PacketTypes.RESULT:
+                        result_future.set_result(payload)
+                    elif packet_type in (
+                        PacketTypes.EXCEPTION, PacketTypes.CANCELLED,
+                    ):
+                        result_future.set_exception(payload)
+                    del packet_type, payload
+                except (asyncio.IncompleteReadError, ConnectionError):
+                    if not result_future.done():
+                        result_future.set_exception(
+                            ProcessError(f"Process {pid!r} unexpected exited"),
+                        )
+                    break
                 except Exception as e:
-                    log.debug("Initializer fails")
-                    if not starting.done():
-                        starting.set_exception(e)
+                    if not result_future.done():
+                        result_future.set_exception(e)
+
+                    if not writer.is_closing():
+                        if writer.can_write_eof():
+                            writer.write_eof()
+                        writer.close()
                     raise
-                else:
-                    if not starting.done():
-                        starting.set_result(None)
-                finally:
-                    start_event.set()
-            else:
-                if not starting.done():
-                    starting.set_result(None)
-                start_event.set()
+        finally:
+            self._statistic.processes -= 1
+            self.pids.remove(pid)
 
-            try:
-                while True:
-                    func: Callable
-                    args: Tuple[Any, ...]
-                    kwargs: Dict[str, Any]
-                    result_future: asyncio.Future
-                    process_future: asyncio.Future
-
-                    self._statistic.processes += 1
-                    (
-                        func, args, kwargs, result_future, process_future,
-                    ) = await self.tasks.get()
-
-                    try:
-                        if process_future.done():
-                            continue
-
-                        process_future.set_result(process)
-
-                        if result_future.done():
-                            continue
-
-                        await step(func, args, kwargs, result_future)
-                    except (asyncio.IncompleteReadError, ConnectionError):
-                        await self.__wait_process(process)
-                        await self.__on_exit(process)
-
-                        if not result_future.done():
-                            result_future.set_exception(
-                                ProcessError(
-                                    f"Process {process!r} exited with "
-                                    f"code {process.returncode!r}",
-                                ),
-                            )
-                        break
-                    except Exception as e:
-                        if not result_future.done():
-                            self.loop.call_soon(result_future.set_exception, e)
-
-                        if not writer.is_closing():
-                            self.loop.call_soon(writer.close)
-
-                        await self.__wait_process(process)
-                        await self.__on_exit(process)
-
-                        raise
-                    finally:
-                        self._statistic.processes -= 1
-            finally:
-                await self.__wait_closed(writer)
-
-        start_event = asyncio.Event()
-        task = self.loop.create_task(handler(start_event))
-        await start_event.wait()
-        self.__task_add(task)
-
-        await task
+    def __start_handler(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+    ) -> asyncio.Task:
+        return self.__task(self.__handle_client(reader, writer))
 
     def __task_add(self, task: asyncio.Task) -> None:
         self._statistic.task_added += 1
@@ -334,35 +267,17 @@ class WorkerPool:
         return task
 
     async def start(self) -> None:
+        self.tasks = asyncio.Queue(maxsize=self.__max_overflow)
         self.server = await asyncio.start_server(
-            self.__handle_client,
+            self.__start_handler,
             sock=self.socket,
         )
+        del self.socket
 
-        tasks = []
-
-        for n in range(self.workers):
-            log.debug("Starting worker %d", n)
-            tasks.append(self.__spawn_process())
-
-        await asyncio.gather(*tasks)
-
-    async def __on_exit(self, process: Popen) -> None:
-        self.processes.remove(process)
-
-        if await self.__check_is_closed():
-            return None
-
-        await self.__spawn_process()
-
-    def __spawn_process(self) -> Awaitable[None]:
-        log.debug("Spawning new process")
-
-        identity = fast_uuid4().hex
-        start_future = self.__create_future()
-        self.__starting[identity] = start_future
-        self.__create_process(identity)
-        return start_future
+        self.worker_ids = tuple(
+            fast_uuid4().bytes for _ in range(self.workers)
+        )
+        self._supervisor = await self.__create_supervisor(*self.worker_ids)
 
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
@@ -371,27 +286,35 @@ class WorkerPool:
         return future
 
     def __reject_futures(self) -> None:
-        for future in self.__futures:
-            if future.done():
-                continue
-            future.set_exception(RuntimeError("Pool closed"))
+        set_exception(self.__futures, RuntimeError("Pool closed"))
 
     @shield
     async def close(self) -> None:
-        @threaded
-        def killer() -> None:
-            while self.processes:
-                self._kill_process(self.processes.pop())
-
         async with self.__closing_lock:
             if self.__closing:
                 return
 
+            self._kill_supervisor()
             self.__closing = True
+            self.server.close()
+            await self.server.wait_closed()
 
             await cancel_tasks(tuple(self.__task_store))
-            await killer()
             await cancel_tasks(tuple(self.__futures))
+
+    def _kill_supervisor(self) -> None:
+        supervisor: Optional[Popen] = getattr(self, "_supervisor", None)
+        if supervisor is None or supervisor.poll() is not None:
+            return
+
+        log.debug(
+            "Sending %r to supervisor process PID: %d. Workers: %r",
+            INT_SIGNAL, supervisor.pid, self.pids,
+        )
+        os.kill(self._supervisor.pid, INT_SIGNAL)
+
+    def __del__(self) -> None:
+        self._kill_supervisor()
 
     async def create_task(
         self, func: Callable[..., T],
@@ -404,12 +327,13 @@ class WorkerPool:
             func, args, kwargs, result_future, process_future,
         ))
 
-        process: Popen = await process_future
+        pid: int = await process_future
 
         try:
             return await result_future
         except asyncio.CancelledError:
-            os.kill(process.pid, SIGNAL)
+            log.debug("Sending %r to worker PID: %d", SIGNAL, pid)
+            os.kill(pid, SIGNAL)
             raise
 
     async def __aenter__(self) -> "WorkerPool":

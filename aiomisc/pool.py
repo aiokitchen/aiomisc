@@ -4,33 +4,16 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
 from typing import (
-    Any, Awaitable, Callable, DefaultDict, NoReturn, Set, TypeVar, Union,
+    Any, AsyncContextManager, Awaitable, Callable, DefaultDict, NoReturn, Set,
+    TypeVar, Union,
 )
 
+from .compat import EventLoopMixin
 from .utils import cancel_tasks
 
 
 T = TypeVar("T")
 Number = Union[int, float]
-
-
-try:
-    from typing import AsyncContextManager
-except ImportError:
-    # Failed on Python 3.5.2 reproducible on ubuntu 16.04 (xenial)
-    class AsyncContextManager(ABC):     # type: ignore
-
-        @abstractmethod
-        async def __aenter__(self) -> Any:
-            raise NotImplementedError
-
-        @abstractmethod
-        async def __aexit__(
-            self, exc_type: Any, exc_val: Any,
-            exc_tb: Any,
-        ) -> Any:
-            raise NotImplementedError
-
 
 log = logging.getLogger(__name__)
 
@@ -62,11 +45,10 @@ class ContextManager(AsyncContextManager):
         await self.__aexit(self.__instance)
 
 
-class PoolBase(ABC):
+class PoolBase(ABC, EventLoopMixin):
     __slots__ = (
         "_create_lock",
         "_instances",
-        "_loop",
         "_recycle",
         "_recycle_bin",
         "_recycle_times",
@@ -74,7 +56,7 @@ class PoolBase(ABC):
         "_tasks",
         "_len",
         "_used",
-    )
+    ) + EventLoopMixin.__slots__
 
     _tasks: Set[Any]
     _used: Set[Any]
@@ -85,8 +67,6 @@ class PoolBase(ABC):
         assert (
             recycle is None or recycle > 0
         ), "recycle should be positive number or None"
-
-        self._loop = asyncio.get_event_loop()
 
         self._instances = asyncio.Queue()
         self._recycle_bin = asyncio.Queue()
@@ -101,13 +81,13 @@ class PoolBase(ABC):
 
         self._create_lock = asyncio.Lock()
         self._recycle_times: DefaultDict[float, Any] = defaultdict(
-            self._loop.time,
+            self.loop.time,
         )
 
         self.__create_task(self.__recycler())
 
     def __create_task(self, coro: Awaitable[T]) -> asyncio.Task:
-        task = self._loop.create_task(coro)
+        task = self.loop.create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._tasks.remove)
         return task
@@ -184,7 +164,7 @@ class PoolBase(ABC):
     async def __release(self, instance: Any) -> None:
         self._used.remove(instance)
 
-        if self._recycle and self._recycle_times[instance] < self._loop.time():
+        if self._recycle and self._recycle_times[instance] < self.loop.time():
             self.__recycle_instance(instance)
             return
 

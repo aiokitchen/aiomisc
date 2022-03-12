@@ -4,6 +4,7 @@ from typing import (
     Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
 )
 
+from .compat import get_running_loop
 from .counters import Statistic
 from .timeout import timeout
 
@@ -93,7 +94,7 @@ def asyncbackoff(
             async def run() -> Any:
                 nonlocal last_exc, tries
 
-                loop = asyncio.get_event_loop()
+                loop = get_running_loop()
 
                 while True:
                     statistic.attempts += 1

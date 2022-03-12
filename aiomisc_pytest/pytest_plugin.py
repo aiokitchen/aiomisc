@@ -767,7 +767,7 @@ else:
 
 @pytest.fixture
 def aiomisc_unused_port_factory(
-    request: pytest.FixtureRequest, localhost: str
+    request: pytest.FixtureRequest, localhost: str,
 ) -> Callable[[], int]:
     def port_factory(*args) -> int:
         wrapper = socket_wrapper(*args)
