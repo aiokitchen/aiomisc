@@ -12,8 +12,8 @@ Number = Union[int, float]
 T = TypeVar("T")
 
 
-WrapReturnType = Callable[[Callable[..., T]], T]
-ReturnType = Callable[[Callable[..., T]], WrapReturnType]
+WrapReturnType = Callable[..., Awaitable[T]]
+ReturnType = Callable[..., WrapReturnType]
 
 
 class BackoffStatistic(Statistic):
@@ -81,14 +81,12 @@ def asyncbackoff(
     exceptions = tuple(exceptions) or ()
     exceptions += asyncio.TimeoutError,
 
-    def decorator(
-        func: Callable[..., Awaitable[T]],
-    ) -> WrapReturnType:
+    def decorator(func: WrapReturnType) -> WrapReturnType:
         if attempt_timeout is not None:
             func = timeout(attempt_timeout)(func)
 
         @wraps(func)
-        async def wrap(*args: Any, **kwargs: Any) -> Awaitable[T]:
+        async def wrap(*args: Any, **kwargs: Any) -> T:
             last_exc = None
             tries = 0
 

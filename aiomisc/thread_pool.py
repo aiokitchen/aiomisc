@@ -50,7 +50,7 @@ try:
         return partial(context.run, func, *args, **kwargs)
 
 except ImportError:
-    context_partial = partial
+    context_partial = partial  # type: ignore
 
 
 class WorkItemBase(typing.NamedTuple):
@@ -215,7 +215,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         return future
 
     # noinspection PyMethodOverriding
-    def shutdown(self, wait: bool = True) -> None:  # type: ignore
+    def shutdown(self, wait: bool = True) -> None:
         for _ in self.__pool:
             self.__tasks.put_nowait(None)
 
