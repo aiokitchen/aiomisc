@@ -50,7 +50,7 @@ try:
         return partial(context.run, func, *args, **kwargs)
 
 except ImportError:
-    context_partial = partial
+    context_partial = partial  # type: ignore
 
 
 class WorkItemBase(typing.NamedTuple):
