@@ -79,7 +79,7 @@ class ProcessPoolExecutor(Executor):
         return future
 
     # noinspection PyMethodOverriding
-    def shutdown(self, wait: bool = True) -> None:
+    def shutdown(self, wait: bool = True) -> None:  # type: ignore
         if not self.__pool:
             return
 

@@ -215,7 +215,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         return future
 
     # noinspection PyMethodOverriding
-    def shutdown(self, wait: bool = True) -> None:
+    def shutdown(self, wait: bool = True) -> None:  # type: ignore
         for _ in self.__pool:
             self.__tasks.put_nowait(None)
 
