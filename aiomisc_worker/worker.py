@@ -39,7 +39,7 @@ def execute(protocol: SocketIOProtocol) -> None:
             PacketTypes.CANCELLED,
             asyncio.CancelledError,
         ))
-    except ConnectionError:
+    except (ConnectionError, ConnectionResetError):
         logging.warning(
             "IPC connection error, worker PID: %d exiting.", pid,
             extra={"pid": pid},

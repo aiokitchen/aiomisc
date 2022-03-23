@@ -1,6 +1,5 @@
 import atexit
 import os
-import signal
 import sys
 from contextlib import suppress
 from subprocess import PIPE, Popen
@@ -15,10 +14,6 @@ from .protocol import FileIOProtocol
 
 
 STOPPING = Event()
-
-
-def handle_interrupt(*_: Any) -> None:
-    STOPPING.set()
 
 
 class Worker:
@@ -66,9 +61,14 @@ class Worker:
 PROCESSES: MutableMapping[Worker, bytes] = dict()
 
 
-def main() -> int:
-    signal.signal(INT_SIGNAL, handle_interrupt)
+def at_exit() -> None:
+    processes = tuple(PROCESSES.keys())
+    PROCESSES.clear()
+    for process in processes:
+        process.close()
 
+
+def main() -> int:
     proto = FileIOProtocol(sys.stdin.buffer)
 
     log_level, log_format = proto.receive()
@@ -99,8 +99,10 @@ def main() -> int:
 
     log.info("Waiting workers")
 
+    atexit.register(at_exit)
+
     try:
-        while not STOPPING.is_set():
+        while True:
             for worker in tuple(PROCESSES.keys()):
                 if worker.is_running:
                     continue
@@ -114,9 +116,7 @@ def main() -> int:
                 worker = create_worker()
                 PROCESSES[worker] = worker_id
             sleep(0.01)
-    finally:
-        for process in PROCESSES.keys():
-            process.close()
+    except KeyboardInterrupt:
+        pass
 
-    STOPPING.wait()
     return 0
