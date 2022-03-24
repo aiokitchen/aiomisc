@@ -104,7 +104,9 @@ def main() -> int:
     log.debug("Waiting workers")
     while not STOPPING.is_set():
         pid, status = os.wait()
-        log.debug("Worker PID: %d exited with status %d", pid, status)
+        log_func = log.debug if status == 0 else log.warning
+        log_func("Worker PID: %d exited with status %d", pid, status)
+
         if status == 0:
             continue
         worker_id = PROCESSES.pop(pid, None)

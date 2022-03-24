@@ -93,12 +93,9 @@ async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
         return stats
 
     stats = get_stats()
-    try:
-        while stats["spawning"] < PROCESS_NUM:
-            await asyncio.sleep(0.1)
-            stats = get_stats()
-    except asyncio.CancelledError:
-        breakpoint()
+    while stats["spawning"] < PROCESS_NUM:
+        await asyncio.sleep(0.1)
+        stats = get_stats()
 
     pids_start = set(worker_pool.pids)
 
