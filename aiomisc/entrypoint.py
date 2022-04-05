@@ -37,9 +37,7 @@ def _get_env_bool(name: str, default: str) -> bool:
     return os.getenv(name, default).lower() in enable_variants
 
 
-def _get_env_convert(
-    name: str, converter: Callable[..., T], default: Optional[T],
-) -> T:
+def _get_env_convert(name: str, converter: Callable[..., T], default: T) -> T:
     value = os.getenv(name)
     if value is None:
         return default
