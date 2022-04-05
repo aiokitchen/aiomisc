@@ -10,6 +10,7 @@ from typing import (
 )
 from weakref import finalize
 
+from aiomisc.compat import EventLoopMixin
 from aiomisc.counters import Statistic
 
 
@@ -24,11 +25,16 @@ class ChannelClosed(RuntimeError):
     pass
 
 
-class FromThreadChannel:
+class FromThreadChannel(EventLoopMixin):
+    __slots__ = (
+        "maxsize", "queue", "__close_event",
+        "__write_condition", "__read_condition",
+    ) + EventLoopMixin.__slots__
+
     def __init__(self, maxsize: int, loop: asyncio.AbstractEventLoop):
-        self.loop = loop
         self.maxsize: int = maxsize
         self.queue: Deque[Any] = deque()
+        self._loop = loop
         self.__close_event = threading.Event()
         self.__write_condition = threading.Condition()
         self.__read_condition = asyncio.Condition()
@@ -114,7 +120,7 @@ class IteratorWrapperStatistic(Statistic):
     enqueued: int
 
 
-class IteratorWrapper(AsyncIterator):
+class IteratorWrapper(AsyncIterator, EventLoopMixin):
     __slots__ = (
         "__channel",
         "__close_event",
@@ -122,17 +128,16 @@ class IteratorWrapper(AsyncIterator):
         "__gen_task",
         "_statistic",
         "executor",
-        "loop",
-    )
+    ) + EventLoopMixin.__slots__
 
     def __init__(
-        self, gen_func: FuncType, loop: asyncio.AbstractEventLoop = None,
+        self, gen_func: FuncType,
+        loop: asyncio.AbstractEventLoop = None,
         max_size: int = 0, executor: Executor = None,
         statistic_name: Optional[str] = None,
     ):
 
-        current_loop = loop or asyncio.get_event_loop()
-        self.loop: asyncio.AbstractEventLoop = current_loop
+        self._loop = loop
         self.executor = executor
 
         self.__close_event = asyncio.Event()

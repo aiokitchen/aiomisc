@@ -126,15 +126,16 @@ async def test_future_gc(thread_pool_executor, loop):
 async def test_threaded(threaded_decorator, timer):
     sleep = threaded_decorator(time.sleep)
 
-    async with timeout(5):
-        with timer(1):
-            await asyncio.gather(
+    with timer(1):
+        await asyncio.wait_for(
+            asyncio.gather(
                 sleep(1),
                 sleep(1),
                 sleep(1),
                 sleep(1),
                 sleep(1),
-            )
+            ), timeout=5,
+        )
 
 
 async def test_threaded_exc(threaded_decorator):
@@ -142,14 +143,15 @@ async def test_threaded_exc(threaded_decorator):
     def worker():
         raise Exception
 
-    async with timeout(1):
-        number = 90
+    number = 90
 
-        done, _ = await asyncio.wait([worker() for _ in range(number)])
+    done, _ = await asyncio.wait(
+        [worker() for _ in range(number)], timeout=1,
+    )
 
-        for task in done:
-            with pytest.raises(Exception):
-                task.result()
+    for task in done:
+        with pytest.raises(Exception):
+            task.result()
 
 
 async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):

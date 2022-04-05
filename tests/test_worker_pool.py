@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import operator
-import platform
 import sys
 import threading
 from multiprocessing.context import ProcessError
@@ -13,6 +12,7 @@ from setproctitle import setproctitle
 
 import aiomisc
 from aiomisc import WorkerPool
+from aiomisc.worker_pool import WorkerPoolStatistic
 
 
 skipif = pytest.mark.skipif(
@@ -21,12 +21,16 @@ skipif = pytest.mark.skipif(
 )
 
 
+PROCESS_NUM = 4
+
+
 @pytest.fixture
 async def worker_pool(request, loop) -> WorkerPool:
     async with WorkerPool(
-        4,
+        PROCESS_NUM,
         initializer=setproctitle,
         initializer_args=(f"[WorkerPool] {request.node.name}",),
+        statistic_name=request.node.name,
     ) as pool:
         yield pool
 
@@ -75,13 +79,25 @@ async def test_incomplete_task_kill(worker_pool):
     )
 
 
-@pytest.mark.skipif(
-    platform.system() == "Windows", reason="Flapping on windows",
-)
 @skipif
+@pytest.mark.skipif(
+    sys.platform in ("win32", "cygwin"), reason="Windows is ill",
+)
 @aiomisc.timeout(5)
-async def test_incomplete_task_pool_reuse(worker_pool):
-    pids_start = set(process.pid for process in worker_pool.processes)
+async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
+    def get_stats() -> dict:
+        stats = {}
+        for metric in aiomisc.get_statistics(WorkerPoolStatistic):
+            if metric.name == request.node.name:
+                stats[metric.metric] = metric.value
+        return stats
+
+    stats = get_stats()
+    while stats["spawning"] < PROCESS_NUM:
+        await asyncio.sleep(0.1)
+        stats = get_stats()
+
+    pids_start = set(worker_pool.pids)
 
     await asyncio.gather(
         *[
@@ -107,7 +123,7 @@ async def test_incomplete_task_pool_reuse(worker_pool):
         ]
     )
 
-    pids_end = set(process.pid for process in worker_pool.processes)
+    pids_end = set(worker_pool.pids)
 
     assert list(pids_start) == list(pids_end)
 
@@ -147,7 +163,7 @@ async def test_exit(worker_pool):
 
 
 @skipif
-@aiomisc.timeout(5)
+@aiomisc.timeout(30)
 async def test_exit_respawn(worker_pool):
     exceptions = await asyncio.gather(
         *[

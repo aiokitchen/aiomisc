@@ -2,8 +2,9 @@ import asyncio
 from concurrent.futures import Executor
 from functools import partial, total_ordering
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Generator, TypeVar, Union
+from typing import Any, Awaitable, Callable, Generator, Optional, TypeVar, Union
 
+from .compat import EventLoopMixin
 from .thread_pool import threaded
 
 
@@ -75,16 +76,19 @@ def proxy_property(name: str) -> property:
 
 
 @total_ordering
-class AsyncFileIOBase:
-    __slots__ = ("loop", "__opener", "fp", "executor", "__iterator_lock")
+class AsyncFileIOBase(EventLoopMixin):
+    __slots__ = (
+        "__opener", "fp", "executor", "__iterator_lock",
+    ) + EventLoopMixin.__slots__
 
     opener = staticmethod(threaded(open))
 
     def __init__(
         self, fname: Union[str, Path], mode: str = "r",
-        executor: Executor = None, *args: Any, **kwargs: Any
+        executor: Executor = None, *args: Any,
+        loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any
     ):
-        self.loop = kwargs.pop("loop", asyncio.get_event_loop())
+        self._loop = loop
         self.fp = None
         self.executor = executor
         self.__opener = partial(self.opener, fname, mode, *args, **kwargs)

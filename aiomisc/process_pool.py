@@ -3,7 +3,9 @@ from concurrent.futures import Executor
 from multiprocessing import Pool, cpu_count
 from typing import Any, Callable, Set, Tuple, TypeVar
 
+from .compat import EventLoopMixin
 from .counters import Statistic
+from .utils import set_exception
 
 
 T = TypeVar("T")
@@ -24,7 +26,11 @@ class ProcessPoolStatistic(Statistic):
     sum_time: float
 
 
-class ProcessPoolExecutor(Executor):
+class ProcessPoolExecutor(Executor, EventLoopMixin):
+    __slots__ = (
+        "__futures", "__pool", "_statistic",
+    ) + EventLoopMixin.__slots__
+
     DEFAULT_MAX_WORKERS = max((cpu_count(), 4))
 
     def __init__(self, max_workers: int = DEFAULT_MAX_WORKERS, **kwargs: Any):
@@ -34,24 +40,23 @@ class ProcessPoolExecutor(Executor):
         self._statistic.processes = max_workers
 
     def _create_future(self) -> _CreateFutureType:
-        loop = asyncio.get_event_loop()
-        future = loop.create_future()  # type: asyncio.Future
+        future = self.loop.create_future()  # type: asyncio.Future
 
         self.__futures.add(future)
         future.add_done_callback(self.__futures.remove)
-        start_time = loop.time()
+        start_time = self.loop.time()
 
         def callback(result: T) -> None:
             self._statistic.success += 1
             self._statistic.done += 1
-            self._statistic.sum_time += loop.time() - start_time
-            loop.call_soon_threadsafe(future.set_result, result)
+            self._statistic.sum_time += self.loop.time() - start_time
+            self.loop.call_soon_threadsafe(future.set_result, result)
 
         def errorback(exc: T) -> None:
             self._statistic.error += 1
             self._statistic.done += 1
-            self._statistic.sum_time += loop.time() - start_time
-            loop.call_soon_threadsafe(future.set_exception, exc)
+            self._statistic.sum_time += self.loop.time() - start_time
+            self.loop.call_soon_threadsafe(future.set_exception, exc)
 
         return callback, errorback, future
 
@@ -85,10 +90,7 @@ class ProcessPoolExecutor(Executor):
 
         self.__pool.terminate()
 
-        for f in self.__futures:
-            if f.done():
-                continue
-            f.set_exception(asyncio.CancelledError())
+        set_exception(self.__futures, asyncio.CancelledError())
 
         if wait:
             self.__pool.join()

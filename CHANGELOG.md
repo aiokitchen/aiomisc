@@ -9,6 +9,27 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+15.8.x
+------
+
+* `WorkerPool` reworked and now spawning processes  with `os.fork` on
+  UNIX. This makes benefits on initializer has been passed.
+  The allocated after initializer completion memory will be shared
+  between processes with CoW.
+
+15.7.x
+------
+
+* tcp and tls client services
+* python<3.10 fixes
+* retry connection attempts for client services
+* rewrite rpc example with modern msgspec and client services
+* `bind_port` will choose a free port when port passed as 0
+* `aiomisc_unused_port_factory` is now the fixture just detach but not close
+  just created socket and port isn't free and not be used twice but
+  `bind_socket` function will be able to bind it.
+* Fix `asyncbackoff` type annotations
+
 15.6.x
 ------
 

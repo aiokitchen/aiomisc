@@ -11,11 +11,12 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
+from .compat import event_loop_policy, get_running_loop
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
+from .utils import cancel_tasks, create_default_event_loop
 
 
 ExecutorType = Executor
@@ -36,9 +37,7 @@ def _get_env_bool(name: str, default: str) -> bool:
     return os.getenv(name, default).lower() in enable_variants
 
 
-def _get_env_convert(
-    name: str, converter: Callable[..., T], default: T,
-) -> T:
+def _get_env_convert(name: str, converter: Callable[..., T], default: T) -> T:
     value = os.getenv(name)
     if value is None:
         return default
@@ -120,7 +119,7 @@ class Entrypoint:
         :param services: Service instances which will be starting.
         :param pool_size: thread pool size
         :param log_level: Logging level which will be configured
-        :param log_format: Logging format which will be configures
+        :param log_format: Logging format which will be configured
         :param log_buffer_size: Buffer size for logging
         :param log_flush_interval: interval in seconds for flushing logs
         :param log_config: if False do not configure logging
@@ -208,7 +207,7 @@ class Entrypoint:
     async def __aenter__(self) -> "Entrypoint":
         if self._loop is None:
             # When __aenter__ called without __enter__
-            self._loop = asyncio.get_event_loop()
+            self._loop = get_running_loop()
 
         self.ctx = Context(loop=self.loop)
         await self._start()

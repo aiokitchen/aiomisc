@@ -2,9 +2,10 @@ import asyncio
 import logging
 import logging.handlers
 import time
+import traceback
 from contextlib import suppress
 from socket import socket
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
@@ -42,8 +43,6 @@ def wrap_logging_handler(
     buffer_size: int = 1024,
     flush_interval: Union[float, int] = 0.1,
 ) -> logging.Handler:
-    loop = loop or asyncio.get_event_loop()
-
     buffered_handler = logging.handlers.MemoryHandler(
         buffer_size,
         target=handler,
@@ -93,6 +92,9 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
         protocol: Optional[asyncio.Protocol] = context.pop("protocol", None)
         transport: Optional[asyncio.Transport] = context.pop("transport", None)
         sock: Optional[socket] = context.pop("socket", None)
+        source_traceback: List[traceback.FrameSummary] = context.pop(
+            "source_traceback", None,
+        )
 
         if exception is None:
             if future is not None:
@@ -110,6 +112,10 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
 
         self._fill_transport_extra(transport, extra)
         self.logger.exception(message, exc_info=exception, extra=extra)
+        if source_traceback:
+            self.logger.error(
+                "".join(traceback.format_list(source_traceback)),
+            )
 
 
 def basic_config(

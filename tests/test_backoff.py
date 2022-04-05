@@ -2,7 +2,6 @@ import asyncio
 import time
 
 import pytest
-from async_timeout import timeout
 
 import aiomisc
 
@@ -42,7 +41,7 @@ async def test_kwargs(loop):
 async def test_simple(loop):
     mana = 0
 
-    @aiomisc.asyncbackoff(0.10, 1, None, Exception)
+    @aiomisc.asyncbackoff(0.10, 1, 0, Exception)
     async def test():
         nonlocal mana
 
@@ -106,9 +105,8 @@ async def test_too_long_multiple_times(loop):
             await asyncio.sleep(5)
             raise ValueError("Not enough mana")
 
-    async with timeout(2):
-        with pytest.raises(asyncio.TimeoutError):
-            await test()
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(test(), timeout=2)
 
     assert mana < 11
 
