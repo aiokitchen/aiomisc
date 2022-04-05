@@ -38,7 +38,7 @@ def _get_env_bool(name: str, default: str) -> bool:
 
 
 def _get_env_convert(
-    name: str, converter: Callable[..., T], default: T,
+    name: str, converter: Callable[..., T], default: Optional[T],
 ) -> T:
     value = os.getenv(name)
     if value is None:
@@ -121,7 +121,7 @@ class Entrypoint:
         :param services: Service instances which will be starting.
         :param pool_size: thread pool size
         :param log_level: Logging level which will be configured
-        :param log_format: Logging format which will be configures
+        :param log_format: Logging format which will be configured
         :param log_buffer_size: Buffer size for logging
         :param log_flush_interval: interval in seconds for flushing logs
         :param log_config: if False do not configure logging

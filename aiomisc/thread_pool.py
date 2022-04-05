@@ -311,10 +311,8 @@ def run_in_new_thread(
         args=(
             context_partial(func, *args, **kwargs),
         ),
+        daemon=detach
     )
-
-    thread.daemon = detach
-
     thread.start()
     return future
 
