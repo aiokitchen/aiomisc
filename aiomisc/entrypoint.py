@@ -11,7 +11,7 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
-from .compat import event_loop_policy, get_running_loop
+from .compat import event_loop_policy, get_running_loop, set_current_loop
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
@@ -85,6 +85,8 @@ class Entrypoint:
                 flush_interval=self.log_flush_interval,
             )
 
+        set_current_loop(self.loop)
+
         for signal in (
             self.pre_start, self.post_stop,
             self.pre_stop, self.post_start,
@@ -154,6 +156,9 @@ class Entrypoint:
                 log_format=self.log_format,
             )
 
+        if self._loop is not None:
+            set_current_loop(self._loop)
+
     async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
         if self._closing is None:
@@ -170,7 +175,7 @@ class Entrypoint:
                 debug=self._debug,
             )
             self._loop_owner = True
-
+            set_current_loop(self._loop)
         return self._loop
 
     def __del__(self) -> None:

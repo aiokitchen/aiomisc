@@ -14,8 +14,9 @@ from .process_pool import ProcessPoolExecutor
 from .service import Service
 from .signal import Signal, receiver
 from .thread_pool import (
-    IteratorWrapperSeparate, ThreadPoolExecutor, sync_wait_coroutine, threaded,
-    threaded_iterable, threaded_iterable_separate, threaded_separate,
+    IteratorWrapperSeparate, ThreadPoolExecutor, sync_await,
+    sync_wait_coroutine, threaded, threaded_iterable,
+    threaded_iterable_separate, threaded_separate, wait_coroutine,
 )
 from .timeout import timeout
 from .utils import (
@@ -61,10 +62,12 @@ __all__ = (
     "run",
     "select",
     "shield",
+    "sync_await",
     "sync_wait_coroutine",
     "threaded",
     "threaded_iterable",
     "threaded_iterable_separate",
     "threaded_separate",
     "timeout",
+    "wait_coroutine",
 )

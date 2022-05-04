@@ -93,11 +93,34 @@ else:
         )
 
 
+try:
+    from contextvars import ContextVar
+    EVENT_LOOP: ContextVar = ContextVar("EVENT_LOOP")
+
+    def get_current_loop() -> asyncio.AbstractEventLoop:
+        loop: Optional[asyncio.AbstractEventLoop] = EVENT_LOOP.get(None)
+        if loop is None:
+            raise RuntimeError("no current event loop is set")
+        return loop
+
+    def set_current_loop(loop: asyncio.AbstractEventLoop) -> None:
+        EVENT_LOOP.set(loop)
+
+except ImportError:
+    def get_current_loop() -> asyncio.AbstractEventLoop:
+        raise RuntimeError("contextvars module is not installed")
+
+    def set_current_loop(loop: asyncio.AbstractEventLoop) -> None:
+        return
+
+
 __all__ = (
     "EventLoopMixin",
     "SimpleQueue",
     "context_partial",
     "event_loop_policy",
+    "get_current_loop",
+    "set_current_loop",
     "get_running_loop",
     "sock_set_nodelay",
     "sock_set_reuseport",

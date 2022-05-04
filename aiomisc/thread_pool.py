@@ -9,11 +9,13 @@ from functools import partial, wraps
 from multiprocessing import cpu_count
 from types import MappingProxyType
 from typing import (
-    Any, Awaitable, Callable, Dict, FrozenSet, NamedTuple, Optional, Set, Tuple,
-    TypeVar,
+    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, NamedTuple, Optional,
+    Set, Tuple, TypeVar,
 )
 
-from .compat import SimpleQueue, context_partial, get_running_loop
+from .compat import (
+    SimpleQueue, context_partial, get_current_loop, get_running_loop,
+)
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
@@ -380,28 +382,23 @@ def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:
 
 class CoroutineWaiter:
     def __init__(
-        self,
-        loop: asyncio.AbstractEventLoop,
-        coroutine_func: F,
-        *args: Any,
-        **kwargs: Any
+        self, coroutine: Coroutine[Any, Any, T],
+        loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
-        self.__func: Callable[..., Any] = partial(
-            coroutine_func, *args, **kwargs
-        )
-        self.__loop = loop
+        self.__coro: Coroutine[Any, Any, T] = coroutine
+        self.__loop = loop or get_current_loop()
         self.__event = threading.Event()
-        self.__result = None
+        self.__result: Optional[T] = None
         self.__exception: Optional[BaseException] = None
 
-    def _on_result(self, task: asyncio.Task) -> None:
+    def _on_result(self, task: asyncio.Future) -> None:
         self.__exception = task.exception()
         if self.__exception is None:
             self.__result = task.result()
         self.__event.set()
 
     def _awaiter(self) -> None:
-        task: asyncio.Task = self.__loop.create_task(self.__func())
+        task: asyncio.Future = self.__loop.create_task(self.__coro)
         task.add_done_callback(self._on_result)
 
     def start(self) -> None:
@@ -414,12 +411,29 @@ class CoroutineWaiter:
         return self.__result
 
 
-def sync_wait_coroutine(
-    loop: asyncio.AbstractEventLoop,
-    coro_func: F,
-    *args: Any,
-    **kwargs: Any
-) -> Any:
-    waiter = CoroutineWaiter(loop, coro_func, *args, **kwargs)
+def wait_coroutine(
+    coro: Coroutine[Any, Any, T],
+    loop: Optional[asyncio.AbstractEventLoop] = None,
+) -> T:
+    waiter = CoroutineWaiter(coro, loop)
     waiter.start()
     return waiter.wait()
+
+
+def sync_wait_coroutine(
+    loop: Optional[asyncio.AbstractEventLoop],
+    coro_func: Callable[..., Coroutine[Any, Any, T]],
+    *args: Any,
+    **kwargs: Any
+) -> T:
+    return wait_coroutine(coro_func(*args, **kwargs), loop=loop)
+
+
+def sync_await(
+    func: Callable[..., Awaitable[T]],
+    *args: Any,
+    **kwargs: Any,
+) -> T:
+    async def awaiter() -> T:
+        return await func(*args, **kwargs)
+    return wait_coroutine(awaiter())
