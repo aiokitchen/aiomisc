@@ -98,7 +98,7 @@ class FromThreadChannel(EventLoopMixin):
         while self.is_empty and not self.is_closed:
             await self.__read_event.wait()
 
-    def _read_clear(self):
+    def _read_clear(self) -> None:
         if self.is_empty:
             self.__read_event.clear()
 
@@ -147,7 +147,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         self.__channel: FromThreadChannel = FromThreadChannel(
             maxsize=max_size, loop=self.loop,
         )
-        self.__gen_task: Optional[asyncio.Task] = None
+        self.__gen_task: Optional[asyncio.Future] = None
         self.__gen_func: Callable = gen_func
         self._statistic = IteratorWrapperStatistic(statistic_name)
         self._statistic.queue_size = max_size
