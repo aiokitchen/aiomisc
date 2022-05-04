@@ -97,10 +97,12 @@ class FromThreadChannel(EventLoopMixin):
 
             while self.is_empty:
                 await self.__read_event.wait()
+                if self.is_closed and self.is_empty:
+                    raise ChannelClosed
             try:
                 return self.queue.get_nowait()
             finally:
-                if self.is_empty:
+                if self.is_empty and not self.is_closed:
                     self.__read_event.clear()
                 self.__notify_writers()
 
