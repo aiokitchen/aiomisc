@@ -7,8 +7,8 @@ from functools import wraps
 from multiprocessing import cpu_count
 from random import getrandbits
 from typing import (
-    Any, Awaitable, Callable, Collection, Generator, Iterable, Iterator, List,
-    Optional, Set, Tuple, TypeVar, Union,
+    Any, Awaitable, Callable, Collection, Coroutine, Generator, Iterable,
+    Iterator, List, Optional, Set, Tuple, TypeVar, Union,
 )
 
 from .compat import (
@@ -171,7 +171,9 @@ def new_event_loop(
     return loop
 
 
-def shield(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
+def shield(
+    func: Callable[..., Coroutine[Any, Any, T]],
+) -> Callable[..., Coroutine[Any, Any, T]]:
     """
     Simple and useful decorator for wrap the coroutine to `asyncio.shield`.
 
@@ -185,7 +187,7 @@ def shield(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
         return await future
 
     @wraps(func)
-    def wrap(*args: Any, **kwargs: Any) -> Awaitable[Any]:
+    def wrap(*args: Any, **kwargs: Any) -> Coroutine[Any, Any, T]:
         return wraps(func)(awaiter)(asyncio.shield(func(*args, **kwargs)))
 
     return wrap
@@ -405,7 +407,7 @@ def awaitable(
         if hasattr(result, "__await__"):
             return result       # type: ignore
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
-            return result       # type: ignore
+            return result
 
         return awaiter(result)  # type: ignore
 

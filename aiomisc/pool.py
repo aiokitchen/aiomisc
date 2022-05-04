@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
 from typing import (
-    Any, AsyncContextManager, Awaitable, Callable, DefaultDict, NoReturn, Set,
-    TypeVar, Union,
+    Any, AsyncContextManager, Awaitable, Callable, Coroutine, DefaultDict,
+    NoReturn, Set, TypeVar, Union,
 )
 
 from .compat import EventLoopMixin
@@ -86,7 +86,7 @@ class PoolBase(ABC, EventLoopMixin):
 
         self.__create_task(self.__recycler())
 
-    def __create_task(self, coro: Awaitable[T]) -> asyncio.Task:
+    def __create_task(self, coro: Coroutine[Any, Any, Any]) -> asyncio.Task:
         task = self.loop.create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._tasks.remove)
