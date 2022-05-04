@@ -91,18 +91,27 @@ class FromThreadChannel(EventLoopMixin):
             self.queue.append(item)
             self.__notify_readers()
 
+    async def _read_wait(self) -> None:
+        if self.is_closed:
+            return
+
+        while self.is_empty and not self.is_closed:
+            await self.__read_event.wait()
+
+    def _read_clear(self):
+        if self.is_empty:
+            self.__read_event.clear()
+
     async def get(self) -> Any:
         async with self.__get_lock:
             if self.is_closed and self.is_empty:
                 raise ChannelClosed
 
             try:
-                while self.is_empty and not self.is_closed:
-                    await self.__read_event.wait()
+                await self._read_wait()
                 return self.queue.popleft()
             finally:
-                if self.is_empty:
-                    self.__read_event.clear()
+                self._read_clear()
                 self.__notify_writers()
 
 
@@ -185,10 +194,6 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     def close(self) -> Awaitable[None]:
         self.__channel.close()
-
-        if self.__gen_task is not None and not self.__gen_task.done():
-            self.__gen_task.cancel()
-
         return asyncio.ensure_future(self.wait_closed())
 
     async def wait_closed(self) -> None:
@@ -203,11 +208,6 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
             )
             if gen_task is None:
                 raise RuntimeError("Iterator task was not created")
-            if not isinstance(gen_task, asyncio.Task):
-                raise RuntimeError(
-                    "Iterator task was created but executor "
-                    "returns future instead of task",
-                )
             self.__gen_task = gen_task
         return IteratorProxy(self, self.close)
 
