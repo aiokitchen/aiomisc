@@ -2,6 +2,9 @@ import asyncio
 import inspect
 import logging
 import socket
+import sys
+
+from asyncio import ensure_future, Queue
 from types import MappingProxyType
 from typing import Any, Iterable, Mapping
 
@@ -23,7 +26,32 @@ class DummyTransport(Transport):         # type: ignore
         pass
 
 
-class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
+class QueuedPatchedAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
+
+    def __init__(
+        self,
+        *args: Any,
+        workers: int = 1,
+        qsize: int = 1000,
+        **kwargs: Any
+    ):
+        super(QueuedAioHttpTransport, self).__init__()
+        loop_args = (
+            {"loop": self._loop} if sys.version_info < (3, 8) else {}
+        )
+        self._queue: Queue = Queue(maxsize=qsize, **loop_args)
+
+        self._workers = set()
+
+        for _ in range(workers):
+            worker = ensure_future(self._worker())
+            self._workers.add(worker)
+            worker.add_done_callback(self._workers.remove)
+
+
+class QueuedKeepaliveAioHttpTransport(
+    QueuedPatchedAioHttpTransport
+):
     DNS_CACHE_TTL = 600
     DNS_CACHE = True
     TCP_CONNECTION_LIMIT = 32
