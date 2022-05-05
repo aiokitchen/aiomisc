@@ -11,6 +11,7 @@ from .periodic import PeriodicCallback
 from .plugins import plugins
 from .pool import PoolBase
 from .process_pool import ProcessPoolExecutor
+from .recurring import RecurringCallback, StrategyStop
 from .service import Service
 from .signal import Signal, receiver
 from .thread_pool import (
@@ -35,10 +36,12 @@ __all__ = (
     "PeriodicCallback",
     "PoolBase",
     "ProcessPoolExecutor",
+    "RecurringCallback",
     "SelectResult",
     "Service",
     "Signal",
     "Statistic",
+    "StrategyStop",
     "ThreadPoolExecutor",
     "WorkerPool",
     "aggregate",

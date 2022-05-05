@@ -40,14 +40,11 @@ def test_periodic(loop):
         counter = 0
 
         for i in (5, 10):
-            await svc.start()
             async with condition:
                 await asyncio.wait_for(
-                    condition.wait_for(lambda: counter == i),
+                    condition.wait_for(lambda: counter >= i),
                     timeout=10,
                 )
-
-            await svc.stop(None)
             assert counter == i
 
     with aiomisc.entrypoint(svc, loop=loop) as loop:

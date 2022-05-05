@@ -3,8 +3,7 @@ import inspect
 import logging
 import socket
 import sys
-
-from asyncio import ensure_future, Queue
+from asyncio import Queue, ensure_future
 from types import MappingProxyType
 from typing import Any, Iterable, Mapping
 
@@ -50,7 +49,7 @@ class QueuedPatchedAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
 
 
 class QueuedKeepaliveAioHttpTransport(
-    QueuedPatchedAioHttpTransport
+    QueuedPatchedAioHttpTransport,
 ):
     DNS_CACHE_TTL = 600
     DNS_CACHE = True
