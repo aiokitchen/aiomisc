@@ -1,12 +1,12 @@
 import asyncio
 import inspect
 import threading
-from collections import deque
 from concurrent.futures import Executor
+from queue import Queue
 from types import TracebackType
 from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
-    Optional, Type, TypeVar,
+    Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn, Optional,
+    Type, TypeVar,
 )
 from weakref import finalize
 
@@ -28,25 +28,19 @@ class ChannelClosed(RuntimeError):
 class FromThreadChannel(EventLoopMixin):
     __slots__ = (
         "maxsize", "queue", "__close_event",
-        "__write_condition", "__read_condition",
+        "__write_condition", "__read_event", "__get_lock",
     ) + EventLoopMixin.__slots__
 
     def __init__(self, maxsize: int, loop: asyncio.AbstractEventLoop):
-        self.maxsize: int = maxsize
-        self.queue: Deque[Any] = deque()
+        self.queue: Queue = Queue(maxsize=maxsize)
         self._loop = loop
         self.__close_event = threading.Event()
         self.__write_condition = threading.Condition()
-        self.__read_condition = asyncio.Condition()
+        self.__read_event = asyncio.Event()
+        self.__get_lock = asyncio.Lock()
 
     def __notify_readers(self) -> None:
-        def notify() -> None:
-            async def notify_all() -> None:
-                async with self.__read_condition:
-                    self.__read_condition.notify_all()
-
-            self.loop.create_task(notify_all())
-        self.loop.call_soon_threadsafe(notify)
+        self.loop.call_soon_threadsafe(self.__read_event.set)
 
     def __notify_writers(self) -> None:
         with self.__write_condition:
@@ -62,13 +56,11 @@ class FromThreadChannel(EventLoopMixin):
 
     @property
     def is_overflow(self) -> bool:
-        if self.maxsize > 0:
-            return len(self.queue) >= self.maxsize
-        return False
+        return self.queue.full()
 
     @property
     def is_empty(self) -> bool:
-        return len(self.queue) == 0
+        return self.queue.empty()
 
     @property
     def is_closed(self) -> bool:
@@ -93,22 +85,25 @@ class FromThreadChannel(EventLoopMixin):
             if self.is_closed:
                 raise ChannelClosed
 
-            self.queue.append(item)
+            self.queue.put(item)
             self.__notify_readers()
 
     async def get(self) -> Any:
-        def predicate() -> bool:
-            return self.is_closed or not self.is_empty
+        async with self.__get_lock:
+            if self.is_closed:
+                if self.is_empty:
+                    raise ChannelClosed
+                return self.queue.get_nowait()
 
-        async with self.__read_condition:
-            await self.__read_condition.wait_for(predicate)
-
-            if self.is_closed and self.is_empty:
-                raise ChannelClosed
-
+            while self.is_empty:
+                await self.__read_event.wait()
+                if self.is_closed and self.is_empty:
+                    raise ChannelClosed
             try:
-                return self.queue.popleft()
+                return self.queue.get_nowait()
             finally:
+                if self.is_empty and not self.is_closed:
+                    self.__read_event.clear()
                 self.__notify_writers()
 
 
@@ -144,7 +139,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         self.__channel: FromThreadChannel = FromThreadChannel(
             maxsize=max_size, loop=self.loop,
         )
-        self.__gen_task: Optional[asyncio.Task] = None
+        self.__gen_task: Optional[asyncio.Future] = None
         self.__gen_func: Callable = gen_func
         self._statistic = IteratorWrapperStatistic(statistic_name)
         self._statistic.queue_size = max_size
@@ -189,17 +184,8 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
                 self._statistic.started -= 1
                 self.loop.call_soon_threadsafe(self.__close_event.set)
 
-    async def _run(self) -> Any:
-        return await self.loop.run_in_executor(
-            self.executor, self._in_thread,
-        )
-
     def close(self) -> Awaitable[None]:
         self.__channel.close()
-
-        if self.__gen_task is not None and not self.__gen_task.done():
-            self.__gen_task.cancel()
-
         return asyncio.ensure_future(self.wait_closed())
 
     async def wait_closed(self) -> None:
@@ -209,7 +195,12 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     def __aiter__(self) -> AsyncIterator[Any]:
         if self.__gen_task is None:
-            self.__gen_task = self.loop.create_task(self._run())
+            gen_task = self.loop.run_in_executor(
+                self.executor, self._in_thread,
+            )
+            if gen_task is None:
+                raise RuntimeError("Iterator task was not created")
+            self.__gen_task = gen_task
         return IteratorProxy(self, self.close)
 
     async def __anext__(self) -> Awaitable[T]:

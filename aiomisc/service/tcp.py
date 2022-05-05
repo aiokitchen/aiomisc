@@ -49,11 +49,16 @@ class TCPServer(SimpleServer):
     ) -> Any:
         raise NotImplementedError
 
+    async def __client_handler(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+    ) -> Any:
+        return await awaitable(self.handle_client)(reader, writer)
+
     def make_client_handler(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ) -> Any:
-        return self.create_task(awaitable(self.handle_client)(reader, writer))
+        return self.create_task(self.__client_handler(reader, writer))
 
     async def start(self) -> None:
         self.socket = self.make_socket()

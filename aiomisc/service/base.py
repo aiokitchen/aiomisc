@@ -1,9 +1,15 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Any, Awaitable, Dict, Optional, Set, Tuple
+from typing import (
+    Any, Coroutine, Dict, Generator, Optional, Set, Tuple, TypeVar, Union,
+)
 
 from ..context import Context, get_context
 from ..utils import cancel_tasks
+
+
+T = TypeVar("T")
+CoroutineType = Union[Coroutine[Any, Any, T], Generator[Any, None, T]]
 
 
 class ServiceMeta(ABCMeta):
@@ -92,8 +98,8 @@ class TaskStoreBase(Service, ABC):
         self.tasks: Set[asyncio.Task] = set()
         super().__init__(**kwargs)
 
-    def create_task(self, coro: Awaitable[Any]) -> asyncio.Task:
-        task = self.loop.create_task(coro)
+    def create_task(self, coro: CoroutineType) -> asyncio.Task:
+        task: asyncio.Task = self.loop.create_task(coro)
         self.tasks.add(task)
         task.add_done_callback(self.tasks.remove)
         return task

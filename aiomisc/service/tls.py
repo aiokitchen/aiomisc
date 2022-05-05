@@ -79,11 +79,16 @@ class TLSServer(SimpleServer):
 
         super().__init__(**kwargs)
 
+    async def __client_handler(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+    ) -> Any:
+        return await awaitable(self.handle_client)(reader, writer)
+
     def make_client_handler(
         self, reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ) -> asyncio.Task:
-        return self.create_task(awaitable(self.handle_client)(reader, writer))
+        return self.create_task(self.__client_handler(reader, writer))
 
     @abstractmethod
     async def handle_client(

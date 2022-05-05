@@ -439,6 +439,38 @@ async def test_wait_coroutine_sync(threaded_decorator, loop):
     assert result == 1
 
 
+async def test_wait_coroutine_sync_current_loop(threaded_decorator):
+    result = 0
+
+    async def coro():
+        nonlocal result
+        await asyncio.sleep(1)
+        result = 1
+
+    @threaded_decorator
+    def test():
+        aiomisc.wait_coroutine(coro())
+
+    await test()
+    assert result == 1
+
+
+async def test_wait_awaitable(threaded_decorator):
+    result = 0
+
+    @threaded_decorator
+    def in_thread():
+        nonlocal result
+        result += 1
+
+    @threaded_decorator
+    def test():
+        aiomisc.sync_await(in_thread)
+
+    await test()
+    assert result == 1
+
+
 async def test_wait_coroutine_sync_exc(threaded_decorator, loop):
     result = 0
 

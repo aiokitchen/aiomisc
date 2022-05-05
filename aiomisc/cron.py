@@ -2,7 +2,9 @@ import asyncio
 import logging
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Awaitable, Callable, Optional, Tuple, Type, Union
+from typing import (
+    Any, Awaitable, Callable, Coroutine, Optional, Tuple, Type, Union,
+)
 
 from croniter import croniter
 
@@ -127,7 +129,7 @@ class CronCallback(EventLoopMixin):
             if self._closed:
                 return
 
-            runner: Callable[..., Awaitable[Any]] = self._run
+            runner: Callable[..., Coroutine[Any, Any, Any]] = self._run
             if shield:
                 runner = utils.shield(runner)
 
