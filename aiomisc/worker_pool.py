@@ -15,7 +15,6 @@ from typing import (
     Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
 )
 
-from aiomisc.compat import get_running_loop
 from aiomisc.counters import Statistic
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import (
@@ -148,7 +147,7 @@ class WorkerPool:
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
         if self.__loop is None:
-            self.__loop = get_running_loop()
+            self.__loop = asyncio.get_running_loop()
         return self.__loop
 
     async def __handle_client(

@@ -4,7 +4,6 @@ from abc import abstractmethod
 from functools import partial
 from typing import Any, Awaitable, Callable, Optional, Union
 
-from ..compat import get_running_loop
 from ..utils import OptionsType, awaitable, bind_socket
 from .base import SimpleServer
 
@@ -30,7 +29,7 @@ class UDPServer(SimpleServer):
 
         def connection_made(self, transport: Any) -> None:
             self.transport = transport
-            self.loop = get_running_loop()
+            self.loop = asyncio.get_running_loop()
 
         def datagram_received(self, data: bytes, addr: tuple) -> None:
             self.task_factory(self.handler(data, addr))

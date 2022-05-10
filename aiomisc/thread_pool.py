@@ -1,4 +1,5 @@
 import asyncio
+import contextvars
 import inspect
 import logging
 import threading
@@ -7,15 +8,14 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from functools import partial, wraps
 from multiprocessing import cpu_count
+from queue import SimpleQueue
 from types import MappingProxyType
 from typing import (
     Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, NamedTuple, Optional,
     Set, Tuple, TypeVar,
 )
 
-from .compat import (
-    SimpleQueue, context_partial, get_current_loop, get_running_loop,
-)
+from .compat import get_current_loop
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
@@ -23,6 +23,14 @@ from .iterator_wrapper import IteratorWrapper
 T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
 log = logging.getLogger(__name__)
+
+
+def context_partial(
+    func: F, *args: Any,
+    **kwargs: Any
+) -> Any:
+    context = contextvars.copy_context()
+    return partial(context.run, func, *args, **kwargs)
 
 
 class ThreadPoolException(RuntimeError):
@@ -216,7 +224,7 @@ def run_in_executor(
     kwargs: Any = MappingProxyType({}),
 ) -> Awaitable[T]:
     try:
-        loop = get_running_loop()
+        loop = asyncio.get_running_loop()
         return loop.run_in_executor(
             executor, context_partial(func, *args, **kwargs),
         )
@@ -224,7 +232,7 @@ def run_in_executor(
         # In case the event loop is not running right now is
         # returning coroutine to avoid DeprecationWarning in Python 3.10
         async def lazy_wrapper() -> T:
-            loop = get_running_loop()
+            loop = asyncio.get_running_loop()
             return await loop.run_in_executor(
                 executor, context_partial(func, *args, **kwargs),
             )
