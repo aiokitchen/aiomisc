@@ -41,6 +41,10 @@ class DNSUDPService(UDPServer):
         await super().start()
         self.session = aiohttp.ClientSession()
 
+    async def stop(self, exc: Exception = None) -> None:
+        await self.session.close()
+        await super().stop(exc)
+
 
 if __name__ == '__main__':
     parser = Parser(auto_env_var_prefix="DOH_")
