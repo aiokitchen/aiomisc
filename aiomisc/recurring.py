@@ -21,11 +21,24 @@ class RecurringCallbackStatistic(Statistic):
     sum_time: float
 
 
-class StrategyStop(Exception):
+class StrategyException(Exception):
+    pass
+
+
+class StrategyStop(StrategyException):
     """
     Strategy function might raise this exception as way to  stop recurring
     """
     pass
+
+
+class StrategySkip(StrategyException):
+    """
+    Strategy function might raise this exception as way to skip current call
+    """
+
+    def __init__(self, next_attempt_delay: Union[int, float]):
+        self.delay = next_attempt_delay
 
 
 class RecurringCallback:
@@ -92,6 +105,9 @@ class RecurringCallback:
                 delay: Union[int, float] = await strategy(self)
             except StrategyStop:
                 return
+            except StrategySkip as e:
+                await asyncio.sleep(e.delay)
+                continue
 
             await asyncio.sleep(delay)
             future = loop.create_future()

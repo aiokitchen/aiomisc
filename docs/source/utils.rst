@@ -113,10 +113,75 @@ This detects ``address`` format and selects the socket family automatically.
     sock = bind_socket(address="::1", port=1234)
 
 
+Recurring callback
+++++++++++++++++++
+
+Runs coroutine function periodically with used defined strategy.
+
+.. code-block:: python
+
+    from typing import Union
+    from aiomisc import new_event_loop, RecurringCallback
+
+
+    async def callback():
+        print("Hello")
+
+
+    FIRST_CALL = False
+
+
+    async def strategy(_: RecurringCallback) -> Union[int, float]:
+        global FIRST_CALL
+        if not FIRST_CALL:
+            FIRST_CALL = True
+            # Delay 5 second if just started
+            return 5
+
+        # Delay 5 second if just started
+        return 10
+
+
+    if __name__ == '__main__':
+        loop = new_event_loop()
+
+        periodic = RecurringCallback(callback)
+
+        task = periodic.start(strategy)
+        loop.run_forever()
+
+
+The main purpose is this class is the strategy is an asynchronous function
+and you may write really flexible strategy.
+
+Also, with the special exceptions, you can control the behavior of the started
+``RecurringCallback``.
+
+.. code-block:: python
+
+    from aiomisc import (
+        new_event_loop, RecurringCallback, StrategySkip, StrategyStop
+    )
+
+
+    async def strategy(_: RecurringCallback) -> Union[int, float]:
+        ...
+
+        # Skip this attempt and wait 10 seconds
+        raise StrategySkip(10)
+
+        ...
+
+        # Stop execution
+        raise StrategyStop()
+
+
+
 Periodic callback
 +++++++++++++++++
 
-Runs coroutine function periodically with an optional delay of the first execution.
+Runs coroutine function periodically with an optional delay of the first
+execution. Uses ``RecurringCallback`` under the hood.
 
 .. code-block:: python
 
@@ -143,7 +208,16 @@ Runs coroutine function periodically with an optional delay of the first executi
 Cron callback
 +++++++++++++
 
+.. warning::
+
+    You have to install ``croniter`` package for use this feature.
+
+    .. code-block:: shell
+
+        pip install croniter
+
 Runs coroutine function with cron scheduling execution.
+Uses ``RecurringCallback`` under the hood.
 
 .. code-block:: python
 

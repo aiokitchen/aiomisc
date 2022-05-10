@@ -10,7 +10,9 @@ from .periodic import PeriodicCallback
 from .plugins import plugins
 from .pool import PoolBase
 from .process_pool import ProcessPoolExecutor
-from .recurring import RecurringCallback, StrategyStop
+from .recurring import (
+    RecurringCallback, StrategyException, StrategySkip, StrategyStop,
+)
 from .service import Service
 from .signal import Signal, receiver
 from .thread_pool import (
@@ -40,6 +42,8 @@ __all__ = (
     "Service",
     "Signal",
     "Statistic",
+    "StrategyException",
+    "StrategySkip",
     "StrategyStop",
     "ThreadPoolExecutor",
     "WorkerPool",

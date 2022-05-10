@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import socket
-import sys
 from typing import Callable
 
 import pytest

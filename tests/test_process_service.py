@@ -1,6 +1,5 @@
 import os
 import platform
-import sys
 from multiprocessing import Queue
 from pathlib import Path
 from typing import Any
