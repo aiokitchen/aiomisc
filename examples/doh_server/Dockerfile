@@ -1,6 +1,6 @@
 FROM snakepacker/python:all as builder
 
-RUN python3.8 -m venv /usr/share/python3/doh
+RUN python3.10 -m venv /usr/share/python3/doh
 
 RUN /usr/share/python3/doh/bin/pip install -U pip \
     aiomisc~=15.6.1 \
@@ -13,7 +13,7 @@ COPY doh_server.py /usr/share/python3/doh/bin/doh-server
 RUN chmod a+x /usr/share/python3/doh/bin/doh-server
 
 ###############################################################################
-FROM snakepacker/python:3.8
+FROM snakepacker/python:3.10
 
 COPY --from=builder /usr/share/python3/doh /usr/share/python3/doh
 
