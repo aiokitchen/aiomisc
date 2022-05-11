@@ -104,7 +104,7 @@ class RecurringCallback:
 
             try:
                 delay: Union[int, float] = await strategy(self)
-                if isinstance(delay, (int, float)):
+                if not isinstance(delay, (int, float)):
                     log.warning(
                         "Strategy %r returns wrong delay %r. Stopping.",
                         strategy, delay,
