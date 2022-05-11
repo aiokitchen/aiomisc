@@ -11,7 +11,7 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
-from .compat import event_loop_policy, get_running_loop, set_current_loop
+from .compat import event_loop_policy, set_current_loop
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
@@ -212,7 +212,7 @@ class Entrypoint:
     async def __aenter__(self) -> "Entrypoint":
         if self._loop is None:
             # When __aenter__ called without __enter__
-            self._loop = get_running_loop()
+            self._loop = asyncio.get_running_loop()
 
         self.ctx = Context(loop=self.loop)
         await self._start()

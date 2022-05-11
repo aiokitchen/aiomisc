@@ -15,12 +15,6 @@ from aiomisc import WorkerPool
 from aiomisc.worker_pool import WorkerPoolStatistic
 
 
-skipif = pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="https://bugs.python.org/issue37380",
-)
-
-
 PROCESS_NUM = 4
 
 
@@ -35,7 +29,6 @@ async def worker_pool(request, loop) -> WorkerPool:
         yield pool
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_success(worker_pool):
     results = await asyncio.gather(
@@ -50,7 +43,6 @@ async def test_success(worker_pool):
     assert sorted(results) == [i * i for i in range(worker_pool.workers * 2)]
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_incomplete_task_kill(worker_pool):
 
@@ -79,7 +71,6 @@ async def test_incomplete_task_kill(worker_pool):
     )
 
 
-@skipif
 @pytest.mark.skipif(
     sys.platform in ("win32", "cygwin"), reason="Windows is ill",
 )
@@ -128,7 +119,6 @@ async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
     assert list(pids_start) == list(pids_end)
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_exceptions(worker_pool):
     results = await asyncio.gather(
@@ -144,7 +134,6 @@ async def test_exceptions(worker_pool):
         assert isinstance(exc, ZeroDivisionError)
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_exit(worker_pool):
     exceptions = await asyncio.wait_for(
@@ -162,7 +151,6 @@ async def test_exit(worker_pool):
         assert isinstance(exc, ProcessError)
 
 
-@skipif
 @aiomisc.timeout(30)
 async def test_exit_respawn(worker_pool):
     exceptions = await asyncio.gather(
@@ -193,7 +181,6 @@ def get_initializer_args():
     return INITIALIZER_ARGS, INITIALIZER_KWARGS
 
 
-@skipif
 @aiomisc.timeout(10)
 async def test_initializer(worker_pool):
     pool = WorkerPool(
@@ -223,7 +210,6 @@ def bad_initializer():
     return 1 / 0
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_bad_initializer(worker_pool):
     pool = WorkerPool(1, initializer=bad_initializer)
@@ -233,7 +219,6 @@ async def test_bad_initializer(worker_pool):
             await pool.create_task(get_initializer_args)
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_threads_active_count_in_pool(worker_pool):
     threads = await worker_pool.create_task(threading.active_count)

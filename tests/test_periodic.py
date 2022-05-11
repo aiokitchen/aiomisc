@@ -28,7 +28,8 @@ async def test_periodic(loop):
             timeout=5,
         )
 
-    periodic.stop()
+    with pytest.raises(asyncio.CancelledError):
+        await periodic.stop()
 
 
 async def test_long_func(loop):
@@ -46,7 +47,8 @@ async def test_long_func(loop):
     periodic.start(0.1, loop)
 
     await asyncio.sleep(1)
-    periodic.stop()
+    with pytest.raises(asyncio.CancelledError):
+        await periodic.stop()
 
     async with condition:
         await asyncio.wait_for(
@@ -112,7 +114,8 @@ async def test_delay(loop):
 
     await asyncio.sleep(0.5)
 
-    periodic.stop()
+    with pytest.raises(asyncio.CancelledError):
+        await periodic.stop()
 
     assert 1 < counter <= 4
 
@@ -138,6 +141,36 @@ async def test_restart(loop):
                 timeout=5,
             )
 
-        await periodic.stop()
+        with pytest.raises(asyncio.CancelledError):
+            await periodic.stop()
+
+        assert counter == i
+
+
+@aiomisc.timeout(10)
+async def test_cancelled_callback(loop):
+    counter = 0
+    condition = asyncio.Condition()
+
+    async def task():
+        nonlocal counter
+        async with condition:
+            counter += 1
+            condition.notify_all()
+        raise asyncio.CancelledError
+
+    periodic = aiomisc.PeriodicCallback(task)
+
+    for i in (5, 10, 15):
+        periodic.start(0.1, loop)
+
+        async with condition:
+            await asyncio.wait_for(
+                condition.wait_for(lambda: counter == i),
+                timeout=5,
+            )
+
+        with pytest.raises(asyncio.CancelledError):
+            await periodic.stop()
 
         assert counter == i

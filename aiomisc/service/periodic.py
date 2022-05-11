@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from abc import abstractmethod
 from typing import Any, Union
@@ -29,10 +30,7 @@ class PeriodicService(Service):
         log.info("Periodic service %s started", self)
 
     async def stop(self, err: Exception = None) -> None:
-        if self.periodic.task:
-            await self.periodic.task
-
-        await self.periodic.stop()
+        await asyncio.gather(self.periodic.stop(), return_exceptions=True)
         log.info("Periodic service %s is stopped", self)
 
     @abstractmethod

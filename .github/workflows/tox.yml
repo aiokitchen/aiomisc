@@ -54,9 +54,6 @@ jobs:
 
       matrix:
         include:
-          - python: '3.6'
-            toxenv: py36
-            os: ubuntu-latest
           - python: '3.7'
             toxenv: py37
             os: ubuntu-latest
@@ -75,9 +72,6 @@ jobs:
           - python: '3.10'
             toxenv: rpc_udp
             os: ubuntu-latest
-          - python: '3.6'
-            toxenv: contextvars36
-            os: ubuntu-latest
           - python: '3.7'
             toxenv: uvloop37
             os: ubuntu-latest
@@ -89,9 +83,6 @@ jobs:
             os: ubuntu-latest
 
 # TODO: Fix builds and enable it
-#          - python: '3.6'
-#            toxenv: py36
-#            os: macos-latest
 #          - python: '3.7'
 #            toxenv: py37
 #            os: macos-latest
@@ -107,9 +98,6 @@ jobs:
 #          - python: '3.8'
 #            toxenv: rpc_udp
 #            os: macos-latest
-#          - python: '3.6'
-#            toxenv: contextvars36
-#            os: macos-latest
 #          - python: '3.7'
 #            toxenv: uvloop37
 #            os: macos-latest
@@ -120,9 +108,6 @@ jobs:
 #            toxenv: uvloop39
 #            os: macos-latest
 
-#          - python: '3.6'
-#            toxenv: py36
-#            os: windows-latest
 #          - python: '3.7'
 #            toxenv: py37
 #            os: windows-latest

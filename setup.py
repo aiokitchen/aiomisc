@@ -46,7 +46,6 @@ setup(
         'Operating System :: POSIX',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -65,16 +64,14 @@ setup(
         'aiohttp': ['aiohttp'],
         'asgi': ['aiohttp-asgi'],
         'carbon': ['aiocarbon~=0.15'],
-        'contextvars': ['contextvars~=2.4'],
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
         'cron': ['croniter~=0.3.34'],
-        ":python_version<'3.7'": ["contextvars"]
     },
     entry_points={
         "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
     },
-    python_requires=">=3.6, <4",
+    python_requires=">=3.7, <4",
     url='https://github.com/aiokitchen/aiomisc'
 )

@@ -12,8 +12,7 @@ from typing import (
 )
 
 from .compat import (
-    event_loop_policy, get_running_loop, sock_set_nodelay, sock_set_reuseport,
-    time_ns,
+    event_loop_policy, sock_set_nodelay, sock_set_reuseport, time_ns,
 )
 from .thread_pool import ThreadPoolExecutor
 
@@ -267,7 +266,7 @@ class SelectAwaitable:
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
         if self.__loop is None:
-            self.__loop = get_running_loop()
+            self.__loop = asyncio.get_running_loop()
         return self.__loop
 
     async def __waiter(self, idx: int, awaitable: Awaitable[T]) -> None:

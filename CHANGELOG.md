@@ -9,6 +9,19 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+16.0.x
+------
+
+* Added `RecurringCallback`
+* Rewritten `PeriodicCallback` and `CronCallback` using `RecurringCallback`
+
+15.9.x
+------
+
+* Threaded iterable has been optimized and would not create too
+  much asyncio.Task instances.
+* Sentry handler for python3.10
+
 15.8.x
 ------
 
