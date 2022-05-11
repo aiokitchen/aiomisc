@@ -175,6 +175,9 @@ Also, with the special exceptions, you can control the behavior of the started
         # Stop execution
         raise StrategyStop()
 
+if the strategy function returns an incorrect value (not a number), or does
+not raise special exceptions, the recurring execution is terminated.
+
 
 
 Periodic callback

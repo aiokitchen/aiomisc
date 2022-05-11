@@ -10,7 +10,8 @@ log = logging.getLogger(__name__)
 ExceptionsType = Tuple[Type[Exception], ...]
 CallbackType = Callable[..., Union[Awaitable[Any], Any]]
 RecurringCallbackStrategy = Callable[
-    ["RecurringCallback"], Union[int, float, Awaitable[int], Awaitable[float]],
+    ["RecurringCallback"],
+    Union[int, float, Awaitable[int], Awaitable[float]],
 ]
 
 
@@ -103,11 +104,24 @@ class RecurringCallback:
 
             try:
                 delay: Union[int, float] = await strategy(self)
-            except StrategyStop:
-                return
+                if isinstance(delay, (int, float)):
+                    log.warning(
+                        "Strategy %r returns wrong delay %r. Stopping.",
+                        strategy, delay,
+                    )
+                    return
+                if delay < 0:
+                    log.warning(
+                        "Strategy %r returns negative delay %r. "
+                        "Zero delay will be used.",
+                        strategy, delay,
+                    )
+                    delay = 0
             except StrategySkip as e:
                 await asyncio.sleep(e.delay)
                 continue
+            except StrategyException:
+                return
 
             await asyncio.sleep(delay)
             future = loop.create_future()
