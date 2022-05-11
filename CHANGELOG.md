@@ -12,13 +12,14 @@ in this document.
 16.0.x
 ------
 
-* Add `RecurringCallback`
-* Rewrite `PeriodicCallback` and `CronCallback` using `RecurringCallback`
+* Added `RecurringCallback`
+* Rewritten `PeriodicCallback` and `CronCallback` using `RecurringCallback`
 
 15.9.x
 ------
 
-* Threaded iterable has been optimized. Now it's not creates too much tasks.
+* Threaded iterable has been optimized and would not create too
+  much asyncio.Task instances.
 * Sentry handler for python3.10
 
 15.8.x

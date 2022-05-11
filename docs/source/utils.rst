@@ -116,7 +116,7 @@ This detects ``address`` format and selects the socket family automatically.
 Recurring callback
 ++++++++++++++++++
 
-Runs coroutine function periodically with used defined strategy.
+Runs coroutine function periodically with user-defined strategy.
 
 .. code-block:: python
 
@@ -138,7 +138,7 @@ Runs coroutine function periodically with used defined strategy.
             # Delay 5 second if just started
             return 5
 
-        # Delay 5 second if just started
+        # Delay 10 seconds if it is not a first call
         return 10
 
 
@@ -151,8 +151,8 @@ Runs coroutine function periodically with used defined strategy.
         loop.run_forever()
 
 
-The main purpose is this class is the strategy is an asynchronous function
-and you may write really flexible strategy.
+The main purpose is this class is to provide ability to specify the
+asynchronous strategy function, which can be written very flexible.
 
 Also, with the special exceptions, you can control the behavior of the started
 ``RecurringCallback``.
