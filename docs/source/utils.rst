@@ -213,11 +213,19 @@ Cron callback
 
 .. warning::
 
-    You have to install ``croniter`` package for use this feature.
+    You have to install ``croniter`` package for use this feature:
 
     .. code-block:: shell
 
         pip install croniter
+
+    Or add extras when installing aiomisc:
+
+    .. code-block:: shell
+
+        pip install aiomisc[cron]
+
+
 
 Runs coroutine function with cron scheduling execution.
 Uses ``RecurringCallback`` under the hood.

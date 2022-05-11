@@ -64,7 +64,6 @@ setup(
         'aiohttp': ['aiohttp'],
         'asgi': ['aiohttp-asgi'],
         'carbon': ['aiocarbon~=0.15'],
-        'contextvars': ['contextvars~=2.4'],
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
