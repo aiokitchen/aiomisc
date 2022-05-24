@@ -34,7 +34,7 @@ class QueuedPatchedAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
         qsize: int = 1000,
         **kwargs: Any
     ):
-        super(QueuedAioHttpTransport, self).__init__()
+        super(QueuedAioHttpTransport, self).__init__(*args, **kwargs)
         loop_args = (
             {"loop": self._loop} if sys.version_info < (3, 8) else {}
         )
