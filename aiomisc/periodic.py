@@ -14,7 +14,7 @@ class PeriodicCallback(EventLoopMixin):
     .. note::
 
         When the periodic function executes longer then execution interval a
-        next call will be skipping and warning will be logged.
+        next call would be skipped and warning would be logged.
 
     """
 
