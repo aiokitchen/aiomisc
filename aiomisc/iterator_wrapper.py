@@ -1,12 +1,12 @@
 import asyncio
 import inspect
 import threading
+from collections import deque
 from concurrent.futures import Executor
-from queue import Queue
 from types import TracebackType
 from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn, Optional,
-    Type, TypeVar,
+    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
+    Optional, Type, TypeVar,
 )
 from weakref import finalize
 
@@ -27,12 +27,13 @@ class ChannelClosed(RuntimeError):
 
 class FromThreadChannel(EventLoopMixin):
     __slots__ = (
-        "maxsize", "queue", "__close_event",
+        "maxsize", "queue", "__close_event", "_max_size",
         "__write_condition", "__read_event", "__get_lock",
     ) + EventLoopMixin.__slots__
 
     def __init__(self, maxsize: int, loop: asyncio.AbstractEventLoop):
-        self.queue: Queue = Queue(maxsize=maxsize)
+        self.queue: Deque[Any] = deque()
+        self._max_size = maxsize
         self._loop = loop
         self.__close_event = threading.Event()
         self.__write_condition = threading.Condition()
@@ -56,11 +57,13 @@ class FromThreadChannel(EventLoopMixin):
 
     @property
     def is_overflow(self) -> bool:
-        return self.queue.full()
+        if self._max_size > 0:
+            return len(self.queue) >= self._max_size
+        return False
 
     @property
     def is_empty(self) -> bool:
-        return self.queue.empty()
+        return len(self.queue) == 0
 
     @property
     def is_closed(self) -> bool:
@@ -85,7 +88,7 @@ class FromThreadChannel(EventLoopMixin):
             if self.is_closed:
                 raise ChannelClosed
 
-            self.queue.put(item)
+            self.queue.append(item)
             self.__notify_readers()
 
     async def get(self) -> Any:
@@ -93,14 +96,14 @@ class FromThreadChannel(EventLoopMixin):
             if self.is_closed:
                 if self.is_empty:
                     raise ChannelClosed
-                return self.queue.get_nowait()
+                return self.queue.popleft()
 
             while self.is_empty:
                 await self.__read_event.wait()
                 if self.is_closed and self.is_empty:
                     raise ChannelClosed
             try:
-                return self.queue.get_nowait()
+                return self.queue.popleft()
             finally:
                 if self.is_empty and not self.is_closed:
                     self.__read_event.clear()
