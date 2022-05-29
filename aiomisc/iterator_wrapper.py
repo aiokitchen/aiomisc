@@ -57,7 +57,9 @@ class FromThreadChannel(EventLoopMixin):
 
     @property
     def is_overflow(self) -> bool:
-        return len(self.queue) >= self._max_size
+        if self._max_size > 0:
+            return len(self.queue) >= self._max_size
+        return False
 
     @property
     def is_empty(self) -> bool:
