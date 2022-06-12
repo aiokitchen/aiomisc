@@ -180,7 +180,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         )
 
     def __aiter__(self) -> AsyncIterator[Any]:
-        if self.loop.is_running():
+        if not self.loop.is_running():
             raise RuntimeError("Event loop is not running")
 
         if self.__gen_task is None:
