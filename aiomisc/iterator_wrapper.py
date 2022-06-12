@@ -1,10 +1,10 @@
 import asyncio
 import inspect
-from collections import deque
 from concurrent.futures import Executor
+from queue import Queue, Empty as QueueEmpty
 from types import TracebackType
 from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
+    Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn,
     Optional, Type, TypeVar,
 )
 from weakref import finalize
@@ -25,25 +25,14 @@ class ChannelClosed(RuntimeError):
 
 
 class FromThreadChannel:
-    __slots__ = ("queue", "__closed", "_max_size")
+    __slots__ = ("queue", "__closed")
 
     def __init__(self, maxsize: int):
-        self.queue: Deque[Any] = deque()
-        self._max_size = maxsize
+        self.queue: Queue = Queue(maxsize=maxsize)
         self.__closed = False
 
     def close(self) -> None:
         self.__closed = True
-
-    @property
-    def is_overflow(self) -> bool:
-        if self._max_size > 0:
-            return len(self.queue) >= self._max_size
-        return False
-
-    @property
-    def is_empty(self) -> bool:
-        return len(self.queue) == 0
 
     @property
     def is_closed(self) -> bool:
@@ -61,16 +50,16 @@ class FromThreadChannel:
     def put(self, item: Any) -> None:
         if self.is_closed:
             raise ChannelClosed
-        self.queue.append(item)
+        self.queue.put(item)
 
     def __await__(self) -> Any:
-        while self.is_empty and not self.is_closed:
-            yield None
-
-        if self.is_closed and self.is_empty:
-            raise ChannelClosed
-
-        return self.queue.popleft()
+        while True:
+            try:
+                return self.queue.get_nowait()
+            except QueueEmpty:
+                if self.__closed:
+                    raise ChannelClosed
+                yield None
 
     async def get(self) -> Any:
         return await self
@@ -160,11 +149,14 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         if self.__gen_task:
             await asyncio.gather(self.__gen_task, return_exceptions=True)
 
+    def _run(self) -> Any:
+        return self.loop.run_in_executor(
+            self.executor, self._in_thread,
+        )
+
     def __aiter__(self) -> AsyncIterator[Any]:
         if self.__gen_task is None:
-            gen_task = self.loop.run_in_executor(
-                self.executor, self._in_thread,
-            )
+            gen_task = self._run()
             if gen_task is None:
                 raise RuntimeError("Iterator task was not created")
             self.__gen_task = gen_task
