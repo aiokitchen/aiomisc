@@ -1,11 +1,14 @@
 import asyncio
 import inspect
+import operator
+from collections import deque
 from concurrent.futures import Executor
 from queue import Queue, Empty as QueueEmpty
+from time import time
 from types import TracebackType
 from typing import (
     Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn,
-    Optional, Type, TypeVar,
+    Optional, Type, TypeVar, Deque, Union,
 )
 from weakref import finalize
 
@@ -25,11 +28,15 @@ class ChannelClosed(RuntimeError):
 
 
 class FromThreadChannel:
-    __slots__ = ("queue", "__closed")
+    SLEEP_LOW_THRESHOLD = 0.0001
+    SLEEP_DIFFERENCE_DIVIDER = 10
+
+    __slots__ = ("queue", "__closed", "__last_received_item")
 
     def __init__(self, maxsize: int):
         self.queue: Queue = Queue(maxsize=maxsize)
         self.__closed = False
+        self.__last_received_item: float = -1
 
     def close(self) -> None:
         self.__closed = True
@@ -51,6 +58,21 @@ class FromThreadChannel:
         if self.is_closed:
             raise ChannelClosed
         self.queue.put(item)
+        self.__last_received_item = time()
+
+    def _compute_sleep_time(self) -> Union[float, int]:
+        if self.__last_received_item < 0:
+            return 0
+
+        sleep_time = (
+            (
+                time() - self.__last_received_item
+            ) / self.SLEEP_DIFFERENCE_DIVIDER
+        )
+
+        if sleep_time < self.SLEEP_LOW_THRESHOLD:
+            return 0
+        return sleep_time
 
     def __await__(self) -> Any:
         while True:
@@ -59,7 +81,9 @@ class FromThreadChannel:
             except QueueEmpty:
                 if self.__closed:
                     raise ChannelClosed
-                yield None
+
+                sleep_time = self._compute_sleep_time()
+                yield from asyncio.sleep(sleep_time).__await__()
 
     async def get(self) -> Any:
         return await self
