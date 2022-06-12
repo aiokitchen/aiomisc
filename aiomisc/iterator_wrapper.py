@@ -1,14 +1,13 @@
 import asyncio
 import inspect
-import operator
-from collections import deque
 from concurrent.futures import Executor
-from queue import Queue, Empty as QueueEmpty
+from queue import Empty as QueueEmpty
+from queue import Queue
 from time import time
 from types import TracebackType
 from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn,
-    Optional, Type, TypeVar, Deque, Union,
+    Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn, Optional,
+    Type, TypeVar, Union,
 )
 from weakref import finalize
 
