@@ -25,35 +25,16 @@ class ChannelClosed(RuntimeError):
     pass
 
 
-class FromThreadChannel(EventLoopMixin):
-    __slots__ = (
-        "maxsize", "queue", "__close_event", "_max_size",
-        "__write_condition", "__read_event", "__get_lock",
-    ) + EventLoopMixin.__slots__
+class FromThreadChannel:
+    __slots__ = ("queue", "__closed", "_max_size")
 
-    def __init__(self, maxsize: int, loop: asyncio.AbstractEventLoop):
+    def __init__(self, maxsize: int):
         self.queue: Deque[Any] = deque()
         self._max_size = maxsize
-        self._loop = loop
-        self.__close_event = threading.Event()
-        self.__write_condition = threading.Condition()
-        self.__read_event = asyncio.Event()
-        self.__get_lock = asyncio.Lock()
-
-    def __notify_readers(self) -> None:
-        self.loop.call_soon_threadsafe(self.__read_event.set)
-
-    def __notify_writers(self) -> None:
-        with self.__write_condition:
-            self.__write_condition.notify_all()
+        self.__closed = False
 
     def close(self) -> None:
-        if self.is_closed:
-            return
-
-        self.__close_event.set()
-        self.__notify_readers()
-        self.__notify_writers()
+        self.__closed = True
 
     @property
     def is_overflow(self) -> bool:
@@ -67,7 +48,7 @@ class FromThreadChannel(EventLoopMixin):
 
     @property
     def is_closed(self) -> bool:
-        return self.__close_event.is_set()
+        return self.__closed
 
     def __enter__(self) -> "FromThreadChannel":
         return self
@@ -79,35 +60,16 @@ class FromThreadChannel(EventLoopMixin):
         self.close()
 
     def put(self, item: Any) -> None:
-        def predicate() -> bool:
-            return self.is_closed or not self.is_overflow
+        self.queue.append(item)
 
-        with self.__write_condition:
-            self.__write_condition.wait_for(predicate)
+    def __await__(self) -> Any:
+        while self.is_empty and not self.is_closed:
+            yield None
 
-            if self.is_closed:
-                raise ChannelClosed
+        if self.is_closed and self.is_empty:
+            raise ChannelClosed
 
-            self.queue.append(item)
-            self.__notify_readers()
-
-    async def get(self) -> Any:
-        async with self.__get_lock:
-            if self.is_closed:
-                if self.is_empty:
-                    raise ChannelClosed
-                return self.queue.popleft()
-
-            while self.is_empty:
-                await self.__read_event.wait()
-                if self.is_closed and self.is_empty:
-                    raise ChannelClosed
-            try:
-                return self.queue.popleft()
-            finally:
-                if self.is_empty and not self.is_closed:
-                    self.__read_event.clear()
-                self.__notify_writers()
+        return self.queue.popleft()
 
 
 class IteratorWrapperStatistic(Statistic):
@@ -139,9 +101,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         self.executor = executor
 
         self.__close_event = asyncio.Event()
-        self.__channel: FromThreadChannel = FromThreadChannel(
-            maxsize=max_size, loop=self.loop,
-        )
+        self.__channel: FromThreadChannel = FromThreadChannel(maxsize=max_size)
         self.__gen_task: Optional[asyncio.Future] = None
         self.__gen_func: Callable = gen_func
         self._statistic = IteratorWrapperStatistic(statistic_name)
@@ -208,7 +168,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     async def __anext__(self) -> Awaitable[T]:
         try:
-            item, is_exc = await self.__channel.get()
+            item, is_exc = await self.__channel
         except ChannelClosed:
             await self.wait_closed()
             raise StopAsyncIteration
