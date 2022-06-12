@@ -32,7 +32,7 @@ class FromThreadChannel:
 
     __slots__ = ("queue", "__closed", "__last_received_item")
 
-    def __init__(self, maxsize: int):
+    def __init__(self, maxsize: int = 0):
         self.queue: Queue = Queue(maxsize=maxsize)
         self.__closed = False
         self.__last_received_item: float = -1
@@ -56,6 +56,7 @@ class FromThreadChannel:
     def put(self, item: Any) -> None:
         if self.is_closed:
             raise ChannelClosed
+
         self.queue.put(item)
         self.__last_received_item = time()
 
@@ -76,9 +77,10 @@ class FromThreadChannel:
     def __await__(self) -> Any:
         while True:
             try:
-                return self.queue.get_nowait()
+                res = self.queue.get_nowait()
+                return res
             except QueueEmpty:
-                if self.__closed:
+                if self.is_closed:
                     raise ChannelClosed
 
                 sleep_time = self._compute_sleep_time()
@@ -178,6 +180,9 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         )
 
     def __aiter__(self) -> AsyncIterator[Any]:
+        if self.loop.is_running():
+            raise RuntimeError("Event loop is not running")
+
         if self.__gen_task is None:
             gen_task = self._run()
             if gen_task is None:
