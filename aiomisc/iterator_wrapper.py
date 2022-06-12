@@ -59,6 +59,8 @@ class FromThreadChannel:
         self.close()
 
     def put(self, item: Any) -> None:
+        if self.is_closed:
+            raise ChannelClosed
         self.queue.append(item)
 
     def __await__(self) -> Any:
@@ -69,6 +71,9 @@ class FromThreadChannel:
             raise ChannelClosed
 
         return self.queue.popleft()
+
+    async def get(self) -> Any:
+        return await self
 
 
 class IteratorWrapperStatistic(Statistic):
@@ -167,7 +172,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     async def __anext__(self) -> Awaitable[T]:
         try:
-            item, is_exc = await self.__channel
+            item, is_exc = await self.__channel.get()
         except ChannelClosed:
             await self.wait_closed()
             raise StopAsyncIteration

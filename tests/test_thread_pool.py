@@ -41,8 +41,8 @@ def executor(loop: asyncio.AbstractEventLoop):
         thread_pool.shutdown(wait=True)
 
 
-async def test_from_thread_channel(loop, threaded_decorator):
-    channel = FromThreadChannel(maxsize=2, loop=loop)
+async def test_from_thread_channel(threaded_decorator):
+    channel = FromThreadChannel(maxsize=2)
 
     @threaded_decorator
     def in_thread():
@@ -60,7 +60,7 @@ async def test_from_thread_channel(loop, threaded_decorator):
 
 
 async def test_from_thread_channel_wait_before(loop, threaded_decorator):
-    channel = FromThreadChannel(maxsize=1, loop=loop)
+    channel = FromThreadChannel(maxsize=1)
 
     @threaded_decorator
     def in_thread():
@@ -79,14 +79,14 @@ async def test_from_thread_channel_wait_before(loop, threaded_decorator):
 
 
 async def test_from_thread_channel_close(loop):
-    channel = FromThreadChannel(maxsize=1, loop=loop)
+    channel = FromThreadChannel(maxsize=1)
     with channel:
         channel.put(1)
 
     with pytest.raises(ChannelClosed):
         channel.put(2)
 
-    channel = FromThreadChannel(maxsize=1, loop=loop)
+    channel = FromThreadChannel(maxsize=1)
     task = loop.create_task(channel.get())
 
     with pytest.raises(asyncio.TimeoutError):
