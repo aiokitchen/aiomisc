@@ -1,6 +1,5 @@
 import asyncio
 import inspect
-import threading
 from collections import deque
 from concurrent.futures import Executor
 from types import TracebackType
