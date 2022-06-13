@@ -7,8 +7,8 @@ from queue import Queue
 from time import time
 from types import TracebackType
 from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Generator, NoReturn, Optional,
-    Type, TypeVar, Union,
+    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
+    Optional, Type, TypeVar, Union,
 )
 from weakref import finalize
 
@@ -29,6 +29,10 @@ class ChannelClosed(RuntimeError):
 
 class QueueWrapper:
     __slots__ = ("deque", "queue", "max_size")
+
+    max_size: int
+    queue: Queue
+    deque: Deque[Any]
 
     def __init__(self, max_size: int):
         self.max_size = max_size
