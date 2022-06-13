@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+from collections import deque
 from concurrent.futures import Executor
 from queue import Empty as QueueEmpty
 from queue import Queue
@@ -26,6 +27,32 @@ class ChannelClosed(RuntimeError):
     pass
 
 
+class QueueWrapper:
+    __slots__ = ("deque", "queue", "max_size")
+
+    def __init__(self, max_size: int):
+        self.max_size = max_size
+
+        if max_size > 0:
+            self.queue = Queue(maxsize=max_size)
+        else:
+            self.deque = deque()
+
+    def put(self, item: Any) -> None:
+        if self.max_size > 0:
+            self.queue.put(item)
+        else:
+            self.deque.append(item)
+
+    def get(self) -> Any:
+        if self.max_size > 0:
+            return self.queue.get_nowait()
+        else:
+            if not len(self.deque):
+                raise QueueEmpty
+            return self.deque.popleft()
+
+
 class FromThreadChannel:
     SLEEP_LOW_THRESHOLD = 0.0001
     SLEEP_DIFFERENCE_DIVIDER = 10
@@ -33,7 +60,7 @@ class FromThreadChannel:
     __slots__ = ("queue", "__closed", "__last_received_item")
 
     def __init__(self, maxsize: int = 0):
-        self.queue: Queue = Queue(maxsize=maxsize)
+        self.queue: QueueWrapper = QueueWrapper(max_size=maxsize)
         self.__closed = False
         self.__last_received_item: float = -1
 
@@ -77,7 +104,7 @@ class FromThreadChannel:
     def __await__(self) -> Any:
         while True:
             try:
-                res = self.queue.get_nowait()
+                res = self.queue.get()
                 return res
             except QueueEmpty:
                 if self.is_closed:
