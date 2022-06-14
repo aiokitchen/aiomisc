@@ -44,7 +44,7 @@ class DequeWrapper(QueueWrapperBase):
         self.queue: Deque[Any] = deque()
 
     def get(self) -> Any:
-        if not len(self.queue):
+        if not self.queue:
             raise QueueEmpty
         return self.queue.popleft()
 
