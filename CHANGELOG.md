@@ -9,6 +9,13 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+16.1.x
+------
+
+* `threaded_iterable` internal implementation was reworked, it's a speed-up
+  the functions which `yield` lots of items.
+* `threaded_iterable_separate` did not create a separate thread.
+
 16.0.x
 ------
 
