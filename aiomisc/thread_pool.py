@@ -368,15 +368,15 @@ def threaded_iterable(
 
 
 class IteratorWrapperSeparate(IteratorWrapper):
-    async def _run(self) -> Any:
-        return await run_in_new_thread(self._in_thread)
+    def _run(self) -> Any:
+        return run_in_new_thread(self._in_thread)
 
 
 def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:
     if isinstance(func, int):
-        return partial(threaded_iterable, max_size=func)
+        return partial(threaded_iterable_separate, max_size=func)
     if func is None:
-        return partial(threaded_iterable, max_size=max_size)
+        return partial(threaded_iterable_separate, max_size=max_size)
 
     @wraps(func)
     def wrap(*args: Any, **kwargs: Any) -> Any:

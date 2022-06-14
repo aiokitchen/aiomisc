@@ -1,12 +1,15 @@
 import asyncio
 import inspect
-import threading
+from abc import abstractmethod
 from collections import deque
 from concurrent.futures import Executor
+from queue import Empty as QueueEmpty
+from queue import Queue
+from time import time
 from types import TracebackType
 from typing import (
     Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
-    Optional, Type, TypeVar,
+    Optional, Type, TypeVar, Union,
 )
 from weakref import finalize
 
@@ -25,49 +28,66 @@ class ChannelClosed(RuntimeError):
     pass
 
 
-class FromThreadChannel(EventLoopMixin):
-    __slots__ = (
-        "maxsize", "queue", "__close_event", "_max_size",
-        "__write_condition", "__read_event", "__get_lock",
-    ) + EventLoopMixin.__slots__
+class QueueWrapperBase:
+    @abstractmethod
+    def put(self, item: Any) -> None:
+        raise NotImplementedError
 
-    def __init__(self, maxsize: int, loop: asyncio.AbstractEventLoop):
+    def get(self) -> Any:
+        raise NotImplementedError
+
+
+class DequeWrapper(QueueWrapperBase):
+    __slots__ = "queue",
+
+    def __init__(self) -> None:
         self.queue: Deque[Any] = deque()
-        self._max_size = maxsize
-        self._loop = loop
-        self.__close_event = threading.Event()
-        self.__write_condition = threading.Condition()
-        self.__read_event = asyncio.Event()
-        self.__get_lock = asyncio.Lock()
 
-    def __notify_readers(self) -> None:
-        self.loop.call_soon_threadsafe(self.__read_event.set)
+    def get(self) -> Any:
+        if not self.queue:
+            raise QueueEmpty
+        return self.queue.popleft()
 
-    def __notify_writers(self) -> None:
-        with self.__write_condition:
-            self.__write_condition.notify_all()
+    def put(self, item: Any) -> None:
+        return self.queue.append(item)
+
+
+class QueueWrapper(QueueWrapperBase):
+    __slots__ = "queue",
+
+    def __init__(self, max_size: int) -> None:
+        self.queue: Queue = Queue(maxsize=max_size)
+
+    def put(self, item: Any) -> None:
+        return self.queue.put(item)
+
+    def get(self) -> Any:
+        return self.queue.get_nowait()
+
+
+def make_queue(max_size: int = 0) -> QueueWrapperBase:
+    if max_size > 0:
+        return QueueWrapper(max_size)
+    return DequeWrapper()
+
+
+class FromThreadChannel:
+    SLEEP_LOW_THRESHOLD = 0.0001
+    SLEEP_DIFFERENCE_DIVIDER = 10
+
+    __slots__ = ("queue", "__closed", "__last_received_item")
+
+    def __init__(self, maxsize: int = 0):
+        self.queue: QueueWrapperBase = make_queue(max_size=maxsize)
+        self.__closed = False
+        self.__last_received_item: float = time()
 
     def close(self) -> None:
-        if self.is_closed:
-            return
-
-        self.__close_event.set()
-        self.__notify_readers()
-        self.__notify_writers()
-
-    @property
-    def is_overflow(self) -> bool:
-        if self._max_size > 0:
-            return len(self.queue) >= self._max_size
-        return False
-
-    @property
-    def is_empty(self) -> bool:
-        return len(self.queue) == 0
+        self.__closed = True
 
     @property
     def is_closed(self) -> bool:
-        return self.__close_event.is_set()
+        return self.__closed
 
     def __enter__(self) -> "FromThreadChannel":
         return self
@@ -79,35 +99,41 @@ class FromThreadChannel(EventLoopMixin):
         self.close()
 
     def put(self, item: Any) -> None:
-        def predicate() -> bool:
-            return self.is_closed or not self.is_overflow
+        if self.is_closed:
+            raise ChannelClosed
 
-        with self.__write_condition:
-            self.__write_condition.wait_for(predicate)
+        self.queue.put(item)
+        self.__last_received_item = time()
 
-            if self.is_closed:
-                raise ChannelClosed
+    def _compute_sleep_time(self) -> Union[float, int]:
+        if self.__last_received_item < 0:
+            return 0
 
-            self.queue.append(item)
-            self.__notify_readers()
+        delta = time() - self.__last_received_item
+
+        if delta > 1:
+            return 1
+
+        sleep_time = delta / self.SLEEP_DIFFERENCE_DIVIDER
+
+        if sleep_time < self.SLEEP_LOW_THRESHOLD:
+            return 0
+        return sleep_time
+
+    def __await__(self) -> Any:
+        while True:
+            try:
+                res = self.queue.get()
+                return res
+            except QueueEmpty:
+                if self.is_closed:
+                    raise ChannelClosed
+
+                sleep_time = self._compute_sleep_time()
+                yield from asyncio.sleep(sleep_time).__await__()
 
     async def get(self) -> Any:
-        async with self.__get_lock:
-            if self.is_closed:
-                if self.is_empty:
-                    raise ChannelClosed
-                return self.queue.popleft()
-
-            while self.is_empty:
-                await self.__read_event.wait()
-                if self.is_closed and self.is_empty:
-                    raise ChannelClosed
-            try:
-                return self.queue.popleft()
-            finally:
-                if self.is_empty and not self.is_closed:
-                    self.__read_event.clear()
-                self.__notify_writers()
+        return await self
 
 
 class IteratorWrapperStatistic(Statistic):
@@ -139,9 +165,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         self.executor = executor
 
         self.__close_event = asyncio.Event()
-        self.__channel: FromThreadChannel = FromThreadChannel(
-            maxsize=max_size, loop=self.loop,
-        )
+        self.__channel: FromThreadChannel = FromThreadChannel(maxsize=max_size)
         self.__gen_task: Optional[asyncio.Future] = None
         self.__gen_func: Callable = gen_func
         self._statistic = IteratorWrapperStatistic(statistic_name)
@@ -196,11 +220,17 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         if self.__gen_task:
             await asyncio.gather(self.__gen_task, return_exceptions=True)
 
+    def _run(self) -> Any:
+        return self.loop.run_in_executor(
+            self.executor, self._in_thread,
+        )
+
     def __aiter__(self) -> AsyncIterator[Any]:
+        if not self.loop.is_running():
+            raise RuntimeError("Event loop is not running")
+
         if self.__gen_task is None:
-            gen_task = self.loop.run_in_executor(
-                self.executor, self._in_thread,
-            )
+            gen_task = self._run()
             if gen_task is None:
                 raise RuntimeError("Iterator task was not created")
             self.__gen_task = gen_task
