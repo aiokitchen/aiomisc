@@ -66,7 +66,7 @@ class FromThreadChannel:
     def __init__(self, maxsize: int = 0):
         self.queue: QueueWrapper = QueueWrapper(max_size=maxsize)
         self.__closed = False
-        self.__last_received_item: float = -1
+        self.__last_received_item: float = time()
 
     def close(self) -> None:
         self.__closed = True
@@ -95,11 +95,12 @@ class FromThreadChannel:
         if self.__last_received_item < 0:
             return 0
 
-        sleep_time = (
-            (
-                time() - self.__last_received_item
-            ) / self.SLEEP_DIFFERENCE_DIVIDER
-        )
+        delta = time() - self.__last_received_item
+
+        if delta > 1:
+            return 1
+
+        sleep_time = delta / self.SLEEP_DIFFERENCE_DIVIDER
 
         if sleep_time < self.SLEEP_LOW_THRESHOLD:
             return 0
