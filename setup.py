@@ -73,5 +73,10 @@ setup(
         "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
     },
     python_requires=">=3.7, <4",
-    url='https://github.com/aiokitchen/aiomisc'
+    url='https://github.com/aiokitchen/aiomisc',
+    project_urls={
+        "Source": "https://github.com/aiokitchen/aiomisc",
+        "Tracker": "https://github.com/aiokitchen/aiomisc/issues",
+        "Changelog": "https://github.com/aiokitchen/aiomisc/blob/master/CHANGELOG.md",
+    },
 )
