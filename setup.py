@@ -78,5 +78,6 @@ setup(
         "Source": "https://github.com/aiokitchen/aiomisc",
         "Tracker": "https://github.com/aiokitchen/aiomisc/issues",
         "Changelog": "https://github.com/aiokitchen/aiomisc/blob/master/CHANGELOG.md",
+        "Documentation": "https://aiomisc.readthedocs.io/en/latest/",
     },
 )
