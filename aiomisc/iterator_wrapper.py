@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+from abc import abstractmethod
 from collections import deque
 from concurrent.futures import Executor
 from queue import Empty as QueueEmpty
@@ -27,34 +28,47 @@ class ChannelClosed(RuntimeError):
     pass
 
 
-class QueueWrapper:
-    __slots__ = ("deque", "queue", "max_size")
-
-    max_size: int
-    queue: Queue
-    deque: Deque[Any]
-
-    def __init__(self, max_size: int):
-        self.max_size = max_size
-
-        if max_size > 0:
-            self.queue = Queue(maxsize=max_size)
-        else:
-            self.deque = deque()
-
+class QueueWrapperBase:
+    @abstractmethod
     def put(self, item: Any) -> None:
-        if self.max_size > 0:
-            self.queue.put(item)
-        else:
-            self.deque.append(item)
+        raise NotImplementedError
 
     def get(self) -> Any:
-        if self.max_size > 0:
-            return self.queue.get_nowait()
-        else:
-            if not len(self.deque):
-                raise QueueEmpty
-            return self.deque.popleft()
+        raise NotImplementedError
+
+
+class DequeWrapper(QueueWrapperBase):
+    __slots__ = "queue",
+
+    def __init__(self) -> None:
+        self.queue: Deque[Any] = deque()
+
+    def get(self) -> Any:
+        if not len(self.queue):
+            raise QueueEmpty
+        return self.queue.popleft()
+
+    def put(self, item: Any) -> None:
+        return self.queue.append(item)
+
+
+class QueueWrapper(QueueWrapperBase):
+    __slots__ = "queue",
+
+    def __init__(self, max_size: int) -> None:
+        self.queue: Queue = Queue(maxsize=max_size)
+
+    def put(self, item: Any) -> None:
+        return self.queue.put(item)
+
+    def get(self) -> Any:
+        return self.queue.get_nowait()
+
+
+def make_queue(max_size: int = 0) -> QueueWrapperBase:
+    if max_size > 0:
+        return QueueWrapper(max_size)
+    return DequeWrapper()
 
 
 class FromThreadChannel:
@@ -64,7 +78,7 @@ class FromThreadChannel:
     __slots__ = ("queue", "__closed", "__last_received_item")
 
     def __init__(self, maxsize: int = 0):
-        self.queue: QueueWrapper = QueueWrapper(max_size=maxsize)
+        self.queue: QueueWrapperBase = make_queue(max_size=maxsize)
         self.__closed = False
         self.__last_received_item: float = time()
 
