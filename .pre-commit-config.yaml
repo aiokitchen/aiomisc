@@ -1,0 +1,30 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: check-ast
+      - id: trailing-whitespace
+      - id: check-toml
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/dizballanze/gray
+    rev: v0.10.1
+    hooks:
+      - id: gray
+        name: Reformat code with Gray
+
+  - repo: local
+    hooks:
+      - id: pylava
+        name: Check codestyle with Pylava
+        entry: pylava
+        language: system
+        types: [ python ]
+
+      - id: mypy
+        name: Validate types with MyPy
+        entry: mypy
+        language: system
+        types: [ python ]
