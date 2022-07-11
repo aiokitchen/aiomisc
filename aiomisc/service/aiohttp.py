@@ -1,5 +1,5 @@
 import socket
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from aiohttp.web import Application, AppRunner, BaseRunner, SockSite  # noqa
 
@@ -26,6 +26,7 @@ class AIOHTTPService(Service):
     def __init__(
         self, address: Optional[str] = "localhost", port: int = None,
         sock: socket.socket = None, shutdown_timeout: int = 5,
+        runner_kwargs: Optional[Dict[str, Any]] = None,
         **kwds: Any
     ):
 
@@ -48,6 +49,12 @@ class AIOHTTPService(Service):
             self.socket = sock
 
         self.shutdown_timeout = shutdown_timeout
+        self.runner_kwargs = runner_kwargs or {}
+
+        self.runner_kwargs.setdefault("access_log_class", AccessLogger)
+        self.runner_kwargs.setdefault(
+            "access_log_format", AccessLogger.LOG_FORMAT,
+        )
 
         super().__init__(**kwds)
 
@@ -63,18 +70,18 @@ class AIOHTTPService(Service):
             shutdown_timeout=self.shutdown_timeout,
         )
 
-    async def make_runner(self) -> AppRunner:
+    async def make_runner(self, application: Application) -> AppRunner:
         return AppRunner(
-            await self.create_application(),
-            access_log_class=AccessLogger,
-            access_log_format=AccessLogger.LOG_FORMAT,
+            application,
+            **self.runner_kwargs,
         )
 
     async def start(self) -> None:
         if hasattr(self, "runner"):
             raise RuntimeError("Can not start twice")
 
-        self.runner = await self.make_runner()
+        application: Application = await self.create_application()
+        self.runner = await self.make_runner(application)
         await self.runner.setup()
 
         self.site = await self.create_site()
