@@ -63,20 +63,21 @@ class AIOHTTPService(Service):
             shutdown_timeout=self.shutdown_timeout,
         )
 
-    async def start(self) -> None:
-        if hasattr(self, "runner"):
-            raise RuntimeError("Can not start twice")
-
-        self.runner = AppRunner(
+    async def make_runner(self) -> AppRunner:
+        return AppRunner(
             await self.create_application(),
             access_log_class=AccessLogger,
             access_log_format=AccessLogger.LOG_FORMAT,
         )
 
+    async def start(self) -> None:
+        if hasattr(self, "runner"):
+            raise RuntimeError("Can not start twice")
+
+        self.runner = await self.make_runner()
         await self.runner.setup()
 
         self.site = await self.create_site()
-
         await self.site.start()
 
     async def stop(self, exception: Exception = None) -> None:
