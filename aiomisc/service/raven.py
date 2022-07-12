@@ -94,9 +94,11 @@ class QueuedKeepaliveAioHttpTransport(
 
     async def _close(self) -> Transport:
         transport = await super()._close()
+
         if inspect.iscoroutinefunction(self.connector.close()):
             await self.connection.close()
         else:
+            # noinspection PyAsyncCall
             self.connector.close()
         return transport
 

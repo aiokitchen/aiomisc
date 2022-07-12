@@ -17,14 +17,7 @@ async def sample_fixture(loop):
     yield 1
 
 
-LOOP_ID = None
-
-
-async def test_using_fixture(sample_fixture):
-    global LOOP_ID
-    LOOP_ID = id(asyncio.get_event_loop())
+async def test_using_fixture(sample_fixture, loop):
+    loop_id = id(asyncio.get_event_loop())
     assert sample_fixture == 1
-
-
-async def test_not_using_fixture(loop):
-    assert id(loop) == LOOP_ID
+    assert id(loop) == loop_id
