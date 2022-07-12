@@ -128,18 +128,13 @@ class RavenSender(Service):
 
         log.info("Starting Raven for %r", self.sentry_dsn)
 
-        handler = SentryHandler(
-            client=self.client,
-            level=self.min_level,
-        )
+        handler = SentryHandler(client=self.client, level=self.min_level)
 
         # Add filters
         for fltr in self.filters:
             handler.addFilter(fltr)
 
-        logging.getLogger().handlers.append(
-            handler,
-        )
+        logging.getLogger().handlers.append(handler)
 
     async def stop(self, *_: Any) -> None:
         transport = self.client.remote.get_transport()
