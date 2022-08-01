@@ -62,35 +62,24 @@ class AIOHTTPService(Service):
         super().__init__(**kwds)
 
     async def create_application(self) -> Application:
-        """Has async definition for doing async stuff when inherited."""
         return Application()
 
     async def create_site(self) -> SockSite:
-        """Has async definition for doing async stuff when inherited."""
+        if getattr(self, "runner", None) is None:
+            raise RuntimeError("runner already created")
+
         return SockSite(
             self.runner, self.socket,
             shutdown_timeout=self.shutdown_timeout,
         )
 
     async def make_runner(self, application: Application) -> AppRunner:
-        """Has async definition for doing async stuff when inherited."""
         return AppRunner(
             application,
             **self.runner_kwargs,
         )
 
     async def start(self) -> None:
-        """
-        The service start process is contains three steps:
-
-        1. Awaiting an application creation via
-           ``self.create_application()``
-        2. Awaiting runner creation via ``self.make_runner()``
-           and setting up it.
-        3. Awaiting site creation via ``self.create_site()``
-           and starting it.
-
-        """
         if hasattr(self, "runner"):
             raise RuntimeError("Can not start twice")
 

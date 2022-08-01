@@ -20,7 +20,6 @@ msgid "Abstract connection pool"
 msgstr "Абстрактный пул соединений"
 
 #: ../../source/pool.rst:4
-#, fuzzy
 msgid ""
 "``aiomisc.PoolBase`` is an abstract class for implementing user-defined "
 "connection pool."

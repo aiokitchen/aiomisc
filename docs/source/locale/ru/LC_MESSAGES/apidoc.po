@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14.1.0\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-09-22 14:25+0300\n"
+"POT-Creation-Date: 2022-08-01 23:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgstr "Описание API"
 #: aiomisc.periodic.PeriodicCallback:3 of
 msgid ""
 "When the periodic function executes longer then execution interval a next"
-" call will be skipping and warning will be logged."
+" call would be skipped and warning would be logged."
 msgstr ""
 "Когда периодическая функция выполняется дольше, чем интервал выполнения, "
 "следующий вызов будет пропущен, и будет залогировано предупреждение."
@@ -75,6 +75,14 @@ msgstr "футуры. Футуры, которые завершены или з�
 msgid "Submit blocking function to the pool"
 msgstr "Отправляет блокирующуюся функцию в пул"
 
+#: aiomisc.recurring.StrategySkip:1 of
+msgid "Strategy function might raise this exception as way to skip current call"
+msgstr ""
+
+#: aiomisc.recurring.StrategyStop:1 of
+msgid "Strategy function might raise this exception as way to  stop recurring"
+msgstr ""
+
 #: aiomisc.aggregate.aggregate:1 of
 msgid ""
 "Parametric decorator that aggregates multiple (but no more than "
@@ -101,7 +109,7 @@ msgstr ""
 
 #: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
 #: aiomisc.backoff.asyncretry aiomisc.utils.bind_socket
-#: aiomisc.utils.cancel_tasks aiomisc.utils.select of
+#: aiomisc.utils.cancel_tasks of
 msgid "Parameters"
 msgstr "Параметры"
 
@@ -271,34 +279,6 @@ msgid "Split list or generator by chunks with fixed maximum size."
 msgstr ""
 "Разделяет список или генератор по пачкам с фиксированным максимальным "
 "размером."
-
-#: aiomisc.utils.select:1 of
-msgid "awaitable objects"
-msgstr "awaitable объект"
-
-#: aiomisc.utils.select:2 of
-msgid "if True exception will not be raised just returned as result"
-msgstr "Если True то исключение не боросается а возвращается как результат"
-
-#: aiomisc.utils.select:4 of
-msgid "cancel unfinished coroutines (default True)"
-msgstr "отменять ли незавершенные корутины (по умолчанию True)"
-
-#: aiomisc.utils.select:5 of
-msgid "execution timeout"
-msgstr "таймаут выполнения"
-
-#: aiomisc.utils.select:6 of
-msgid ""
-"when False and ``cancel=True``, unfinished coroutines will be cancelled "
-"in the background."
-msgstr ""
-"Если False и ``cancel=True``, незавершенные корутины будут отменены в "
-"фоне."
-
-#: aiomisc.utils.select:8 of
-msgid "event loop"
-msgstr "цикл событий (event loop)"
 
 #: aiomisc.utils.shield:1 of
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-08-01 23:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,6 @@ msgid "cancel_tasks"
 msgstr "cancel_tasks"
 
 #: ../../source/utils.rst:52
-#, fuzzy
 msgid "All passed tasks will be canceled and the task will be returned:"
 msgstr ""
 "Все переданные задачи будут отменены, при это функция возвращает "
@@ -92,22 +91,68 @@ msgstr ""
 " (IPv6/IPv4) из формата аргумента ``address`` автоматически."
 
 #: ../../source/utils.rst:117
+msgid "Recurring callback"
+msgstr "Recurring callback"
+
+#: ../../source/utils.rst:119
+msgid "Runs coroutine function periodically with user-defined strategy."
+msgstr ""
+"Запускает сопрограммы переодически с определяемой пользователем стратегией."
+
+#: ../../source/utils.rst:154
+msgid ""
+"The main purpose is this class is to provide ability to specify the "
+"asynchronous strategy function, which can be written very flexible."
+msgstr ""
+"Основная цель этого класса - предоставить возможность указывать стратегией "
+"асинхронную функцию, которая может быть так как вам нужно."
+
+#: ../../source/utils.rst:157
+msgid ""
+"Also, with the special exceptions, you can control the behavior of the "
+"started ``RecurringCallback``."
+msgstr ""
+"Кроме того, с помощью специальных исключений вы можете управлять поведением "
+"запущенного ``RecurringCallback``."
+
+#: ../../source/utils.rst:178
+msgid ""
+"if the strategy function returns an incorrect value (not a number), or "
+"does not raise special exceptions, the recurring execution is terminated."
+msgstr ""
+"если функция-стратегия возвращает неверное значение (не число) или "
+"не вызывает специальных исключений, повторяющееся выполнение завершается."
+
+#: ../../source/utils.rst:184
 msgid "Periodic callback"
 msgstr "Periodic callback"
 
-#: ../../source/utils.rst:119
+#: ../../source/utils.rst:186
 msgid ""
 "Runs coroutine function periodically with an optional delay of the first "
-"execution."
+"execution. Uses ``RecurringCallback`` under the hood."
 msgstr ""
 "Запускает сопрограммы переодически с заданным периодом времени, и "
-"необязательной задержкой при первом запуске."
+"необязательной задержкой при первом запуске. Использует ``RecurringCallback`` "
+"под капотом."
 
-#: ../../source/utils.rst:144
+#: ../../source/utils.rst:212
 msgid "Cron callback"
 msgstr "Cron callback"
 
-#: ../../source/utils.rst:146
-msgid "Runs coroutine function with cron scheduling execution."
-msgstr "Запускает сопрограммы переодически, как-будто с помощью cron."
+#: ../../source/utils.rst:216
+msgid "You have to install ``croniter`` package for use this feature:"
+msgstr "Придется установить пакет ``croniter`` чтобы пользоваться этим:"
+
+#: ../../source/utils.rst:222
+msgid "Or add extras when installing aiomisc:"
+msgstr "Или указать это как extras при установке aiomisc:"
+
+#: ../../source/utils.rst:230
+msgid ""
+"Runs coroutine function with cron scheduling execution. Uses "
+"``RecurringCallback`` under the hood."
+msgstr ""
+"Запускает сопрограммы переодически, как-будто с помощью cron."
+"Использует ``RecurringCallback`` под капотом."
 
