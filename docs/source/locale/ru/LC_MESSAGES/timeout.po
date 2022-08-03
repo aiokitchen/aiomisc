@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-08-03 16:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,12 +16,15 @@ msgstr ""
 "Generated-By: Babel 2.9.1\n"
 
 #: ../../source/timeout.rst:2
-msgid "timeout decorator"
-msgstr "декоратор timeout"
+msgid "``@aiomisc.timeout``"
+msgstr ""
 
 #: ../../source/timeout.rst:4
 msgid ""
 "Decorator that ensures the execution time limit for the decorated "
 "function is met."
 msgstr "Декоратор который ограничивает время выполнения оборачиваемой сопрограммы."
+
+#~ msgid "timeout decorator"
+#~ msgstr "декоратор timeout"
 

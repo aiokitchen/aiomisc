@@ -82,8 +82,8 @@ msgstr ""
 "простых сервисов."
 
 #: ../../source/services.rst:53
-msgid "TCPServer"
-msgstr "Класс TCPServer"
+msgid "``TCPServer``"
+msgstr "Класс ``TCPServer``"
 
 #: ../../source/services.rst:55
 msgid ""
@@ -95,8 +95,8 @@ msgstr ""
 "соединения."
 
 #: ../../source/services.rst:98
-msgid "UDPServer"
-msgstr "Класс UDPServer"
+msgid "``UDPServer``"
+msgstr "Класс ``UDPServer``"
 
 #: ../../source/services.rst:100
 msgid ""
@@ -108,8 +108,8 @@ msgstr ""
 "соединения."
 
 #: ../../source/services.rst:115
-msgid "TLSServer"
-msgstr "Класс TLSServer"
+msgid "``TLSServer``"
+msgstr "Класс ``TLSServer``"
 
 #: ../../source/services.rst:117
 msgid ""
@@ -120,7 +120,7 @@ msgstr ""
 " TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
 #: ../../source/services.rst:142
-msgid "TCPClient"
+msgid "``TCPClient``"
 msgstr ""
 
 #: ../../source/services.rst:144
@@ -133,7 +133,7 @@ msgstr ""
 "соединения."
 
 #: ../../source/services.rst:190
-msgid "TLSClient"
+msgid "``TLSClient``"
 msgstr ""
 
 #: ../../source/services.rst:192
@@ -146,7 +146,7 @@ msgstr ""
 "соединения."
 
 #: ../../source/services.rst:247
-msgid "RobustTCPClient"
+msgid "``RobustTCPClient``"
 msgstr ""
 
 #: ../../source/services.rst:249
@@ -159,7 +159,7 @@ msgstr ""
 " TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
 #: ../../source/services.rst:296
-msgid "RobustTLSClient"
+msgid "``RobustTLSClient``"
 msgstr ""
 
 #: ../../source/services.rst:298
@@ -172,8 +172,8 @@ msgstr ""
 " TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
 #: ../../source/services.rst:353
-msgid "PeriodicService"
-msgstr "Класс PeriodicService"
+msgid "``PeriodicService``"
+msgstr "Класс ``PeriodicService``"
 
 #: ../../source/services.rst:355
 msgid ""
@@ -198,8 +198,8 @@ msgstr ""
 " выполнения в секундах (по умолчанию 0)."
 
 #: ../../source/services.rst:381
-msgid "CronService"
-msgstr "Класс CronService"
+msgid "``CronService``"
+msgstr "Класс ``CronService``"
 
 #: ../../source/services.rst:385
 msgid ""
@@ -323,7 +323,7 @@ msgstr "Пример вывода:"
 
 #: ../../source/services.rst:701
 msgid "Profiler"
-msgstr "Профилировщик"
+msgstr "``Profiler`` - профилировщик"
 
 #: ../../source/services.rst:703
 msgid ""
@@ -362,8 +362,8 @@ msgid ""
 msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
 
 #: ../../source/services.rst:858
-msgid "SDWatchdogService"
-msgstr "SDWatchdogService"
+msgid "``SDWatchdogService``"
+msgstr "``SDWatchdogService``"
 
 #: ../../source/services.rst:860
 msgid ""
@@ -392,8 +392,8 @@ msgid "Example of systemd service file:"
 msgstr "Пример systemd сервис-файла:"
 
 #: ../../source/services.rst:917
-msgid "ProcessService"
-msgstr "Класс ProcessService"
+msgid "``ProcessService``"
+msgstr "Класс ``ProcessService``"
 
 #: ../../source/services.rst:919
 msgid ""
@@ -404,8 +404,8 @@ msgstr ""
 "завершения при остановке родительского процесса."
 
 #: ../../source/services.rst:963
-msgid "RespawningProcessService"
-msgstr "Класс RespawningProcessService"
+msgid "``RespawningProcessService``"
+msgstr "Класс ``RespawningProcessService``"
 
 #: ../../source/services.rst:965
 msgid ""

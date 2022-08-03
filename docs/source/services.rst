@@ -49,8 +49,8 @@ and after that, all running tasks will be canceled (including ``start()``).
 
 This package contains some useful base classes for simple services writing.
 
-TCPServer
-+++++++++
+``TCPServer``
++++++++++++++
 
 ``TCPServer`` - it's a base class for writing TCP servers.
 Just implement ``handle_client(reader, writer)`` to use it.
@@ -94,8 +94,8 @@ Just implement ``handle_client(reader, writer)`` to use it.
         loop.run_until_complete(echo_client("::1", 8901))
 
 
-UDPServer
-+++++++++
+``UDPServer``
++++++++++++++
 
 ``UDPServer`` - it's a base class for writing UDP servers.
 Just implement ``handle_datagram(data, addr)`` to use it.
@@ -111,8 +111,8 @@ Just implement ``handle_datagram(data, addr)`` to use it.
         loop.run_forever()
 
 
-TLSServer
-+++++++++
+``TLSServer``
++++++++++++++
 
 ``TLSServer`` - it's a base class for writing TCP servers with TLS.
 Just implement ``handle_client(reader, writer)`` to use it.
@@ -138,8 +138,8 @@ Just implement ``handle_client(reader, writer)`` to use it.
         loop.run_forever()
 
 
-TCPClient
-+++++++++
+``TCPClient``
++++++++++++++
 
 ``TCPClient`` - it's a base class for writing TCP clients.
 Just implement ``handle_connection(reader, writer)`` to use it.
@@ -186,8 +186,8 @@ Just implement ``handle_connection(reader, writer)`` to use it.
         loop.run_until_complete(asyncio.sleep(0.1))
 
 
-TLSClient
-+++++++++
+``TLSClient``
++++++++++++++
 
 ``TLSClient`` - it's a base class for writing TLS clients.
 Just implement ``handle_connection(reader, writer)`` to use it.
@@ -243,8 +243,8 @@ Just implement ``handle_connection(reader, writer)`` to use it.
         loop.run_until_complete(asyncio.sleep(0.1))
 
 
-RobustTCPClient
-+++++++++++++++
+``RobustTCPClient``
++++++++++++++++++++
 
 ``RobustTCPClient`` - it's a base class for writing TCP clients with
 auto-reconnection when connection lost.
@@ -292,8 +292,8 @@ Just implement ``handle_connection(reader, writer)`` to use it.
         loop.run_until_complete(asyncio.sleep(0.1))
 
 
-RobustTLSClient
-+++++++++++++++
+``RobustTLSClient``
++++++++++++++++++++
 
 ``RobustTLSClient`` - it's a base class for writing TLS clients with
 auto-reconnection when connection lost.
@@ -349,8 +349,8 @@ Just implement ``handle_connection(reader, writer)`` to use it.
     ) as loop:
         loop.run_until_complete(asyncio.sleep(0.1))
 
-PeriodicService
-+++++++++++++++
+``PeriodicService``
++++++++++++++++++++
 
 ``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for
 the running callback to complete on the stop method. You need to use ``PeriodicService``
@@ -377,8 +377,8 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
         loop.run_forever()
 
 
-CronService
-+++++++++++
+``CronService``
++++++++++++++++
 
 .. _croniter: https://github.com/taichino/croniter
 
@@ -854,8 +854,8 @@ You will find the full specification of options in the `Raven documentation`_.
 .. _Raven documentation: https://docs.sentry.io/clients/python/advanced/#client-arguments
 
 
-SDWatchdogService
-+++++++++++++++++
+``SDWatchdogService``
++++++++++++++++++++++
 
 Service just adding to your entrypoint and notifying SystemD
 service watchdog timer.
@@ -913,8 +913,8 @@ Example of systemd service file:
     FinalKillSignal=SIGKILL
     SendSIGKILL=yes
 
-ProcessService
-++++++++++++++
+``ProcessService``
+++++++++++++++++++
 
 A base class for launching a function by a separate system process,
 and by termination when the parent process is stopped.
@@ -959,8 +959,8 @@ and by termination when the parent process is stopped.
             loop.run_forever()
 
 
-RespawningProcessService
-++++++++++++++++++++++++
+``RespawningProcessService``
+++++++++++++++++++++++++++++
 
 A base class for launching a function by a separate system process,
 and by termination when the parent process is stopped, It's pretty

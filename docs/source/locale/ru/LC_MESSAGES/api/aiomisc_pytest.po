@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 16.1.16\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-03 17:32+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/api/aiomisc_pytest.rst:2
+msgid "``aiomisc_pytest`` module"
+msgstr ""
+
+#: aiomisc_pytest.pytest_plugin.PortSocket:1 of
+msgid "Create new instance of PortSocket(port, socket)"
+msgstr ""
+
+#: ../../docstring aiomisc_pytest.pytest_plugin.PortSocket.port:1 of
+msgid "Alias for field number 0"
+msgstr ""
+
+#: ../../docstring aiomisc_pytest.pytest_plugin.PortSocket.socket:1 of
+msgid "Alias for field number 1"
+msgstr ""
+
+#: aiomisc_pytest.pytest_plugin.aiomisc_socket_factory:1 of
+msgid "Returns a"
+msgstr ""
+

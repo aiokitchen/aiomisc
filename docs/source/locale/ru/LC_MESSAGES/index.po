@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-08-01 23:17+0300\n"
+"POT-Creation-Date: 2022-08-03 16:40+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgid "Actions"
 msgstr ""
 
 msgid "Latest Version"
-msgstr ""
+msgstr "Актуальная версия"
 
 #: ../../source/index.rst:26
 msgid "Miscellaneous utils for asyncio."
@@ -57,60 +57,57 @@ msgid "Quick Start"
 msgstr "Быстрый старт"
 
 #: ../../source/index.rst:67
+msgid "Complete the :doc:`/tutorial` or see this quick start."
+msgstr "Пройдите :doc:`/tutorial` или посмотрите примеры ниже."
+
+#: ../../source/index.rst:69
 msgid "Async entrypoint with logging and useful arguments:"
 msgstr ""
 "Асинхронная точка входа (entrypoint) с логированием и полезными "
 "аргументами"
 
-#: ../../source/index.rst:124
+#: ../../source/index.rst:93
 msgid "Install event loop on program start:"
 msgstr "Установка event loop на старте программы:"
 
-#: ../../source/index.rst:148
+#: ../../source/index.rst:114
 msgid "Close current event loop and install a new one:"
 msgstr "Закрываем текущий event loop и устанавлиаем новый:"
 
-#: ../../source/index.rst:166
+#: ../../source/index.rst:130
 msgid "Table Of Contents"
 msgstr "Содержание"
 
-#: ../../source/index.rst:196
+#: ../../source/index.rst:142
 msgid "Versioning"
 msgstr "Версионирование"
 
-#: ../../source/index.rst:198
+#: ../../source/index.rst:144
 msgid "This software follows `Semantic Versioning`_"
 msgstr ""
 "Это программное обеспечение следует методологиии `Семантического "
 "Версионирования`_"
 
-#: ../../source/index.rst:202
+#: ../../source/index.rst:148
 msgid "How to develop?"
 msgstr "Как начать разработку?"
 
-#: ../../source/index.rst:204
+#: ../../source/index.rst:150
 msgid "Should be installed:"
 msgstr "Должно быть установлено"
 
-#: ../../source/index.rst:206
+#: ../../source/index.rst:152
 msgid "`virtualenv`"
 msgstr "`virtualenv`"
 
-#: ../../source/index.rst:207
+#: ../../source/index.rst:153
 msgid "GNU Make as `make`"
 msgstr "GNU Make как `make`"
 
-#: ../../source/index.rst:208
+#: ../../source/index.rst:154
 msgid "Python 3.5+ as `python3`"
 msgstr "Python 3.5+ как `python3`"
 
-#: ../../source/index.rst:211
+#: ../../source/index.rst:157
 msgid "For setting up developer environment just type"
 msgstr "Для настройки окружения разработчика просто наберите"
-
-#~ msgid "Latest Version"
-#~ msgstr "Актуальная версия"
-
-#~ msgid "Актуальная версия"
-#~ msgstr ""
-
