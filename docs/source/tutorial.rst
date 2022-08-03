@@ -2,25 +2,24 @@ Tutorial
 ========
 
 
-``aiomisc`` - this is a collection of utilities into one library that help
+``aiomisc`` - is a one library collection of utilities that helps
 you write asynchronous services.
 
-
 The main approach in this library is to split your program into independent
-services that can work competitively in asynchronous mode. The library also
+services that can work concurrently in asynchronous mode. The library also
 provides a set of ready-to-use services with pre-written start and stop logic.
 
 The vast majority of functions and classes are written in such a way that
 they can be used in a program that was not originally designed according
 to the principles outlined in this manual. This means that if you don't
 plan to modify your code too much, but only use a few useful functions or
-classes for you, then everything should work.
+classes, then everything should work.
 
 
 Services
 ++++++++
 
-If you want to run a tcp or web server, then you will
+If you want to run a tcp or web server, you will
 have to write something like this:
 
 .. code-block:: python
@@ -40,10 +39,11 @@ have to write something like this:
     loop.run_forever()
 
 In order to start or stop an async programs, usually using function
-``asyncio.run(example_async_func())`` which available since Python 3.7,
-the function takes an instance of a coroutine and terminates
-all incomplete tasks after it completes. To continue executing the code
-indefinitely, you can perform the following trick:
+``asyncio.run(example_async_func())`` which available since Python 3.7.
+This function takes an instance of a coroutine and cancels
+all still running tasks before returning a result.
+To continue executing the code indefinitely,
+you can perform the following trick:
 
 .. code-block:: python
 
@@ -63,9 +63,9 @@ indefinitely, you can perform the following trick:
     asyncio.run(example_async_func())
 
 
-If the user presses `Ctrl+C`, the program simply terminates, but if you
+When the user presses `Ctrl+C`, the program simply terminates, but if you
 want to explicitly free up some resources, for example, close database
-connections or rolling back all incomplete transactions, then you have to
+connections or rolling back incomplete transactions, then you have to
 do something like this:
 
 .. code-block:: python
@@ -93,7 +93,7 @@ do something like this:
     asyncio.run(example_async_func())
 
 
-This solution wins because it is implemented without any external libraries.
+It is a good solution because it is implemented without any 3rd-party libraries.
 When your program starts to grow, you will probably want to optimize the
 startup time in a simple way, namely to do all initialization competitively.
 At first glance it seems that this code will solve the problem:
@@ -170,13 +170,13 @@ contain error handling.
 
 
 And now if the user presses Ctrl+C, you need to describe the shutdown
-logic again, but already in the ``except`` block.
+logic again, but now in the ``except`` block.
 
 In order to describe the logic of starting and stopping in one place, as well
-as testing in one single way, and the abstraction ``Service`` is exists.
+as testing in one single way, there is a ``Service`` abstraction.
 
-The service is an abstract base class in which you need to implement the
-``start()`` method and not necessarily the ``stop()`` method.
+The service is an abstract base class with mandatory ``start()`` and
+optional ``stop()`` methods.
 
 The service can operate in two modes. The first is when the ``start()`` method
 runs forever, then you do not need to implement a ``stop()``, but you need
@@ -201,7 +201,6 @@ setting ``self.start_event.set()``.
 
 In this case, stopping the service will consist in the completion of the
 coroutine that was created by ``start()``.
-
 
 The second method is an explicit description of the way
 to ``start()`` and ``stop()``.
@@ -229,22 +228,21 @@ In this case, the service will be started and stopped once.
 ``entrypoint``
 ++++++++++++++
 
-So the services are declared, what's next? ``asyncio.run`` does not know how
-to work with them, it has not become easier to call them manually,
-what can I offer here?
+So the service abstraction is declared, what's next? ``asyncio.run`` does
+not know how to work with them, calling them manually has not become easier,
+what can this library offer here?
 
-Probably the most magical and complex code in the library is ``entrypoint``.
-By the way, it has been tested quite well. Initially, the idea of
-``entrypoint`` was to do a lot of routine for me, setting up logs,
-setting up a thread pool, well, starting and stopping services correctly.
+Probably the most magical, complex, and at the same time quite well-tested
+code in the library is ``entrypoint``. Initially, the idea of
+``entrypoint`` was to get rid of the routine: setting up logs,
+setting up a thread pool, as well as starting and stopping services correctly.
 
-Let me show you an example:
+Lets check an example:
 
 .. code-block:: python
 
     import asyncio
     import aiomisc
-
 
     ...
 
@@ -254,12 +252,12 @@ Let me show you an example:
     ) as loop:
         loop.run_forever()
 
-In this example, we launch the two services described above and continue
-execution until the user interrupts it. Further, thanks to the context manager,
-we correctly terminate all instances of services.
+In this example, we will launch the two services described above and continue
+execution until the user interrupts them. Next, thanks to the context
+manager, we correctly terminate all instances of services.
 
-I mentioned that I wanted to remove a lot of routine, let's look at the same
-example, just explicitly pass all the default parameters to the ``entrypoint``
+As mentioned above I just wanted to remove a lot of routine, let's look at the
+same example, just pass all the default parameters to the ``entrypoint``
 explicitly.
 
 .. code-block:: python
@@ -285,10 +283,10 @@ explicitly.
     ) as loop:
         loop.run_forever()
 
-Let's not describe on what each parameter does. But in general, ``entrypoint``
-created an event-loop, a thread pool with 4 threads, set it for the current
-event-loop, configured a logger with colored logs and buffered output,
-and launched two services.
+Let's not describe what each parameter does. But in general,
+``entrypoint`` has create an event-loop, a four threads pool, set
+it for the current event-loop, has configure a colored logger with
+buffered output, and launched two services.
 
 You can also run the ``entrypoint`` without services,
 just configure logging and so on.:
@@ -309,8 +307,8 @@ just configure logging and so on.:
     with aiomisc.entrypoint(log_level="info") as loop:
         loop.run_until_complete(sleep_and_exit())
 
-It is also worth paying attention to the ``aiomisc.run`` shortcut,
-which is similar in its purpose to ``asyncio.run`` while supporting the
+It is also worth paying attention to the ``aiomisc.run``,
+which is similar by its purpose to ``asyncio.run`` while supporting the
 start and stop of services and so on.
 
 .. code-block:: python
@@ -341,9 +339,146 @@ start and stop of services and so on.
 
 .. note::
 
-    As I mentioned earlier, the library contains a lots of already realized
-    abstract services that you can use in your project by simply realize
+    As I mentioned above, the library contains lots of already realized
+    abstract services that you can use in your project by simply implement
     several methods.
 
-    A full list of services and theirs usage examples can be found
+    A full list of services and usage examples can be found on the
     on the :doc:`Services page </services>`.
+
+Executing code in thread or process-pools
++++++++++++++++++++++++++++++++++++++++++
+
+.. _working with threads: https://docs.python.org/3/library/asyncio-eventloop.html#executing-code-in-thread-or-process-pools
+
+As explained in `working with threads`_ section in official python
+documentation asyncio event loop starts thread pool.
+
+This pool is needed in order to run, for example, name resolution and not
+blocks the event loop while low-level ``gethostbyname`` call works.
+
+The size of this thread pool should be configured at application startup,
+otherwise you may run into all sorts of problems when this pool is
+too large or too small.
+
+By default, the ``entrypoint`` creates a thread pool with size equal to
+the number of CPU cores, but not less than 4 and no more than 32 threads.
+Of course you can specify as you need.
+
+``@aiomisc.threaded`` decorator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following recommendations for calling blocking functions in threads given
+in `working with threads`_ section in official Python documentation:
+
+.. code-block:: python
+
+    import asyncio
+
+    def blocking_io():
+        # File operations (such as logging) can block the event loop.
+        with open('/dev/urandom', 'rb') as f:
+            return f.read(100)
+
+    async def main():
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(None, blocking_io)
+
+    asyncio.run(main())
+
+This library provides a very simple way to do the same:
+
+.. code-block:: python
+
+    import aiomisc
+
+    @aiomisc.threaded
+    def blocking_io():
+        with open('/dev/urandom', 'rb') as f:
+            return f.read(100)
+
+    async def main():
+        result = await blocking_io()
+
+    aiomisc.run(main())
+
+As you can see in this example, it is enough to wrap the function
+with a decorator ``aiomisc.threaded``, after that it will return an
+awaitable object, but the code inside the function will be
+sent to the default thread pool.
+
+``@aiomisc.threaded_separate`` decorator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the blocking function runs for a long time, or even indefinitely,
+in other words, if the cost of creating a thread is insignificant compared
+to the workload, then you can use the decorator ``aiomisc.threaded_separate``.
+
+.. code-block:: python
+
+    import hashlib
+    import aiomisc
+
+    @aiomisc.threaded_separate
+    def another_one_useless_coin_miner():
+        with open('/dev/urandom', 'rb') as f:
+            hasher = hashlib.sha256()
+            while True:
+                hasher.update(f.read(1024))
+                if hasher.hexdigest().startswith("0000"):
+                    return hasher.hexdigest()
+
+    async def main():
+        print(
+            "the hash is",
+            await another_one_useless_coin_miner()
+        )
+
+    aiomisc.run(main())
+
+.. note::
+
+    This approach allows you not to occupy threads in the pool for a long
+    time, but at the same time does not limit the number of created threads
+    in any way.
+
+More examples you can be found in :doc:`/threads`.
+
+``@aiomisc.threaded_iterable`` decorator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a generator needs to be executed in a thread, there are problems with
+synchronization of the thread and the eventloop. This library provides a
+custom decorator designed to turn a synchronous generator into an
+asynchronous one.
+
+This is very useful if, for example, a queue or database driver has written
+synchronous, but you want to use it efficiently in asynchronous code.
+
+.. code-block:: python
+
+    import aiomisc
+
+    @aiomisc.threaded_iterable(max_size=8)
+    def urandom_reader():
+        with open('/dev/urandom', "rb") as fp:
+            while True:
+                yield fp.read(8)
+
+    async def main():
+        counter = 0
+        async for chunk in urandom_reader():
+            print(chunk)
+            counter += 1
+            if counter > 16:
+                break
+
+    aiomisc.run(main())
+
+Under the hood, this decorator returns a special object that has a queue, and
+asynchronous iterator interface provides access to that queue.
+
+You should always specify the ``max_size`` parameter, which limits the
+size of this queue and prevents threaded code from sending too much items to
+asynchronous code, in case the asynchronous iteration in case the asynchronous
+iteration slacking.

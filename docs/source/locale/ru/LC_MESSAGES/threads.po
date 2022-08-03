@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-08-03 15:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,8 +26,8 @@ msgstr ""
 "пуле потоков."
 
 #: ../../source/threads.rst:8
-msgid "contextvars support"
-msgstr "Поддержка contextvars"
+msgid "``contextvars`` support"
+msgstr "Поддержка ``contextvars``"
 
 #: ../../source/threads.rst:10
 msgid ""
@@ -59,8 +59,8 @@ msgstr ""
 " наоборот позволяет модификацию отовсюду так как не копирует ничего."
 
 #: ../../source/threads.rst:78
-msgid "@threaded"
-msgstr "@threaded"
+msgid "``@aiomisc.threaded``"
+msgstr ""
 
 #: ../../source/threads.rst:80
 msgid "Wraps blocking function and run it in the current thread pool."
@@ -75,8 +75,8 @@ msgstr ""
 "``IteratorWrapper`` (см Threaded generator decorator)."
 
 #: ../../source/threads.rst:112
-msgid "@threaded_separate"
-msgstr "@threaded_separate"
+msgid "``@aiomisc.threaded_separate``"
+msgstr ""
 
 #: ../../source/threads.rst:114
 msgid ""
@@ -124,7 +124,7 @@ msgstr ""
 "контекст-менеджеров."
 
 #: ../../source/threads.rst:300
-msgid "aiomisc.IteratorWrapper"
+msgid "``aiomisc.IteratorWrapper``"
 msgstr ""
 
 #: ../../source/threads.rst:302
@@ -132,7 +132,7 @@ msgid "Run iterables on dedicated thread pool:"
 msgstr "Запускает блокирующий итератор в пуле потоков:"
 
 #: ../../source/threads.rst:345
-msgid "aiomisc.IteratorWrapperSeparate"
+msgid "``aiomisc.IteratorWrapperSeparate``"
 msgstr ""
 
 #: ../../source/threads.rst:347
@@ -140,7 +140,7 @@ msgid "Run iterables on a separate thread:"
 msgstr "Запускает блокирующий итераторы в отдельном новом потоке:"
 
 #: ../../source/threads.rst:388
-msgid "aiomisc.ThreadPoolExecutor"
+msgid "``aiomisc.ThreadPoolExecutor``"
 msgstr ""
 
 #: ../../source/threads.rst:390
@@ -162,7 +162,7 @@ msgstr ""
 "пуле."
 
 #: ../../source/threads.rst:412
-msgid "aiomisc.sync_wait_coroutine"
+msgid "``aiomisc.sync_wait_coroutine``"
 msgstr ""
 
 #: ../../source/threads.rst:414
@@ -174,4 +174,3 @@ msgstr ""
 "Функции запущенные в потоке не могут вызывать и дожидаться сопрограмм по "
 "умолчанию. Эта функция это хелпер позволяет отправить сопрограмму в event"
 " loop и дождаться ее результата из текущего потока."
-

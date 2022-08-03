@@ -4,8 +4,8 @@ Working with threads
 Wraps blocking function and run it in
 the different thread or thread pool.
 
-contextvars support
-+++++++++++++++++++
+``contextvars`` support
++++++++++++++++++++++++
 
 All following decorators and functions support ``contextvars`` module,
 from PyPI for python earlier 3.7 and builtin a standard library for python 3.7.
@@ -74,8 +74,8 @@ Example output:
     allows it because does not copy context variables.
 
 
-@threaded
-+++++++++
+``@aiomisc.threaded``
++++++++++++++++++++++
 
 Wraps blocking function and run it in the current thread pool.
 
@@ -108,8 +108,8 @@ In case the function is a generator function ``@threaded`` decorator will return
 ``IteratorWrapper`` (see Threaded generator decorator).
 
 
-@threaded_separate
-++++++++++++++++++
+``@aiomisc.threaded_separate``
+++++++++++++++++++++++++++++++
 
 Wraps blocking function and run it in a new separate thread.
 Highly recommended for long background tasks:
@@ -296,8 +296,8 @@ infinity, or you have to await the ``.close()`` method when you avoid context ma
     with aiomisc.entrypoint() as loop:
         loop.run_until_complete(main())
 
-aiomisc.IteratorWrapper
-+++++++++++++++++++++++
+``aiomisc.IteratorWrapper``
++++++++++++++++++++++++++++
 
 Run iterables on dedicated thread pool:
 
@@ -341,8 +341,8 @@ Run iterables on dedicated thread pool:
         with aiomisc.entrypoint() as loop:
             loop.run_until_complete(main())
 
-aiomisc.IteratorWrapperSeparate
-+++++++++++++++++++++++++++++++
+``aiomisc.IteratorWrapperSeparate``
++++++++++++++++++++++++++++++++++++
 
 Run iterables on a separate thread:
 
@@ -384,8 +384,8 @@ Run iterables on a separate thread:
 
 
 
-aiomisc.ThreadPoolExecutor
-++++++++++++++++++++++++++
+``aiomisc.ThreadPoolExecutor``
+++++++++++++++++++++++++++++++
 
 This is a fast thread pool implementation.
 
@@ -408,8 +408,8 @@ Setting as a default thread pool:
     ``entrypoint``'s argument ``pool_size`` limits thread pool size.
 
 
-aiomisc.sync_wait_coroutine
-+++++++++++++++++++++++++++
+``aiomisc.sync_wait_coroutine``
++++++++++++++++++++++++++++++++
 
 Functions running in thread can't call and wait for a result from coroutines
 by default. This function is the helper for send coroutine to the event loop
