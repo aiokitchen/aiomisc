@@ -1,9 +1,8 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2022, Dmitry Orlov
-# This file is distributed under the same license as the aiomisc package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
-#
-#, fuzzy
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2022.
+
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
@@ -40,7 +39,3 @@ msgstr ""
 #: ../../source/api/aiomisc_worker.rst:33
 msgid "``aiomisc_worker.worker`` module"
 msgstr ""
-
-#~ msgid "An enumeration."
-#~ msgstr ""
-
