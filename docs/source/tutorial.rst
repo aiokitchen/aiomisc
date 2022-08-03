@@ -196,7 +196,7 @@ setting ``self.start_event.set()``.
             self.start_event.set()
 
             while True:
-                # do some staff
+                # do some stuff
                 await asyncio.sleep(1)
 
 In this case, stopping the service will consist in the completion of the
@@ -215,11 +215,11 @@ to ``start()`` and ``stop()``.
 
     class OrdinaryService(aiomisc.Service):
         async def start(self):
-            # do some staff
+            # do some stuff
             ...
 
         async def stop(self, exception: Exception = None) -> Any:
-            # do some staff
+            # do some stuff
             ...
 
 In this case, the service will be started and stopped once.
