@@ -102,8 +102,10 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         "__write_lock", "__thread_events",
     )
 
+    DEFAULT_POOL_SIZE = min((max((cpu_count() or 1, 4)), 32))
+
     def __init__(
-        self, max_workers: int = max((cpu_count(), 4)),
+        self, max_workers: int = DEFAULT_POOL_SIZE,
         loop: asyncio.AbstractEventLoop = None,
         statistic_name: Optional[str] = None,
     ) -> None:

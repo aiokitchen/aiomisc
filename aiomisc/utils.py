@@ -4,7 +4,6 @@ import logging.handlers
 import socket
 import uuid
 from functools import wraps
-from multiprocessing import cpu_count
 from random import getrandbits
 from typing import (
     Any, Awaitable, Callable, Collection, Coroutine, Generator, Iterable,
@@ -155,7 +154,7 @@ def create_default_event_loop(
     loop.set_debug(debug)
     asyncio.set_event_loop(loop)
 
-    pool_size = pool_size or cpu_count()
+    pool_size = pool_size or ThreadPoolExecutor.DEFAULT_POOL_SIZE
     thread_pool = ThreadPoolExecutor(pool_size, statistic_name="default")
     loop.set_default_executor(thread_pool)
 
