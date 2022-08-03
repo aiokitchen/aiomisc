@@ -355,7 +355,7 @@ at the class declaration stage.
 dependency injection
 ++++++++++++++++++++
 
-.. _aiomisc-dependency: https://github.com/aiokitchen/aiomisc-dependency
+.. _aiomisc-dependency: https://pypi.org/project/aiomisc-dependency
 
 In some cases, you need to execute some asynchronous code before the service
 starts, for example, to pass a database connection to the service instance.
