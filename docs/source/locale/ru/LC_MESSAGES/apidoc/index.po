@@ -2,7 +2,6 @@
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
 # Dmitry Orlov <me@mosquito.su>, 2022.
-
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
@@ -16,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: ../../source/api/index.rst:2
+#: ../../source/apidoc/index.rst:2
 msgid "API Reference"
 msgstr "Описание API"
 

@@ -18,11 +18,11 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:2
 msgid "``aiomisc`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc``"
 
 #: ../../source/api/aiomisc.rst:5
 msgid "``aiomisc.aggregate`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.aggregate``"
 
 #: aiomisc.aggregate.Arg:1 of
 msgid "Create new instance of Arg(value, future)"
@@ -101,7 +101,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:12
 msgid "``aiomisc.backoff`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.backoff``"
 
 #: aiomisc.backoff.asyncbackoff:1 of
 msgid ""
@@ -161,7 +161,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:19
 msgid "``aiomisc.circuit_breaker`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.circuit_breaker``"
 
 #: aiomisc.circuit_breaker.CircuitBreaker:1 of
 msgid ""
@@ -232,7 +232,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:26
 msgid "``aiomisc.compat`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.compat``"
 
 #: of time.time_ns:1
 msgid "Return the current time in nanoseconds since the Epoch."
@@ -240,11 +240,11 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:33
 msgid "``aiomisc.context`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.context``"
 
 #: ../../source/api/aiomisc.rst:40
 msgid "``aiomisc.counters`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.counters``"
 
 #: aiomisc.counters.StatisticResult:1 of
 msgid "Create new instance of StatisticResult(kind, name, metric, value)"
@@ -262,7 +262,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:47
 msgid "``aiomisc.cron`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.cron``"
 
 #: aiomisc.cron.CronCallback:3 of
 msgid ""
@@ -272,7 +272,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:54
 msgid "``aiomisc.entrypoint`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.entrypoint``"
 
 #: aiomisc.entrypoint.Entrypoint:1 of
 msgid "set debug to event loop"
@@ -312,14 +312,14 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.io`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.io``"
 
 #: io.open:1 of
 msgid "Open file and return a stream.  Raise OSError upon failure."
-msgstr ""
+msgstr "Модуль "
 
 #: io.open:3 of
-msgid ""
+msgid "Модуль "
 "file is either a text or byte string giving the name (and the path if the"
 " file isn't in the current working directory) of the file to be opened or"
 " an integer file descriptor of the file to be wrapped. (If a file "
@@ -547,15 +547,15 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:68
 msgid "``aiomisc.iterator_wrapper`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.iterator_wrapper``"
 
 #: ../../source/api/aiomisc.rst:75
 msgid "``aiomisc.log`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.log``"
 
 #: ../../source/api/aiomisc.rst:82
 msgid "``aiomisc.periodic`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.periodic``"
 
 #: aiomisc.periodic.PeriodicCallback:3 of
 msgid ""
@@ -565,15 +565,15 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:89
 msgid "``aiomisc.plugins`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.plugins``"
 
 #: ../../source/api/aiomisc.rst:96
 msgid "``aiomisc.pool`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.pool``"
 
 #: ../../source/api/aiomisc.rst:103
 msgid "``aiomisc.process_pool`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.process_pool``"
 
 #: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
@@ -621,7 +621,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:110
 msgid "``aiomisc.recurring`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.recurring``"
 
 #: aiomisc.recurring.StrategySkip:1 of
 msgid "Strategy function might raise this exception as way to skip current call"
@@ -633,11 +633,11 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:117
 msgid "``aiomisc.signal`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.signal``"
 
 #: ../../source/api/aiomisc.rst:124
 msgid "``aiomisc.thread_pool`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.thread_pool``"
 
 #: aiomisc.thread_pool.WorkItem:1 aiomisc.thread_pool.WorkItemBase:1 of
 msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
@@ -649,11 +649,11 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:131
 msgid "``aiomisc.timeout`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.timeout``"
 
 #: ../../source/api/aiomisc.rst:138
 msgid "``aiomisc.utils`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.utils``"
 
 #: aiomisc.utils.SelectAwaitable:1 of
 msgid "Select one of passed awaitables"
@@ -776,4 +776,4 @@ msgstr ""
 
 #: ../../source/api/aiomisc.rst:145
 msgid "``aiomisc.worker_pool`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc.worker_pool``"

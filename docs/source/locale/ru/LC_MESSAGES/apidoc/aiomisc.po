@@ -1,0 +1,318 @@
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2022.
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 16.1.16\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-03 17:02+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/apidoc/aiomisc.rst:2
+msgid "``aiomisc`` module"
+msgstr "Модуль ``aiomisc``"
+
+#: aiomisc.circuit_breaker.CircuitBreaker:1 of
+msgid ""
+"Circuit Breaker pattern implementation. The class instance collects call "
+"statistics through the ``call`` or ``call async`` methods."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:4 of
+msgid ""
+"The state machine has three states: * ``CircuitBreakerStates.PASSING`` * "
+"``CircuitBreakerStates.BROKEN`` * ``CircuitBreakerStates.RECOVERING``"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:9 of
+msgid ""
+"In passing mode all results or exceptions will be returned as is. "
+"Statistic collects for each call."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:12 of
+msgid ""
+"In broken mode returns exception ``CircuitBroken`` for each call. "
+"Statistic doesn't collecting."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:15 of
+msgid ""
+"In recovering mode the part of calls is real function calls and "
+"remainings raises ``CircuitBroken``. The count of real calls grows "
+"exponentially in this case but when 20% (by default) will be failed the "
+"state returns to broken state."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
+#: aiomisc.backoff.asyncretry aiomisc.circuit_breaker.CircuitBreaker
+#: aiomisc.utils.bind_socket aiomisc.utils.cancel_tasks of
+msgid "Parameters"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:20 of
+msgid ""
+"Failed to success calls ratio. The state might be changed if ratio will "
+"reach given value within ``response time`` (in seconds). Value between "
+"0.0 and 1.0."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:24 of
+msgid "Time window to collect statistics (seconds)"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:25 of
+msgid ""
+"Only this exceptions will affect ratio. Base class  ``Exception`` used by"
+" default."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:27 of
+msgid "minimal time in recovery state (seconds)"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:28 of
+msgid "minimal time in broken state (seconds)"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:29 of
+msgid "minimum time in passing state (seconds)"
+msgstr ""
+
+#: aiomisc.periodic.PeriodicCallback:3 of
+msgid ""
+"When the periodic function executes longer then execution interval a next"
+" call would be skipped and warning would be logged."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
+msgid "Clean-up the resources associated with the Executor."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:3
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:3 of
+msgid ""
+"It is safe to call this method several times. Otherwise, no other methods"
+" can be called after this one."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "Args:"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+msgid "wait: If True then shutdown will not return until all running"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+msgid ""
+"futures have finished executing and the resources used by the executor "
+"have been reclaimed."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "cancel_futures: If True then shutdown will cancel all pending"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "futures. Futures that are completed or running will not be cancelled."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.submit:1
+#: aiomisc.thread_pool.ThreadPoolExecutor.submit:1 of
+msgid "Submit blocking function to the pool"
+msgstr ""
+
+#: aiomisc.recurring.StrategySkip:1 of
+msgid "Strategy function might raise this exception as way to skip current call"
+msgstr ""
+
+#: aiomisc.recurring.StrategyStop:1 of
+msgid "Strategy function might raise this exception as way to  stop recurring"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:1 of
+msgid ""
+"Parametric decorator that aggregates multiple (but no more than "
+"``max_count`` defaulting to ``None``) single-argument executions (``res1 "
+"= await func(arg1)``, ``res2 = await func(arg2)``, ...) of an "
+"asynchronous function with variadic positional arguments (``async def "
+"func(*args, pho=1, bo=2) -> Iterable``) into its single execution with "
+"multiple positional arguments (``res1, res2, ... = await func(arg1, arg2,"
+" ...)``) collected within a time window ``leeway_ms``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:12 of
+msgid ""
+"``func`` must return a sequence of values of length equal to the number "
+"of arguments (and in the same order)."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:17 of
+msgid ""
+"if some unexpected error occurs, exception is propagated to each future; "
+"to set an individual error for each aggregated call refer to "
+"``aggregate_async``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:21 of
+msgid ""
+"The maximum approximate delay between the first collected argument and "
+"the aggregated execution."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:23 of
+msgid ""
+"The maximum number of arguments to call decorated function with. Default "
+"``None``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate aiomisc.aggregate.aggregate_async
+#: aiomisc.utils.bind_socket of
+msgid "Returns"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate_async:1 of
+msgid ""
+"Same as ``aggregate``, but with ``func`` arguments of type ``Arg`` "
+"containing ``value`` and ``future`` attributes instead. In this setting "
+"``func`` is responsible for setting individual results/exceptions for all"
+" of the futures or throwing an exception (it will propagate to futures "
+"automatically). If ``func`` mistakenly does not set a result of some "
+"future, then, ``ResultNotSetError`` exception is set."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:1 of
+msgid ""
+"Patametric decorator that ensures that ``attempt_timeout`` and "
+"``deadline`` time limits are met by decorated function."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:4 aiomisc.backoff.asyncretry:3 of
+msgid ""
+"In case of exception function will be called again with similar arguments"
+" after ``pause`` seconds."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:11 of
+msgid "name filed for statistic instances"
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:8 of
+msgid "is maximum execution time for one execution attempt."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:10 of
+msgid "is maximum execution time for all execution attempts."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:11 aiomisc.backoff.asyncretry:10 of
+msgid "is time gap between execution attempts."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:12 of
+msgid "retrying when this exceptions was raised."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:8 of
+msgid "similar as exc but keyword only."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:14 of
+msgid "is maximum count of execution attempts (>= 1)."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:15 aiomisc.backoff.asyncretry:9 of
+msgid "is a predicate function which can decide by a given"
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:16 of
+msgid "statistic class"
+msgstr ""
+
+#: aiomisc.backoff.asyncretry:1 of
+msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
+msgstr ""
+
+#: aiomisc.backoff.asyncretry:6 of
+msgid "is maximum count of execution attempts (>= 1 or ``None`` means infinity)."
+msgstr ""
+
+#: aiomisc.utils.awaitable:1 of
+msgid ""
+"Decorator wraps function and returns a function which returns awaitable "
+"object. In case than a function returns a future, the original future "
+"will be returned. In case then the function returns a coroutine, the "
+"original coroutine will be returned. In case than function returns non-"
+"awaitable object, it's will be wrapped to a new coroutine which just "
+"returns this object. It's useful when you don't want to check function "
+"result before use it in ``await`` expression."
+msgstr ""
+
+#: aiomisc.utils.bind_socket:1 of
+msgid ""
+"Bind socket and set ``setblocking(False)`` for just created socket. This "
+"detects ``address`` format and select socket family automatically."
+msgstr ""
+
+#: aiomisc.utils.bind_socket:4 of
+msgid "which will be passed to stdlib's socket constructor (optional)"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:5 of
+msgid "bind address"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:6 of
+msgid "bind port"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:7 of
+msgid "Tuple of pairs which contain socket option to set and the option value."
+msgstr ""
+
+#: aiomisc.utils.bind_socket:9 of
+msgid "set socket.SO_REUSEADDR"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:10 of
+msgid "set socket.SO_REUSEPORT"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:11 of
+msgid "protocol name which will be logged after binding"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:12 of
+msgid "socket.socket"
+msgstr ""
+
+#: aiomisc.utils.cancel_tasks:1 of
+msgid "All passed tasks will be cancelled and a new task will be returned."
+msgstr ""
+
+#: aiomisc.utils.cancel_tasks:3 of
+msgid "tasks which will be cancelled"
+msgstr ""
+
+#: aiomisc.utils.chunk_list:1 of
+msgid "Split list or generator by chunks with fixed maximum size."
+msgstr ""
+
+#: aiomisc.utils.shield:1 of
+msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
+msgstr ""
+

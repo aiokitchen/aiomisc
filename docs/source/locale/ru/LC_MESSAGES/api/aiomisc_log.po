@@ -18,15 +18,15 @@ msgstr ""
 
 #: ../../source/api/aiomisc_log.rst:2
 msgid "``aiomisc_log`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_log``"
 
 #: ../../source/api/aiomisc_log.rst:5
 msgid "``aiomisc_log.formatter.color`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_log.formatter.color``"
 
 #: ../../source/api/aiomisc_log.rst:12
 msgid "``aiomisc_log.formatter.journald`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_log.formatter.journald``"
 
 #: aiomisc_log.enum.DateFormat:1 aiomisc_log.enum.LogFormat:1
 #: aiomisc_log.enum.LogLevel:1 aiomisc_log.formatter.journald.Facility:1 of
@@ -51,7 +51,7 @@ msgstr ""
 
 #: ../../source/api/aiomisc_log.rst:19
 msgid "``aiomisc_log.formatter.json`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_log.formatter.json``"
 
 #: aiomisc_log.formatter.json.JSONLogFormatter:1 of
 msgid "Initialize the formatter with specified format strings."
@@ -124,9 +124,9 @@ msgstr ""
 
 #: ../../source/api/aiomisc_log.rst:26
 msgid "``aiomisc_log.formatter.rich.py`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_log.formatter.rich.py``"
 
 #: ../../source/api/aiomisc_log.rst:33
 msgid "``aiomisc_log.enum`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_log.enum``"
 

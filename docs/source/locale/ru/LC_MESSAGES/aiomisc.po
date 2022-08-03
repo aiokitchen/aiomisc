@@ -17,7 +17,7 @@ msgstr ""
 
 #: ../../source/aiomisc.rst:2
 msgid "API reference"
-msgstr ""
+msgstr "Описание API"
 
 #: ../../source/aiomisc.rst:5
 msgid "Subpackages"

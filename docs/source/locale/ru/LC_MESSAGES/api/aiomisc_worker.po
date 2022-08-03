@@ -18,24 +18,24 @@ msgstr ""
 
 #: ../../source/api/aiomisc_worker.rst:2
 msgid "``aiomisc_worker`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_worker``"
 
 #: ../../source/api/aiomisc_worker.rst:5
 msgid "``aiomisc_worker.forking`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_worker.forking``"
 
 #: ../../source/api/aiomisc_worker.rst:12
 msgid "``aiomisc_worker.process`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_worker.process``"
 
 #: ../../source/api/aiomisc_worker.rst:19
 msgid "``aiomisc_worker.process_inner`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_worker.process_inner``"
 
 #: ../../source/api/aiomisc_worker.rst:26
 msgid "``aiomisc_worker.protocol`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_worker.protocol``"
 
 #: ../../source/api/aiomisc_worker.rst:33
 msgid "``aiomisc_worker.worker`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_worker.worker``"
