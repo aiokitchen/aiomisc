@@ -225,6 +225,133 @@ to ``start()`` and ``stop()``.
 In this case, the service will be started and stopped once.
 
 
+Service configuration
++++++++++++++++++++++
+
+The ``Service`` is a metaclass, it handles the special attributes of classes
+inherited from it at on the their declaration stage.
+
+Here is a simple imperative example of how service initialization can be
+extended through inheritance.
+
+.. code-block:: python
+
+    from typing import Any
+    import aiomisc
+
+    class HelloService(aiomisc.Service):
+        def __init__(self, name: str = "world", **kwargs: Any):
+            super().__init__(**kwargs)
+            self.name = name
+
+        async def start(self) -> Any:
+            print(f"Hello {self.name}")
+
+    with aiomisc.entrypoint(
+        HelloService(),
+        HelloService(name="Guido")
+    ) as loop:
+        pass
+
+    # python hello.py
+    # <<< Hello world
+    # <<< Hello Guido
+
+In fact, you can do nothing of this, since the Service metaclass sets all
+the passed keyword parameters to self by default.
+
+.. code-block:: python
+
+    import aiomisc
+
+    class HelloService(aiomisc.Service):
+        name: str = "world"
+
+        async def start(self):
+            print(f"Hello {self.name}")
+
+    with aiomisc.entrypoint(
+        HelloService(),
+        HelloService(name="Guido")
+    ) as loop:
+        pass
+
+    # python hello.py
+    # <<< Hello world
+    # <<< Hello Guido
+
+If a special class property ``__required__`` is declared, then the service
+will required for the user to declare these named parameters.
+
+.. code-block:: python
+
+    import aiomisc
+
+    class HelloService(aiomisc.Service):
+        __required__ = ("name", "title")
+
+        name: str
+        title: str
+
+        async def start(self):
+            await asyncio.sleep(0.1)
+            print(f"Hello {self.title} {self.name}")
+
+    with aiomisc.entrypoint(
+        HelloService(name="Guido", title="mr.")
+    ) as loop:
+        pass
+
+Also a very useful special class attribute is ``__async_required__``. It is
+useful for writing base classes, in general. This contains the tuple of method
+names that must be declared asynchronous explicitly (via ``async def``).
+
+.. code-block:: python
+
+    import aiomisc
+
+    class HelloService(aiomisc.Service):
+        __required__ = ("name", "title")
+        __async_required__ = ("greeting",)
+
+        name: str
+        title: str
+
+        async def greeting(self) -> str:
+            await asyncio.sleep(0.1)
+            return f"Hello {self.title} {self.name}"
+
+        async def start(self):
+            print(await self.greeting())
+
+    class HelloEmojiService(HelloService):
+        async def greeting(self) -> str:
+            await asyncio.sleep(0.1)
+            return f"🙋 {self.title} {self.name}"
+
+    with aiomisc.entrypoint(
+        HelloService(name="Guido", title="mr."),
+        HelloEmojiService(name="👨", title="🎩")
+    ) as loop:
+        pass
+
+    # Hello mr. Guido
+    # 🙋 🎩 👨
+
+If the inheritor declares these methods differently, there will be an error
+at the class declaration stage.
+
+.. code-block:: python
+
+    class BadHello(HelloService):
+        def greeting(self) -> str:
+            return f"{self.title} {self.name}"
+
+    #Traceback (most recent call last):
+    #...
+    #TypeError: ('Following methods must be coroutine functions', ('BadHello.greeting',))
+
+
 ``entrypoint``
 ++++++++++++++
 
@@ -413,6 +540,9 @@ sent to the default thread pool.
 If the blocking function runs for a long time, or even indefinitely,
 in other words, if the cost of creating a thread is insignificant compared
 to the workload, then you can use the decorator ``aiomisc.threaded_separate``.
+
+The decorator starts a new thread not associated with any pool.
+Тhe thread will be terminated after the function execution is done.
 
 .. code-block:: python
 
