@@ -1,7 +1,8 @@
-timeout decorator
-=================
+``@aiomisc.timeout``
+====================
 
-Decorator that ensures the execution time limit for the decorated function is met.
+Decorator that ensures the execution time limit for the decorated
+function is met.
 
 .. code-block:: python
 

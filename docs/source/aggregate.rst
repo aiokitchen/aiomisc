@@ -1,5 +1,5 @@
-Aggregate decorator
-===================
+``@aiomisc.aggregate``
+======================
 
 Parametric decorator that aggregates multiple
 (but no more than ``max_count`` defaulting to ``None``) single-argument

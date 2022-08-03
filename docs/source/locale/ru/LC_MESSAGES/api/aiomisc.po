@@ -2,30 +2,106 @@
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
 # Dmitry Orlov <me@mosquito.su>, 2022.
+
 msgid ""
 msgstr ""
-"Project-Id-Version: aiomisc 14.0.3\n"
+"Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-19 13:32+0300\n"
+"POT-Creation-Date: 2022-08-03 17:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.0\n"
+"Generated-By: Babel 2.9.1\n"
 
-#: ../../source/aiomisc.rst:2
-msgid "API reference"
-msgstr "Описание API"
+#: ../../source/api/aiomisc.rst:2
+msgid "``aiomisc`` module"
+msgstr "Модуль ``aiomisc``"
 
-#: ../../source/aiomisc.rst:5
-msgid "Subpackages"
+#: ../../source/api/aiomisc.rst:5
+msgid "``aiomisc.aggregate`` module"
+msgstr "Модуль ``aiomisc.aggregate``"
+
+#: aiomisc.aggregate.Arg:1 of
+msgid "Create new instance of Arg(value, future)"
 msgstr ""
 
-#: ../../source/aiomisc.rst:15
-msgid "Submodules"
+#: ../../docstring aiomisc.aggregate.Arg.future:1
+#: aiomisc.counters.StatisticResult.name:1
+#: aiomisc.thread_pool.WorkItemBase.args:1 of
+msgid "Alias for field number 1"
 msgstr ""
+
+#: ../../docstring aiomisc.aggregate.Arg.value:1
+#: aiomisc.counters.StatisticResult.kind:1
+#: aiomisc.thread_pool.WorkItemBase.func:1 of
+msgid "Alias for field number 0"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:1 of
+msgid ""
+"Parametric decorator that aggregates multiple (but no more than "
+"``max_count`` defaulting to ``None``) single-argument executions (``res1 "
+"= await func(arg1)``, ``res2 = await func(arg2)``, ...) of an "
+"asynchronous function with variadic positional arguments (``async def "
+"func(*args, pho=1, bo=2) -> Iterable``) into its single execution with "
+"multiple positional arguments (``res1, res2, ... = await func(arg1, arg2,"
+" ...)``) collected within a time window ``leeway_ms``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:12 of
+msgid ""
+"``func`` must return a sequence of values of length equal to the number "
+"of arguments (and in the same order)."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:17 of
+msgid ""
+"if some unexpected error occurs, exception is propagated to each future; "
+"to set an individual error for each aggregated call refer to "
+"``aggregate_async``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
+#: aiomisc.backoff.asyncretry aiomisc.circuit_breaker.CircuitBreaker
+#: aiomisc.entrypoint.Entrypoint aiomisc.utils.SelectAwaitable
+#: aiomisc.utils.bind_socket aiomisc.utils.cancel_tasks
+#: aiomisc.utils.create_default_event_loop of
+msgid "Parameters"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:21 of
+msgid ""
+"The maximum approximate delay between the first collected argument and "
+"the aggregated execution."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:23 of
+msgid ""
+"The maximum number of arguments to call decorated function with. Default "
+"``None``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate aiomisc.aggregate.aggregate_async
+#: aiomisc.utils.bind_socket of
+msgid "Returns"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate_async:1 of
+msgid ""
+"Same as ``aggregate``, but with ``func`` arguments of type ``Arg`` "
+"containing ``value`` and ``future`` attributes instead. In this setting "
+"``func`` is responsible for setting individual results/exceptions for all"
+" of the futures or throwing an exception (it will propagate to futures "
+"automatically). If ``func`` mistakenly does not set a result of some "
+"future, then, ``ResultNotSetError`` exception is set."
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:12
+msgid "``aiomisc.backoff`` module"
+msgstr "Модуль ``aiomisc.backoff``"
 
 #: aiomisc.backoff.asyncbackoff:1 of
 msgid ""
@@ -33,57 +109,59 @@ msgid ""
 "``deadline`` time limits are met by decorated function."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:4 of
+#: aiomisc.backoff.asyncbackoff:4 aiomisc.backoff.asyncretry:3 of
 msgid ""
 "In case of exception function will be called again with similar arguments"
 " after ``pause`` seconds."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff aiomisc.circuit_breaker.CircuitBreaker
-#: aiomisc.entrypoint.Entrypoint aiomisc.utils.bind_socket
-#: aiomisc.utils.cancel_tasks aiomisc.utils.create_default_event_loop
-#: aiomisc.utils.select aiomisc.worker_pool.pool.WorkerPool
-#: aiomisc.worker_pool.pool.WorkerPool.create_task of
-msgid "Parameters"
+#: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:11 of
+msgid "name filed for statistic instances"
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:7 of
+#: aiomisc.backoff.asyncbackoff:8 of
 msgid "is maximum execution time for one execution attempt."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:9 of
+#: aiomisc.backoff.asyncbackoff:10 of
 msgid "is maximum execution time for all execution attempts."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:10 of
+#: aiomisc.backoff.asyncbackoff:11 aiomisc.backoff.asyncretry:10 of
 msgid "is time gap between execution attempts."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:11 of
+#: aiomisc.backoff.asyncbackoff:12 of
 msgid "retrying when this exceptions was raised."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:12 of
+#: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:8 of
 msgid "similar as exc but keyword only."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:13 of
+#: aiomisc.backoff.asyncbackoff:14 of
 msgid "is maximum count of execution attempts (>= 1)."
 msgstr ""
 
-#: aiomisc.backoff.asyncbackoff:14 of
+#: aiomisc.backoff.asyncbackoff:15 aiomisc.backoff.asyncretry:9 of
 msgid "is a predicate function which can decide by a given"
 msgstr ""
 
-#: aiomisc.circuit_breaker.CircuitBreaker:1 aiomisc.context.Context:1
-#: aiomisc.cron.CronCallback:1 aiomisc.entrypoint.Entrypoint:1
-#: aiomisc.io.AsyncBytesFileIOBase:1 aiomisc.io.AsyncFileIOBase:1
-#: aiomisc.io.AsyncTextFileIOBase:1 aiomisc.periodic.PeriodicCallback:1
-#: aiomisc.service.base.Service:1 aiomisc.signal.Signal:1
-#: aiomisc.thread_pool.CoroutineWaiter:1 aiomisc.utils.SelectResult:1
-#: aiomisc.worker_pool.pool.WorkerPool:1 of
-msgid "Bases: :class:`object`"
+#: aiomisc.backoff.asyncbackoff:16 of
+msgid "statistic class"
 msgstr ""
+
+#: aiomisc.backoff.asyncretry:1 of
+msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
+msgstr ""
+
+#: aiomisc.backoff.asyncretry:6 of
+msgid "is maximum count of execution attempts (>= 1 or ``None`` means infinity)."
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:19
+msgid "``aiomisc.circuit_breaker`` module"
+msgstr "Модуль ``aiomisc.circuit_breaker``"
 
 #: aiomisc.circuit_breaker.CircuitBreaker:1 of
 msgid ""
@@ -147,24 +225,54 @@ msgid "minimum time in passing state (seconds)"
 msgstr ""
 
 #: aiomisc.circuit_breaker.CircuitBreakerStates:1
-#: aiomisc.circuit_breaker.CounterKey:1 of
-msgid "Bases: :class:`enum.IntEnum`"
-msgstr ""
-
-#: aiomisc.circuit_breaker.CircuitBreakerStates:1
-#: aiomisc.circuit_breaker.CounterKey:1 of
+#: aiomisc.circuit_breaker.CounterKey:1 aiomisc_log.enum.LogFormat:1
+#: aiomisc_log.enum.LogLevel:1 of
 msgid "An enumeration."
 msgstr ""
 
-#: aiomisc.circuit_breaker.CircuitBroken:1 of
-msgid "Bases: :class:`Exception`"
+#: ../../source/api/aiomisc.rst:26
+msgid "``aiomisc.compat`` module"
+msgstr "Модуль ``aiomisc.compat``"
+
+#: of time.time_ns:1
+msgid "Return the current time in nanoseconds since the Epoch."
 msgstr ""
+
+#: ../../source/api/aiomisc.rst:33
+msgid "``aiomisc.context`` module"
+msgstr "Модуль ``aiomisc.context``"
+
+#: ../../source/api/aiomisc.rst:40
+msgid "``aiomisc.counters`` module"
+msgstr "Модуль ``aiomisc.counters``"
+
+#: aiomisc.counters.StatisticResult:1 of
+msgid "Create new instance of StatisticResult(kind, name, metric, value)"
+msgstr ""
+
+#: ../../docstring aiomisc.counters.StatisticResult.metric:1
+#: aiomisc.thread_pool.WorkItemBase.kwargs:1 of
+msgid "Alias for field number 2"
+msgstr ""
+
+#: ../../docstring aiomisc.counters.StatisticResult.value:1
+#: aiomisc.thread_pool.WorkItemBase.future:1 of
+msgid "Alias for field number 3"
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:47
+msgid "``aiomisc.cron`` module"
+msgstr "Модуль ``aiomisc.cron``"
 
 #: aiomisc.cron.CronCallback:3 of
 msgid ""
 "When the cron function executes longer then execution interval a next "
 "call will be skipping and warning will be logged."
 msgstr ""
+
+#: ../../source/api/aiomisc.rst:54
+msgid "``aiomisc.entrypoint`` module"
+msgstr "Модуль ``aiomisc.entrypoint``"
 
 #: aiomisc.entrypoint.Entrypoint:1 of
 msgid "set debug to event loop"
@@ -187,7 +295,7 @@ msgid "Logging level which will be configured"
 msgstr ""
 
 #: aiomisc.entrypoint.Entrypoint:6 of
-msgid "Logging format which will be configures"
+msgid "Logging format which will be configured"
 msgstr ""
 
 #: aiomisc.entrypoint.Entrypoint:7 of
@@ -202,18 +310,16 @@ msgstr ""
 msgid "if False do not configure logging"
 msgstr ""
 
-#: aiomisc.io.AsyncBytesFileIO:1 of
-msgid ""
-"Bases: :class:`aiomisc.io.AsyncFileIOBase`, "
-":class:`aiomisc.io.AsyncBytesFileIOBase`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:61
+msgid "``aiomisc.io`` module"
+msgstr "Модуль ``aiomisc.io``"
 
 #: io.open:1 of
 msgid "Open file and return a stream.  Raise OSError upon failure."
-msgstr ""
+msgstr "Модуль "
 
 #: io.open:3 of
-msgid ""
+msgid "Модуль "
 "file is either a text or byte string giving the name (and the path if the"
 " file isn't in the current working directory) of the file to be opened or"
 " an integer file descriptor of the file to be wrapped. (If a file "
@@ -439,34 +545,35 @@ msgid ""
 " a binary mode."
 msgstr ""
 
-#: aiomisc.io.AsyncTextFileIO:1 of
-msgid ""
-"Bases: :class:`aiomisc.io.AsyncFileIOBase`, "
-":class:`aiomisc.io.AsyncTextFileIOBase`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:68
+msgid "``aiomisc.iterator_wrapper`` module"
+msgstr "Модуль ``aiomisc.iterator_wrapper``"
 
-#: aiomisc.iterator_wrapper.IteratorWrapper:1
-#: aiomisc.thread_pool.IteratorWrapperSeparate:1 of
-msgid "Bases: :class:`AsyncIterator`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:75
+msgid "``aiomisc.log`` module"
+msgstr "Модуль ``aiomisc.log``"
+
+#: ../../source/api/aiomisc.rst:82
+msgid "``aiomisc.periodic`` module"
+msgstr "Модуль ``aiomisc.periodic``"
 
 #: aiomisc.periodic.PeriodicCallback:3 of
 msgid ""
 "When the periodic function executes longer then execution interval a next"
-" call will be skipping and warning will be logged."
+" call would be skipped and warning would be logged."
 msgstr ""
 
-#: aiomisc.pool.ContextManager:1 of
-msgid "Bases: :class:`AsyncContextManager`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:89
+msgid "``aiomisc.plugins`` module"
+msgstr "Модуль ``aiomisc.plugins``"
 
-#: aiomisc.pool.PoolBase:1 of
-msgid "Bases: :class:`abc.ABC`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:96
+msgid "``aiomisc.pool`` module"
+msgstr "Модуль ``aiomisc.pool``"
 
-#: aiomisc.process_pool.ProcessPoolExecutor:1 of
-msgid "Bases: :class:`concurrent.futures._base.Executor`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:103
+msgid "``aiomisc.process_pool`` module"
+msgstr "Модуль ``aiomisc.process_pool``"
 
 #: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
@@ -512,44 +619,70 @@ msgstr ""
 msgid "Submit blocking function to the pool"
 msgstr ""
 
-#: aiomisc.thread_pool.ThreadPoolException:1 of
-msgid "Bases: :class:`RuntimeError`"
+#: ../../source/api/aiomisc.rst:110
+msgid "``aiomisc.recurring`` module"
+msgstr "Модуль ``aiomisc.recurring``"
+
+#: aiomisc.recurring.StrategySkip:1 of
+msgid "Strategy function might raise this exception as way to skip current call"
 msgstr ""
 
-#: aiomisc.thread_pool.ThreadPoolExecutor:1 of
-msgid "Bases: :class:`concurrent.futures.thread.ThreadPoolExecutor`"
+#: aiomisc.recurring.StrategyStop:1 of
+msgid "Strategy function might raise this exception as way to  stop recurring"
 msgstr ""
 
-#: aiomisc.thread_pool.WorkItem:1 of
-msgid "Bases: :class:`aiomisc.thread_pool.WorkItemBase`"
-msgstr ""
+#: ../../source/api/aiomisc.rst:117
+msgid "``aiomisc.signal`` module"
+msgstr "Модуль ``aiomisc.signal``"
+
+#: ../../source/api/aiomisc.rst:124
+msgid "``aiomisc.thread_pool`` module"
+msgstr "Модуль ``aiomisc.thread_pool``"
 
 #: aiomisc.thread_pool.WorkItem:1 aiomisc.thread_pool.WorkItemBase:1 of
 msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
 msgstr ""
 
-#: aiomisc.thread_pool.WorkItemBase:1 of
-msgid "Bases: :class:`tuple`"
-msgstr ""
-
-#: ../../docstring aiomisc.thread_pool.WorkItemBase.args:1 of
-msgid "Alias for field number 1"
-msgstr ""
-
-#: ../../docstring aiomisc.thread_pool.WorkItemBase.func:1 of
-msgid "Alias for field number 0"
-msgstr ""
-
-#: ../../docstring aiomisc.thread_pool.WorkItemBase.future:1 of
-msgid "Alias for field number 3"
-msgstr ""
-
-#: ../../docstring aiomisc.thread_pool.WorkItemBase.kwargs:1 of
-msgid "Alias for field number 2"
-msgstr ""
-
 #: ../../docstring aiomisc.thread_pool.WorkItemBase.loop:1 of
 msgid "Alias for field number 4"
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:131
+msgid "``aiomisc.timeout`` module"
+msgstr "Модуль ``aiomisc.timeout``"
+
+#: ../../source/api/aiomisc.rst:138
+msgid "``aiomisc.utils`` module"
+msgstr "Модуль ``aiomisc.utils``"
+
+#: aiomisc.utils.SelectAwaitable:1 of
+msgid "Select one of passed awaitables"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:3 of
+msgid "awaitable objects"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:4 of
+msgid "if True exception will not be raised just returned as result"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:6 of
+msgid "cancel unfinished coroutines (default True)"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:7 of
+msgid "execution timeout"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:8 of
+msgid ""
+"when False and ``cancel=True``, unfinished coroutines will be cancelled "
+"in the background."
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:10 of
+msgid "event loop"
 msgstr ""
 
 #: aiomisc.utils.awaitable:1 of
@@ -597,10 +730,6 @@ msgstr ""
 msgid "protocol name which will be logged after binding"
 msgstr ""
 
-#: aiomisc.utils.bind_socket aiomisc.worker_pool.pool.WorkerPool.create_task of
-msgid "Returns"
-msgstr ""
-
 #: aiomisc.utils.bind_socket:12 of
 msgid "socket.socket"
 msgstr ""
@@ -633,98 +762,18 @@ msgstr ""
 msgid "set ``loop.set_debug(True)`` if True"
 msgstr ""
 
-#: aiomisc.utils.select:1 of
-msgid "awaitable objects"
+#: aiomisc.utils.fast_uuid1:1 of
+msgid "Fast UUID1 like identifier"
 msgstr ""
 
-#: aiomisc.utils.select:2 of
-msgid "if True exception will not be raised just returned as result"
-msgstr ""
-
-#: aiomisc.utils.select:4 of
-msgid "cancel unfinished coroutines (default True)"
-msgstr ""
-
-#: aiomisc.utils.select:5 of
-msgid "execution timeout"
-msgstr ""
-
-#: aiomisc.utils.select:6 of
-msgid ""
-"when False and ``cancel=True``, unfinished coroutines will be cancelled "
-"in the background."
-msgstr ""
-
-#: aiomisc.utils.select:8 of
-msgid "event loop"
+#: aiomisc.utils.fast_uuid4:1 of
+msgid "Fast UUID4 like identifier"
 msgstr ""
 
 #: aiomisc.utils.shield:1 of
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
 
-#: aiomisc.version:1 of
-msgid "This file is automatically generated by distutils."
-msgstr ""
-
-#: ../../source/aiomisc.rst:108
-msgid "Module contents"
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:1 of
-msgid ""
-"Python has the multiprocessing module with Pool class which implements "
-"similar worker pool. The IPC in this case use completely synchronous "
-"communication method. This module reimplements the process based worker "
-"pool but IPC is completely asynchronous on caller side, meanwhile workers"
-" in separate processes aren’t asynchronous."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:15 of
-msgid "count of processes"
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:16 of
-msgid ""
-"maximum tasks in queue waiting for worker. Default is zero that's means "
-"unlimited."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:18 of
-msgid ""
-"time which worker pool polling the process when process finished before "
-"restart or close pool."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:21 of
-msgid "Function which executes first time after process will be started."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:23 of
-msgid "``*args`` for ``initializer`` function"
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool:24 of
-msgid "``*kwargs`` for ``initializer`` function"
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool.create_task:1 of
-msgid ""
-"Sending task to the worker pool queue and returns coroutine which returns"
-" the same value as the sent function."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool.create_task:6 of
-msgid ""
-"Function and function arguments must be serializable through ``pickle``. "
-"Otherwise it's raises an exception."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool.create_task:9 of
-msgid "Function for execution in separate process."
-msgstr ""
-
-#: aiomisc.worker_pool.pool.WorkerPool.create_task:10 of
-msgid "Function arguments"
-msgstr ""
-
+#: ../../source/api/aiomisc.rst:145
+msgid "``aiomisc.worker_pool`` module"
+msgstr "Модуль ``aiomisc.worker_pool``"

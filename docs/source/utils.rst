@@ -1,8 +1,8 @@
 Utilities
 =========
 
-Select
-++++++
+``select``
+++++++++++
 
 In some cases, you should wait for only one of multiple tasks. ``select``
 waits first passed awaitable object and returns the list of results.
@@ -46,8 +46,8 @@ waits first passed awaitable object and returns the list of results.
     In this case, you have to handle task completion manually or get warnings.
 
 
-cancel_tasks
-++++++++++++
+``cancel_tasks``
+++++++++++++++++
 
 All passed tasks will be canceled and the task will be returned:
 
@@ -70,8 +70,8 @@ All passed tasks will be canceled and the task will be returned:
     asyncio.run(main())
 
 
-awaitable
-+++++++++
+``awaitable``
++++++++++++++
 
 Decorator wraps function and returns a function that returns awaitable object.
 In case a function returns a future, the original future will be returned.
@@ -96,8 +96,8 @@ use it in ``await`` expression.
     print(asyncio.run(do_callback(asyncio.sleep, 2)))
     print(asyncio.run(do_callback(lambda: 45)))
 
-Bind socket
-+++++++++++
+``bind_socket``
++++++++++++++++
 
 Bind socket and set ``setblocking(False)`` for just created socket.
 This detects ``address`` format and selects the socket family automatically.
@@ -113,8 +113,8 @@ This detects ``address`` format and selects the socket family automatically.
     sock = bind_socket(address="::1", port=1234)
 
 
-Recurring callback
-++++++++++++++++++
+``RecurringCallback``
++++++++++++++++++++++
 
 Runs coroutine function periodically with user-defined strategy.
 
@@ -179,9 +179,8 @@ if the strategy function returns an incorrect value (not a number), or does
 not raise special exceptions, the recurring execution is terminated.
 
 
-
-Periodic callback
-+++++++++++++++++
+``PeriodicCallback``
+++++++++++++++++++++
 
 Runs coroutine function periodically with an optional delay of the first
 execution. Uses ``RecurringCallback`` under the hood.
@@ -208,8 +207,8 @@ execution. Uses ``RecurringCallback`` under the hood.
         loop.run_forever()
 
 
-Cron callback
-+++++++++++++
+``CronCallback``
+++++++++++++++++
 
 .. warning::
 

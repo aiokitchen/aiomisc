@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2022, Dmitry Orlov
-# This file is distributed under the same license as the aiomisc package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
-#
-#, fuzzy
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-03 16:57+0300\n"
+"POT-Creation-Date: 2022-08-03 17:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +15,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: ../../source/apidoc.rst:2
-msgid "API Reference"
-msgstr "Описание API"
+#: ../../source/apidoc/aiomisc.rst:2
+msgid "``aiomisc`` module"
+msgstr "Модуль ``aiomisc``"
 
 #: aiomisc.circuit_breaker.CircuitBreaker:1 of
 msgid ""
@@ -316,10 +314,5 @@ msgstr ""
 
 #: aiomisc.utils.shield:1 of
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
-msgstr ""
-
-#: aiomisc_log.enum.LogFormat:1 aiomisc_log.enum.LogLevel:1
-#: aiomisc_worker.PacketTypes:1 of
-msgid "An enumeration."
 msgstr ""
 
