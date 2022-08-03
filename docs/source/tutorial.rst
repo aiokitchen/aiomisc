@@ -352,6 +352,21 @@ at the class declaration stage.
     #TypeError: ('Following methods must be coroutine functions', ('BadHello.greeting',))
 
 
+dependency injection
+++++++++++++++++++++
+
+.. _aiomisc-dependency: https://github.com/aiokitchen/aiomisc-dependency
+
+In some cases, you need to execute some asynchronous code before the service
+starts, for example, to pass a database connection to the service instance.
+Or if you want to use one instance of some entity for several services.
+
+For such complex configurations, there is `aiomisc-dependency`_ plugin which
+is distributed as a independent separate package.
+
+Look at the examples in the documentation, `aiomisc-dependency`_ are
+transparently integrates with the ``entrypoint``.
+
 ``entrypoint``
 ++++++++++++++
 
@@ -382,6 +397,11 @@ Lets check an example:
 In this example, we will launch the two services described above and continue
 execution until the user interrupts them. Next, thanks to the context
 manager, we correctly terminate all instances of services.
+
+.. note::
+
+    Entrypoint calls all the ``start()`` methods in all services concurrently,
+    and if at least one of them fails, then all services will be stopped.
 
 As mentioned above I just wanted to remove a lot of routine, let's look at the
 same example, just pass all the default parameters to the ``entrypoint``
