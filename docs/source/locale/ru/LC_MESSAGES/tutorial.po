@@ -248,7 +248,6 @@ msgstr ""
 "буферизованным выводом и запустила два сервиса."
 
 #: ../../source/tutorial.rst:291
-#, fuzzy
 msgid ""
 "You can also run the ``entrypoint`` without services, just configure "
 "logging and so on.:"

@@ -2,12 +2,11 @@
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
 # Dmitry Orlov <me@mosquito.su>, 2022.
-
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-03 17:32+0300\n"
+"POT-Creation-Date: 2022-08-03 19:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -319,7 +318,7 @@ msgid "Open file and return a stream.  Raise OSError upon failure."
 msgstr "Модуль "
 
 #: io.open:3 of
-msgid "Модуль "
+msgid ""
 "file is either a text or byte string giving the name (and the path if the"
 " file isn't in the current working directory) of the file to be opened or"
 " an integer file descriptor of the file to be wrapped. (If a file "
@@ -777,3 +776,18 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:145
 msgid "``aiomisc.worker_pool`` module"
 msgstr "Модуль ``aiomisc.worker_pool``"
+
+#~ msgid ""
+#~ "Модуль file is either a text or"
+#~ " byte string giving the name (and "
+#~ "the path if the file isn't in "
+#~ "the current working directory) of the"
+#~ " file to be opened or an "
+#~ "integer file descriptor of the file "
+#~ "to be wrapped. (If a file "
+#~ "descriptor is given, it is closed "
+#~ "when the returned I/O object is "
+#~ "closed, unless closefd is set to "
+#~ "False.)"
+#~ msgstr ""
+

@@ -16,9 +16,8 @@ msgstr ""
 "Generated-By: Babel 2.9.1\n"
 
 #: ../../source/process_pool.rst:2
-#, fuzzy
 msgid "``ProcessPoolExecutor``"
-msgstr "ProcessPoolExecutor"
+msgstr ""
 
 #: ../../source/process_pool.rst:4
 msgid "This is a simple process pool executor implementation."

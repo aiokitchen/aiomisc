@@ -16,9 +16,8 @@ msgstr ""
 "Generated-By: Babel 2.9.1\n"
 
 #: ../../source/signal.rst:2
-#, fuzzy
 msgid "``Signal``"
-msgstr "Сигнал"
+msgstr ""
 
 #: ../../source/signal.rst:4
 msgid ""
@@ -42,9 +41,8 @@ msgstr ""
 "запуска всех сервисов."
 
 #: ../../source/signal.rst:24
-#, fuzzy
 msgid "``post_start``"
-msgstr "post_start"
+msgstr ""
 
 #: ../../source/signal.rst:26
 msgid ""
@@ -68,9 +66,8 @@ msgstr ""
 "остановки всех сервисов."
 
 #: ../../source/signal.rst:60
-#, fuzzy
 msgid "``post_stop``"
-msgstr "post_stop"
+msgstr ""
 
 #: ../../source/signal.rst:62
 msgid ""

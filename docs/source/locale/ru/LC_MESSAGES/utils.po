@@ -20,9 +20,8 @@ msgid "Utilities"
 msgstr "Утилиты"
 
 #: ../../source/utils.rst:5
-#, fuzzy
 msgid "``select``"
-msgstr "Select"
+msgstr ""
 
 #: ../../source/utils.rst:7
 msgid ""
