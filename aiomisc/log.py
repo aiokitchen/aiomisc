@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 import logging
 import logging.handlers
 import time
@@ -54,6 +55,8 @@ def wrap_logging_handler(
             buffered_handler, flush_interval, loop,
         ), no_return=True, statistic_name="logger",
     )
+
+    atexit.register(handler.flush)
 
     return buffered_handler
 

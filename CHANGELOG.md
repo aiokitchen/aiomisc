@@ -9,6 +9,13 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+16.2.x
+------
+
+* Remove code from `aiomisc_log.formatter.journald` and move it into the
+  3rd-party library
+  [logging-journald](https://pypi.org/project/logging-journald)
+
 16.1.x
 ------
 
