@@ -5,6 +5,13 @@ from enum import Enum, IntEnum, unique
 from typing import Tuple
 
 
+try:
+    from logging_journald import check_journal_stream  # type: ignore
+except ImportError:
+    def check_journal_stream() -> bool:
+        return False
+
+
 @unique
 class LogFormat(IntEnum):
     stream = 0
@@ -22,12 +29,8 @@ class LogFormat(IntEnum):
 
     @classmethod
     def default(cls) -> str:
-        journal_stream = os.getenv("JOURNAL_STREAM", "")
-        if journal_stream:
-            st_dev, st_ino = map(int, journal_stream.split(":", 1))
-            stat = os.stat(sys.stderr.fileno())
-            if stat.st_ino == st_ino and stat.st_dev == st_dev:
-                return cls.journald.name
+        if check_journal_stream():
+            return cls.journald.name
 
         if not os.isatty(sys.stderr.fileno()):
             return cls.plain.name

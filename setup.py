@@ -1,4 +1,5 @@
 import os
+import platform
 
 from setuptools import setup, find_packages
 
@@ -27,6 +28,12 @@ def load_requirements(fname):
     with open(fname) as f:
         line_iter = (line.strip() for line in f.readlines())
         return [line for line in line_iter if line and line[0] != '#']
+
+
+requirements = ["colorlog"]
+
+if platform.system() == "Linux":
+    requirements.append("logging-journald~=0.6.2")
 
 
 setup(
@@ -59,7 +66,7 @@ setup(
         "aiomisc_pytest": ["py.typed"],
         "aiomisc_worker": ["py.typed"],
     },
-    install_requires=load_requirements('requirements.txt'),
+    install_requires=requirements,
     extras_require={
         'aiohttp': ['aiohttp'],
         'asgi': ['aiohttp-asgi'],
