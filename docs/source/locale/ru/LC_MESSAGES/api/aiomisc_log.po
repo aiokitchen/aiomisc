@@ -112,19 +112,3 @@ msgstr "Модуль ``aiomisc_log.enum``"
 #: aiomisc_log.enum.LogLevel:1 of
 msgid "An enumeration."
 msgstr ""
-
-#~ msgid ""
-#~ "Initializes the instance - basically "
-#~ "setting the formatter to None and "
-#~ "the filter list to empty."
-#~ msgstr ""
-
-#~ msgid "Do whatever it takes to actually log the specified logging record."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "This version is intended to be "
-#~ "implemented by subclasses and so raises"
-#~ " a NotImplementedError."
-#~ msgstr ""
-
