@@ -2,12 +2,11 @@
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
 # Dmitry Orlov <me@mosquito.su>, 2022.
-
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-03 17:33+0300\n"
+"POT-Creation-Date: 2022-08-10 15:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,27 +26,6 @@ msgstr "Модуль ``aiomisc_log.formatter.color``"
 #: ../../source/api/aiomisc_log.rst:12
 msgid "``aiomisc_log.formatter.journald`` module"
 msgstr "Модуль ``aiomisc_log.formatter.journald``"
-
-#: aiomisc_log.enum.DateFormat:1 aiomisc_log.enum.LogFormat:1
-#: aiomisc_log.enum.LogLevel:1 aiomisc_log.formatter.journald.Facility:1 of
-msgid "An enumeration."
-msgstr ""
-
-#: aiomisc_log.formatter.journald.JournaldLogHandler:1 of
-msgid ""
-"Initializes the instance - basically setting the formatter to None and "
-"the filter list to empty."
-msgstr ""
-
-#: aiomisc_log.formatter.journald.JournaldLogHandler.emit:1 of
-msgid "Do whatever it takes to actually log the specified logging record."
-msgstr ""
-
-#: aiomisc_log.formatter.journald.JournaldLogHandler.emit:3 of
-msgid ""
-"This version is intended to be implemented by subclasses and so raises a "
-"NotImplementedError."
-msgstr ""
 
 #: ../../source/api/aiomisc_log.rst:19
 msgid "``aiomisc_log.formatter.json`` module"
@@ -126,7 +104,11 @@ msgstr ""
 msgid "``aiomisc_log.formatter.rich.py`` module"
 msgstr "Модуль ``aiomisc_log.formatter.rich.py``"
 
-#: ../../source/api/aiomisc_log.rst:33
+#: ../../source/api/aiomisc_log.rst:34
 msgid "``aiomisc_log.enum`` module"
 msgstr "Модуль ``aiomisc_log.enum``"
 
+#: aiomisc_log.enum.DateFormat:1 aiomisc_log.enum.LogFormat:1
+#: aiomisc_log.enum.LogLevel:1 of
+msgid "An enumeration."
+msgstr ""

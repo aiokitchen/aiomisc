@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-28 23:52+0300\n"
+"POT-Creation-Date: 2022-08-10 18:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,3 +85,98 @@ msgstr ""
 "``aiomisc.entrypoint``. Это очень похоже на ``asyncio.run()`` но "
 "управляет сервисами ``aiomisc.Service`` и принимает прочие аргументы "
 "entrypoint."
+
+#: ../../source/entrypoint.rst:113
+msgid "Logging configuration"
+msgstr "Конфигурация журналов"
+
+#: ../../source/entrypoint.rst:115
+msgid ""
+"``entrypoint`` accepts a specific set of formats in which logs will be "
+"written to stderr."
+msgstr ""
+"``entrypoint`` принимает определенный набор форматов, в которых журналы "
+"будут записываться в stderr."
+
+#: ../../source/entrypoint.rst:118
+msgid "``stream`` - Python's default logging handler"
+msgstr "``stream`` - стандартный python логгер"
+
+#: ../../source/entrypoint.rst:119
+msgid "``color`` - logging with `colorlog` module"
+msgstr "``color`` - логирование через модуль ``colorlog``"
+
+#: ../../source/entrypoint.rst:120
+msgid "``json`` - json structure per each line"
+msgstr "``json`` - json структура, одна на строчку"
+
+#: ../../source/entrypoint.rst:121
+msgid "``syslog`` - logging using stdlib `logging.handlers.SysLogHandler`"
+msgstr "``syslog`` - ``logging.handlers.SysLogHandler`` из стандартной библиотеки"
+
+#: ../../source/entrypoint.rst:122
+msgid "``plain`` - just log messages, without date or level info"
+msgstr ""
+"``plain`` - просто сообщения, без даты или финормации об уровне "
+"логирования"
+
+#: ../../source/entrypoint.rst:123
+msgid ""
+"``journald`` - available only when `logging-journald` module has been "
+"installed."
+msgstr ""
+"``journald`` - доступно только если ``logging-journald`` модуль "
+"установлен."
+
+#: ../../source/entrypoint.rst:125
+msgid ""
+"``rich``/``rich_tb` - available only when `rich` module has been "
+"installed. ``rich_tb`` it's the same as ``rich`` but with fully expanded "
+"tracebacks."
+msgstr ""
+"``rich``/``rich_tb`` - доступно только если ``rich`` модуль установлен. "
+"``rich_tb`` тоже самое что и ``rich`` только с подробными трейсбэками."
+
+#: ../../source/entrypoint.rst:128
+msgid ""
+"An ``entrypoint`` will call ``aiomisc.log.basic_config`` function "
+"implicitly using passed ``log_level=`` and ``log_format=`` parameters. "
+"Alternatively you can call ``aiomisc.log.basic_config`` function manually"
+" passing it already created eventloop."
+msgstr ""
+"``entrypoint`` вызовет ``aiomisc.log.basic_config`` "
+"неявно используя пеараметры ``log_level=`` и ``log_format=``. "
+"Как альтернатива, вы можете вызвать ``aiomisc.log.basic_config`` вручную "
+"передав ей экземпляр ``eventloop``."
+
+#: ../../source/entrypoint.rst:133
+msgid ""
+"However, you can configure logging earlier using "
+"``aiomisc_log.basic_config``, but you will lose log buffering and "
+"flushing in a separate thread. This function is what is actually called "
+"during the logging configuration, the ``entrypoint`` passes a wrapper for"
+" the handler there to flush it into the separate thread."
+msgstr ""
+"Однако вы можете настроить логирование раньше, используя "
+"``aiomisc_log.basic_config``, но вы потеряете буферизацию и запись в буфер "
+"отдельном потоке. Эта функция фактически вызывается во время настройки "
+"ведения журнала, ``entrypoint`` передает обертку для logging handler, "
+"чтобы он записывал в буфер в отдельном потоке."
+
+#: ../../source/entrypoint.rst:149
+msgid ""
+"If you want to configure logging before the ``entrypoint`` is started, "
+"for example after the arguments parsing, it is safe to configure it twice"
+" (or more)."
+msgstr ""
+"Если вы хотите настроить ведение журнала перед запуском ``entrypoint``, "
+"например, после разбора аргументов, это безопасно настроить его дважды "
+"(или больше)."
+
+#: ../../source/entrypoint.rst:173
+msgid ""
+"Sometimes you want to configure logging manually, the following example "
+"demonstrates how to do this:"
+msgstr ""
+"Иногда вы хотите настроить ведение журнала самостоятельно, пример ниже "
+"демонстрирует, как это сделать:"
