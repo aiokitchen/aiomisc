@@ -129,6 +129,9 @@ jobs:
         with:
           python-version: "${{ matrix.python }}"
 
+      - name: Install compiller
+        run: sudo apt update; sudo apt install build-essential
+
       - name: Install tox
         run: python -m pip install tox
 
