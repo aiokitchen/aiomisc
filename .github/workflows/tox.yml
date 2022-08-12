@@ -66,7 +66,7 @@ jobs:
           - python: '3.10'
             toxenv: py310
             os: ubuntu-latest
-          - python: '3.11'
+          - python: '3.11.0-rc.1'
             toxenv: py311
             os: ubuntu-latest
           - python: '3.10'
