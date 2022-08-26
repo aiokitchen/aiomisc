@@ -218,7 +218,7 @@ msgid ""
 "If a special class property ``__required__`` is declared, then the "
 "service will required for the user to declare these named parameters."
 msgstr ""
-"Если-же объявлен специальный аттрибут ``__required__``, сервисбудет "
+"Если-же объявлен специальный аттрибут ``__required__``, сервис будет "
 "требовать чтобы он был передан явно при инициализации как именованный "
 "параметр."
 
@@ -319,6 +319,8 @@ msgid ""
 "concurrently, and if at least one of them fails, then all services will "
 "be stopped."
 msgstr ""
+"Entrypoint вызывает все методы ``start()`` во всех сервисах конкурентно "
+", и если хотя-бы один из них упадет, все остальные сервисы будут остановлены."
 
 #: ../../source/tutorial.rst:406
 msgid ""
