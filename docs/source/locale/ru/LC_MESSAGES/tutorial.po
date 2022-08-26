@@ -319,8 +319,8 @@ msgid ""
 "concurrently, and if at least one of them fails, then all services will "
 "be stopped."
 msgstr ""
-"Entrypoint вызывает все методы ``start()`` во всех сервисах конкурентно "
-", и если хотя-бы один из них упадет, все остальные сервисы будут остановлены."
+"Entrypoint вызывает все методы ``start()`` во всех сервисах конкурентно, "
+"и если хотя-бы один из них упадет, все остальные сервисы будут остановлены."
 
 #: ../../source/tutorial.rst:406
 msgid ""

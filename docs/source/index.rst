@@ -139,7 +139,7 @@ Should be installed:
 
 * `virtualenv`
 * GNU Make as `make`
-* Python 3.5+ as `python3`
+* Python 3.7+ as `python3`
 
 
 For setting up developer environment just type
