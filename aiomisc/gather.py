@@ -18,7 +18,7 @@ async def gather(
         *tocs: Optional[ToC],
         loop: Optional[AbstractEventLoop] = None,
         return_exceptions: bool = False,
-):
+) -> list:
     """
     Same as `asyncio.gather`, but allows to pass Nones untouched.
     :param tocs: list of tasks/coroutines/Nones.
