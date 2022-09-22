@@ -5,6 +5,10 @@ from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
 from .counters import Statistic, get_statistics
 from .entrypoint import entrypoint, run
+from .gather import (
+    gather_graceful, gather_independent, gather_shackled,
+    wait_first_cancelled_or_exception, wait_graceful,
+)
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
 from .plugins import plugins
@@ -58,6 +62,10 @@ __all__ = (
     "context_partial",
     "cutout",
     "entrypoint",
+    "gather",
+    "gather_graceful",
+    "gather_independent",
+    "gather_shackled",
     "get_context",
     "get_statistics",
     "io",
@@ -76,4 +84,6 @@ __all__ = (
     "threaded_separate",
     "timeout",
     "wait_coroutine",
+    "wait_first_cancelled_or_exception",
+    "wait_graceful",
 )
