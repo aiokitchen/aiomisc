@@ -29,9 +29,11 @@ clean:
 	rm -fr *.egg-info .tox dist build
 
 develop: clean
-	python3 -m venv env
-	env/bin/pip install -Ue '.'
-	env/bin/pip install -Ue '.[develop]'
+	python3 -m venv .venv
+	.venv/bin/pip install pre-commit gray pylava
+	.venv/bin/pre-commit install
+	.venv/bin/pip install -Ue '.'
+	.venv/bin/pip install -Ue '.[develop]'
 
 mypy:
 	mypy aiomisc/thread_pool.py

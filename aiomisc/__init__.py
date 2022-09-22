@@ -10,12 +10,15 @@ from .periodic import PeriodicCallback
 from .plugins import plugins
 from .pool import PoolBase
 from .process_pool import ProcessPoolExecutor
+from .recurring import (
+    RecurringCallback, StrategyException, StrategySkip, StrategyStop,
+)
 from .service import Service
 from .signal import Signal, receiver
 from .thread_pool import (
-    IteratorWrapperSeparate, ThreadPoolExecutor, context_partial,
+    IteratorWrapperSeparate, ThreadPoolExecutor, context_partial, sync_await,
     sync_wait_coroutine, threaded, threaded_iterable,
-    threaded_iterable_separate, threaded_separate,
+    threaded_iterable_separate, threaded_separate, wait_coroutine,
 )
 from .timeout import timeout
 from .utils import (
@@ -34,10 +37,14 @@ __all__ = (
     "PeriodicCallback",
     "PoolBase",
     "ProcessPoolExecutor",
+    "RecurringCallback",
     "SelectResult",
     "Service",
     "Signal",
     "Statistic",
+    "StrategyException",
+    "StrategySkip",
+    "StrategyStop",
     "ThreadPoolExecutor",
     "WorkerPool",
     "aggregate",
@@ -61,10 +68,12 @@ __all__ = (
     "run",
     "select",
     "shield",
+    "sync_await",
     "sync_wait_coroutine",
     "threaded",
     "threaded_iterable",
     "threaded_iterable_separate",
     "threaded_separate",
     "timeout",
+    "wait_coroutine",
 )

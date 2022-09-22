@@ -1,12 +1,12 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
-# Dmitry Orlov <me@mosquito.su>, 2021.
+# Dmitry Orlov <me@mosquito.su>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-08-03 16:49+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 
 # "Project-Id-Version: latest\n"
 #: ../../source/worker_pool.rst:2
-msgid "Worker Pool"
-msgstr "Worker Pool"
+msgid "``WorkerPool``"
+msgstr ""
 
 #: ../../source/worker_pool.rst:4
 msgid ""
@@ -95,8 +95,8 @@ msgid ""
 msgstr ""
 "В этом примере каталог изображений используется в качестве первого "
 "аргумента командной строки и создает каталоги для эскизов. После этого "
-"запускается ``WorkerPool`` с таким количеством процессов, "
-"сколько ядер у процессора."
+"запускается ``WorkerPool`` с таким количеством процессов, сколько ядер у "
+"процессора."
 
 #: ../../source/worker_pool.rst:118
 msgid ""

@@ -1,19 +1,22 @@
+import abc
 import asyncio
 import logging
 import os
+import platform
 import socket
 import sys
+import warnings
 from asyncio.events import get_event_loop
 from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction
-from typing import Callable, Coroutine, NamedTuple, Optional, Tuple, Type, Union
+from typing import Awaitable, Callable, NamedTuple, Optional, Tuple, Type, Union
 from unittest.mock import MagicMock
 
 import pytest
 
 import aiomisc
-from aiomisc.utils import bind_socket
+from aiomisc.utils import bind_socket, sock_set_reuseport
 from aiomisc_log import LOG_LEVEL, basic_config
 
 
@@ -48,7 +51,7 @@ def delayed_future(
     return future
 
 
-ProxyProcessorType = Coroutine[bytes, None, bytes]
+ProxyProcessorType = Callable[[bytes], Awaitable[bytes]]
 DelayType = Union[int, float]
 
 
@@ -178,13 +181,16 @@ class TCPProxyClient:
             while not reader.at_eof():
                 chunk = await reader.read(self.chunk_size)
 
+                if not chunk:
+                    break
+
                 if delay.timeout > 0:
                     log.debug(
                         "%r sleeping %.3f seconds on %s",
                         self, delay.timeout, processor,
                     )
 
-                await delay.wait()
+                    await delay.wait()
 
                 writer.write(await self.__processors[processor](chunk))
 
@@ -428,7 +434,7 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_fixture_setup(fixturedef):  # type: ignore
+def pytest_fixture_setup(fixturedef, request):  # type: ignore
     func = fixturedef.func
 
     is_async_gen = isasyncgenerator(func)
@@ -441,18 +447,18 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
         fixturedef.argnames += ("request",)
         strip_request = True
 
+    if "loop" not in request.fixturenames:
+        raise Exception("`loop` fixture required")
+
+    # noinspection PyProtectedMember
+    loop_fixturedef = request._get_active_fixturedef("loop")
+
     def wrapper(*args, **kwargs):  # type: ignore
         if strip_request:
             request = kwargs.pop("request")
         else:
             request = kwargs["request"]
 
-        if "loop" not in request.fixturenames:
-            raise Exception("`loop` fixture required")
-
-        request._get_active_fixturedef("loop").addfinalizer(
-            partial(fixturedef.finish, request=request)
-        )
         event_loop = request.getfixturevalue("loop")
 
         if not is_async_gen:
@@ -465,6 +471,10 @@ def pytest_fixture_setup(fixturedef):  # type: ignore
                 return event_loop.run_until_complete(gen.__anext__())
             except StopAsyncIteration:  # NOQA
                 pass
+
+        loop_fixturedef.addfinalizer(
+            partial(fixturedef.finish, request=request),
+        )
 
         request.addfinalizer(finalizer)
         return event_loop.run_until_complete(gen.__anext__())
@@ -610,7 +620,8 @@ def _loop(event_loop_policy, caplog):
 @pytest.fixture(autouse=loop_autouse)
 def loop(
     request, services, loop_debug, default_context, entrypoint_kwargs,
-    thread_pool_size, thread_pool_executor, loop, caplog,
+    thread_pool_size, thread_pool_executor,
+    loop: asyncio.AbstractEventLoop, caplog: pytest.LogCaptureFixture,
 ):
     from aiomisc.context import get_context
     from aiomisc.entrypoint import entrypoint
@@ -665,11 +676,22 @@ def loop(
         del loop
 
 
-def get_unused_port(*args) -> int:
+def _unused_port(*args) -> int:
     with socket.socket(*args) as sock:
         sock.bind(("", 0))
         port = sock.getsockname()[1]
     return port
+
+
+def get_unused_port(*args) -> int:
+    warnings.warn(
+        (
+            "Do not use get_unused_port directly, use fixture "
+            "'aiomisc_unused_port_factory'"
+        ),
+        DeprecationWarning, stacklevel=2,
+    )
+    return _unused_port(*args)
 
 
 class PortSocket(NamedTuple):
@@ -691,11 +713,70 @@ def aiomisc_socket_factory(request, localhost) -> Callable[..., PortSocket]:
     return factory
 
 
-@pytest.fixture
-def aiomisc_unused_port_factory() -> Callable[[], int]:
-    return get_unused_port
+class SocketWrapper(abc.ABC):
+    address: str
+    port: int
+
+    def __init__(self, *args):
+        self._socket_args = args
+        self.address = ""
+        self.port = 0
+
+    @abc.abstractmethod
+    def prepare(self, address: str) -> None:
+        raise NotImplementedError
+
+    def close(self):
+        pass
+
+
+class SocketWrapperUnix(SocketWrapper):
+    socket: socket.socket
+    fd: int
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.socket = socket.socket(*args)
+        self.fd = -1
+
+    def close(self):
+        self.socket.close()
+        if self.fd > 0:
+            os.close(self.fd)
+
+    def prepare(self, address: str) -> None:
+        self.socket.bind((address, 0))
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock_set_reuseport(self.socket, True)
+        self.address, self.port = self.socket.getsockname()[:2]
+        # detach socket object and save file descriptor
+        self.fd = self.socket.detach()
+
+
+class SocketWrapperWindows(SocketWrapper):
+    def prepare(self, address: str) -> None:
+        self.address = address
+        self.port = _unused_port(*self._socket_args)
+
+
+if platform.system() == "Windows":
+    socket_wrapper = SocketWrapperWindows
+else:
+    socket_wrapper = SocketWrapperUnix
 
 
 @pytest.fixture
-def aiomisc_unused_port() -> int:
-    return get_unused_port()
+def aiomisc_unused_port_factory(
+    request: pytest.FixtureRequest, localhost: str,
+) -> Callable[[], int]:
+    def port_factory(*args) -> int:
+        wrapper = socket_wrapper(*args)
+        wrapper.prepare("::" if ":" in localhost else "0.0.0.0")
+        request.addfinalizer(wrapper.close)
+        return wrapper.port
+    return port_factory
+
+
+@pytest.fixture
+def aiomisc_unused_port(aiomisc_unused_port_factory) -> int:
+    return aiomisc_unused_port_factory()

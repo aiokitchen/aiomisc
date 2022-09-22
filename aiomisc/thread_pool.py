@@ -1,62 +1,46 @@
 import asyncio
+import contextvars
 import inspect
 import logging
 import threading
 import time
-import typing
 import warnings
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from functools import partial, wraps
 from multiprocessing import cpu_count
+from queue import SimpleQueue
 from types import MappingProxyType
+from typing import (
+    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, NamedTuple, Optional,
+    Set, Tuple, TypeVar,
+)
 
+from .compat import get_current_loop
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
 
-if not hasattr(asyncio, "get_running_loop"):
-    def get_running_loop() -> asyncio.AbstractEventLoop:
-        loop = asyncio.get_event_loop()
-        if not loop.is_running():
-            raise RuntimeError("no running event loop")
-        return loop
-else:
-    get_running_loop = asyncio.get_running_loop
-
-
-T = typing.TypeVar("T")
-F = typing.TypeVar("F", bound=typing.Callable[..., typing.Any])
-
-try:
-    from queue import SimpleQueue
-except ImportError:
-    from queue import Queue as SimpleQueue  # type: ignore
-
+T = TypeVar("T")
+F = TypeVar("F", bound=Callable[..., Any])
 log = logging.getLogger(__name__)
+
+
+def context_partial(
+    func: F, *args: Any,
+    **kwargs: Any
+) -> Any:
+    context = contextvars.copy_context()
+    return partial(context.run, func, *args, **kwargs)
 
 
 class ThreadPoolException(RuntimeError):
     pass
 
 
-try:
-    import contextvars
-
-    def context_partial(
-        func: F, *args: typing.Any,
-        **kwargs: typing.Any
-    ) -> typing.Any:
-        context = contextvars.copy_context()
-        return partial(context.run, func, *args, **kwargs)
-
-except ImportError:
-    context_partial = partial
-
-
-class WorkItemBase(typing.NamedTuple):
-    func: typing.Callable[..., typing.Any]
-    args: typing.Tuple[typing.Any, ...]
-    kwargs: typing.Dict[str, typing.Any]
+class WorkItemBase(NamedTuple):
+    func: Callable[..., Any]
+    args: Tuple[Any, ...]
+    kwargs: Dict[str, Any]
     future: asyncio.Future
     loop: asyncio.AbstractEventLoop
 
@@ -73,7 +57,7 @@ class ThreadPoolStatistic(Statistic):
 class WorkItem(WorkItemBase):
     @staticmethod
     def set_result(
-        future: asyncio.Future, result: typing.Any, exception: Exception,
+        future: asyncio.Future, result: Any, exception: Exception,
     ) -> None:
         if future.done():
             return
@@ -118,19 +102,21 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         "__write_lock", "__thread_events",
     )
 
+    DEFAULT_POOL_SIZE = min((max((cpu_count() or 1, 4)), 32))
+
     def __init__(
-        self, max_workers: int = max((cpu_count(), 4)),
+        self, max_workers: int = DEFAULT_POOL_SIZE,
         loop: asyncio.AbstractEventLoop = None,
-        statistic_name: typing.Optional[str] = None,
+        statistic_name: Optional[str] = None,
     ) -> None:
         """"""
         if loop:
             warnings.warn(DeprecationWarning("loop argument is obsolete"))
 
-        self.__futures: typing.Set[asyncio.Future[typing.Any]] = set()
+        self.__futures: Set[asyncio.Future[Any]] = set()
 
-        self.__thread_events: typing.Set[threading.Event] = set()
-        self.__tasks: SimpleQueue[typing.Optional[WorkItem]] = SimpleQueue()
+        self.__thread_events: Set[threading.Event] = set()
+        self.__tasks: SimpleQueue[Optional[WorkItem]] = SimpleQueue()
         self.__write_lock = threading.RLock()
         self._statistic = ThreadPoolStatistic(statistic_name)
 
@@ -138,9 +124,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         for idx in range(max_workers):
             pools.add(self._start_thread(idx))
 
-        self.__pool = frozenset(
-            pools,
-        )  # type: typing.FrozenSet[threading.Thread]
+        self.__pool: FrozenSet[threading.Thread] = frozenset(pools)
 
     def _start_thread(self, idx: int) -> threading.Thread:
         event = threading.Event()
@@ -187,7 +171,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
             event.set()
 
     def submit(  # type: ignore
-        self, fn: F, *args: typing.Any, **kwargs: typing.Any
+        self, fn: F, *args: Any, **kwargs: Any
     ) -> asyncio.Future:
         """
         Submit blocking function to the pool
@@ -236,13 +220,13 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
 
 def run_in_executor(
-    func: typing.Callable[..., T],
+    func: Callable[..., T],
     executor: ThreadPoolExecutorBase = None,
-    args: typing.Any = (),
-    kwargs: typing.Any = MappingProxyType({}),
-) -> typing.Awaitable[T]:
+    args: Any = (),
+    kwargs: Any = MappingProxyType({}),
+) -> Awaitable[T]:
     try:
-        loop = get_running_loop()
+        loop = asyncio.get_running_loop()
         return loop.run_in_executor(
             executor, context_partial(func, *args, **kwargs),
         )
@@ -250,7 +234,7 @@ def run_in_executor(
         # In case the event loop is not running right now is
         # returning coroutine to avoid DeprecationWarning in Python 3.10
         async def lazy_wrapper() -> T:
-            loop = get_running_loop()
+            loop = asyncio.get_running_loop()
             return await loop.run_in_executor(
                 executor, context_partial(func, *args, **kwargs),
             )
@@ -268,8 +252,8 @@ async def _awaiter(future: asyncio.Future) -> T:
 
 
 def threaded(
-    func: typing.Callable[..., T],
-) -> typing.Callable[..., typing.Awaitable[T]]:
+    func: Callable[..., T],
+) -> Callable[..., Awaitable[T]]:
     if asyncio.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")
 
@@ -278,8 +262,8 @@ def threaded(
 
     @wraps(func)
     def wrap(
-        *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.Awaitable[T]:
+        *args: Any, **kwargs: Any
+    ) -> Awaitable[T]:
         return run_in_executor(func=func, args=args, kwargs=kwargs)
 
     return wrap
@@ -287,18 +271,18 @@ def threaded(
 
 def run_in_new_thread(
     func: F,
-    args: typing.Any = (),
-    kwargs: typing.Any = MappingProxyType({}),
+    args: Any = (),
+    kwargs: Any = MappingProxyType({}),
     detach: bool = True,
     no_return: bool = False,
-    statistic_name: typing.Optional[str] = None,
+    statistic_name: Optional[str] = None,
 ) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()
 
     statistic = ThreadPoolStatistic(statistic_name)
 
-    def set_result(result: typing.Any) -> None:
+    def set_result(result: Any) -> None:
         if future.done() or loop.is_closed():
             return
 
@@ -339,10 +323,8 @@ def run_in_new_thread(
         args=(
             context_partial(func, *args, **kwargs),
         ),
+        daemon=detach,
     )
-
-    thread.daemon = detach
-
     thread.start()
     return future
 
@@ -350,7 +332,7 @@ def run_in_new_thread(
 def threaded_separate(
     func: F,
     detach: bool = True,
-) -> typing.Callable[..., typing.Awaitable[typing.Any]]:
+) -> Callable[..., Awaitable[Any]]:
     if isinstance(func, bool):
         return partial(threaded_separate, detach=detach)
 
@@ -358,7 +340,7 @@ def threaded_separate(
         raise TypeError("Can not wrap coroutine")
 
     @wraps(func)
-    def wrap(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    def wrap(*args: Any, **kwargs: Any) -> Any:
         future = run_in_new_thread(
             func, args=args, kwargs=kwargs, detach=detach,
         )
@@ -371,14 +353,14 @@ def threaded_separate(
 def threaded_iterable(
     func: F = None,
     max_size: int = 0,
-) -> typing.Any:
+) -> Any:
     if isinstance(func, int):
         return partial(threaded_iterable, max_size=func)
     if func is None:
         return partial(threaded_iterable, max_size=max_size)
 
     @wraps(func)
-    def wrap(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    def wrap(*args: Any, **kwargs: Any) -> Any:
         return IteratorWrapper(
             context_partial(func, *args, **kwargs),  # type: ignore
             max_size=max_size,
@@ -388,18 +370,18 @@ def threaded_iterable(
 
 
 class IteratorWrapperSeparate(IteratorWrapper):
-    async def _run(self) -> typing.Any:
-        return await run_in_new_thread(self._in_thread)
+    def _run(self) -> Any:
+        return run_in_new_thread(self._in_thread)
 
 
-def threaded_iterable_separate(func: F = None, max_size: int = 0) -> typing.Any:
+def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:
     if isinstance(func, int):
-        return partial(threaded_iterable, max_size=func)
+        return partial(threaded_iterable_separate, max_size=func)
     if func is None:
-        return partial(threaded_iterable, max_size=max_size)
+        return partial(threaded_iterable_separate, max_size=max_size)
 
     @wraps(func)
-    def wrap(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    def wrap(*args: Any, **kwargs: Any) -> Any:
         return IteratorWrapperSeparate(
             context_partial(func, *args, **kwargs),  # type: ignore
             max_size=max_size,
@@ -410,46 +392,58 @@ def threaded_iterable_separate(func: F = None, max_size: int = 0) -> typing.Any:
 
 class CoroutineWaiter:
     def __init__(
-        self,
-        loop: asyncio.AbstractEventLoop,
-        coroutine_func: F,
-        *args: typing.Any,
-        **kwargs: typing.Any
+        self, coroutine: Coroutine[Any, Any, T],
+        loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
-        self.__func: typing.Callable[..., typing.Any] = partial(
-            coroutine_func, *args, **kwargs
-        )
-        self.__loop = loop
+        self.__coro: Coroutine[Any, Any, T] = coroutine
+        self.__loop = loop or get_current_loop()
         self.__event = threading.Event()
-        self.__result = None
-        self.__exception: typing.Optional[BaseException] = None
+        self.__result: Optional[T] = None
+        self.__exception: Optional[BaseException] = None
 
-    def _on_result(self, task: asyncio.Task) -> None:
+    def _on_result(self, task: asyncio.Future) -> None:
         self.__exception = task.exception()
         if self.__exception is None:
             self.__result = task.result()
         self.__event.set()
 
     def _awaiter(self) -> None:
-        task: asyncio.Task = self.__loop.create_task(self.__func())
+        task: asyncio.Future = self.__loop.create_task(self.__coro)
         task.add_done_callback(self._on_result)
 
     def start(self) -> None:
         self.__loop.call_soon_threadsafe(self._awaiter)
 
-    def wait(self) -> typing.Any:
+    def wait(self) -> Any:
         self.__event.wait()
         if self.__exception is not None:
             raise self.__exception
         return self.__result
 
 
-def sync_wait_coroutine(
-    loop: asyncio.AbstractEventLoop,
-    coro_func: F,
-    *args: typing.Any,
-    **kwargs: typing.Any
-) -> typing.Any:
-    waiter = CoroutineWaiter(loop, coro_func, *args, **kwargs)
+def wait_coroutine(
+    coro: Coroutine[Any, Any, T],
+    loop: Optional[asyncio.AbstractEventLoop] = None,
+) -> T:
+    waiter = CoroutineWaiter(coro, loop)
     waiter.start()
     return waiter.wait()
+
+
+def sync_wait_coroutine(
+    loop: Optional[asyncio.AbstractEventLoop],
+    coro_func: Callable[..., Coroutine[Any, Any, T]],
+    *args: Any,
+    **kwargs: Any
+) -> T:
+    return wait_coroutine(coro_func(*args, **kwargs), loop=loop)
+
+
+def sync_await(
+    func: Callable[..., Awaitable[T]],
+    *args: Any,
+    **kwargs: Any,
+) -> T:
+    async def awaiter() -> T:
+        return await func(*args, **kwargs)
+    return wait_coroutine(awaiter())

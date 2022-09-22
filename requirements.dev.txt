@@ -6,13 +6,14 @@ coveralls
 croniter~=0.3.34
 fastapi
 freezegun<1.1
-mypy~=0.782
+mypy==0.950
 pylava
 pytest
 pytest-cov~=3.0
 pytest-freezegun~=0.4.2
-pytest-rst
+pytest-rst>=0.0.7
 pytest-subtests
+raven-aiohttp
 rich
 setproctitle
 sphinx-autobuild

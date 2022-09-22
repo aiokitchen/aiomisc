@@ -9,20 +9,6 @@ from aiomisc.service.cron import CronService
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
-def test_str_representation():
-    class FooCronService(CronService):
-        async def callback(self):
-            pass
-
-    svc = FooCronService()
-
-    async def runner():
-        pass
-
-    svc.register(runner, "* * * * * *")
-    assert str(svc) == "FooCronService(CronCallback(runner): * * * * * *)"
-
-
 def test_cron():
     counter = 0
     condition = None

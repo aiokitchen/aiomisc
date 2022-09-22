@@ -41,8 +41,8 @@ def executor(loop: asyncio.AbstractEventLoop):
         thread_pool.shutdown(wait=True)
 
 
-async def test_from_thread_channel(loop, threaded_decorator):
-    channel = FromThreadChannel(maxsize=2, loop=loop)
+async def test_from_thread_channel(threaded_decorator):
+    channel = FromThreadChannel(maxsize=2)
 
     @threaded_decorator
     def in_thread():
@@ -60,7 +60,7 @@ async def test_from_thread_channel(loop, threaded_decorator):
 
 
 async def test_from_thread_channel_wait_before(loop, threaded_decorator):
-    channel = FromThreadChannel(maxsize=1, loop=loop)
+    channel = FromThreadChannel(maxsize=1)
 
     @threaded_decorator
     def in_thread():
@@ -79,14 +79,14 @@ async def test_from_thread_channel_wait_before(loop, threaded_decorator):
 
 
 async def test_from_thread_channel_close(loop):
-    channel = FromThreadChannel(maxsize=1, loop=loop)
+    channel = FromThreadChannel(maxsize=1)
     with channel:
         channel.put(1)
 
     with pytest.raises(ChannelClosed):
         channel.put(2)
 
-    channel = FromThreadChannel(maxsize=1, loop=loop)
+    channel = FromThreadChannel(maxsize=1)
     task = loop.create_task(channel.get())
 
     with pytest.raises(asyncio.TimeoutError):
@@ -126,15 +126,16 @@ async def test_future_gc(thread_pool_executor, loop):
 async def test_threaded(threaded_decorator, timer):
     sleep = threaded_decorator(time.sleep)
 
-    async with timeout(5):
-        with timer(1):
-            await asyncio.gather(
+    with timer(1):
+        await asyncio.wait_for(
+            asyncio.gather(
                 sleep(1),
                 sleep(1),
                 sleep(1),
                 sleep(1),
                 sleep(1),
-            )
+            ), timeout=5,
+        )
 
 
 async def test_threaded_exc(threaded_decorator):
@@ -142,14 +143,15 @@ async def test_threaded_exc(threaded_decorator):
     def worker():
         raise Exception
 
-    async with timeout(1):
-        number = 90
+    number = 90
 
-        done, _ = await asyncio.wait([worker() for _ in range(number)])
+    done, _ = await asyncio.wait(
+        [worker() for _ in range(number)], timeout=1,
+    )
 
-        for task in done:
-            with pytest.raises(Exception):
-                task.result()
+    for task in done:
+        with pytest.raises(Exception):
+            task.result()
 
 
 async def test_future_already_done(executor: aiomisc.ThreadPoolExecutor):
@@ -432,6 +434,38 @@ async def test_wait_coroutine_sync(threaded_decorator, loop):
     @threaded_decorator
     def test():
         aiomisc.sync_wait_coroutine(loop, coro)
+
+    await test()
+    assert result == 1
+
+
+async def test_wait_coroutine_sync_current_loop(threaded_decorator):
+    result = 0
+
+    async def coro():
+        nonlocal result
+        await asyncio.sleep(1)
+        result = 1
+
+    @threaded_decorator
+    def test():
+        aiomisc.wait_coroutine(coro())
+
+    await test()
+    assert result == 1
+
+
+async def test_wait_awaitable(threaded_decorator):
+    result = 0
+
+    @threaded_decorator
+    def in_thread():
+        nonlocal result
+        result += 1
+
+    @threaded_decorator
+    def test():
+        aiomisc.sync_await(in_thread)
 
     await test()
     assert result == 1

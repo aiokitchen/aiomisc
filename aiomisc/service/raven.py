@@ -2,6 +2,8 @@ import asyncio
 import inspect
 import logging
 import socket
+import sys
+from asyncio import Queue, ensure_future
 from types import MappingProxyType
 from typing import Any, Iterable, Mapping
 
@@ -23,7 +25,32 @@ class DummyTransport(Transport):         # type: ignore
         pass
 
 
-class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
+class QueuedPatchedAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
+
+    def __init__(
+        self,
+        *args: Any,
+        workers: int = 1,
+        qsize: int = 1000,
+        **kwargs: Any
+    ):
+        super(QueuedAioHttpTransport, self).__init__(*args, **kwargs)
+        loop_args = (
+            {"loop": self._loop} if sys.version_info < (3, 8) else {}
+        )
+        self._queue: Queue = Queue(maxsize=qsize, **loop_args)
+
+        self._workers = set()
+
+        for _ in range(workers):
+            worker = ensure_future(self._worker())
+            self._workers.add(worker)
+            worker.add_done_callback(self._workers.remove)
+
+
+class QueuedKeepaliveAioHttpTransport(
+    QueuedPatchedAioHttpTransport,
+):
     DNS_CACHE_TTL = 600
     DNS_CACHE = True
     TCP_CONNECTION_LIMIT = 32
@@ -67,9 +94,11 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
 
     async def _close(self) -> Transport:
         transport = await super()._close()
+
         if inspect.iscoroutinefunction(self.connector.close()):
             await self.connection.close()
         else:
+            # noinspection PyAsyncCall
             self.connector.close()
         return transport
 
@@ -99,18 +128,13 @@ class RavenSender(Service):
 
         log.info("Starting Raven for %r", self.sentry_dsn)
 
-        handler = SentryHandler(
-            client=self.client,
-            level=self.min_level,
-        )
+        handler = SentryHandler(client=self.client, level=self.min_level)
 
         # Add filters
         for fltr in self.filters:
             handler.addFilter(fltr)
 
-        logging.getLogger().handlers.append(
-            handler,
-        )
+        logging.getLogger().handlers.append(handler)
 
     async def stop(self, *_: Any) -> None:
         transport = self.client.remote.get_transport()

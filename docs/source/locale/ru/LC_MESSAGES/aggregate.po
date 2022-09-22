@@ -1,12 +1,12 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
-# Dmitry Orlov <me@mosquito.su>, 2021.
+# Dmitry Orlov <me@mosquito.su>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 12.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-08-03 16:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Tzoiker tzoiker@gmail.com\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Generated-By: Babel 2.9.1\n"
 
 #: ../../source/aggregate.rst:2
-msgid "Aggregate decorator"
+msgid "``@aiomisc.aggregate``"
 msgstr ""
 
 #: ../../source/aggregate.rst:4
@@ -52,6 +52,7 @@ msgstr ""
 "вместо него."
 
 #: ../../source/aggregate.rst:17
+#, python-format
 msgid ""
 "This decorator may be useful if the ``func`` executes slow IO-tasks, is "
 "frequently called, and using cache is not a good option. As a toy "
@@ -82,4 +83,7 @@ msgstr ""
 "качестве параметров переменные `Arg`, содержащие значение параметра "
 "`value` и футуру `future`. Функция ответственна за выставление "
 "результатов работы для всех футур (вместо обычного возврата результатов)."
+
+#~ msgid "Aggregate decorator"
+#~ msgstr ""
 

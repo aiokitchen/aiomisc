@@ -92,5 +92,12 @@ For setting up developer environment just type
 
         make develop
 
+        . .venv/bin/activate
+
+        # run pre-commit before commit your changes
+        pre-commit
+
+        # or run: pre-commit install for adding pre-commit hook
+
 
 .. _Semantic Versioning: http://semver.org/

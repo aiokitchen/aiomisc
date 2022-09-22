@@ -1,0 +1,114 @@
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2022.
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 16.1.16\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-10 15:17+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/api/aiomisc_log.rst:2
+msgid "``aiomisc_log`` module"
+msgstr "Модуль ``aiomisc_log``"
+
+#: ../../source/api/aiomisc_log.rst:5
+msgid "``aiomisc_log.formatter.color`` module"
+msgstr "Модуль ``aiomisc_log.formatter.color``"
+
+#: ../../source/api/aiomisc_log.rst:12
+msgid "``aiomisc_log.formatter.journald`` module"
+msgstr "Модуль ``aiomisc_log.formatter.journald``"
+
+#: ../../source/api/aiomisc_log.rst:19
+msgid "``aiomisc_log.formatter.json`` module"
+msgstr "Модуль ``aiomisc_log.formatter.json``"
+
+#: aiomisc_log.formatter.json.JSONLogFormatter:1 of
+msgid "Initialize the formatter with specified format strings."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter:3 of
+msgid ""
+"Initialize the formatter either with the specified format string, or a "
+"default as described above. Allow for specialized date formatting with "
+"the optional datefmt argument. If datefmt is omitted, you get an "
+"ISO8601-like (or RFC 3339-like) format."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter:8 of
+#, python-format
+msgid ""
+"Use a style parameter of '%', '{' or '$' to specify that you want to use "
+"one of %-formatting, :meth:`str.format` (``{}``) formatting or "
+":class:`string.Template` formatting in your format string."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter:12 of
+msgid "Added the ``style`` parameter."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter.format:1 of
+msgid "Format the specified record as text."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter.format:3 of
+msgid ""
+"The record's attribute dictionary is used as the operand to a string "
+"formatting operation which yields the returned string. Before formatting "
+"the dictionary, a couple of preparatory steps are carried out. The "
+"message attribute of the record is computed using LogRecord.getMessage()."
+" If the formatting string uses the time (as determined by a call to "
+"usesTime(), formatTime() is called to format the event time. If there is "
+"exception information, it is formatted using formatException() and "
+"appended to the message."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter.formatException:1 of
+msgid "Format and return the specified exception information as a string."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter.formatException:3 of
+msgid "This default implementation just uses traceback.print_exception()"
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter.formatTime:1 of
+msgid "Return the creation time of the specified LogRecord as formatted text."
+msgstr ""
+
+#: aiomisc_log.formatter.json.JSONLogFormatter.formatTime:3 of
+msgid ""
+"This method should be called from format() by a formatter which wants to "
+"make use of a formatted time. This method can be overridden in formatters"
+" to provide for any specific requirement, but the basic behaviour is as "
+"follows: if datefmt (a string) is specified, it is used with "
+"time.strftime() to format the creation time of the record. Otherwise, an "
+"ISO8601-like (or RFC 3339-like) format is used. The resulting string is "
+"returned. This function uses a user-configurable function to convert the "
+"creation time to a tuple. By default, time.localtime() is used; to change"
+" this for a particular formatter instance, set the 'converter' attribute "
+"to a function with the same signature as time.localtime() or "
+"time.gmtime(). To change it for all formatters, for example if you want "
+"all logging times to be shown in GMT, set the 'converter' attribute in "
+"the Formatter class."
+msgstr ""
+
+#: ../../source/api/aiomisc_log.rst:26
+msgid "``aiomisc_log.formatter.rich.py`` module"
+msgstr "Модуль ``aiomisc_log.formatter.rich.py``"
+
+#: ../../source/api/aiomisc_log.rst:34
+msgid "``aiomisc_log.enum`` module"
+msgstr "Модуль ``aiomisc_log.enum``"
+
+#: aiomisc_log.enum.DateFormat:1 aiomisc_log.enum.LogFormat:1
+#: aiomisc_log.enum.LogLevel:1 of
+msgid "An enumeration."
+msgstr ""

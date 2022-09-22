@@ -57,23 +57,10 @@ class CronService(Service):
 
     async def stop(self, exception: Exception = None) -> None:
         async def _shutdown(item: StoreItem) -> None:
-            if item.callback.task:
-                await item.callback.task
-            # noinspection PyAsyncCall
-            item.callback.stop()
+            await asyncio.gather(item.callback.stop(), return_exceptions=True)
 
         await asyncio.gather(
             *[_shutdown(store) for store in self._callbacks_storage],
             return_exceptions=True,
         )
         log.info("Cron service %s is stopped", self)
-
-    def __str__(self) -> str:
-        storage = ", ".join(
-            "{}: {}".format(item.callback, item.spec) for item in
-            self._callbacks_storage
-        )
-        return "{}({})".format(
-            self.__class__.__name__,
-            storage,
-        )

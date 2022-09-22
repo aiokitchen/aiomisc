@@ -1,12 +1,12 @@
 # Translations template for aiomisc.
 # Copyright (C) 2021
 # This file is distributed under the same license as the aiomisc project.
-# Dmitry Orlov <me@mosquito.su>, 2021.
+# Dmitry Orlov <me@mosquito.su>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 12.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-08-03 16:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov me@mosquito.su\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,8 @@ msgstr ""
 "Generated-By: Babel 2.9.1\n"
 
 #: ../../source/async_backoff.rst:2
-msgid "Async backoff"
-msgstr "Async backoff"
+msgid "``@aiomisc.asyncbackoff``"
+msgstr ""
 
 #: ../../source/async_backoff.rst:4
 msgid ""
@@ -136,11 +136,11 @@ msgstr "Объявление через позиционные аргумент�
 msgid "Keyword arguments notation:"
 msgstr "Объявление через именованные аргументы"
 
-#: ../../source/async_backoff.rst:106
-msgid "asyncretry"
-msgstr "asyncretry"
+#: ../../source/async_backoff.rst:107
+msgid "``asyncretry``"
+msgstr ""
 
-#: ../../source/async_backoff.rst:108
+#: ../../source/async_backoff.rst:109
 msgid ""
 "Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just "
 "retries ``max_tries`` times."
@@ -148,7 +148,7 @@ msgstr ""
 "Аналог ``asyncbackoff(None, None, 0, *args, **kwargs)``. Прсто повторяет "
 "выполнение функции ``max_tries`` раз."
 
-#: ../../source/async_backoff.rst:113
+#: ../../source/async_backoff.rst:114
 msgid ""
 "By default will be retry when any Exception. It's very simple and useful "
 "in generic cases, but you should specify an exception list when you're "

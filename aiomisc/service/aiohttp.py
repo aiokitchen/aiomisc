@@ -1,5 +1,5 @@
 import socket
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 from aiohttp.web import Application, AppRunner, BaseRunner, SockSite  # noqa
 
@@ -15,6 +15,9 @@ except ImportError:         # pragma: nocover
     from aiohttp.helpers import AccessLogger  # type: ignore
 
 
+RunnerKwargsType = Union[Mapping[str, Any], Iterable[Tuple[str, Any]]]
+
+
 class AIOHTTPService(Service):
     __async_required__: Tuple[str, ...] = (
         "start", "create_application",
@@ -26,6 +29,7 @@ class AIOHTTPService(Service):
     def __init__(
         self, address: Optional[str] = "localhost", port: int = None,
         sock: socket.socket = None, shutdown_timeout: int = 5,
+        runner_kwargs: Optional[RunnerKwargsType] = None,
         **kwds: Any
     ):
 
@@ -49,6 +53,12 @@ class AIOHTTPService(Service):
 
         self.shutdown_timeout = shutdown_timeout
 
+        self.runner_kwargs: Dict[str, Any] = dict(runner_kwargs or {})
+        self.runner_kwargs.setdefault("access_log_class", AccessLogger)
+        self.runner_kwargs.setdefault(
+            "access_log_format", AccessLogger.LOG_FORMAT,
+        )
+
         super().__init__(**kwds)
 
     async def create_application(self) -> Application:
@@ -63,20 +73,21 @@ class AIOHTTPService(Service):
             shutdown_timeout=self.shutdown_timeout,
         )
 
+    async def make_runner(self, application: Application) -> AppRunner:
+        return AppRunner(
+            application,
+            **self.runner_kwargs,
+        )
+
     async def start(self) -> None:
         if hasattr(self, "runner"):
             raise RuntimeError("Can not start twice")
 
-        self.runner = AppRunner(
-            await self.create_application(),
-            access_log_class=AccessLogger,
-            access_log_format=AccessLogger.LOG_FORMAT,
-        )
-
+        application: Application = await self.create_application()
+        self.runner = await self.make_runner(application)
         await self.runner.setup()
 
         self.site = await self.create_site()
-
         await self.site.start()
 
     async def stop(self, exception: Exception = None) -> None:

@@ -1,16 +1,11 @@
 import asyncio
 import operator
-from functools import partial, reduce
+import socket
+from functools import reduce
+from typing import Any, Awaitable, Callable
 
 import pytest
-
-from rpc.client import RPCClientUDPProtocol
 from rpc.server import RPCServer
-
-
-@pytest.fixture
-def server_port(aiomisc_unused_port):
-    return aiomisc_unused_port
 
 
 @pytest.fixture
@@ -23,53 +18,60 @@ def handlers():
 
 
 @pytest.fixture
-def services(server_port, handlers):
-    return [
-        RPCServer(
-            handlers=handlers,
-            address="localhost",
-            port=server_port,
-        ),
-    ]
+def server_port_sock(aiomisc_socket_factory):
+    return aiomisc_socket_factory(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 @pytest.fixture
-async def rpc_client(
-        server_port, aiomisc_unused_port_factory, localhost, loop
-) -> RPCClientUDPProtocol:
-    transport, protocol = await loop.create_datagram_endpoint(
-        RPCClientUDPProtocol,
-        local_addr=(localhost, aiomisc_unused_port_factory()),
-    )
-
-    try:
-        yield partial(protocol.rpc, (localhost, server_port))
-    finally:
-        transport.close()
+async def rpc_client(localhost, loop) -> RPCServer:
+    return RPCServer(handlers=None, address=localhost, port=0)
 
 
-async def test_foo(rpc_client):
-    assert await rpc_client("foo") == "bar"
+@pytest.fixture
+async def rpc_server(server_port_sock, loop, handlers) -> RPCServer:
+    _, sock = server_port_sock
+    return RPCServer(handlers=handlers, sock=sock)
 
 
-async def test_multiply(rpc_client):
-    assert await rpc_client("mul", a=1, b=3) == 3
+@pytest.fixture
+def services(rpc_server, rpc_client):
+    return [rpc_server, rpc_client]
 
 
-async def test_division(rpc_client):
+@pytest.fixture
+async def rpc_call(
+    server_port_sock, localhost, rpc_client: RPCServer,
+) -> Callable[..., Awaitable[Any]]:
+    port, _ = server_port_sock
+
+    async def call(method, **params) -> Any:
+        return await rpc_client(localhost, port, method, **params)
+
+    return call
+
+
+async def test_foo(rpc_call: Callable[..., Awaitable[Any]]):
+    assert await rpc_call("foo") == "bar"
+
+
+async def test_multiply(rpc_call: Callable[..., Awaitable[Any]]):
+    assert await rpc_call("mul", a=1, b=3) == 3
+
+
+async def test_division(rpc_call: Callable[..., Awaitable[Any]]):
     with pytest.raises(Exception):
-        assert await rpc_client("div", a=1, b=0)
+        assert await rpc_call("div", a=1, b=0)
 
-    assert await rpc_client("div", a=10, b=5) == 2.
+    assert await rpc_call("div", a=10, b=5) == 2.
 
 
-async def test_many(rpc_client):
+async def test_many(rpc_call: Callable[..., Awaitable[Any]]):
     calls = []
     expected = []
 
     for i in range(100):
-        calls.append(rpc_client("div", a=i, b=5))
-        calls.append(rpc_client("mul", a=i, b=5))
+        calls.append(rpc_call("div", a=i, b=5))
+        calls.append(rpc_call("mul", a=i, b=5))
 
         expected.append(i / 5)
         expected.append(i * 5)

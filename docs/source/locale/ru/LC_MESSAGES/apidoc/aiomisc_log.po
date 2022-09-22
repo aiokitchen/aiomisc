@@ -1,0 +1,25 @@
+# Translations template for aiomisc.
+# Copyright (C) 2021
+# This file is distributed under the same license as the aiomisc project.
+# Dmitry Orlov <me@mosquito.su>, 2022.
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 16.1.16\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-03 17:02+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/apidoc/aiomisc_log.rst:2
+msgid "``aiomisc_log`` module"
+msgstr "Модуль ``aiomisc_log``"
+
+#: aiomisc_log.enum.LogFormat:1 aiomisc_log.enum.LogLevel:1 of
+msgid "An enumeration."
+msgstr ""
+

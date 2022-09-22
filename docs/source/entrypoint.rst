@@ -1,8 +1,8 @@
 entrypoint
 ==========
 
-In the generic case, the entrypoint helper creates an event loop and cancels already
-running coroutines on exit.
+In the generic case, the entrypoint helper creates an event loop and
+cancels already running coroutines on exit.
 
 .. code-block:: python
     :name: test_entrypoint_simple
@@ -108,3 +108,131 @@ but handle ``Service``'s and other ``entrypoint``'s kwargs.
 
 
     aiomisc.run(main())
+
+Logging configuration
+=====================
+
+``entrypoint`` accepts a specific set of formats in which logs will be
+written to stderr.
+
+* ``stream`` - Python's default logging handler
+* ``color`` - logging with `colorlog` module
+* ``json`` - json structure per each line
+* ``syslog`` - logging using stdlib `logging.handlers.SysLogHandler`
+* ``plain`` - just log messages, without date or level info
+* ``journald`` - available only when `logging-journald` module
+  has been installed.
+* ``rich``/``rich_tb` - available only when `rich` module has been installed.
+  ``rich_tb`` it's the same as ``rich`` but with fully expanded tracebacks.
+
+An ``entrypoint`` will call ``aiomisc.log.basic_config`` function implicitly
+using passed ``log_level=`` and ``log_format=`` parameters.
+Alternatively you can call ``aiomisc.log.basic_config`` function manually
+passing it already created eventloop.
+
+However, you can configure logging earlier using ``aiomisc_log.basic_config``,
+but you will lose log buffering and flushing in a separate thread.
+This function is what is actually called during the logging configuration,
+the ``entrypoint`` passes a wrapper for the handler there to flush it into
+the separate thread.
+
+.. code-block:: python
+
+    import logging
+
+    from aiomisc_log import basic_config
+
+
+    basic_config(log_format="color")
+    logging.info("Hello")
+
+If you want to configure logging before the ``entrypoint`` is started,
+for example after the arguments parsing, it is safe to configure it twice
+(or more).
+
+.. code-block:: python
+
+    import logging
+
+    import aiomisc
+    from aiomisc_log import basic_config
+
+
+    basic_config(log_format="color")
+    logging.info("Hello from usual python")
+
+
+    async def main():
+        logging.info("Hello from async python")
+
+
+    with aiomisc.entrypoint(log_format="color") as loop:
+        loop.run_until_complete(main())
+
+
+Sometimes you want to configure logging manually, the following example
+demonstrates how to do this:
+
+.. code-block:: python
+
+    import os
+    import logging
+    from logging.handlers import RotatingFileHandler
+    from gzip import GzipFile
+
+    import aiomisc
+
+
+    class GzipLogFile(GzipFile):
+        def write(self, data) -> int:
+            if isinstance(data, str):
+                data = data.encode()
+            return super().write(data)
+
+
+    class RotatingGzipFileHandler(RotatingFileHandler):
+        """ Really added just for example you have to test it properly """
+
+        def shouldRollover(self, record):
+            if not os.path.isfile(self.baseFilename):
+                return False
+            if self.stream is None:
+                self.stream = self._open()
+            return 0 < self.maxBytes < os.stat(self.baseFilename).st_size
+
+        def _open(self):
+            return GzipLogFile(filename=self.baseFilename, mode=self.mode)
+
+
+    async def main():
+        for _ in range(1_000):
+            logging.info("Hello world")
+
+
+    with aiomisc.entrypoint(log_config=False) as loop:
+        gzip_handler = RotatingGzipFileHandler(
+            "app.log.gz",
+            # Maximum 100 files by 10 megabytes
+            maxBytes=10 * 2 ** 20, backupCount=100
+        )
+        stream_handler = logging.StreamHandler()
+
+        formatter = logging.Formatter(
+            "[%(asctime)s] <%(levelname)s> "
+            "%(filename)s:%(lineno)d (%(threadName)s): %(message)s"
+        )
+
+        gzip_handler.setFormatter(formatter)
+        stream_handler.setFormatter(formatter)
+
+        logging.basicConfig(
+            level=logging.INFO,
+            # Wrapping all handlers in separate streams will not block the
+            # event-loop even if gzip takes a long time to open the
+            # file.
+            handlers=map(
+                aiomisc.log.wrap_logging_handler,
+                (gzip_handler, stream_handler)
+            )
+        )
+        loop.run_until_complete(main())

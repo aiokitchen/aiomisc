@@ -6,6 +6,14 @@ from types import MappingProxyType
 from typing import IO, Any, Callable, Dict, List, Union
 
 
+try:
+    from typing import Literal
+
+    StyleType = Union[Literal["%"], Literal["{"], Literal["$"]]
+except ImportError:
+    StyleType = str     # type: ignore
+
+
 JSONObjType = Dict[str, Any]
 DumpsType = Callable[[JSONObjType, Any], str]
 
@@ -42,7 +50,8 @@ class JSONLogFormatter(logging.Formatter):
 
     def __init__(
         self, fmt: str = None, datefmt: str = None,
-        style: str = "%", dumps: DumpsType = _dump_json,
+        style: StyleType = "%",
+        dumps: DumpsType = _dump_json,
     ):
         super().__init__(
             datefmt=datefmt if datefmt is not Ellipsis else None,

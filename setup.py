@@ -1,4 +1,5 @@
 import os
+import platform
 
 from setuptools import setup, find_packages
 
@@ -29,6 +30,12 @@ def load_requirements(fname):
         return [line for line in line_iter if line and line[0] != '#']
 
 
+requirements = ["colorlog"]
+
+if platform.system() == "Linux":
+    requirements.append("logging-journald~=0.6.2")
+
+
 setup(
     name=module_name,
     version=__version__,
@@ -46,7 +53,6 @@ setup(
         'Operating System :: POSIX',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -60,12 +66,11 @@ setup(
         "aiomisc_pytest": ["py.typed"],
         "aiomisc_worker": ["py.typed"],
     },
-    install_requires=load_requirements('requirements.txt'),
+    install_requires=requirements,
     extras_require={
         'aiohttp': ['aiohttp'],
         'asgi': ['aiohttp-asgi'],
         'carbon': ['aiocarbon~=0.15'],
-        'contextvars': ['contextvars~=2.4'],
         'develop': load_requirements('requirements.dev.txt'),
         'raven': ['raven-aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
@@ -74,5 +79,14 @@ setup(
     entry_points={
         "pytest11": ["aiomisc = aiomisc_pytest.pytest_plugin"]
     },
-    url='https://github.com/aiokitchen/aiomisc'
+    python_requires=">=3.7, <4",
+    url='https://github.com/aiokitchen/aiomisc',
+    project_urls={
+        "Source": "https://github.com/aiokitchen/aiomisc",
+        "Tracker": "https://github.com/aiokitchen/aiomisc/issues",
+        "Changelog": (
+            "https://github.com/aiokitchen/aiomisc/blob/master/CHANGELOG.md"
+        ),
+        "Documentation": "https://aiomisc.readthedocs.io/en/latest/",
+    },
 )

@@ -12,6 +12,7 @@ from typing import (
     Deque, Generator, Iterable, Optional, Tuple, Type, TypeVar, Union,
 )
 
+from aiomisc.compat import EventLoopMixin
 from aiomisc.counters import Statistic
 from aiomisc.utils import awaitable
 
@@ -58,7 +59,7 @@ class CircuitBroken(Exception):
         return "<{!r}: {!r}>".format(self, self.last_exception)
 
 
-class CircuitBreaker:
+class CircuitBreaker(EventLoopMixin):
     __slots__ = (
         "_broken_time",
         "_counters",
@@ -67,7 +68,6 @@ class CircuitBreaker:
         "_exception_inspector",
         "_last_exception",
         "_lock",
-        "_loop",
         "_passing_time",
         "_recovery_at",
         "_recovery_ratio",
@@ -76,7 +76,7 @@ class CircuitBreaker:
         "_state",
         "_statistic",
         "_stuck_until",
-    )
+    ) + EventLoopMixin.__slots__
 
     BUCKET_COUNT = 10
     # Thresholds when state will be changed
@@ -144,11 +144,10 @@ class CircuitBreaker:
                 "Error ratio must be between 0 and 1 not %r" % error_ratio,
             )
 
-        self._statistic = deque(
+        self._statistic: StatisticType = deque(
             maxlen=self.BUCKET_COUNT,
-        )  # type: StatisticType
+        )
         self._lock = threading.RLock()
-        self._loop = asyncio.get_event_loop()
         self._error_ratio = error_ratio
         self._state = CircuitBreakerStates.PASSING
         self._response_time = response_time
@@ -174,7 +173,7 @@ class CircuitBreaker:
         return self._state
 
     def _get_time(self) -> float:
-        return self._loop.time()
+        return self.loop.time()
 
     def bucket(self) -> int:
         ts = self._get_time() * self.BUCKET_COUNT
@@ -355,11 +354,11 @@ class CircuitBreaker:
             return func(*args, **kwargs)
 
     async def call_async(
-        self, func: Callable[..., Awaitable[Any]],
+        self, func: Callable[..., Awaitable[T]],
         *args: Any, **kwargs: Any
     ) -> T:
         with self.context():
-            return await awaitable(func)(*args, **kwargs)
+            return await awaitable(func)(*args, **kwargs)   # type: ignore
 
     def __repr__(self) -> str:
         return "<{}: state={!r} recovery_ratio={!s}>".format(

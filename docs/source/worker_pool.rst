@@ -1,5 +1,5 @@
-Worker Pool
-===========
+``WorkerPool``
+==============
 
 Python has the ``multiprocessing`` module with ``Pool`` class which
 implements a similar worker pool. The IPC in this case uses a completely

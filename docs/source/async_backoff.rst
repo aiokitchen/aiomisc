@@ -1,5 +1,5 @@
-Async backoff
-=============
+``@aiomisc.asyncbackoff``
+=========================
 
 ``asyncbackoff`` it's a decorator that helps you guarantee maximal async
 function execution and retrying policy.
@@ -37,24 +37,24 @@ Position arguments notation:
 
 .. code-block:: python
 
-    from aiomisc import asyncbackoff
+    import aiomisc
 
     attempt_timeout = 0.1
     deadline = 1
     pause = 0.1
 
-    @asyncbackoff(attempt_timeout, deadline, pause)
+    @aiomisc.asyncbackoff(attempt_timeout, deadline, pause)
     async def db_fetch():
         ...
 
 
-    @asyncbackoff(0.1, 1, 0.1)
+    @aiomisc.asyncbackoff(0.1, 1, 0.1)
     async def db_save(data: dict):
         ...
 
 
     # Passing exceptions for handling
-    @asyncbackoff(0.1, 1, 0.1, TypeError, RuntimeError, ValueError)
+    @aiomisc.asyncbackoff(0.1, 1, 0.1, TypeError, RuntimeError, ValueError)
     async def db_fetch(data: dict):
         ...
 
@@ -63,33 +63,34 @@ Keyword arguments notation:
 
 .. code-block:: python
 
-    from aiomisc import asyncbackoff
+    import aiomisc
 
     attempt_timeout = 0.1
     deadline = 1
     pause = 0.1
 
-    @asyncbackoff(attempt_timeout=attempt_timeout,
-                  deadline=deadline, pause=pause)
+    @aiomisc.asyncbackoff(attempt_timeout=attempt_timeout,
+                          deadline=deadline, pause=pause)
     async def db_fetch():
         ...
 
 
-    @asyncbackoff(attempt_timeout=0.1, deadline=1, pause=0.1)
+    @aiomisc.asyncbackoff(attempt_timeout=0.1, deadline=1, pause=0.1)
     async def db_save(data: dict):
         ...
 
 
     # Passing exceptions for handling
-    @asyncbackoff(attempt_timeout=0.1, deadline=1, pause=0.1,
-                  exceptions=[TypeError, RuntimeError, ValueError])
+    @aiomisc.asyncbackoff(attempt_timeout=0.1, deadline=1, pause=0.1,
+                          exceptions=[TypeError, RuntimeError, ValueError])
     async def db_fetch(data: dict):
         ...
 
 
     # Will be retried no more than 2 times (3 tries total)
-    @asyncbackoff(attempt_timeout=0.5, deadline=1, pause=0.1, max_tries=3,
-                  exceptions=[TypeError, RuntimeError, ValueError])
+    @aiomisc.asyncbackoff(attempt_timeout=0.5, deadline=1,
+                          pause=0.1, max_tries=3,
+                          exceptions=[TypeError, RuntimeError, ValueError])
     async def db_fetch(data: dict):
         ...
 
@@ -102,8 +103,8 @@ Keyword arguments notation:
         ...
 
 
-asyncretry
-==========
+``asyncretry``
+==============
 
 Shortcut of ``asyncbackoff(None, None, 0, *args, **kwargs)``. Just retries
 ``max_tries`` times.

@@ -1,6 +1,5 @@
 import os
 import platform
-import sys
 from multiprocessing import Queue
 from pathlib import Path
 from typing import Any
@@ -13,8 +12,8 @@ from aiomisc.service import ProcessService, RespawningProcessService
 
 
 pytestmark = pytest.mark.skipif(
-    platform.system() == "Windows" or sys.version_info < (3, 7),
-    reason="Temporary skip on windows and python < 3.7",
+    platform.system() == "Windows",
+    reason="Temporary skip on windows",
 )
 
 
@@ -38,11 +37,10 @@ def test_process_service(tmpdir):
     test_file = tmp_path / "test.txt"
     svc = SampleProcessService(path=test_file)
 
-    async def wait(loop):
-        loop.run_in_executor(None, svc._process_stop_event.wait)
-
     with aiomisc.entrypoint(svc) as loop:
-        loop.run_until_complete(wait(loop))
+        loop.run_until_complete(
+            loop.run_in_executor(None, svc._process_stop_event.wait),
+        )
 
     with open(test_file) as fp:
         assert fp.readline() == "Hello world\n"

@@ -57,9 +57,9 @@ class MetaStatistic(type):
     ) -> Any:
 
         # noinspection PyTypeChecker
-        klass: Type[AbstractStatistic] = super().__new__(
+        klass: Type[AbstractStatistic] = super().__new__(  # type: ignore
             mcs, name, bases, dct,
-        )   # type: ignore
+        )
 
         metrics = set()
 

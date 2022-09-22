@@ -64,46 +64,18 @@ Installing from github.com:
 Quick Start
 -----------
 
+Complete the :doc:`/tutorial` or see this quick start.
+
 Async entrypoint with logging and useful arguments:
 
 .. code-block:: python
 
-    import argparse
     import asyncio
     import logging
 
-    from aiomisc import entrypoint
-    from aiomisc.log import LogLevel, LogFormat
-
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-L", "--log-level", help="Log level",
-        default=LogLevel.default(),
-        choices=LogLevel.choices(),
-    )
-
-    parser.add_argument(
-        "--log-format", help="Log format",
-        default=LogFormat.default(),
-        choices=LogFormat.choices(),
-    )
-
-    parser.add_argument(
-        "-D", "--debug", action='store_true',
-        help="Run loop and application in debug mode"
-    )
-
-
-    parser.add_argument(
-        "--pool-size", help="Thread pool size",
-        default=4, type=int,
-    )
-
+    import aiomisc
 
     log = logging.getLogger(__name__)
-
 
     async def main():
         log.info('Starting')
@@ -112,11 +84,8 @@ Async entrypoint with logging and useful arguments:
 
 
     if __name__ == '__main__':
-        arg = parser.parse_args()
-
         with entrypoint(
-            log_level=arg.log_level,
-            log_format=arg.log_format
+            log_level="info", log_format="color"
         ) as loop:
             loop.run_until_complete(main())
 
@@ -129,16 +98,13 @@ Install event loop on program start:
     import asyncio
     import aiomisc
 
-
     # Installing uvloop event loop
     # and set `aiomisc.thread_pool.ThreadPoolExecutor`
     # as default executor
     aiomisc.new_event_loop()
 
-
     async def main():
         await asyncio.sleep(1)
-
 
     if __name__ == '__main__':
         loop = asyncio.get_event_loop()
@@ -153,41 +119,12 @@ Close current event loop and install a new one:
     import asyncio
     import aiomisc
 
-
     async def main():
         await asyncio.sleep(3)
-
 
     if __name__ == '__main__':
         loop = aiomisc.new_event_loop()
         loop.run_until_complete(main())
-
-Table Of Contents
-+++++++++++++++++
-
-.. toctree::
-   :glob:
-   :maxdepth: 3
-
-   entrypoint
-   services
-   pool
-   context
-   timeout
-   async_backoff
-   circuit_breaker
-   aggregate
-   io
-   threads
-   process_pool
-   utils
-   worker_pool
-   logging
-   pytest
-   signal
-   plugins
-   statistic
-   apidoc
 
 Versioning
 ----------
@@ -202,7 +139,7 @@ Should be installed:
 
 * `virtualenv`
 * GNU Make as `make`
-* Python 3.5+ as `python3`
+* Python 3.7+ as `python3`
 
 
 For setting up developer environment just type
@@ -213,3 +150,15 @@ For setting up developer environment just type
 
 
 .. _Semantic Versioning: http://semver.org/
+
+Table Of Contents
++++++++++++++++++
+
+.. toctree::
+   :glob:
+   :numbered:
+   :maxdepth: 3
+
+   tutorial
+   modules
+   api/index

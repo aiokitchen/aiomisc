@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import operator
-import platform
 import sys
 import threading
 from multiprocessing.context import ProcessError
@@ -13,25 +12,23 @@ from setproctitle import setproctitle
 
 import aiomisc
 from aiomisc import WorkerPool
+from aiomisc.worker_pool import WorkerPoolStatistic
 
 
-skipif = pytest.mark.skipif(
-    sys.version_info < (3, 7),
-    reason="https://bugs.python.org/issue37380",
-)
+PROCESS_NUM = 4
 
 
 @pytest.fixture
 async def worker_pool(request, loop) -> WorkerPool:
     async with WorkerPool(
-        4,
+        PROCESS_NUM,
         initializer=setproctitle,
         initializer_args=(f"[WorkerPool] {request.node.name}",),
+        statistic_name=request.node.name,
     ) as pool:
         yield pool
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_success(worker_pool):
     results = await asyncio.gather(
@@ -46,7 +43,6 @@ async def test_success(worker_pool):
     assert sorted(results) == [i * i for i in range(worker_pool.workers * 2)]
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_incomplete_task_kill(worker_pool):
 
@@ -76,12 +72,23 @@ async def test_incomplete_task_kill(worker_pool):
 
 
 @pytest.mark.skipif(
-    platform.system() == "Windows", reason="Flapping on windows",
+    sys.platform in ("win32", "cygwin"), reason="Windows is ill",
 )
-@skipif
 @aiomisc.timeout(5)
-async def test_incomplete_task_pool_reuse(worker_pool):
-    pids_start = set(process.pid for process in worker_pool.processes)
+async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
+    def get_stats() -> dict:
+        stats = {}
+        for metric in aiomisc.get_statistics(WorkerPoolStatistic):
+            if metric.name == request.node.name:
+                stats[metric.metric] = metric.value
+        return stats
+
+    stats = get_stats()
+    while stats["spawning"] < PROCESS_NUM:
+        await asyncio.sleep(0.1)
+        stats = get_stats()
+
+    pids_start = set(worker_pool.pids)
 
     await asyncio.gather(
         *[
@@ -107,12 +114,11 @@ async def test_incomplete_task_pool_reuse(worker_pool):
         ]
     )
 
-    pids_end = set(process.pid for process in worker_pool.processes)
+    pids_end = set(worker_pool.pids)
 
     assert list(pids_start) == list(pids_end)
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_exceptions(worker_pool):
     results = await asyncio.gather(
@@ -128,7 +134,6 @@ async def test_exceptions(worker_pool):
         assert isinstance(exc, ZeroDivisionError)
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_exit(worker_pool):
     exceptions = await asyncio.wait_for(
@@ -146,8 +151,7 @@ async def test_exit(worker_pool):
         assert isinstance(exc, ProcessError)
 
 
-@skipif
-@aiomisc.timeout(5)
+@aiomisc.timeout(30)
 async def test_exit_respawn(worker_pool):
     exceptions = await asyncio.gather(
         *[
@@ -177,7 +181,6 @@ def get_initializer_args():
     return INITIALIZER_ARGS, INITIALIZER_KWARGS
 
 
-@skipif
 @aiomisc.timeout(10)
 async def test_initializer(worker_pool):
     pool = WorkerPool(
@@ -207,7 +210,6 @@ def bad_initializer():
     return 1 / 0
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_bad_initializer(worker_pool):
     pool = WorkerPool(1, initializer=bad_initializer)
@@ -217,7 +219,6 @@ async def test_bad_initializer(worker_pool):
             await pool.create_task(get_initializer_args)
 
 
-@skipif
 @aiomisc.timeout(5)
 async def test_threads_active_count_in_pool(worker_pool):
     threads = await worker_pool.create_task(threading.active_count)

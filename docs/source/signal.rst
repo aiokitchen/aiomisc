@@ -1,10 +1,10 @@
-Signal
-======
+``Signal``
+==========
 
 You can register async callback functions for specific events of an entrypoint.
 
-pre_start
-+++++++++
+``pre_start``
++++++++++++++
 
 ``pre_start`` signal occurs on entrypoint starting up before any service has started.
 
@@ -20,8 +20,8 @@ pre_start
         loop.run_forever()
 
 
-post_start
-++++++++++
+``post_start``
+++++++++++++++
 
 ``post_start`` signal occurs next entrypoint starting up after all services have
 been started.
@@ -38,8 +38,8 @@ been started.
         loop.run_forever()
 
 
-pre_stop
-++++++++
+``pre_stop``
+++++++++++++
 
 ``pre_stop`` signal occurs on entrypoint shutdown before any service have been
 stopped.
@@ -56,8 +56,8 @@ stopped.
         loop.run_forever()
 
 
-post_stop
-+++++++++
+``post_stop``
++++++++++++++
 
 ``post_stop`` signal occurs on entrypoint shutdown after all services have been
 stopped.

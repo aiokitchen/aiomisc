@@ -11,11 +11,12 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
+from .compat import event_loop_policy, set_current_loop
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import cancel_tasks, create_default_event_loop, event_loop_policy
+from .utils import cancel_tasks, create_default_event_loop
 
 
 ExecutorType = Executor
@@ -36,9 +37,7 @@ def _get_env_bool(name: str, default: str) -> bool:
     return os.getenv(name, default).lower() in enable_variants
 
 
-def _get_env_convert(
-    name: str, converter: Callable[..., T], default: T,
-) -> T:
+def _get_env_convert(name: str, converter: Callable[..., T], default: T) -> T:
     value = os.getenv(name)
     if value is None:
         return default
@@ -86,6 +85,8 @@ class Entrypoint:
                 flush_interval=self.log_flush_interval,
             )
 
+        set_current_loop(self.loop)
+
         for signal in (
             self.pre_start, self.post_stop,
             self.pre_stop, self.post_start,
@@ -120,7 +121,7 @@ class Entrypoint:
         :param services: Service instances which will be starting.
         :param pool_size: thread pool size
         :param log_level: Logging level which will be configured
-        :param log_format: Logging format which will be configures
+        :param log_format: Logging format which will be configured
         :param log_buffer_size: Buffer size for logging
         :param log_flush_interval: interval in seconds for flushing logs
         :param log_config: if False do not configure logging
@@ -155,6 +156,9 @@ class Entrypoint:
                 log_format=self.log_format,
             )
 
+        if self._loop is not None:
+            set_current_loop(self._loop)
+
     async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
         if self._closing is None:
@@ -171,7 +175,7 @@ class Entrypoint:
                 debug=self._debug,
             )
             self._loop_owner = True
-
+            set_current_loop(self._loop)
         return self._loop
 
     def __del__(self) -> None:
@@ -208,7 +212,7 @@ class Entrypoint:
     async def __aenter__(self) -> "Entrypoint":
         if self._loop is None:
             # When __aenter__ called without __enter__
-            self._loop = asyncio.get_event_loop()
+            self._loop = asyncio.get_running_loop()
 
         self.ctx = Context(loop=self.loop)
         await self._start()
@@ -275,7 +279,7 @@ class Entrypoint:
                 coro = svc.stop(exception)
             except TypeError as e:
                 log.warning(
-                    "Failed to stop service %r:\n%r", svc, e
+                    "Failed to stop service %r:\n%r", svc, e,
                 )
                 log.debug("Service stop failed traceback", exc_info=True)
             else:

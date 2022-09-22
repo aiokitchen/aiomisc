@@ -173,13 +173,14 @@ def test_configure_logging_stderr(capsys):
     logging.basicConfig(handlers=[])
 
 
-@pytest.mark.parametrize(
-    "address,family", [
-        ("127.0.0.1", socket.AF_INET),
-        ("0.0.0.0", socket.AF_INET),
-        ("::", socket.AF_INET6),
-    ],
-)
+BIND_CASES = [
+    ("127.0.0.1", socket.AF_INET),
+    ("0.0.0.0", socket.AF_INET),
+    ("::", socket.AF_INET6),
+]
+
+
+@pytest.mark.parametrize("address,family", BIND_CASES)
 def test_bind_address(address, family, aiomisc_unused_port):
     sock = aiomisc.bind_socket(address=address, port=aiomisc_unused_port)
 
@@ -321,3 +322,13 @@ async def test_awaitable_decorator(loop):
     assert (await coro()) == 654321
     assert (await pass_future()) == 654321
     assert (await no_awaitable()) == 654321
+
+
+def test_create_default_event_loop():
+    loop, _ = aiomisc.utils.create_default_event_loop()
+
+    async def run():
+        with pytest.raises(RuntimeError):
+            aiomisc.utils.create_default_event_loop()
+
+    loop.run_until_complete(run())

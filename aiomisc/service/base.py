@@ -1,9 +1,15 @@
 import asyncio
-from abc import ABCMeta, abstractmethod
-from typing import Any, Awaitable, Dict, Optional, Set, Tuple
+from abc import ABC, ABCMeta, abstractmethod
+from typing import (
+    Any, Coroutine, Dict, Generator, Optional, Set, Tuple, TypeVar, Union,
+)
 
 from ..context import Context, get_context
 from ..utils import cancel_tasks
+
+
+T = TypeVar("T")
+CoroutineType = Union[Coroutine[Any, Any, T], Generator[Any, None, T]]
 
 
 class ServiceMeta(ABCMeta):
@@ -87,24 +93,39 @@ class Service(metaclass=ServiceMeta):
         pass
 
 
-class SimpleServer(Service):
+class TaskStoreBase(Service, ABC):
+    def __init__(self, **kwargs: Any):
+        self.tasks: Set[asyncio.Task] = set()
+        super().__init__(**kwargs)
+
+    def create_task(self, coro: CoroutineType) -> asyncio.Task:
+        task: asyncio.Task = self.loop.create_task(coro)
+        self.tasks.add(task)
+        task.add_done_callback(self.tasks.remove)
+        return task
+
+    async def stop(self, exc: Exception = None) -> None:
+        await cancel_tasks(self.tasks)
+
+
+class SimpleServer(TaskStoreBase):
     def __init__(self, **kwargs: Any):
         self.server: Optional[asyncio.AbstractServer] = None
         self.tasks: Set[asyncio.Task] = set()
         super().__init__(**kwargs)
-
-    def create_task(self, coro: Awaitable[Any]) -> asyncio.Task:
-        task = self.loop.create_task(coro)
-        self.tasks.add(task)
-        task.add_done_callback(self.tasks.remove)
-        return task
 
     @abstractmethod
     async def start(self) -> None:
         raise NotImplementedError
 
     async def stop(self, exc: Exception = None) -> None:
-        await cancel_tasks(self.tasks)
+        await super().stop(exc)
 
         if self.server:
             self.server.close()
+
+
+class SimpleClient(TaskStoreBase):
+    @abstractmethod
+    async def start(self) -> None:
+        raise NotImplementedError

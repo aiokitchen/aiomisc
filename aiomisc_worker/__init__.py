@@ -4,7 +4,6 @@ import signal
 import socket
 import sys
 from enum import IntEnum
-from struct import Struct
 from typing import Tuple, TypeVar, Union
 
 
@@ -12,7 +11,6 @@ T = TypeVar("T")
 AddressType = Union[str, Tuple[str, int]]
 
 log = logging.getLogger(__name__)
-Header = Struct("!BI")
 
 SALT_SIZE = 64
 COOKIE_SIZE = 128
@@ -24,16 +22,19 @@ class PacketTypes(IntEnum):
     EXCEPTION = 1
     RESULT = 2
     CANCELLED = 3
-    AUTH_SALT = 50
-    AUTH_DIGEST = 51
+    AUTH = 50
+    AUTH_FAIL = 58
     AUTH_OK = 59
-    IDENTITY = 60
+    BAD_INITIALIZER = 60
+    BAD_PACKET = 254
 
 
 INET_AF = socket.AF_INET6
 
 
 if sys.platform in ("win32", "cygwin"):
-    SIGNAL = signal.SIGBREAK    # type: ignore
+    SIGNAL = signal.SIGBREAK      # type: ignore
+    INT_SIGNAL = signal.SIGINT
 else:
     SIGNAL = signal.SIGUSR2
+    INT_SIGNAL = signal.SIGINT
