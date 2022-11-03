@@ -4,7 +4,7 @@ import logging
 import socket
 from http import HTTPStatus
 from types import MappingProxyType
-from typing import Any, Iterable, Mapping, Optional, Callable, Awaitable, Set
+from typing import Any, Awaitable, Callable, Iterable, Mapping, Optional, Set
 
 import aiohttp
 import yarl
@@ -19,6 +19,7 @@ from raven.transport.http import HTTPTransport  # type: ignore
 
 from aiomisc.service import Service
 from aiomisc.utils import TimeoutType
+
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class DummyTransport(Transport):         # type: ignore
 
 
 class AioHttpTransportBase(
-    AsyncTransport, HTTPTransport, metaclass=abc.ABCMeta    # type: ignore
+    AsyncTransport, HTTPTransport, metaclass=abc.ABCMeta,    # type: ignore
 ):
 
     def __init__(
@@ -104,7 +105,7 @@ class AioHttpTransportBase(
 
     async def _do_send(
         self, url: str, data: Any, headers: Mapping,
-        callback: Callable[[], Any], errorback: Callable[[Any], Any]
+        callback: Callable[[], Any], errorback: Callable[[Any], Any],
     ) -> None:
         if self.keepalive:
             session = self._client_session
@@ -146,7 +147,7 @@ class AioHttpTransportBase(
     @abc.abstractmethod
     def _async_send(
         self, url: str, data: Any, headers: Mapping,
-        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any]
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any],
     ) -> None:  # pragma: no cover
         pass
 
@@ -156,7 +157,7 @@ class AioHttpTransportBase(
 
     def async_send(
         self, url: str, data: Any, headers: Mapping,
-        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any]
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any],
     ) -> None:
         if self._closing:
             failure_cb(RuntimeError(f"{self.__class__.__name__} is closed"))
@@ -198,7 +199,7 @@ class AioHttpTransport(AioHttpTransportBase):
 
     def _async_send(
         self, url: str, data: Any, headers: Mapping,
-        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any]
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any],
     ) -> None:
         coro = self._do_send(url, data, headers, success_cb, failure_cb)
 
@@ -250,7 +251,7 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
 
     def _async_send(
         self, url: str, data: Any, headers: Mapping,
-        callback: Callable[[], Any], errorback: Callable[[Any], Any]
+        callback: Callable[[], Any], errorback: Callable[[Any], Any],
     ) -> None:
         payload = url, data, headers, callback, errorback
 
@@ -278,7 +279,7 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
             *_, failure_cb = skipped
 
             failure_cb(
-                RuntimeError("QueuedAioHttpTransport internal queue was full")
+                RuntimeError("QueuedAioHttpTransport internal queue was full"),
             )
 
             self._queue.put_nowait(...)
