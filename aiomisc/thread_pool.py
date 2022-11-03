@@ -344,8 +344,7 @@ def threaded_separate(
         future = run_in_new_thread(
             func, args=args, kwargs=kwargs, detach=detach,
         )
-
-        return _awaiter(future)
+        return future
 
     return wrap
 
