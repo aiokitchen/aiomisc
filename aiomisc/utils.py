@@ -405,7 +405,7 @@ def awaitable(
         if hasattr(result, "__await__"):
             return result       # type: ignore
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
-            return result
+            return result       # type: ignore
 
         return awaiter(result)  # type: ignore
 

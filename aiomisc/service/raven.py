@@ -5,7 +5,7 @@ import logging
 import socket
 from http import HTTPStatus
 from types import MappingProxyType
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Optional, Callable, Awaitable, Set
 
 import aiohttp
 import yarl
@@ -19,7 +19,7 @@ from raven.transport.base import AsyncTransport  # type: ignore
 from raven.transport.http import HTTPTransport  # type: ignore
 
 from aiomisc.service import Service
-
+from aiomisc.utils import TimeoutType
 
 log = logging.getLogger(__name__)
 
@@ -30,15 +30,13 @@ class DummyTransport(Transport):         # type: ignore
 
 
 class AioHttpTransportBase(
-    AsyncTransport,
-    HTTPTransport,
-    metaclass=abc.ABCMeta,
+    AsyncTransport, HTTPTransport, metaclass=abc.ABCMeta    # type: ignore
 ):
 
     def __init__(
-        self, parsed_url=None, *, verify_ssl=True,
-        timeout=defaults.TIMEOUT, keepalive=True,
-        family=socket.AF_INET,
+        self, parsed_url: Optional[str] = None, *, verify_ssl: bool = True,
+        timeout: TimeoutType = defaults.TIMEOUT, keepalive: bool = True,
+        family: int = socket.AF_INET,
     ):
         self._keepalive = keepalive
         self._family = family
@@ -56,14 +54,14 @@ class AioHttpTransportBase(
         self._closing = False
 
     @property
-    def keepalive(self):
+    def keepalive(self) -> bool:
         return self._keepalive
 
     @property
-    def family(self):
+    def family(self) -> int:
         return self._family
 
-    def _client_session_factory(self):
+    def _client_session_factory(self) -> aiohttp.ClientSession:
         connector = aiohttp.TCPConnector(
             verify_ssl=self.verify_ssl, family=self.family,
         )
@@ -71,7 +69,10 @@ class AioHttpTransportBase(
             connector=connector,
         )
 
-    async def _do_send(self, url, data, headers, success_cb, failure_cb):
+    async def _do_send(
+        self, url: str, data: Any, headers: Mapping,
+        callback: Callable[[], Any], errorback: Callable[[Any], Any]
+    ) -> None:
         if self.keepalive:
             session = self._client_session
         else:
@@ -90,20 +91,19 @@ class AioHttpTransportBase(
                 msg = resp.headers.get("x-sentry-error")
                 if code == HTTPStatus.TOO_MANY_REQUESTS:
                     try:
-                        retry_after = resp.headers.get("retry-after")
-                        retry_after = int(retry_after)
+                        retry_after = int(resp.headers.get("retry-after", "0"))
                     except (ValueError, TypeError):
                         retry_after = 0
-                    failure_cb(RateLimited(msg, retry_after))
+                    errorback(RateLimited(msg, retry_after))
                 else:
-                    failure_cb(APIError(msg, code))
+                    errorback(APIError(msg, code))
             else:
-                success_cb()
+                callback()
         except asyncio.CancelledError:
             # do not mute asyncio.CancelledError
             raise
         except Exception as exc:
-            failure_cb(exc)
+            errorback(exc)
         finally:
             if resp is not None:
                 resp.release()
@@ -112,28 +112,28 @@ class AioHttpTransportBase(
 
     @abc.abstractmethod
     def _async_send(
-        self, url, data, headers, success_cb, failure_cb,
-    ):  # pragma: no cover
+        self, url: str, data: Any, headers: Mapping,
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any]
+    ) -> None:  # pragma: no cover
         pass
 
     @abc.abstractmethod
-    async def _close(self):  # pragma: no cover
+    async def _close(self) -> None:  # pragma: no cover
         pass
 
-    def async_send(self, url, data, headers, success_cb, failure_cb):
+    def async_send(
+        self, url: str, data: Any, headers: Mapping,
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any]
+    ) -> None:
         if self._closing:
-            failure_cb(
-                RuntimeError(
-                "{} is closed".format(self.__class__.__name__),
-                ),
-            )
+            failure_cb(RuntimeError(f"{self.__class__.__name__} is closed"))
             return
 
         self._loop.call_soon_threadsafe(
             self._async_send, url, data, headers, success_cb, failure_cb,
         )
 
-    async def _close_coro(self, *, timeout=None):
+    async def _close_coro(self, *, timeout: TimeoutType = None) -> None:
         try:
             await asyncio.wait_for(
                 self._close(), timeout=timeout,
@@ -144,9 +144,9 @@ class AioHttpTransportBase(
             if self.keepalive:
                 await self._client_session.close()
 
-    def close(self, *, timeout=None):
+    def close(self, *, timeout: TimeoutType = None) -> Awaitable[Any]:
         if self._closing:
-            async def dummy():
+            async def dummy() -> None:
                 pass
 
             return dummy()
@@ -158,19 +158,22 @@ class AioHttpTransportBase(
 
 class AioHttpTransport(AioHttpTransportBase):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
-        self._tasks = set()
+        self._tasks: Set[asyncio.Task] = set()
 
-    def _async_send(self, url, data, headers, success_cb, failure_cb):
+    def _async_send(
+        self, url: str, data: Any, headers: Mapping,
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any]
+    ) -> None:
         coro = self._do_send(url, data, headers, success_cb, failure_cb)
 
         task = self._loop.create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._tasks.remove)
 
-    async def _close(self):
+    async def _close(self) -> None:
         await asyncio.gather(
             *self._tasks,
             return_exceptions=True,
@@ -181,7 +184,9 @@ class AioHttpTransport(AioHttpTransportBase):
 
 class QueuedAioHttpTransport(AioHttpTransportBase):
 
-    def __init__(self, *args, workers=1, qsize=1000, **kwargs):
+    def __init__(
+        self, *args: Any, workers: int = 1, qsize: int = 1000, **kwargs: Any
+    ):
         super().__init__(*args, **kwargs)
 
         self._queue: asyncio.Queue = asyncio.Queue(maxsize=qsize)
@@ -189,11 +194,11 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
         self._workers = set()
 
         for _ in range(workers):
-            worker = self._loop.create_task(self._worker())
+            worker: asyncio.Task = self._loop.create_task(self._worker())
             self._workers.add(worker)
             worker.add_done_callback(self._workers.remove)
 
-    async def _worker(self):
+    async def _worker(self) -> None:
         while True:
             data = await self._queue.get()
 
@@ -210,11 +215,14 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
             finally:
                 self._queue.task_done()
 
-    def _async_send(self, url, data, headers, callback, errorback):
-        data = url, data, headers, callback, errorback
+    def _async_send(
+        self, url: str, data: Any, headers: Mapping,
+        callback: Callable[[], Any], errorback: Callable[[Any], Any]
+    ) -> None:
+        payload = url, data, headers, callback, errorback
 
         try:
-            self._queue.put_nowait(data)
+            self._queue.put_nowait(payload)
         except asyncio.QueueFull:
             skipped = self._queue.get_nowait()
             self._queue.task_done()
@@ -225,7 +233,7 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
                 RuntimeError("QueuedAioHttpTransport internal queue is full"),
             )
 
-            self._queue.put_nowait(data)
+            self._queue.put_nowait(payload)
 
     async def _close(self) -> None:
         try:
