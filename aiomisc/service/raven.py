@@ -1,6 +1,5 @@
 import abc
 import asyncio
-import inspect
 import logging
 import socket
 from http import HTTPStatus
@@ -238,16 +237,14 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
     async def _close(self) -> None:
         try:
             self._queue.put_nowait(...)
-        except asyncio.QueueFull as exc:
+        except asyncio.QueueFull:
             skipped = self._queue.get_nowait()
             self._queue.task_done()
 
             *_, failure_cb = skipped
 
             failure_cb(
-                RuntimeError(
-                "QueuedAioHttpTransport internal queue was full",
-                ),
+                RuntimeError("QueuedAioHttpTransport internal queue was full")
             )
 
             self._queue.put_nowait(...)
