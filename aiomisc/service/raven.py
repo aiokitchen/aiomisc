@@ -4,7 +4,6 @@ import inspect
 import logging
 import socket
 from http import HTTPStatus
-
 from types import MappingProxyType
 from typing import Any, Iterable, Mapping
 
@@ -12,12 +11,12 @@ import aiohttp
 import yarl
 from aiohttp import ClientSession, TCPConnector
 from raven import Client  # type: ignore
-from raven.conf import defaults     # type: ignore
+from raven.conf import defaults  # type: ignore
 from raven.exceptions import APIError, RateLimited  # type: ignore
-from raven.transport import Transport  # type: ignore
-from raven.transport.base import AsyncTransport   # type: ignore
-from raven.transport.http import HTTPTransport    # type: ignore
 from raven.handlers.logging import SentryHandler  # type: ignore
+from raven.transport import Transport  # type: ignore
+from raven.transport.base import AsyncTransport  # type: ignore
+from raven.transport.http import HTTPTransport  # type: ignore
 
 from aiomisc.service import Service
 
@@ -33,7 +32,7 @@ class DummyTransport(Transport):         # type: ignore
 class AioHttpTransportBase(
     AsyncTransport,
     HTTPTransport,
-    metaclass=abc.ABCMeta
+    metaclass=abc.ABCMeta,
 ):
 
     def __init__(
@@ -47,7 +46,7 @@ class AioHttpTransportBase(
 
         if parsed_url is not None:
             raise TypeError(
-                'Transport accepts no URLs for this version of raven.'
+                "Transport accepts no URLs for this version of raven.",
             )
         super().__init__(timeout, verify_ssl)
 
@@ -66,10 +65,10 @@ class AioHttpTransportBase(
 
     def _client_session_factory(self):
         connector = aiohttp.TCPConnector(
-            verify_ssl=self.verify_ssl, family=self.family
+            verify_ssl=self.verify_ssl, family=self.family,
         )
         return aiohttp.ClientSession(
-            connector=connector
+            connector=connector,
         )
 
     async def _do_send(self, url, data, headers, success_cb, failure_cb):
@@ -83,15 +82,15 @@ class AioHttpTransportBase(
         try:
             resp = await session.post(
                 url, data=data, compress=False,
-                headers=headers, timeout=self.timeout
+                headers=headers, timeout=self.timeout,
             )
 
             code = resp.status
             if code != HTTPStatus.OK:
-                msg = resp.headers.get('x-sentry-error')
+                msg = resp.headers.get("x-sentry-error")
                 if code == HTTPStatus.TOO_MANY_REQUESTS:
                     try:
-                        retry_after = resp.headers.get('retry-after')
+                        retry_after = resp.headers.get("retry-after")
                         retry_after = int(retry_after)
                     except (ValueError, TypeError):
                         retry_after = 0
@@ -113,7 +112,7 @@ class AioHttpTransportBase(
 
     @abc.abstractmethod
     def _async_send(
-        self, url, data, headers, success_cb, failure_cb
+        self, url, data, headers, success_cb, failure_cb,
     ):  # pragma: no cover
         pass
 
@@ -123,18 +122,21 @@ class AioHttpTransportBase(
 
     def async_send(self, url, data, headers, success_cb, failure_cb):
         if self._closing:
-            failure_cb(RuntimeError(
-                '{} is closed'.format(self.__class__.__name__)))
+            failure_cb(
+                RuntimeError(
+                "{} is closed".format(self.__class__.__name__),
+                ),
+            )
             return
 
         self._loop.call_soon_threadsafe(
-            self._async_send, url, data, headers, success_cb, failure_cb
+            self._async_send, url, data, headers, success_cb, failure_cb,
         )
 
     async def _close_coro(self, *, timeout=None):
         try:
             await asyncio.wait_for(
-                self._close(), timeout=timeout
+                self._close(), timeout=timeout,
             )
         except asyncio.TimeoutError:
             pass
@@ -203,7 +205,7 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
                 url, data, headers, success_cb, failure_cb = data
 
                 await self._do_send(
-                    url, data, headers, success_cb, failure_cb
+                    url, data, headers, success_cb, failure_cb,
                 )
             finally:
                 self._queue.task_done()
@@ -220,7 +222,7 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
             *_, errorback = skipped
 
             errorback(
-                RuntimeError('QueuedAioHttpTransport internal queue is full')
+                RuntimeError("QueuedAioHttpTransport internal queue is full"),
             )
 
             self._queue.put_nowait(data)
@@ -234,8 +236,11 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
 
             *_, failure_cb = skipped
 
-            failure_cb(RuntimeError(
-                'QueuedAioHttpTransport internal queue was full'))
+            failure_cb(
+                RuntimeError(
+                "QueuedAioHttpTransport internal queue was full",
+                ),
+            )
 
             self._queue.put_nowait(...)
 
