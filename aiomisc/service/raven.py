@@ -1,23 +1,61 @@
+import abc
 import asyncio
-import inspect
 import logging
 import socket
-import sys
-from asyncio import Queue, ensure_future
+from http import HTTPStatus
 from types import MappingProxyType
-from typing import Any, Iterable, Mapping
+from typing import Any, Awaitable, Callable, Iterable, Mapping, Optional, Set
 
+import aiohttp
 import yarl
 from aiohttp import ClientSession, TCPConnector
 from raven import Client  # type: ignore
+from raven.conf import defaults  # type: ignore
+from raven.exceptions import APIError, RateLimited  # type: ignore
 from raven.handlers.logging import SentryHandler  # type: ignore
 from raven.transport import Transport  # type: ignore
-from raven_aiohttp import QueuedAioHttpTransport  # type: ignore
+from raven.transport.base import AsyncTransport  # type: ignore
+from raven.transport.http import HTTPTransport  # type: ignore
 
 from aiomisc.service import Service
+from aiomisc.utils import TimeoutType
 
 
 log = logging.getLogger(__name__)
+
+
+__doc__ = """
+This module based on https://github.com/getsentry/raven-aiohttp
+
+Copyright (c) 2018 Functional Software, Inc and individual contributors.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+    3. Neither the name of the Raven nor the names of its contributors may be
+    used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+"""
 
 
 class DummyTransport(Transport):         # type: ignore
@@ -25,32 +63,241 @@ class DummyTransport(Transport):         # type: ignore
         pass
 
 
-class QueuedPatchedAioHttpTransport(QueuedAioHttpTransport):  # type: ignore
+class AioHttpTransportBase(
+    AsyncTransport, HTTPTransport, metaclass=abc.ABCMeta,    # type: ignore
+):
 
     def __init__(
-        self,
-        *args: Any,
-        workers: int = 1,
-        qsize: int = 1000,
-        **kwargs: Any
+        self, parsed_url: Optional[str] = None, *, verify_ssl: bool = True,
+        timeout: TimeoutType = defaults.TIMEOUT, keepalive: bool = True,
+        family: int = socket.AF_INET,
     ):
-        super(QueuedAioHttpTransport, self).__init__(*args, **kwargs)
-        loop_args = (
-            {"loop": self._loop} if sys.version_info < (3, 8) else {}
+        self._keepalive = keepalive
+        self._family = family
+        self._loop = asyncio.get_event_loop()
+
+        if parsed_url is not None:
+            raise TypeError(
+                "Transport accepts no URLs for this version of raven.",
+            )
+        super().__init__(timeout, verify_ssl)
+
+        if self.keepalive:
+            self._client_session = self._client_session_factory()
+
+        self._closing = False
+
+    @property
+    def keepalive(self) -> bool:
+        return self._keepalive
+
+    @property
+    def family(self) -> int:
+        return self._family
+
+    def _client_session_factory(self) -> aiohttp.ClientSession:
+        connector = aiohttp.TCPConnector(
+            verify_ssl=self.verify_ssl, family=self.family,
         )
-        self._queue: Queue = Queue(maxsize=qsize, **loop_args)
+        return aiohttp.ClientSession(
+            connector=connector,
+        )
+
+    async def _do_send(
+        self, url: str, data: Any, headers: Mapping,
+        callback: Callable[[], Any], errorback: Callable[[Any], Any],
+    ) -> None:
+        if self.keepalive:
+            session = self._client_session
+        else:
+            session = self._client_session_factory()
+
+        resp = None
+
+        try:
+            resp = await session.post(
+                url, data=data, compress=False,
+                headers=headers, timeout=self.timeout,
+            )
+
+            code = resp.status
+            if code != HTTPStatus.OK:
+                msg = resp.headers.get("x-sentry-error")
+                if code == HTTPStatus.TOO_MANY_REQUESTS:
+                    try:
+                        retry_after = int(resp.headers.get("retry-after", "0"))
+                    except (ValueError, TypeError):
+                        retry_after = 0
+                    errorback(RateLimited(msg, retry_after))
+                else:
+                    errorback(APIError(msg, code))
+            else:
+                callback()
+        except asyncio.CancelledError:
+            # do not mute asyncio.CancelledError
+            raise
+        except Exception as exc:
+            errorback(exc)
+        finally:
+            if resp is not None:
+                resp.release()
+            if not self.keepalive:
+                await session.close()
+
+    @abc.abstractmethod
+    def _async_send(
+        self, url: str, data: Any, headers: Mapping,
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any],
+    ) -> None:  # pragma: no cover
+        pass
+
+    @abc.abstractmethod
+    async def _close(self) -> None:  # pragma: no cover
+        pass
+
+    def async_send(
+        self, url: str, data: Any, headers: Mapping,
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any],
+    ) -> None:
+        if self._closing:
+            failure_cb(RuntimeError(f"{self.__class__.__name__} is closed"))
+            return
+
+        self._loop.call_soon_threadsafe(
+            self._async_send, url, data, headers, success_cb, failure_cb,
+        )
+
+    async def _close_coro(self, *, timeout: TimeoutType = None) -> None:
+        try:
+            await asyncio.wait_for(
+                self._close(), timeout=timeout,
+            )
+        except asyncio.TimeoutError:
+            pass
+        finally:
+            if self.keepalive:
+                await self._client_session.close()
+
+    def close(self, *, timeout: TimeoutType = None) -> Awaitable[Any]:
+        if self._closing:
+            async def dummy() -> None:
+                pass
+
+            return dummy()
+
+        self._closing = True
+
+        return self._loop.create_task(self._close_coro(timeout=timeout))
+
+
+class AioHttpTransport(AioHttpTransportBase):
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+
+        self._tasks: Set[asyncio.Task] = set()
+
+    def _async_send(
+        self, url: str, data: Any, headers: Mapping,
+        success_cb: Callable[[], Any], failure_cb: Callable[[Any], Any],
+    ) -> None:
+        coro = self._do_send(url, data, headers, success_cb, failure_cb)
+
+        task = self._loop.create_task(coro)
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.remove)
+
+    async def _close(self) -> None:
+        await asyncio.gather(
+            *self._tasks,
+            return_exceptions=True,
+        )
+
+        assert len(self._tasks) == 0
+
+
+class QueuedAioHttpTransport(AioHttpTransportBase):
+
+    def __init__(
+        self, *args: Any, workers: int = 1, qsize: int = 1000, **kwargs: Any
+    ):
+        super().__init__(*args, **kwargs)
+
+        self._queue: asyncio.Queue = asyncio.Queue(maxsize=qsize)
 
         self._workers = set()
 
         for _ in range(workers):
-            worker = ensure_future(self._worker())
+            worker: asyncio.Task = self._loop.create_task(self._worker())
             self._workers.add(worker)
             worker.add_done_callback(self._workers.remove)
 
+    async def _worker(self) -> None:
+        while True:
+            data = await self._queue.get()
 
-class QueuedKeepaliveAioHttpTransport(
-    QueuedPatchedAioHttpTransport,
-):
+            try:
+                if data is ...:
+                    self._queue.put_nowait(...)
+                    break
+
+                url, data, headers, success_cb, failure_cb = data
+
+                await self._do_send(
+                    url, data, headers, success_cb, failure_cb,
+                )
+            finally:
+                self._queue.task_done()
+
+    def _async_send(
+        self, url: str, data: Any, headers: Mapping,
+        callback: Callable[[], Any], errorback: Callable[[Any], Any],
+    ) -> None:
+        payload = url, data, headers, callback, errorback
+
+        try:
+            self._queue.put_nowait(payload)
+        except asyncio.QueueFull:
+            skipped = self._queue.get_nowait()
+            self._queue.task_done()
+
+            *_, errorback = skipped
+
+            errorback(
+                RuntimeError("QueuedAioHttpTransport internal queue is full"),
+            )
+
+            self._queue.put_nowait(payload)
+
+    async def _close(self) -> None:
+        try:
+            self._queue.put_nowait(...)
+        except asyncio.QueueFull:
+            skipped = self._queue.get_nowait()
+            self._queue.task_done()
+
+            *_, failure_cb = skipped
+
+            failure_cb(
+                RuntimeError("QueuedAioHttpTransport internal queue was full"),
+            )
+
+            self._queue.put_nowait(...)
+
+        await asyncio.gather(
+            *self._workers,
+            return_exceptions=True,
+        )
+
+        assert len(self._workers) == 0
+        assert self._queue.qsize() == 1
+        try:
+            assert self._queue.get_nowait() is ...
+        finally:
+            self._queue.task_done()
+
+
+class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
     DNS_CACHE_TTL = 600
     DNS_CACHE = True
     TCP_CONNECTION_LIMIT = 32
@@ -60,7 +307,6 @@ class QueuedKeepaliveAioHttpTransport(
 
     def __init__(
         self, *args: Any, family: int = socket.AF_UNSPEC,
-        loop: asyncio.AbstractEventLoop = None,
         dns_cache: bool = DNS_CACHE,
         dns_cache_ttl: int = DNS_CACHE_TTL,
         connection_limit: int = TCP_CONNECTION_LIMIT,
@@ -73,7 +319,7 @@ class QueuedKeepaliveAioHttpTransport(
         self.dns_cache_ttl = dns_cache_ttl
 
         super().__init__(
-            *args, family=family, loop=loop, keepalive=True,
+            *args, family=family, keepalive=True,
             workers=workers, qsize=qsize, **kwargs
         )
 
@@ -92,15 +338,9 @@ class QueuedKeepaliveAioHttpTransport(
             connector_owner=False,
         )
 
-    async def _close(self) -> Transport:
-        transport = await super()._close()
-
-        if inspect.iscoroutinefunction(self.connector.close()):
-            await self.connection.close()
-        else:
-            # noinspection PyAsyncCall
-            self.connector.close()
-        return transport
+    async def _close(self) -> None:
+        await super()._close()
+        await self.connector.close()
 
 
 class RavenSender(Service):

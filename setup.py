@@ -72,7 +72,7 @@ setup(
         'asgi': ['aiohttp-asgi'],
         'carbon': ['aiocarbon~=0.15'],
         'develop': load_requirements('requirements.dev.txt'),
-        'raven': ['raven-aiohttp'],
+        'raven': ['aiohttp'],
         'uvloop': ['uvloop>=0.14,<1'],
         'cron': ['croniter~=0.3.34'],
     },

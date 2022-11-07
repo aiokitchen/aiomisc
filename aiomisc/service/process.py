@@ -117,11 +117,9 @@ class ProcessService(Service):
         )
 
         if stop_result:
-            stop_result = (
-                await self.loop.run_in_executor(
-                    None, process.join, self.process_stop_timeout,
-                )
-            ) is not None
+            await self.loop.run_in_executor(
+                None, process.join, self.process_stop_timeout,
+            )
 
         if not stop_result and process.is_alive():
             process.kill()

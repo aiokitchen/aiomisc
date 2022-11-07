@@ -390,7 +390,7 @@ def cutout(
             return await circuit_breaker.call_async(func, *args, **kw)
 
         @wraps(func)
-        def wrapper(*args: Any, **kw: Any) -> T:
+        def wrapper(*args: Any, **kw: Any) -> Any:
             return circuit_breaker.call(func, *args, **kw)
 
         if asyncio.iscoroutinefunction(func):

@@ -214,7 +214,7 @@ class SelectResult(Collection):
         self.result_idx = idx
         self.is_exception = is_exception
 
-    def result(self) -> T:
+    def result(self) -> Any:
         if self.is_exception:
             raise self.value
         return self.value
@@ -393,7 +393,7 @@ def awaitable(
 
     # Avoid python 3.8+ warning
     if asyncio.iscoroutinefunction(func):
-        return func     # type: ignore
+        return func
 
     async def awaiter(obj: T) -> T:
         return obj
