@@ -33,7 +33,7 @@ jobs:
       - run: poetry run mypy
         env:
           FORCE_COLOR: 1
-  "docs examples":
+  docs-examples:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -47,7 +47,7 @@ jobs:
         env:
           FORCE_COLOR: 1
 
-  "tests on linux":
+  tests-on-linux:
     runs-on: ubuntu-latest
 
     strategy:
@@ -87,7 +87,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  "tests on macos":
+  tests-on-macos:
     runs-on: macos-latest
 
     strategy:
@@ -126,7 +126,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  "tests on windows":
+  tests-on-windows:
     runs-on: windows-latest
 
     strategy:
@@ -164,7 +164,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  "tests rpc example":
+  tests-rpc-example:
     runs-on: ubuntu-latest
 
     strategy:
@@ -191,10 +191,10 @@ jobs:
 
   finish:
     needs:
-      - "tests on linux"
-      - "tests on macos"
-      - "tests on windows"
-      - "tests rpc example"
+       - tests-on-linux
+       - tests-on-macos
+       - tests-on-windows
+       - tests-rpc-example
     runs-on: ubuntu-latest
     steps:
       - name: Coveralls Finished
