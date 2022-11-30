@@ -69,15 +69,15 @@ jobs:
       - run: python -m pip install poetry
       - run: poetry install --with=uvloop
       - run: >-
-          poetry run pytest
-            -vv
-            --cov=aiomisc
-            --cov=aiomisc_log
-            --cov=aiomisc_pytest
-            --cov=aiomisc_worker
-            --cov-report=term-missing
-            --doctest-modules
-            --aiomisc-test-timeout=120
+          poetry run pytest \
+            -vv \
+            --cov=aiomisc \
+            --cov=aiomisc_log \
+            --cov=aiomisc_pytest \
+            --cov=aiomisc_worker \
+            --cov-report=term-missing \
+            --doctest-modules \
+            --aiomisc-test-timeout=120 \
             tests
         env:
           FORCE_COLOR: 1
