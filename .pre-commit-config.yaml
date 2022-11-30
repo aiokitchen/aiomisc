@@ -17,9 +17,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: pylava
-        name: Check codestyle with Pylava
-        entry: pylava
+      - id: pylama
+        name: Check codestyle with Pylama
+        entry: pylama
         language: system
         types: [ python ]
 

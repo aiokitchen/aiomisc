@@ -90,14 +90,11 @@ For setting up developer environment just type
 
     .. code-block::
 
-        make develop
+        # install development dependencies
+        $ poetry install
 
-        . .venv/bin/activate
-
-        # run pre-commit before commit your changes
-        pre-commit
-
-        # or run: pre-commit install for adding pre-commit hook
+        # Install pre-commit git hook
+        $ poetry run pre-commit install
 
 
 .. _Semantic Versioning: http://semver.org/
