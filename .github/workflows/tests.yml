@@ -105,7 +105,6 @@ jobs:
         with:
           python-version: "${{ matrix.python }}"
       - run: python -m pip install poetry
-      - run: poetry install
       - run: poetry install --without=uvloop
       - run: poetry run pytest -vv --aiomisc-test-timeout=120 tests
         env:
