@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
 from typing import (
-    Optional, Any, AsyncContextManager, Awaitable, Callable, Coroutine, DefaultDict,
-    NoReturn, Set, TypeVar, Union,
+    Optional, Any, AsyncContextManager, Awaitable, Callable, Coroutine,
+    DefaultDict, NoReturn, Set, TypeVar, Union,
 )
 
 from .compat import EventLoopMixin

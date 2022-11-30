@@ -1,7 +1,9 @@
 import asyncio
 import logging
 from types import MappingProxyType
-from typing import Optional, Any, Awaitable, Callable, Mapping, Tuple, Type, Union
+from typing import (
+    Optional, Any, Awaitable, Callable, Mapping, Tuple, Type, Union
+)
 
 from aiomisc import Statistic, utils
 

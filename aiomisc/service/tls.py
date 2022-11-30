@@ -49,7 +49,8 @@ class TLSServer(SimpleServer):
         self, *, address: Optional[str] = None, port: Optional[int] = None,
         cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
         require_client_cert: bool = False, verify: bool = True,
-        options: OptionsType = (), sock: Optional[socket.socket] = None, **kwargs: Any
+        options: OptionsType = (), sock: Optional[socket.socket] = None,
+        **kwargs: Any
     ):
 
         self.__ssl_options = (

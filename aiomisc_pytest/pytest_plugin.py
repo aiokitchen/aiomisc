@@ -638,7 +638,7 @@ def loop(
 
     exceptions = list()
     if catch_unhandled_marker:
-        loop.set_exception_handler(lambda l, c: exceptions.append(c))
+        loop.set_exception_handler(lambda _, c: exceptions.append(c))
 
     try:
         with entrypoint(*services, loop=loop, **entrypoint_kwargs):

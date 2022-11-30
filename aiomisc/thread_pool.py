@@ -373,7 +373,10 @@ class IteratorWrapperSeparate(IteratorWrapper):
         return run_in_new_thread(self._in_thread)
 
 
-def threaded_iterable_separate(func: Optional[F] = None, max_size: int = 0) -> Any:
+def threaded_iterable_separate(
+    func: Optional[F] = None,
+    max_size: int = 0,
+) -> Any:
     if isinstance(func, int):
         return partial(threaded_iterable_separate, max_size=func)
     if func is None:

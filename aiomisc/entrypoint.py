@@ -102,7 +102,8 @@ class Entrypoint:
         await self.post_start.call(entrypoint=self, services=self.services)
 
     def __init__(
-        self, *services: Service, loop: Optional[asyncio.AbstractEventLoop] = None,
+        self, *services: Service,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
         pool_size: Optional[int] = None,
         log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
         log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,

@@ -167,7 +167,11 @@ class AioHttpTransportBase(
             self._async_send, url, data, headers, success_cb, failure_cb,
         )
 
-    async def _close_coro(self, *, timeout: Optional[TimeoutType] = None) -> None:
+    async def _close_coro(
+        self,
+        *,
+        timeout: Optional[TimeoutType] = None,
+    ) -> None:
         try:
             await asyncio.wait_for(
                 self._close(), timeout=timeout,

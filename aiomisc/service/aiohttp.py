@@ -102,9 +102,10 @@ class AIOHTTPService(Service):
 class AIOHTTPSSLService(AIOHTTPService):
     def __init__(
         self, cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
-        address: Optional[str] = None, port: Optional[int] = None, verify: bool = True,
-        sock: Optional[socket.socket] = None, shutdown_timeout: int = 5,
-        require_client_cert: bool = False, **kwds: Any
+        address: Optional[str] = None, port: Optional[int] = None,
+        verify: bool = True, sock: Optional[socket.socket] = None,
+        shutdown_timeout: int = 5, require_client_cert: bool = False,
+        **kwds: Any
     ):
 
         super().__init__(
