@@ -1,7 +1,7 @@
 import logging
 import tracemalloc
 from enum import Enum
-from typing import Optional, Any, List, Union
+from typing import Any, List, Optional, Union
 
 from ..periodic import PeriodicCallback
 from ..service import Service
@@ -51,9 +51,9 @@ class MemoryTracer(Service):
     def humanize(num: Union[int, float], suffix: str = "B") -> str:
         for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
             if abs(num) < 1024.0:
-                return "%3.1f%s%s" % (num, unit, suffix)
+                return "{:3.1f}{}{}".format(num, unit, suffix)
             num /= 1024.0
-        return "%.1f%s%s" % (num, "Yi", suffix)
+        return "{:.1f}{}{}".format(num, "Yi", suffix)
 
     @staticmethod
     def take_snapshot() -> tracemalloc.Snapshot:

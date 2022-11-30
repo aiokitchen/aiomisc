@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from abc import abstractmethod
-from typing import Optional, Any, Union
+from typing import Any, Optional, Union
 
 from aiomisc import PeriodicCallback, Service
 

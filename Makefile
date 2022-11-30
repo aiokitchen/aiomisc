@@ -36,7 +36,7 @@ develop: clean
 	.venv/bin/pip install -Ue '.[develop]'
 
 mypy:
-	mypy aiomisc/thread_pool.py
+	mypy aiomisc aiomisc_log aiomisc_worker
 
 translate: bump
 	make -C docs/ gettext
@@ -47,3 +47,6 @@ docs: translate
 	make -C docs/ -e SPHINXOPTS="-D language='ru'" -e BUILDDIR="build/ru" html
 	python -m webbrowser -t "file://$(shell pwd)/docs/build/en/html/index.html"
 	python -m webbrowser -t "file://$(shell pwd)/docs/build/ru/html/index.html"
+
+gray:
+	gray aiomisc*

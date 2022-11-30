@@ -317,7 +317,7 @@ class WorkerPool:
 
     async def create_task(
         self, func: Callable[..., T],
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ) -> T:
         result_future = self.__create_future()
         process_future = self.__create_future()

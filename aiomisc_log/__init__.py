@@ -29,7 +29,7 @@ DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 def create_logging_handler(
     log_format: LogFormat = LogFormat.color,
-    date_format: str = None, **kwargs: Any
+    date_format: Optional[str] = None, **kwargs: Any,
 ) -> logging.Handler:
 
     if LOG_FORMAT is not None:
@@ -58,7 +58,7 @@ def create_logging_handler(
         return rich_formatter(
             date_format=date_format,
             rich_tracebacks=True,
-            **kwargs
+            **kwargs,
         )
     elif log_format == LogFormat.syslog:
         if date_format:
@@ -123,7 +123,7 @@ def basic_config(
     level: Union[int, str] = logging.INFO,
     log_format: Union[str, LogFormat] = LogFormat.color,
     handler_wrapper: HandlerWrapperType = pass_wrapper,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
 
     if isinstance(level, str):

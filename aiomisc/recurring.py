@@ -2,7 +2,7 @@ import asyncio
 import logging
 from types import MappingProxyType
 from typing import (
-    Optional, Any, Awaitable, Callable, Mapping, Tuple, Type, Union
+    Any, Awaitable, Callable, Mapping, Optional, Tuple, Type, Union,
 )
 
 from aiomisc import Statistic, utils
@@ -32,7 +32,6 @@ class StrategyStop(StrategyException):
     """
     Strategy function might raise this exception as way to  stop recurring
     """
-    pass
 
 
 class StrategySkip(StrategyException):
@@ -49,7 +48,7 @@ class RecurringCallback:
 
     def __init__(
         self, coroutine_func: CallbackType,
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ):
         self.func: Callable[..., Awaitable[Any]]
         self.args: Tuple[Any, ...]
@@ -92,7 +91,7 @@ class RecurringCallback:
         ],
         loop: asyncio.AbstractEventLoop,
         *, shield: bool = False,
-        suppress_exceptions: ExceptionsType = ()
+        suppress_exceptions: ExceptionsType = (),
     ) -> None:
         runner: Callable[..., Awaitable[Any]]
 
@@ -154,7 +153,7 @@ class RecurringCallback:
         strategy: RecurringCallbackStrategy,
         loop: Optional[asyncio.AbstractEventLoop] = None, *,
         shield: bool = False,
-        suppress_exceptions: ExceptionsType = ()
+        suppress_exceptions: ExceptionsType = (),
     ) -> asyncio.Task:
         loop = loop or asyncio.get_event_loop()
         return loop.create_task(
@@ -165,4 +164,4 @@ class RecurringCallback:
         )
 
     def __repr__(self) -> str:
-        return "<%s(%s)>" % (self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}({self.name})>"

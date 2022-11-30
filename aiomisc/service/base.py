@@ -14,7 +14,7 @@ CoroutineType = Union[Coroutine[Any, Any, T], Generator[Any, None, T]]
 
 class ServiceMeta(ABCMeta):
     def __new__(
-        cls, name: str, bases: Tuple, namespace: Dict, **kwds: Any
+        cls, name: str, bases: Tuple, namespace: Dict, **kwds: Any,
     ) -> Any:
         instance = super().__new__(
             cls, name, bases, dict(namespace),
@@ -32,7 +32,7 @@ class ServiceMeta(ABCMeta):
             raise TypeError(
                 "Following methods must be coroutine functions",
                 tuple(
-                    "%s.%s" % (name, m)
+                    f"{name}.{m}"
                     for m in instance.__async_required__    # type: ignore
                 ),
             )

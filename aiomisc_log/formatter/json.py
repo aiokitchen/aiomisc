@@ -3,7 +3,7 @@ import logging
 import sys
 import traceback
 from types import MappingProxyType
-from typing import IO, Any, Callable, Dict, List, Union
+from typing import IO, Any, Callable, Dict, List, Optional, Union
 
 
 try:
@@ -49,7 +49,7 @@ class JSONLogFormatter(logging.Formatter):
     })
 
     def __init__(
-        self, fmt: str = None, datefmt: str = None,
+        self, fmt: Optional[str] = None, datefmt: Optional[str] = None,
         style: StyleType = "%",
         dumps: DumpsType = _dump_json,
     ):
@@ -117,7 +117,7 @@ class JSONLogFormatter(logging.Formatter):
         return "\n".join(traceback.format_exception(*exc_info))
 
     def formatTime(     # type: ignore
-        self, record: logging.LogRecord, datefmt: str = None,
+        self, record: logging.LogRecord, datefmt: Optional[str] = None,
     ) -> Union[int, str]:
         if datefmt == "%s":
             return record.created   # type: ignore
@@ -125,9 +125,9 @@ class JSONLogFormatter(logging.Formatter):
 
 
 def json_handler(
-    stream: IO[str] = None,
-    date_format: str = None,
-    **kwargs: Any
+    stream: Optional[IO[str]] = None,
+    date_format: Optional[str] = None,
+    **kwargs: Any,
 ) -> logging.Handler:
     log_stream: IO[str] = stream or sys.stdout
     formatter = JSONLogFormatter(datefmt=date_format, **kwargs)

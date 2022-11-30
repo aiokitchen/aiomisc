@@ -18,7 +18,7 @@ def proxy_method_async(
     def wrap_to_future(
         loop: asyncio.AbstractEventLoop,
         func: Callable[..., T],
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ) -> asyncio.Future:
         future = loop.create_future()
 
@@ -34,7 +34,7 @@ def proxy_method_async(
     def wrap_to_thread(
         loop: asyncio.AbstractEventLoop, func: Callable[..., T],
         executor: Executor,
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ) -> Awaitable[T]:
         callee = partial(func, *args, **kwargs)
         # noinspection PyTypeChecker
@@ -45,7 +45,7 @@ def proxy_method_async(
 
         if in_executor:
             return await wrap_to_thread(
-                self.loop, func, self.executor, *args, **kwargs
+                self.loop, func, self.executor, *args, **kwargs,
             )
 
         return await wrap_to_future(self.loop, func, *args, **kwargs)
@@ -86,7 +86,7 @@ class AsyncFileIOBase(EventLoopMixin):
     def __init__(
         self, fname: Union[str, Path], mode: str = "r",
         executor: Optional[Executor] = None, *args: Any,
-        loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any
+        loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any,
     ):
         self._loop = loop
         self.fp = None
@@ -213,10 +213,10 @@ AsyncFileT = Union[
 
 def async_open(
     fname: Union[str, Path], mode: str = "r",
-    *args: Any, **kwargs: Any
+    *args: Any, **kwargs: Any,
 ) -> AsyncFileT:
     if "b" in mode:
         return AsyncBytesFileIO(
-            fname, mode, *args, **kwargs
+            fname, mode, *args, **kwargs,
         )
     return AsyncTextFileIO(fname, mode, *args, **kwargs)

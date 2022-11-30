@@ -37,7 +37,7 @@ class UDPServer(SimpleServer):
     def __init__(
         self, address: Optional[str] = None, port: Optional[int] = None,
         options: OptionsType = (), sock: Optional[socket.socket] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         if not sock:
             if address is None or port is None:

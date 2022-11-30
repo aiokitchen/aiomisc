@@ -37,7 +37,7 @@ def asyncbackoff(
     max_tries: Optional[int] = None,
     giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
-    statistic_class: Type[BackoffStatistic] = BackoffStatistic
+    statistic_class: Type[BackoffStatistic] = BackoffStatistic,
 ) -> ReturnType:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and

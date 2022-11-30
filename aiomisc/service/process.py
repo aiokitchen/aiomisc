@@ -20,7 +20,7 @@ def _process_inner(
     log_format: str,
     start_event: synchronize.Event,
     stop_event: synchronize.Event,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
     basic_config(level=log_level, log_format=log_format)
     start_event.set()
@@ -126,7 +126,7 @@ class ProcessService(Service):
             log.warning(
                 f"The process {process.pid} didn't stop for "
                 f"{self.process_stop_timeout} seconds "
-                f"and had been killed.",
+                "and had been killed.",
             )
 
 

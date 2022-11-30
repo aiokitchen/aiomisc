@@ -50,12 +50,12 @@ class Aggregator(EventLoopMixin):
     def __init__(
         self, func: AggFunc, *, leeway_ms: float,
         max_count: Optional[int] = None,
-        statistic_name: Optional[str] = None
+        statistic_name: Optional[str] = None,
     ):
-        has_variadic_positional = any((
+        has_variadic_positional = any(
             parameter.kind == Parameter.VAR_POSITIONAL
             for parameter in inspect.signature(func).parameters.values()
-        ))
+        )
         if not has_variadic_positional:
             raise ValueError(
                 "Function must accept variadic positional arguments",
