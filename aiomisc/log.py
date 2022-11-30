@@ -56,7 +56,11 @@ def wrap_logging_handler(
         ), no_return=True, statistic_name="logger",
     )
 
-    atexit.register(handler.flush)
+    def at_exit() -> None:
+        with suppress(Exception):
+            handler.flush()
+
+    atexit.register(at_exit)
 
     return buffered_handler
 
