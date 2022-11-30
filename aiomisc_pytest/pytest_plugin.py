@@ -156,20 +156,15 @@ class TCPProxyClient:
         self.__processors["write"] = aiomisc.awaitable(value)
 
     def __repr__(self):
-        return "<%s[%x]: %s => %s>" % (
+        return "<{}[{:x}]: {} => {}>".format(
             self.__class__.__name__, id(self),
             self.__client_repr, self.__server_repr,
         )
 
-    if sys.version_info < (3, 7):
-        @staticmethod
-        async def _close_writer(writer: asyncio.StreamWriter):
-            writer.close()
-    else:
-        @staticmethod
-        async def _close_writer(writer: asyncio.StreamWriter):
-            writer.close()
-            await writer.wait_closed()
+    @staticmethod
+    async def _close_writer(writer: asyncio.StreamWriter):
+        writer.close()
+        await writer.wait_closed()
 
     async def pipe(
         self, reader: asyncio.StreamReader,
@@ -270,7 +265,7 @@ class TCPProxy:
         self.write_processor = None  # type: t.Optional[ProxyProcessorType]
 
     def __repr__(self):
-        return "<%s[%x]: tcp://%s:%s => tcp://%s:%s>" % (
+        return "<{}[{:x}]: tcp://{}:{} => tcp://{}:{}>".format(
             self.__class__.__name__, id(self),
             self.proxy_host, self.proxy_port,
             self.target_host, self.target_port,
@@ -350,7 +345,7 @@ class TCPProxy:
         return asyncio.ensure_future(
             asyncio.gather(
                 *[client.close() for client in self.clients],
-                return_exceptions=True
+                return_exceptions=True,
             ),
         )
 
@@ -636,9 +631,9 @@ def loop(
     forbid_loop_getter_marker = get_marker("forbid_get_event_loop")
     catch_unhandled_marker = get_marker("catch_loop_exceptions")
 
-    exceptions = list()
+    exceptions = []
     if catch_unhandled_marker:
-        loop.set_exception_handler(lambda l, c: exceptions.append(c))
+        loop.set_exception_handler(lambda _, c: exceptions.append(c))
 
     try:
         with entrypoint(*services, loop=loop, **entrypoint_kwargs):

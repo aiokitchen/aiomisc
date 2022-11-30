@@ -167,7 +167,11 @@ class AioHttpTransportBase(
             self._async_send, url, data, headers, success_cb, failure_cb,
         )
 
-    async def _close_coro(self, *, timeout: TimeoutType = None) -> None:
+    async def _close_coro(
+        self,
+        *,
+        timeout: Optional[TimeoutType] = None,
+    ) -> None:
         try:
             await asyncio.wait_for(
                 self._close(), timeout=timeout,
@@ -178,7 +182,7 @@ class AioHttpTransportBase(
             if self.keepalive:
                 await self._client_session.close()
 
-    def close(self, *, timeout: TimeoutType = None) -> Awaitable[Any]:
+    def close(self, *, timeout: Optional[TimeoutType] = None) -> Awaitable[Any]:
         if self._closing:
             async def dummy() -> None:
                 pass
@@ -219,7 +223,7 @@ class AioHttpTransport(AioHttpTransportBase):
 class QueuedAioHttpTransport(AioHttpTransportBase):
 
     def __init__(
-        self, *args: Any, workers: int = 1, qsize: int = 1000, **kwargs: Any
+        self, *args: Any, workers: int = 1, qsize: int = 1000, **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
 
@@ -311,7 +315,7 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
         dns_cache_ttl: int = DNS_CACHE_TTL,
         connection_limit: int = TCP_CONNECTION_LIMIT,
         connection_limit_host: int = TCP_CONNECTION_LIMIT_HOST,
-        workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs: Any
+        workers: int = WORKERS, qsize: int = QUEUE_SIZE, **kwargs: Any,
     ):
         self.connection_limit = connection_limit
         self.connection_limit_host = connection_limit_host
@@ -320,7 +324,7 @@ class QueuedKeepaliveAioHttpTransport(QueuedAioHttpTransport):
 
         super().__init__(
             *args, family=family, keepalive=True,
-            workers=workers, qsize=qsize, **kwargs
+            workers=workers, qsize=qsize, **kwargs,
         )
 
     def _client_session_factory(self) -> ClientSession:
@@ -356,7 +360,7 @@ class RavenSender(Service):
         self.client = Client(
             str(self.sentry_dsn),
             transport=QueuedKeepaliveAioHttpTransport,
-            **self.client_options
+            **self.client_options,
         )
 
         # Initialize Transport object

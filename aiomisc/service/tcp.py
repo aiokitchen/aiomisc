@@ -17,8 +17,9 @@ class TCPServer(SimpleServer):
     PROTO_NAME = "tcp"
 
     def __init__(
-        self, address: str = None, port: int = None,
-        options: OptionsType = (), sock: socket.socket = None, **kwargs: Any
+        self, address: Optional[str] = None, port: Optional[int] = None,
+        options: OptionsType = (), sock: Optional[socket.socket] = None,
+        **kwargs: Any,
     ):
         if not sock:
             if address is None or port is None:
@@ -67,7 +68,7 @@ class TCPServer(SimpleServer):
             sock=self.socket,
         )
 
-    async def stop(self, exc: Exception = None) -> None:
+    async def stop(self, exc: Optional[Exception] = None) -> None:
         await super().stop(exc)
 
         if self.server:
@@ -104,9 +105,9 @@ class TCPClient(SimpleClient, ABC):
 
     def __init__(
         self,
-        address: str = None,
-        port: int = None,
-        **kwargs: Any
+        address: Optional[str] = None,
+        port: Optional[int] = None,
+        **kwargs: Any,
     ):
         if not (address and port):
             raise RuntimeError('You should pass "address" and "port" couple')

@@ -62,7 +62,7 @@ class ProcessPoolExecutor(Executor, EventLoopMixin):
 
     def submit(           # type: ignore
         self, fn: Callable[..., T],
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ) -> asyncio.Future:
         """
         Submit blocking function to the pool

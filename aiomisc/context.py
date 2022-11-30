@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict
+from typing import Any, DefaultDict, Dict, Optional
 
 from aiomisc.counters import Statistic
 
@@ -19,7 +19,7 @@ class ContextStatistic(Statistic):
 class Context:
     __slots__ = ("_storage", "_loop", "_statistic")
 
-    _EVENT_OBJECTS = dict()     # type: _EventObjectStoreType
+    _EVENT_OBJECTS = {}     # type: _EventObjectStoreType
 
     def close(self) -> None:
         self._storage.clear()
@@ -46,7 +46,7 @@ class Context:
         self._storage[item].set_result(value)
 
 
-def get_context(loop: asyncio.AbstractEventLoop = None) -> Context:
+def get_context(loop: Optional[asyncio.AbstractEventLoop] = None) -> Context:
     loop = loop or asyncio.get_event_loop()
 
     if loop.is_closed():

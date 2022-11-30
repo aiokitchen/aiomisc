@@ -56,7 +56,7 @@ class CircuitBroken(Exception):
         self.last_exception = last_exception
 
     def __repr__(self) -> str:
-        return "<{!r}: {!r}>".format(self, self.last_exception)
+        return f"<{self!r}: {self.last_exception!r}>"
 
 
 class CircuitBreaker(EventLoopMixin):
@@ -99,10 +99,10 @@ class CircuitBreaker(EventLoopMixin):
         error_ratio: float,
         response_time: Number,
         exceptions: Iterable[Type[Exception]] = (Exception,),
-        recovery_time: Number = None,
-        broken_time: Number = None,
-        passing_time: Number = None,
-        exception_inspector: ExceptionInspectorType = None,
+        recovery_time: Optional[Number] = None,
+        broken_time: Optional[Number] = None,
+        passing_time: Optional[Number] = None,
+        exception_inspector: Optional[ExceptionInspectorType] = None,
         statistic_name: Optional[str] = None,
     ):
         """
@@ -348,14 +348,14 @@ class CircuitBreaker(EventLoopMixin):
         raise NotImplementedError(self._state)
 
     def call(
-        self, func: Callable[..., T], *args: Any, **kwargs: Any
+        self, func: Callable[..., T], *args: Any, **kwargs: Any,
     ) -> T:
         with self.context():
             return func(*args, **kwargs)
 
     async def call_async(
         self, func: Callable[..., Awaitable[T]],
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ) -> T:
         with self.context():
             return await awaitable(func)(*args, **kwargs)   # type: ignore
@@ -373,19 +373,19 @@ CutoutReturnType = Callable[[CutoutFuncType], CutoutDecoratorReturnType]
 
 def cutout(
     ratio: float, response_time: Union[int, float],
-    *exceptions: Type[Exception], **kwargs: Any
+    *exceptions: Type[Exception], **kwargs: Any,
 ) -> CutoutReturnType:
     circuit_breaker = CircuitBreaker(
         error_ratio=ratio,
         response_time=response_time,
         exceptions=exceptions,
-        **kwargs
+        **kwargs,
     )
 
     def decorator(func: CutoutFuncType) -> CutoutDecoratorReturnType:
         @wraps(func)
         async def async_wrapper(
-            *args: Any, **kw: Any
+            *args: Any, **kw: Any,
         ) -> T:
             return await circuit_breaker.call_async(func, *args, **kw)
 

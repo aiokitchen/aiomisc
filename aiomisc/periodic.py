@@ -23,19 +23,19 @@ class PeriodicCallback(EventLoopMixin):
     _task: Optional[asyncio.Future]
 
     def __init__(
-        self, coroutine_func: CallbackType, *args: Any, **kwargs: Any
+        self, coroutine_func: CallbackType, *args: Any, **kwargs: Any,
     ):
         self._recurring_callback: RecurringCallback = RecurringCallback(
-            coroutine_func, *args, **kwargs
+            coroutine_func, *args, **kwargs,
         )
         self._task: Optional[asyncio.Task] = None
 
     def start(
         self, interval: Union[int, float],
-        loop: asyncio.AbstractEventLoop = None, *,
+        loop: Optional[asyncio.AbstractEventLoop] = None, *,
         delay: Union[int, float] = 0,
         shield: bool = False,
-        suppress_exceptions: ExceptionsType = ()
+        suppress_exceptions: ExceptionsType = (),
     ) -> None:
         assert interval
 
@@ -73,6 +73,4 @@ class PeriodicCallback(EventLoopMixin):
         return task
 
     def __repr__(self) -> str:
-        return "%s(%s)" % (
-            self.__class__.__name__, self._recurring_callback.name,
-        )
+        return f"{self.__class__.__name__}({self._recurring_callback.name})"

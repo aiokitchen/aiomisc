@@ -37,7 +37,7 @@ class SDWatchdogService(Service):
             log.warning("SystemD notify socket communication problem: %r", e)
 
     async def _post_start(
-        self, services: Tuple[Service, ...], **__: Any
+        self, services: Tuple[Service, ...], **__: Any,
     ) -> None:
         if not hasattr(self, "socket"):
             return
@@ -52,7 +52,7 @@ class SDWatchdogService(Service):
 
     def __init__(
         self, *, watchdog_interval: Optional[TimeoutType] = WATCHDOG_INTERVAL,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         self.watchdog_interval = watchdog_interval
         entrypoint.POST_START.connect(self._post_start)
@@ -103,5 +103,5 @@ class SDWatchdogService(Service):
         entrypoint.POST_START.disconnect(self._post_start)
         entrypoint.PRE_STOP.disconnect(self._pre_stop)
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         await self._watchdog_timer.stop()

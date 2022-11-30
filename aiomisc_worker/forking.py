@@ -14,7 +14,7 @@ from .protocol import FileIOProtocol
 from .worker import bad_initializer, worker
 
 
-PROCESSES: MutableMapping[int, bytes] = dict()
+PROCESSES: MutableMapping[int, bytes] = {}
 STOPPING = Event()
 EXIT_LOCK = Lock()
 

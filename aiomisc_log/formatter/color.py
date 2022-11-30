@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import IO, Any
+from typing import IO, Any, Optional
 
 from colorlog import ColoredFormatter
 
@@ -8,8 +8,8 @@ from ..enum import DateFormat
 
 
 def color_formatter(
-    stream: IO[str] = None,
-    date_format: str = None, **_: Any
+    stream: Optional[IO[str]] = None,
+    date_format: Optional[str] = None, **_: Any,
 ) -> logging.Handler:
 
     date_format = (
@@ -26,7 +26,7 @@ def color_formatter(
     )
 
     if date_format:
-        fmt = "%(bold_white)s%(bg_black)s%(asctime)s%(reset)s {0}".format(fmt)
+        fmt = f"%(bold_white)s%(bg_black)s%(asctime)s%(reset)s {fmt}"
 
     handler.setFormatter(
         ColoredFormatter(

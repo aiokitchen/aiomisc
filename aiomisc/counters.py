@@ -116,7 +116,7 @@ class StatisticResult(NamedTuple):
 
 # noinspection PyProtectedMember
 def get_statistics(
-    *kind: Type[Statistic]
+    *kind: Type[Statistic],
 ) -> Generator[Any, Tuple[Statistic, str, int], None]:
     for klass in CLASS_STORE:
         if kind and not issubclass(klass, kind):

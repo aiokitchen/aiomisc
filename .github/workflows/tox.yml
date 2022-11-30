@@ -42,7 +42,7 @@ jobs:
       - name: Run ${{ matrix.linter }}
         run: tox
         env:
-          FORCE_COLOR: yes
+          FORCE_COLOR: 1
           TOXENV: ${{ matrix.linter }}
 
   tests:
@@ -143,7 +143,7 @@ jobs:
           COVERALLS_PARALLEL: 'true'
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FORCE_COLOR: yes
+          FORCE_COLOR: 1
           TOXENV: ${{ matrix.toxenv }}
 
   finish:

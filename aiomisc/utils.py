@@ -58,7 +58,7 @@ OptionsType = Iterable[Tuple[int, int, int]]
 def bind_socket(
     *args: Any, address: str, port: int = 0, options: OptionsType = (),
     reuse_addr: bool = True, reuse_port: bool = True,
-    proto_name: Optional[str] = None
+    proto_name: Optional[str] = None,
 ) -> socket.socket:
     """
 
@@ -243,7 +243,7 @@ class SelectAwaitable:
         self, *awaitables: Awaitable[T],
         return_exceptions: bool = False, cancel: bool = True,
         timeout: Optional[TimeoutType] = None,
-        wait: bool = True, loop: Optional[asyncio.AbstractEventLoop] = None
+        wait: bool = True, loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
         """
         :param awaitables: awaitable objects
@@ -369,7 +369,7 @@ def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
 
     waiter = asyncio.ensure_future(
         asyncio.gather(
-            *cancelled_tasks, return_exceptions=True
+            *cancelled_tasks, return_exceptions=True,
         ),
     )
 
@@ -403,10 +403,10 @@ def awaitable(
         result = func(*args, **kwargs)
 
         if hasattr(result, "__await__"):
-            return result       # type: ignore
+            return result
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
             return result
 
-        return awaiter(result)  # type: ignore
+        return awaiter(result)
 
     return wrap

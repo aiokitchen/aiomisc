@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-import sys
 from concurrent.futures import Executor
 from typing import (
     Any, Callable, Coroutine, MutableSet, Optional, TypeVar, Union,
@@ -24,12 +23,8 @@ T = TypeVar("T")
 log = logging.getLogger(__name__)
 
 
-if sys.version_info < (3, 7):
-    asyncio_all_tasks = asyncio.Task.all_tasks
-    asyncio_current_task = asyncio.Task.current_task
-else:
-    asyncio_all_tasks = asyncio.all_tasks
-    asyncio_current_task = asyncio.current_task
+asyncio_all_tasks = asyncio.all_tasks
+asyncio_current_task = asyncio.current_task
 
 
 def _get_env_bool(name: str, default: str) -> bool:
@@ -102,8 +97,9 @@ class Entrypoint:
         await self.post_start.call(entrypoint=self, services=self.services)
 
     def __init__(
-        self, *services: Service, loop: asyncio.AbstractEventLoop = None,
-        pool_size: int = None,
+        self, *services: Service,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+        pool_size: Optional[int] = None,
         log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
         log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
         log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
@@ -111,7 +107,7 @@ class Entrypoint:
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
-        debug: bool = DEFAULT_AIOMISC_DEBUG
+        debug: bool = DEFAULT_AIOMISC_DEBUG,
     ):
 
         """
@@ -303,7 +299,7 @@ entrypoint = Entrypoint
 def run(
     coro: Coroutine[None, Any, T],
     *services: Service,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> T:
     with entrypoint(*services, **kwargs) as loop:
         return loop.run_until_complete(coro)

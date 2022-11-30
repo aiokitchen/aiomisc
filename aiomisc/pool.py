@@ -5,7 +5,7 @@ from collections import defaultdict
 from random import random
 from typing import (
     Any, AsyncContextManager, Awaitable, Callable, Coroutine, DefaultDict,
-    NoReturn, Set, TypeVar, Union,
+    NoReturn, Optional, Set, TypeVar, Union,
 )
 
 from .compat import EventLoopMixin
@@ -63,7 +63,7 @@ class PoolBase(ABC, EventLoopMixin):
     _instances: asyncio.Queue
     _recycle_bin: asyncio.Queue
 
-    def __init__(self, maxsize: int = 10, recycle: int = None):
+    def __init__(self, maxsize: int = 10, recycle: Optional[int] = None):
         assert (
             recycle is None or recycle > 0
         ), "recycle should be positive number or None"
@@ -173,7 +173,7 @@ class PoolBase(ABC, EventLoopMixin):
     def acquire(self) -> ContextManager:
         return ContextManager(self.__acquire, self.__release)
 
-    async def close(self, timeout: Number = None) -> None:
+    async def close(self, timeout: Optional[Number] = None) -> None:
         instances = list(self._used)
         self._used.clear()
 
@@ -197,7 +197,7 @@ class PoolBase(ABC, EventLoopMixin):
                     )
                     for instance in instances
                 ],
-                return_exceptions=True
+                return_exceptions=True,
             ),
             timeout=timeout,
         )

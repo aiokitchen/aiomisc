@@ -35,9 +35,9 @@ class UDPServer(SimpleServer):
             self.task_factory(self.handler(data, addr))
 
     def __init__(
-        self, address: str = None, port: int = None,
-        options: OptionsType = (), sock: socket.socket = None,
-        **kwargs: Any
+        self, address: Optional[str] = None, port: Optional[int] = None,
+        options: OptionsType = (), sock: Optional[socket.socket] = None,
+        **kwargs: Any,
     ):
         if not sock:
             if address is None or port is None:
@@ -108,7 +108,7 @@ class UDPServer(SimpleServer):
             return self.__sockname[1]
         return None
 
-    async def stop(self, exc: Exception = None) -> None:
+    async def stop(self, exc: Optional[Exception] = None) -> None:
         await super().stop(exc)
         if self._transport:
             self._transport.close()

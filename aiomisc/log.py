@@ -80,7 +80,7 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
         ):
             value = transport.get_extra_info(key)
             if value:
-                extra["transport_{}".format(key)] = value
+                extra[f"transport_{key}"] = value
 
     def __call__(
         self, loop: asyncio.AbstractEventLoop,
@@ -126,8 +126,8 @@ def basic_config(
     log_format: Union[str, LogFormat] = LogFormat.default(),
     buffered: bool = True, buffer_size: int = 1024,
     flush_interval: Union[int, float] = 0.2,
-    loop: asyncio.AbstractEventLoop = None,
-    **kwargs: Any
+    loop: Optional[asyncio.AbstractEventLoop] = None,
+    **kwargs: Any,
 ) -> None:
     loop = loop or asyncio.get_event_loop()
     unhandled_hook = UnhandledLoopHook()
@@ -150,7 +150,7 @@ def basic_config(
         level=level,
         log_format=log_format,
         handler_wrapper=wrap_handler,
-        **kwargs
+        **kwargs,
     )
 
     loop.set_exception_handler(unhandled_hook)

@@ -20,7 +20,7 @@ def _process_inner(
     log_format: str,
     start_event: synchronize.Event,
     stop_event: synchronize.Event,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> None:
     basic_config(level=log_level, log_format=log_format)
     start_event.set()
@@ -101,7 +101,7 @@ class ProcessService(Service):
             self.__class__.__name__, hex(id(self)), self.name, pid,
         )
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         if not self._is_alive():
             return
 
@@ -126,7 +126,7 @@ class ProcessService(Service):
             log.warning(
                 f"The process {process.pid} didn't stop for "
                 f"{self.process_stop_timeout} seconds "
-                f"and had been killed.",
+                "and had been killed.",
             )
 
 
@@ -155,7 +155,7 @@ class RespawningProcessService(ProcessService, ABC):
             self.process_poll_timeout,
         )
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         await self._supervisor.stop()
         await super().stop(exception)
 
