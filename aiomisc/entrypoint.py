@@ -24,12 +24,8 @@ T = TypeVar("T")
 log = logging.getLogger(__name__)
 
 
-if sys.version_info < (3, 7):
-    asyncio_all_tasks = asyncio.Task.all_tasks
-    asyncio_current_task = asyncio.Task.current_task
-else:
-    asyncio_all_tasks = asyncio.all_tasks
-    asyncio_current_task = asyncio.current_task
+asyncio_all_tasks = asyncio.all_tasks
+asyncio_current_task = asyncio.current_task
 
 
 def _get_env_bool(name: str, default: str) -> bool:
@@ -112,7 +108,7 @@ class Entrypoint:
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
-        debug: bool = DEFAULT_AIOMISC_DEBUG
+        debug: bool = DEFAULT_AIOMISC_DEBUG,
     ):
 
         """
@@ -304,7 +300,7 @@ entrypoint = Entrypoint
 def run(
     coro: Coroutine[None, Any, T],
     *services: Service,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> T:
     with entrypoint(*services, **kwargs) as loop:
         return loop.run_until_complete(coro)

@@ -4,10 +4,10 @@ import logging
 from asyncio import CancelledError
 from contextlib import suppress
 from pstats import Stats
+from typing import Optional
 
 from ..periodic import PeriodicCallback
 from .base import Service
-from typing import Optional
 
 
 class Profiler(Service):

@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 def context_partial(
     func: F, *args: Any,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Any:
     context = contextvars.copy_context()
     return partial(context.run, func, *args, **kwargs)
@@ -130,10 +130,10 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         event = threading.Event()
         self.__thread_events.add(event)
 
-        thread_name = "Thread {}".format(idx)
+        thread_name = f"Thread {idx}"
 
         if self._statistic.name:
-            thread_name += " from pool {}".format(self._statistic.name)
+            thread_name += f" from pool {self._statistic.name}"
 
         thread = threading.Thread(
             target=self._in_thread,
@@ -171,7 +171,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
             event.set()
 
     def submit(  # type: ignore
-        self, fn: F, *args: Any, **kwargs: Any
+        self, fn: F, *args: Any, **kwargs: Any,
     ) -> asyncio.Future:
         """
         Submit blocking function to the pool
@@ -262,7 +262,7 @@ def threaded(
 
     @wraps(func)
     def wrap(
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ) -> Awaitable[T]:
         return run_in_executor(func=func, args=args, kwargs=kwargs)
 
@@ -436,7 +436,7 @@ def sync_wait_coroutine(
     loop: Optional[asyncio.AbstractEventLoop],
     coro_func: Callable[..., Coroutine[Any, Any, T]],
     *args: Any,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> T:
     return wait_coroutine(coro_func(*args, **kwargs), loop=loop)
 

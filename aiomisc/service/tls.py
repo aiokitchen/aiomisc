@@ -50,7 +50,7 @@ class TLSServer(SimpleServer):
         cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
         require_client_cert: bool = False, verify: bool = True,
         options: OptionsType = (), sock: Optional[socket.socket] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
 
         self.__ssl_options = (
@@ -100,7 +100,7 @@ class TLSServer(SimpleServer):
 
     async def start(self) -> None:
         ssl_context = await self.loop.run_in_executor(
-            None, get_ssl_context, *self.__ssl_options
+            None, get_ssl_context, *self.__ssl_options,
         )
 
         self.socket = self.make_socket()
@@ -146,7 +146,7 @@ class TLSClient(TCPClient, ABC):
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
         ca: Optional[PathOrStr] = None, verify: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         self.__ssl_options = (
             cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
@@ -188,7 +188,7 @@ class RobustTLSClient(RobustTCPClient, ABC):
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
         ca: Optional[PathOrStr] = None, verify: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         self.__ssl_options = (
             cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,

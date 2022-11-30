@@ -1,7 +1,7 @@
 import logging
 import re
 from types import MappingProxyType
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
 from aiocarbon.protocol.pickle import PickleClient  # type: ignore
 from aiocarbon.protocol.tcp import TCPClient  # type: ignore

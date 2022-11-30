@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from random import random
 from typing import (
-    Optional, Any, AsyncContextManager, Awaitable, Callable, Coroutine,
-    DefaultDict, NoReturn, Set, TypeVar, Union,
+    Any, AsyncContextManager, Awaitable, Callable, Coroutine, DefaultDict,
+    NoReturn, Optional, Set, TypeVar, Union,
 )
 
 from .compat import EventLoopMixin
@@ -197,7 +197,7 @@ class PoolBase(ABC, EventLoopMixin):
                     )
                     for instance in instances
                 ],
-                return_exceptions=True
+                return_exceptions=True,
             ),
             timeout=timeout,
         )

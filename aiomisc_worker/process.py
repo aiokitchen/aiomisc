@@ -58,7 +58,7 @@ class Worker:
         self.close()
 
 
-PROCESSES: MutableMapping[Worker, bytes] = dict()
+PROCESSES: MutableMapping[Worker, bytes] = {}
 
 
 def at_exit() -> None:

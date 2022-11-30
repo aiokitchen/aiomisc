@@ -27,10 +27,10 @@ class CronCallback(EventLoopMixin):
     def __init__(
         self,
         coroutine_func: Callable[..., Union[Any, Awaitable[Any]]],
-        *args: Any, **kwargs: Any
+        *args: Any, **kwargs: Any,
     ):
         self._recurring_cb = RecurringCallback(
-            coroutine_func, *args, **kwargs
+            coroutine_func, *args, **kwargs,
         )
         self._task: Optional[asyncio.Task] = None
 
@@ -45,7 +45,7 @@ class CronCallback(EventLoopMixin):
         spec: str,
         loop: Optional[asyncio.AbstractEventLoop] = None,
         *, shield: bool = False,
-        suppress_exceptions: Tuple[Type[Exception], ...] = ()
+        suppress_exceptions: Tuple[Type[Exception], ...] = (),
     ) -> None:
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError
@@ -73,4 +73,4 @@ class CronCallback(EventLoopMixin):
         return self._task
 
     def __repr__(self) -> str:
-        return "<%s(%s)>" % (self.__class__.__name__, self._recurring_cb.name)
+        return f"<{self.__class__.__name__}({self._recurring_cb.name})>"

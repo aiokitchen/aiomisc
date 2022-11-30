@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from asyncio import iscoroutinefunction
-from typing import Optional, Any, Callable, NamedTuple, Set, Tuple, Type
+from typing import Any, Callable, NamedTuple, Optional, Set, Tuple, Type
 
 from croniter import croniter
 
@@ -24,7 +24,7 @@ class CronService(Service):
     _callbacks_storage: Set[StoreItem]
 
     def __init__(self, **kwargs: Any):
-        super(CronService, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._callbacks_storage = set()
 
     def register(
