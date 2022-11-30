@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-import sys
 from concurrent.futures import Executor
 from typing import (
     Any, Callable, Coroutine, MutableSet, Optional, TypeVar, Union,
