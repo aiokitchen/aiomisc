@@ -85,7 +85,7 @@ class AsyncFileIOBase(EventLoopMixin):
 
     def __init__(
         self, fname: Union[str, Path], mode: str = "r",
-        executor: Executor = None, *args: Any,
+        executor: Optional[Executor] = None, *args: Any,
         loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any
     ):
         self._loop = loop

@@ -1,7 +1,7 @@
 import logging
 import re
 from types import MappingProxyType
-from typing import Iterable
+from typing import Optional, Iterable
 
 from aiocarbon.protocol.pickle import PickleClient  # type: ignore
 from aiocarbon.protocol.tcp import TCPClient  # type: ignore
@@ -58,5 +58,5 @@ class CarbonSender(Service):
             self.send_interval,
         )
 
-    async def stop(self, exc: Exception = None) -> None:
+    async def stop(self, exc: Optional[Exception] = None) -> None:
         await self._handle.stop()

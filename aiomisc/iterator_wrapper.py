@@ -156,8 +156,8 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     def __init__(
         self, gen_func: FuncType,
-        loop: asyncio.AbstractEventLoop = None,
-        max_size: int = 0, executor: Executor = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+        max_size: int = 0, executor: Optional[Executor] = None,
         statistic_name: Optional[str] = None,
     ):
 
@@ -177,7 +177,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     @staticmethod
     def __throw(_: Any) -> NoReturn:
-        pass
+        raise
 
     def _in_thread(self) -> None:
         self._statistic.started += 1

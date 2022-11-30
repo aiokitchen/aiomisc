@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from types import MappingProxyType
-from typing import Any, Awaitable, Callable, Mapping, Tuple, Type, Union
+from typing import Optional, Any, Awaitable, Callable, Mapping, Tuple, Type, Union
 
 from aiomisc import Statistic, utils
 
@@ -150,7 +150,7 @@ class RecurringCallback:
     def start(
         self,
         strategy: RecurringCallbackStrategy,
-        loop: asyncio.AbstractEventLoop = None, *,
+        loop: Optional[asyncio.AbstractEventLoop] = None, *,
         shield: bool = False,
         suppress_exceptions: ExceptionsType = ()
     ) -> asyncio.Task:

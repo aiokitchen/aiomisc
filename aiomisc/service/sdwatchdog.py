@@ -103,5 +103,5 @@ class SDWatchdogService(Service):
         entrypoint.POST_START.disconnect(self._post_start)
         entrypoint.PRE_STOP.disconnect(self._pre_stop)
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         await self._watchdog_timer.stop()

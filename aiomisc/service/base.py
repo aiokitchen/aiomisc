@@ -89,7 +89,7 @@ class Service(metaclass=ServiceMeta):
     async def start(self) -> Any:
         raise NotImplementedError
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         pass
 
 
@@ -104,7 +104,7 @@ class TaskStoreBase(Service, ABC):
         task.add_done_callback(self.tasks.remove)
         return task
 
-    async def stop(self, exc: Exception = None) -> None:
+    async def stop(self, exc: Optional[Exception] = None) -> None:
         await cancel_tasks(self.tasks)
 
 
@@ -118,7 +118,7 @@ class SimpleServer(TaskStoreBase):
     async def start(self) -> None:
         raise NotImplementedError
 
-    async def stop(self, exc: Exception = None) -> None:
+    async def stop(self, exc: Optional[Exception] = None) -> None:
         await super().stop(exc)
 
         if self.server:

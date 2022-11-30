@@ -32,7 +32,7 @@ class PeriodicCallback(EventLoopMixin):
 
     def start(
         self, interval: Union[int, float],
-        loop: asyncio.AbstractEventLoop = None, *,
+        loop: Optional[asyncio.AbstractEventLoop] = None, *,
         delay: Union[int, float] = 0,
         shield: bool = False,
         suppress_exceptions: ExceptionsType = ()

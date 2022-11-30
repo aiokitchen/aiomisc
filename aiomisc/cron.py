@@ -43,7 +43,7 @@ class CronCallback(EventLoopMixin):
     def start(
         self,
         spec: str,
-        loop: asyncio.AbstractEventLoop = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
         *, shield: bool = False,
         suppress_exceptions: Tuple[Type[Exception], ...] = ()
     ) -> None:

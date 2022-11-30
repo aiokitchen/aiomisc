@@ -15,10 +15,8 @@ from .compat import (
 )
 from .thread_pool import ThreadPoolExecutor
 
-
 T = TypeVar("T")
 TimeoutType = Union[int, float]
-
 
 log = logging.getLogger(__name__)
 
@@ -196,9 +194,9 @@ class SelectResult(Collection):
 
     def __init__(self, length: int):
         self.length = length
-        self.result_idx = None      # type: Optional[int]
-        self.is_exception = None    # type: Optional[bool]
-        self.value = None           # type: Any
+        self.result_idx = None  # type: Optional[int]
+        self.is_exception = None  # type: Optional[bool]
+        self.value = None  # type: Any
 
     def __len__(self) -> int:
         return self.length
@@ -403,10 +401,10 @@ def awaitable(
         result = func(*args, **kwargs)
 
         if hasattr(result, "__await__"):
-            return result       # type: ignore
+            return result
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
             return result
 
-        return awaiter(result)  # type: ignore
+        return awaiter(result)
 
     return wrap

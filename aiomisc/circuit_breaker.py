@@ -99,10 +99,10 @@ class CircuitBreaker(EventLoopMixin):
         error_ratio: float,
         response_time: Number,
         exceptions: Iterable[Type[Exception]] = (Exception,),
-        recovery_time: Number = None,
-        broken_time: Number = None,
-        passing_time: Number = None,
-        exception_inspector: ExceptionInspectorType = None,
+        recovery_time: Optional[Number] = None,
+        broken_time: Optional[Number] = None,
+        passing_time: Optional[Number] = None,
+        exception_inspector: Optional[ExceptionInspectorType] = None,
         statistic_name: Optional[str] = None,
     ):
         """

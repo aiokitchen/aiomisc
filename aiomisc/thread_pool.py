@@ -106,7 +106,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
     def __init__(
         self, max_workers: int = DEFAULT_POOL_SIZE,
-        loop: asyncio.AbstractEventLoop = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
         statistic_name: Optional[str] = None,
     ) -> None:
         """"""
@@ -221,7 +221,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
 def run_in_executor(
     func: Callable[..., T],
-    executor: ThreadPoolExecutorBase = None,
+    executor: Optional[ThreadPoolExecutorBase] = None,
     args: Any = (),
     kwargs: Any = MappingProxyType({}),
 ) -> Awaitable[T]:
@@ -350,7 +350,7 @@ def threaded_separate(
 
 
 def threaded_iterable(
-    func: F = None,
+    func: Optional[F] = None,
     max_size: int = 0,
 ) -> Any:
     if isinstance(func, int):
@@ -373,7 +373,7 @@ class IteratorWrapperSeparate(IteratorWrapper):
         return run_in_new_thread(self._in_thread)
 
 
-def threaded_iterable_separate(func: F = None, max_size: int = 0) -> Any:
+def threaded_iterable_separate(func: Optional[F] = None, max_size: int = 0) -> Any:
     if isinstance(func, int):
         return partial(threaded_iterable_separate, max_size=func)
     if func is None:

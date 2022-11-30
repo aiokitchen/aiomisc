@@ -1,7 +1,7 @@
 import logging
 import tracemalloc
 from enum import Enum
-from typing import Any, List, Union
+from typing import Optional, Any, List, Union
 
 from ..periodic import PeriodicCallback
 from ..service import Service
@@ -96,5 +96,5 @@ class MemoryTracer(Service):
 
         return self.log_diff(differences)
 
-    async def stop(self, exception: Exception = None) -> None:
+    async def stop(self, exception: Optional[Exception] = None) -> None:
         tracemalloc.stop()

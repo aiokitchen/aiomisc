@@ -101,7 +101,7 @@ class ProcessService(Service):
             self.__class__.__name__, hex(id(self)), self.name, pid,
         )
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         if not self._is_alive():
             return
 
@@ -155,7 +155,7 @@ class RespawningProcessService(ProcessService, ABC):
             self.process_poll_timeout,
         )
 
-    async def stop(self, exception: Exception = None) -> Any:
+    async def stop(self, exception: Optional[Exception] = None) -> Any:
         await self._supervisor.stop()
         await super().stop(exception)
 

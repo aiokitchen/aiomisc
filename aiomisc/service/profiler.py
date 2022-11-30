@@ -7,6 +7,7 @@ from pstats import Stats
 
 from ..periodic import PeriodicCallback
 from .base import Service
+from typing import Optional
 
 
 class Profiler(Service):
@@ -46,7 +47,7 @@ class Profiler(Service):
             finally:
                 self.profiler.enable()
 
-    async def stop(self, exception: Exception = None) -> None:
+    async def stop(self, exception: Optional[Exception] = None) -> None:
         self.logger.info("Stop profiler")
 
         task = self.periodic.stop()

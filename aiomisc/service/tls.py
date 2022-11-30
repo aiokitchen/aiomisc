@@ -46,10 +46,10 @@ class TLSServer(SimpleServer):
     PROTO_NAME = "tls"
 
     def __init__(
-        self, *, address: str = None, port: int = None,
-        cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
+        self, *, address: Optional[str] = None, port: Optional[int] = None,
+        cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
         require_client_cert: bool = False, verify: bool = True,
-        options: OptionsType = (), sock: socket.socket = None, **kwargs: Any
+        options: OptionsType = (), sock: Optional[socket.socket] = None, **kwargs: Any
     ):
 
         self.__ssl_options = (
@@ -110,7 +110,7 @@ class TLSServer(SimpleServer):
             ssl=ssl_context,
         )
 
-    async def stop(self, exc: Exception = None) -> None:
+    async def stop(self, exc: Optional[Exception] = None) -> None:
         await super().stop(exc)
 
         if self.server:
@@ -144,7 +144,7 @@ class TLSClient(TCPClient, ABC):
     def __init__(
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
-        ca: PathOrStr = None, verify: bool = True,
+        ca: Optional[PathOrStr] = None, verify: bool = True,
         **kwargs: Any
     ) -> None:
         self.__ssl_options = (
@@ -186,7 +186,7 @@ class RobustTLSClient(RobustTCPClient, ABC):
     def __init__(
         self, address: str, port: int, *,
         cert: PathOrStr, key: PathOrStr,
-        ca: PathOrStr = None, verify: bool = True,
+        ca: Optional[PathOrStr] = None, verify: bool = True,
         **kwargs: Any
     ):
         self.__ssl_options = (

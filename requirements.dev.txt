@@ -6,7 +6,7 @@ coveralls
 croniter~=0.3.34
 fastapi
 freezegun<1.1
-mypy==0.982
+mypy==0.991
 pylava
 pytest
 pytest-cov~=3.0

@@ -126,7 +126,7 @@ def basic_config(
     log_format: Union[str, LogFormat] = LogFormat.default(),
     buffered: bool = True, buffer_size: int = 1024,
     flush_interval: Union[int, float] = 0.2,
-    loop: asyncio.AbstractEventLoop = None,
+    loop: Optional[asyncio.AbstractEventLoop] = None,
     **kwargs: Any
 ) -> None:
     loop = loop or asyncio.get_event_loop()

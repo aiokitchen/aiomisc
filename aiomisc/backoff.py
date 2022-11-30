@@ -34,8 +34,8 @@ def asyncbackoff(
     deadline: Optional[Number],
     pause: Number = 0,
     *exc: Type[Exception], exceptions: Tuple[Type[Exception], ...] = (),
-    max_tries: int = None,
-    giveup: Callable[[Exception], bool] = None,
+    max_tries: Optional[int] = None,
+    giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
     statistic_class: Type[BackoffStatistic] = BackoffStatistic
 ) -> ReturnType:
@@ -139,7 +139,7 @@ def asyncretry(
     max_tries: Optional[int],
     exceptions: Tuple[Type[Exception], ...] = (Exception,),
     pause: Number = 0,
-    giveup: Callable[[Exception], bool] = None,
+    giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
 ) -> ReturnType:
     """

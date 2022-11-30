@@ -167,7 +167,7 @@ class AioHttpTransportBase(
             self._async_send, url, data, headers, success_cb, failure_cb,
         )
 
-    async def _close_coro(self, *, timeout: TimeoutType = None) -> None:
+    async def _close_coro(self, *, timeout: Optional[TimeoutType] = None) -> None:
         try:
             await asyncio.wait_for(
                 self._close(), timeout=timeout,
@@ -178,7 +178,7 @@ class AioHttpTransportBase(
             if self.keepalive:
                 await self._client_session.close()
 
-    def close(self, *, timeout: TimeoutType = None) -> Awaitable[Any]:
+    def close(self, *, timeout: Optional[TimeoutType] = None) -> Awaitable[Any]:
         if self._closing:
             async def dummy() -> None:
                 pass

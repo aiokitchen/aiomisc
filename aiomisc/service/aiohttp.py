@@ -27,8 +27,8 @@ class AIOHTTPService(Service):
     runner: BaseRunner
 
     def __init__(
-        self, address: Optional[str] = "localhost", port: int = None,
-        sock: socket.socket = None, shutdown_timeout: int = 5,
+        self, address: Optional[str] = "localhost", port: Optional[int] = None,
+        sock: Optional[socket.socket] = None, shutdown_timeout: int = 5,
         runner_kwargs: Optional[RunnerKwargsType] = None,
         **kwds: Any
     ):
@@ -90,7 +90,7 @@ class AIOHTTPService(Service):
         self.site = await self.create_site()
         await self.site.start()
 
-    async def stop(self, exception: Exception = None) -> None:
+    async def stop(self, exception: Optional[Exception] = None) -> None:
         try:
             if self.site:
                 await self.site.stop()
@@ -101,9 +101,9 @@ class AIOHTTPService(Service):
 
 class AIOHTTPSSLService(AIOHTTPService):
     def __init__(
-        self, cert: PathOrStr, key: PathOrStr, ca: PathOrStr = None,
-        address: str = None, port: int = None, verify: bool = True,
-        sock: socket.socket = None, shutdown_timeout: int = 5,
+        self, cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
+        address: Optional[str] = None, port: Optional[int] = None, verify: bool = True,
+        sock: Optional[socket.socket] = None, shutdown_timeout: int = 5,
         require_client_cert: bool = False, **kwds: Any
     ):
 
