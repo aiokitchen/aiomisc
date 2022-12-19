@@ -60,10 +60,9 @@ def proxy_method_async(
 @total_ordering
 class AsyncFileIO(EventLoopMixin, Generic[T]):
     __slots__ = (
-        "__opener", "_fp", "executor", "__iterator_lock",
+        "_fp", "executor", "__iterator_lock",
     ) + EventLoopMixin.__slots__
 
-    opener = staticmethod(threaded(open))
     _fp: Optional[Union[IO, BinaryIO, TextIO]]
 
     def __init__(
@@ -74,7 +73,7 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
         self.executor = executor
         self._loop = loop
         self._fp = None
-        self.__opener = partial(self.opener, fname, mode, *args, **kwargs)
+        self.__open_args = (fname, mode, *args), kwargs
         self.__iterator_lock = asyncio.Lock()
 
     @classmethod
@@ -86,6 +85,13 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
         async_fp._fp = fp
         return async_fp
 
+    async def open(self) -> None:
+        if self._fp is not None:
+            return
+
+        args, kwargs = self.__open_args
+        self._fp = await self.__execute_in_thread(open, *args, **kwargs)
+
     @property
     def fp(self) -> Union[IO, BinaryIO, TextIO]:
         if self._fp is not None:
@@ -94,11 +100,6 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
 
     def closed(self) -> bool:
         return self.fp.closed
-
-    async def open(self) -> None:
-        if self._fp is not None:
-            return
-        self._fp = await self.__opener()
 
     def __await__(self) -> Generator[Any, Any, "AsyncFileIO"]:
         yield from self.open().__await__()
@@ -173,11 +174,12 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
     async def close(self) -> None:
         return await self.__execute_in_thread(self.fp.close)
 
-    def __getattribute__(self, name: str) -> Callable[..., Awaitable[Any]]:
+    def __getattr__(self, name: str) -> Callable[..., Awaitable[Any]]:
         async def method(*args: Any) -> Any:
-            return await self.__execute_in_thread(
-                getattr(self.fp, name), *args,
-            )
+            getter = getattr(self.fp, name)
+            if callable(getter):
+                return await self.__execute_in_thread(getter, *args)
+            return getter
         method.__name__ = name
         return method
 

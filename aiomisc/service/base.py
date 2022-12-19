@@ -56,7 +56,10 @@ class Service(metaclass=ServiceMeta):
         self.__start_event: Optional[asyncio.Event] = None
 
     def __getattr__(self, item: str) -> Any:
-        return self.__instance_params[item]
+        try:
+            return self.__instance_params[item]
+        except KeyError as e:
+            raise AttributeError from e
 
     @property
     def start_event(self) -> asyncio.Event:
