@@ -41,7 +41,7 @@ logging-journald = [{ version = '*', platform = 'linux' }]
 [tool.poetry.group.dev.dependencies]
 aiocontextvars = "0.2.2"
 aiohttp = "<4"
-aiohttp-asgi = "^0.4.0"
+aiohttp-asgi = "^0.4.3"
 async-timeout = "^4.0.2"
 autoflake = "1.4"
 collective-checkdocs = "^0.2"
@@ -75,7 +75,7 @@ aiomisc = "aiomisc_pytest.pytest_plugin"
 
 [tool.poetry.extras]
 aiohttp = ["aiohttp"]
-asgi = ["aiohttp-asgi~=0.4.2"]
+asgi = ["aiohttp-asgi~=0.4.3"]
 carbon = ["aiocarbon~=0.15"]
 raven = ["aiohttp', 'raven"]
 uvloop = ["uvloop>=0.14,<1"]
