@@ -421,6 +421,14 @@ six = "*"
 tornado = {version = "*", markers = "python_version > \"2.7\""}
 
 [[package]]
+name = "logging-journald"
+version = "0.6.4"
+description = "Pure python logging handler for writing logs to the journald using native protocol"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[[package]]
 name = "markupsafe"
 version = "2.1.1"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1127,7 +1135,7 @@ uvloop = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "888973ca20f7382319bd0752bde460bb2acbcfed2c2efc70a426428cca5a18f7"
+content-hash = "f4e5a531dfe77edef88dde12dac5a042fd2b537b5fc6fb6dad1be4e784d804b4"
 
 [metadata.files]
 aiocontextvars = [
@@ -1478,6 +1486,10 @@ jinja2 = [
 ]
 livereload = [
     {file = "livereload-2.6.3.tar.gz", hash = "sha256:776f2f865e59fde56490a56bcc6773b6917366bce0c267c60ee8aaf1a0959869"},
+]
+logging-journald = [
+    {file = "logging_journald-0.6.4-py3-none-any.whl", hash = "sha256:4d4e169cf2814ddbc30687daef2ce38a58a0ec9cd7d739f21f0fb745c4a70ee9"},
+    {file = "logging_journald-0.6.4.tar.gz", hash = "sha256:a03aa0a1b85ab5f3cdc534511d98ff55f58479e44fbf4e9eb5b965923cbb0c27"},
 ]
 markupsafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},

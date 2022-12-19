@@ -36,6 +36,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 colorlog = "^6.0"
+logging-journald = [{ version = '*', platform = 'linux' }]
 
 [tool.poetry.group.dev.dependencies]
 aiocontextvars = "0.2.2"
