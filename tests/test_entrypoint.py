@@ -446,11 +446,14 @@ async def test_robust_tls_client(
 def test_udp_server(aiomisc_socket_factory):
     port, sock = aiomisc_socket_factory(socket.AF_INET, socket.SOCK_DGRAM)
 
+    event = asyncio.Event()
+
     class TestService(UDPServer):
         DATA = []
 
         async def handle_datagram(self, data: bytes, addr: tuple) -> None:
             self.DATA.append(data)
+            event.set()
 
     service = TestService("127.0.0.1", sock=sock)
 
@@ -465,6 +468,7 @@ def test_udp_server(aiomisc_socket_factory):
         loop.run_until_complete(
             asyncio.wait_for(writer(), timeout=10),
         )
+        loop.run_until_complete(event.wait())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
