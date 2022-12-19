@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Any, Protocol, Union
 
 from aiohttp.web import Application
 from aiohttp_asgi import ASGIResource
