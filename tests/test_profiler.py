@@ -38,14 +38,14 @@ async def test_profiler_dump():
         stats2 = Stats(path)
 
         # Getting the same dump
-        assert stats1.stats == stats2.stats
+        assert stats1.get_stats_profile() == stats2.get_stats_profile()
 
         # Enough sleep till next update
         await asyncio.sleep(0.2)
         stats3 = Stats(path)
 
         # Getting updated dump
-        assert stats2.stats != stats3.stats
+        assert stats2.get_stats_profile() != stats3.get_stats_profile()
 
     finally:
         if profiler:

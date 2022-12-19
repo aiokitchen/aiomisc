@@ -2,13 +2,16 @@ import asyncio
 from concurrent.futures import Executor
 from functools import partial, total_ordering
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Generator, Optional, TypeVar, Union
+from typing import (
+    IO, Any, Awaitable, BinaryIO, Callable, Generator, Generic, List, Optional,
+    TextIO, TypeVar, Union,
+)
 
 from .compat import EventLoopMixin
 from .thread_pool import threaded
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Union[str, bytes])
 
 
 def proxy_method_async(
@@ -54,58 +57,50 @@ def proxy_method_async(
     return method
 
 
-def proxy_method(name: str) -> Callable[..., Awaitable[Any]]:
-    def method(self: Any, *args: Any, **kwargs: Any) -> Any:
-        return getattr(self.fp, name)(*args, **kwargs)
-
-    method.__name__ = name
-    return method
-
-
-def proxy_property(name: str) -> property:
-    def fset(self: Any, value: Any) -> None:
-        setattr(self.fp, name, value)
-
-    def fget(self: Any) -> Any:
-        return getattr(self.fp, name)
-
-    def fdel(self: Any) -> None:
-        delattr(self.fp, name)
-
-    return property(fget, fset, fdel)
-
-
 @total_ordering
-class AsyncFileIOBase(EventLoopMixin):
+class AsyncFileIO(EventLoopMixin, Generic[T]):
     __slots__ = (
         "__opener", "fp", "executor", "__iterator_lock",
     ) + EventLoopMixin.__slots__
 
     opener = staticmethod(threaded(open))
+    _fp: Optional[Union[IO, BinaryIO, TextIO]]
 
     def __init__(
         self, fname: Union[str, Path], mode: str = "r",
         executor: Optional[Executor] = None, *args: Any,
         loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any,
     ):
-        self._loop = loop
-        self.fp = None
         self.executor = executor
+        self._loop = loop
+        self._fp = None
         self.__opener = partial(self.opener, fname, mode, *args, **kwargs)
         self.__iterator_lock = asyncio.Lock()
 
+    @classmethod
+    def open_fp(
+        cls, fp: IO, executor: Optional[Executor] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+    ) -> "AsyncFileIO":
+        async_fp = cls(fp.name, mode=fp.mode, executor=executor, loop=loop)
+        async_fp._fp = fp
+        return async_fp
+
+    @property
+    def fp(self) -> Union[IO, BinaryIO, TextIO]:
+        if self._fp is not None:
+            return self._fp
+        raise RuntimeError("file is not opened")
+
     def closed(self) -> bool:
-        if self.fp is None:
-            raise RuntimeError("file is not opened")
         return self.fp.closed
 
     async def open(self) -> None:
-        if self.fp is not None:
+        if self._fp is not None:
             return
+        self._fp = await self.__opener()
 
-        self.fp = await self.__opener()     # type: ignore
-
-    def __await__(self) -> Generator[Any, Any, "AsyncFileIOBase"]:
+    def __await__(self) -> Generator[Any, Any, "AsyncFileIO"]:
         yield from self.open().__await__()
         return self
 
@@ -129,12 +124,12 @@ class AsyncFileIOBase(EventLoopMixin):
             return
 
         self.fp.close()
-        del self.fp
+        del self._fp
 
     def __aiter__(self) -> "AsyncFileIOBase":
         return self
 
-    async def __anext__(self) -> Union[str, bytes]:
+    async def __anext__(self) -> T:
         async with self.__iterator_lock:
             line = await self.readline()
 
@@ -156,65 +151,134 @@ class AsyncFileIOBase(EventLoopMixin):
     def __hash__(self) -> int:
         return hash((self.__class__, self.fp))
 
-    fileno = proxy_method("fileno")
-    isatty = proxy_method("isatty")
+    async def __execute_in_thread(
+        self, method: Callable[..., Any], *args: Any,
+    ) -> Any:
+        return await self.loop.run_in_executor(self.executor, method, *args)
 
-    mode = proxy_property("mode")
-    name = proxy_property("name")
+    @property
+    def mode(self) -> str:
+        return self.fp.mode
 
-    close = proxy_method_async("close")
-    detach = proxy_method_async("detach")
-    flush = proxy_method_async("flush")
-    peek = proxy_method_async("peek")
-    raw = proxy_property("raw")
-    read = proxy_method_async("read")
-    read1 = proxy_method_async("read1")
-    readinto = proxy_method_async("readinto")
-    readinto1 = proxy_method_async("readinto1")
-    readline = proxy_method_async("readline")
-    readlines = proxy_method_async("readlines")
-    seek = proxy_method_async("seek")
-    peek = proxy_method_async("peek")
-    truncate = proxy_method_async("truncate")
-    write = proxy_method_async("write")
-    writelines = proxy_method_async("writelines")
+    @property
+    def name(self) -> str:
+        return self.fp.name
 
-    tell = proxy_method_async("tell", in_executor=False)
-    readable = proxy_method_async("readable", in_executor=False)
-    seekable = proxy_method_async("seekable", in_executor=False)
-    writable = proxy_method_async("writable", in_executor=False)
+    def fileno(self) -> int:
+        return self.fp.fileno()
+
+    def isatty(self) -> bool:
+        return self.fp.isatty()
+
+    async def close(self) -> None:
+        return await self.__execute_in_thread(self.fp.close)
+
+    def __getattribute__(self, name: str) -> Callable[..., Awaitable[Any]]:
+        async def method(*args: Any) -> Any:
+            return await self.__execute_in_thread(
+                getattr(self.fp, name), *args,
+            )
+        method.__name__ = name
+        return method
+
+    async def tell(self) -> int:
+        return self.fp.tell()
+
+    async def readable(self) -> bool:
+        return self.fp.readable()
+
+    async def seekable(self) -> bool:
+        return self.fp.seekable()
+
+    async def writable(self) -> bool:
+        return self.fp.writable()
+
+    async def flush(self) -> None:
+        await self.__execute_in_thread(self.fp.flush)
+
+    async def read(self, n: int = -1) -> T:
+        return await self.__execute_in_thread(self.fp.read, n)
+
+    async def readline(self, limit: int = -1) -> T:
+        return await self.__execute_in_thread(self.fp.readline, limit)
+
+    async def readlines(self, limit: int = -1) -> List[T]:
+        return await self.__execute_in_thread(self.fp.readlines, limit)
+
+    async def seek(self, offset: int, whence: int = 0) -> int:
+        return await self.__execute_in_thread(self.fp.seek, offset, whence)
+
+    async def truncate(self, size: Optional[int] = None) -> int:
+        return await self.__execute_in_thread(self.fp.truncate, size)
+
+    async def write(self, s: T) -> int:
+        return await self.__execute_in_thread(self.fp.write, s)
+
+    async def writelines(self, lines: List[T]) -> None:
+        await self.__execute_in_thread(self.fp.writelines, lines)
 
 
-class AsyncTextFileIOBase:
-    newlines = proxy_property("newlines")
-    errors = proxy_property("errors")
-    line_buffering = proxy_property("line_buffering")
-    encoding = proxy_property("encoding")
-    buffer = proxy_property("buffer")
+AsyncFileIOBase = AsyncFileIO
 
 
-class AsyncBytesFileIOBase:
-    pass
+class AsyncBinaryIO(AsyncFileIO[bytes]):
+    @property
+    def fp(self) -> BinaryIO:
+        return self._fp  # type: ignore
+
+    def __aiter__(self) -> "AsyncBytesFileIO":
+        return self
+
+    async def __aenter__(self) -> "AsyncBinaryIO":
+        return await super().__aenter__()      # type: ignore
 
 
-class AsyncTextFileIO(AsyncFileIOBase, AsyncTextFileIOBase):
-    pass
+class AsyncTextIO(AsyncFileIO[str]):
+    @property
+    def fp(self) -> TextIO:
+        return self._fp     # type: ignore
+
+    @property
+    def newlines(self) -> Any:
+        return self.fp.newlines
+
+    @property
+    def errors(self) -> Optional[str]:
+        return self.fp.errors
+
+    @property
+    def line_buffering(self) -> int:
+        return self.fp.line_buffering
+
+    @property
+    def encoding(self) -> str:
+        return self.fp.encoding
+
+    def buffer(self) -> AsyncBinaryIO:
+        return AsyncBinaryIO.open_fp(self.fp.buffer)    # type: ignore
+
+    def __aiter__(self) -> "AsyncTextFileIO":
+        return self
+
+    async def __aenter__(self) -> "AsyncTextIO":
+        return await super().__aenter__()      # type: ignore
 
 
-class AsyncBytesFileIO(AsyncFileIOBase, AsyncBytesFileIOBase):
-    pass
-
-
-AsyncFileT = Union[
-    AsyncBytesFileIO,
-    AsyncTextFileIO,
+AsyncFileType = Union[
+    AsyncBinaryIO,
+    AsyncTextIO,
 ]
+
+# Aliases
+AsyncBytesFileIO = AsyncBinaryIO
+AsyncTextFileIO = AsyncTextIO
+AsyncFileT = AsyncFileType
 
 
 def async_open(
     fname: Union[str, Path], mode: str = "r",
     *args: Any, **kwargs: Any,
-) -> AsyncFileT:
+) -> AsyncFileType:
     if "b" in mode:
         return AsyncBytesFileIO(
             fname, mode, *args, **kwargs,

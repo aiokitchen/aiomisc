@@ -124,7 +124,7 @@ class WorkerPool:
 
     def __init__(
         self, workers: int, max_overflow: int = 0, *,
-        initializer: Optional[Callable[[], Any]] = None,
+        initializer: Optional[Callable[..., Any]] = None,
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
         statistic_name: Optional[str] = None,

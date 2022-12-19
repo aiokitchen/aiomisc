@@ -3,10 +3,12 @@ import struct
 import uuid
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import List
 
 import pytest
 
 import aiomisc
+from aiomisc.io import AsyncTextFileIO
 from tests import unix_only
 
 
@@ -69,6 +71,7 @@ async def test_ordering(loop, tmp_path):
 
 async def test_async_for(loop, tmp_path):
     tdir = Path(tmp_path)
+    afp: AsyncTextFileIO
 
     async with aiomisc.io.async_open(tdir / "path", "w", loop=loop) as afp:
         await afp.write("foo\nbar\nbaz\n")
@@ -81,8 +84,8 @@ async def test_async_for(loop, tmp_path):
 
     assert expected
 
+    result: List[str] = []
     async with aiomisc.io.async_open(tdir / "path", "r", loop=loop) as afp:
-        result = []
         async for line in afp:
             result.append(line)
 

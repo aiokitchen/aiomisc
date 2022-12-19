@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_abstractmethod_exception():
     with pytest.raises(TypeError):
-        ProcessService()
+        ProcessService()        # type: ignore
 
 
 class SampleProcessService(ProcessService):
@@ -56,7 +56,7 @@ class SimpleRespawningProcessService(RespawningProcessService):
 
 
 def test_respawning_process_service(tmpdir):
-    queue = Queue()
+    queue: Queue = Queue()
     svc = SimpleRespawningProcessService(
         queue=queue,
         process_poll_timeout=0.5,

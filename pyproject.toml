@@ -99,4 +99,18 @@ strict_optional = true
 warn_redundant_casts = true
 warn_unused_configs = true
 warn_unused_ignores = true
-files = "aiomisc, aiomisc_log, aiomisc_worker"
+files = [
+    "aiomisc",
+    "aiomisc_log",
+    "aiomisc_worker",
+    "tests",
+]
+
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+check_untyped_defs = true
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+disallow_untyped_defs = false

@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from aiohttp import web
 from yarl import URL
@@ -12,15 +14,14 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 
 class REST(AIOHTTPService):
-    async def handle(request):
+    @staticmethod
+    async def handle(request: web.Request) -> Any:
         raise ValueError("Some error in handle handler")
 
     async def create_application(self):
         app = web.Application()
-        app.add_routes([
-            web.get("/exc", self.handle),
-            web.get("/project-test", self.handle),
-        ])
+        app.router.add_route("GET", "/exc", self.handle)
+        app.router.add_route("GET", "/project-test", self.handle)
         return app
 
 

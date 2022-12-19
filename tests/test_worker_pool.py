@@ -6,6 +6,7 @@ import threading
 from multiprocessing.context import ProcessError
 from os import getpid
 from time import sleep
+from typing import Any, AsyncGenerator
 
 import pytest
 from setproctitle import setproctitle
@@ -19,7 +20,9 @@ PROCESS_NUM = 4
 
 
 @pytest.fixture
-async def worker_pool(request, loop) -> WorkerPool:
+async def worker_pool(
+    request: pytest.FixtureRequest, loop: asyncio.AbstractEventLoop,
+) -> AsyncGenerator[WorkerPool, None]:
     async with WorkerPool(
         PROCESS_NUM,
         initializer=setproctitle,
@@ -35,7 +38,7 @@ async def test_success(worker_pool):
         *[
             worker_pool.create_task(operator.mul, i, i)
             for i in range(worker_pool.workers * 2)
-        ]
+        ],
     )
 
     results = sorted(results)
@@ -50,7 +53,7 @@ async def test_incomplete_task_kill(worker_pool):
         *[
             worker_pool.create_task(getpid)
             for _ in range(worker_pool.workers * 4)
-        ]
+        ],
     )
 
     with pytest.raises(asyncio.TimeoutError):
@@ -59,7 +62,7 @@ async def test_incomplete_task_kill(worker_pool):
                 *[
                     worker_pool.create_task(sleep, 600)
                     for _ in range(worker_pool.workers)
-                ]
+                ],
             ), timeout=1,
         )
 
@@ -67,7 +70,7 @@ async def test_incomplete_task_kill(worker_pool):
         *[
             worker_pool.create_task(getpid)
             for _ in range(worker_pool.workers * 4)
-        ]
+        ],
     )
 
 
@@ -94,7 +97,7 @@ async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
         *[
             worker_pool.create_task(getpid)
             for _ in range(worker_pool.workers * 4)
-        ]
+        ],
     )
 
     with pytest.raises(asyncio.TimeoutError):
@@ -103,7 +106,7 @@ async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
                 *[
                     worker_pool.create_task(sleep, 600)
                     for _ in range(worker_pool.workers)
-                ]
+                ],
             ), timeout=1,
         )
 
@@ -111,7 +114,7 @@ async def test_incomplete_task_pool_reuse(request, worker_pool: WorkerPool):
         *[
             worker_pool.create_task(getpid)
             for _ in range(worker_pool.workers * 4)
-        ]
+        ],
     )
 
     pids_end = set(worker_pool.pids)
@@ -125,7 +128,7 @@ async def test_exceptions(worker_pool):
         *[
             worker_pool.create_task(operator.truediv, i, 0)
             for i in range(worker_pool.workers * 2)
-        ], return_exceptions=True
+        ], return_exceptions=True,
     )
 
     assert len(results) == worker_pool.workers * 2
@@ -142,7 +145,7 @@ async def test_exit(worker_pool):
                 worker_pool.create_task(exit, 1)
                 for _ in range(worker_pool.workers)
             ],
-            return_exceptions=True
+            return_exceptions=True,
         ), timeout=5,
     )
 
@@ -158,7 +161,7 @@ async def test_exit_respawn(worker_pool):
             worker_pool.create_task(exit, 1)
             for _ in range(worker_pool.workers * 3)
         ],
-        return_exceptions=True
+        return_exceptions=True,
     )
     assert len(exceptions) == worker_pool.workers * 3
 

@@ -20,7 +20,7 @@ async def test_recurring(loop):
             condition.notify_all()
 
     recurring = aiomisc.RecurringCallback(task)
-    task = recurring.start(strategy=lambda _: 0, loop=loop)
+    start_task = recurring.start(strategy=lambda _: 0, loop=loop)
 
     async with condition:
         await asyncio.wait_for(
@@ -28,7 +28,7 @@ async def test_recurring(loop):
             timeout=5,
         )
 
-    await aiomisc.cancel_tasks([task])
+    await aiomisc.cancel_tasks([start_task])
 
 
 async def test_long_func(loop):
@@ -43,10 +43,10 @@ async def test_long_func(loop):
             condition.notify_all()
 
     recurring = aiomisc.RecurringCallback(task)
-    task = recurring.start(strategy=lambda _: 0, loop=loop)
+    start_task = recurring.start(strategy=lambda _: 0, loop=loop)
 
     await asyncio.sleep(1.2)
-    await aiomisc.cancel_tasks([task])
+    await aiomisc.cancel_tasks([start_task])
 
     async with condition:
         await asyncio.wait_for(
@@ -71,10 +71,10 @@ async def test_shield(loop):
         stop_event.set()
 
     recurring = aiomisc.RecurringCallback(task)
-    task = recurring.start(strategy=lambda _: 0, loop=loop, shield=True)
+    start_task = recurring.start(strategy=lambda _: 0, loop=loop, shield=True)
 
     await start_event.wait()
-    await aiomisc.cancel_tasks([task])
+    await aiomisc.cancel_tasks([start_task])
     await stop_event.wait()
     assert counter == 1
 
@@ -121,11 +121,11 @@ async def test_control_flow_skip(loop):
         return 0
 
     recurring = aiomisc.RecurringCallback(task)
-    task = recurring.start(strategy=strategy, loop=loop)
+    start_task = recurring.start(strategy=strategy, loop=loop)
 
     await start_event.wait()
     await stop_event.wait()
-    await task
+    await start_task
 
     assert counter == 3
     assert strategy_counter == 5
@@ -146,8 +146,8 @@ async def test_wrong_strategy(loop):
         return None
 
     recurring = aiomisc.RecurringCallback(task)
-    task = recurring.start(strategy=strategy, loop=loop)
+    start_task = recurring.start(strategy=strategy, loop=loop)
 
-    await task
+    await start_task
     assert strategy_counter == 1
     assert counter == 0

@@ -136,7 +136,8 @@ async def test_call_arguments(signal):
 
 
 async def multiple_receivers(signal):
-    foo_called, bar_called = False, False
+    foo_called = False
+    bar_called = False
 
     @receiver(signal)
     async def foo():
@@ -150,4 +151,4 @@ async def multiple_receivers(signal):
 
     await signal.call()
 
-    assert all(foo_called, bar_called)
+    assert all((foo_called, bar_called))

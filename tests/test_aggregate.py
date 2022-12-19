@@ -4,12 +4,13 @@ import math
 import platform
 import time
 from asyncio import Event, wait
-from typing import Any, List
+from typing import Any, List, Optional, Sequence
 
 import pytest
-from aiocontextvars import ContextVar
+from aiocontextvars import ContextVar  # type: ignore
 
 from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
+
 
 log = logging.getLogger(__name__)
 
@@ -21,24 +22,24 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
-async def leeway():
-    async def func():
+@pytest.fixture(scope="session")
+def leeway() -> float:
+    async def func() -> float:
         loop = asyncio.get_event_loop()
         t = loop.time()
         await asyncio.sleep(0)
         return loop.time() - t
 
-    tasks = [
-        asyncio.create_task(func())
-        for _ in range(100)
-    ]
-    ts = await asyncio.gather(*tasks)
-    estimated = max(ts) * 2
+    async def run() -> Sequence[float]:
+        tasks = [asyncio.create_task(func()) for _ in range(100)]
+        return await asyncio.gather(*tasks)
+
+    ts: Sequence[float] = asyncio.run(run())
+    estimated = max(ts) * 3
     default = 0.1
 
     if estimated > default:
-        log.warning('Slow system: leeway increased to %.2f s', leeway)
+        log.warning("Slow system: leeway increased to %.2f s", leeway)
 
     return max(estimated, default)
 
@@ -97,8 +98,8 @@ async def test_error(loop, leeway):
 
 
 async def test_leeway_ok(loop, leeway):
-    t_exec = 0
-    event = Event()
+    t_exec: float = 0.
+    event: Event = Event()
 
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
@@ -128,7 +129,7 @@ async def test_leeway_ok(loop, leeway):
 
 
 async def test_max_count(loop, leeway):
-    t_exec = 0
+    t_exec: float = 0.
     event = Event()
     max_count = 5
 
@@ -157,7 +158,7 @@ async def test_max_count(loop, leeway):
 
 
 async def test_max_count_multiple_batches(loop, leeway):
-    t_exec = 0
+    t_exec: float = 0.
     event = Event()
     max_count = 5
 
@@ -198,13 +199,13 @@ async def test_max_count_multiple_batches(loop, leeway):
 
 
 async def test_leeway_cancel(loop, leeway):
-    t_exec = 0
+    t_exec: float = 0.
     delay_exec = 0.1
     event = Event()
     executions = 0
     arg = ContextVar("arg")
-    tasks = []
-    executing_task = None
+    tasks: List[asyncio.Task] = []
+    executing_task: asyncio.Task
 
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
@@ -232,7 +233,7 @@ async def test_leeway_cancel(loop, leeway):
     elapsed = t_exec - t
     assert leeway * 0.9 < elapsed < leeway * 2
     assert executions == 1
-    first_executing_task = executing_task
+    first_executing_task: asyncio.Task = executing_task
     first_executing_task.cancel()
 
     # Another task must have tried to execute
@@ -255,15 +256,15 @@ async def test_leeway_cancel(loop, leeway):
 
 
 async def test_max_count_cancel(loop):
-    t_exec = 0
+    t_exec: float = 0.
     delay_exec = 0.1
     event = Event()
     executions = 0
     leeway = 100
     max_count = 5
     arg = ContextVar("arg")
-    tasks = []
-    executing_task = None
+    tasks: List[asyncio.Task] = []
+    executing_task: asyncio.Task
 
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
@@ -321,8 +322,8 @@ async def test_max_count_multiple_batches_cancel(loop, leeway):
     executions = 0
     max_count = 5
     arg = ContextVar("arg")
-    tasks = []
-    executing_task = None
+    tasks: List[asyncio.Task] = []
+    executing_task: asyncio.Task
 
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:

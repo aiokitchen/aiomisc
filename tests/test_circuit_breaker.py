@@ -1,5 +1,6 @@
 import asyncio
 from collections import Counter
+from typing import MutableMapping, Type, Union
 
 import pytest
 
@@ -26,7 +27,7 @@ class PatchedCircuitBreaker(aiomisc.CircuitBreaker):
     """
     CircuitBreaker for young time travelers
     """
-    _TIME = 0
+    _TIME = 0.
 
     @classmethod
     def tick(cls, second=1.0):
@@ -86,7 +87,7 @@ async def test_simple(loop):
         with pytest.raises(CircuitBroken):
             circuit_breaker.call(ctx)
 
-    responses = Counter()
+    responses: MutableMapping[Union[bool, Type[Exception]], int] = Counter()
 
     # Delay is zero
     assert circuit_breaker.get_state_delay() == 0

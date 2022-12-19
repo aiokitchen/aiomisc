@@ -10,11 +10,12 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 async def test_base_class(loop: asyncio.AbstractEventLoop):
     with pytest.raises(TypeError):
-        aiomisc.PoolBase()
+        aiomisc.PoolBase()      # type: ignore
 
 
 class SimplePool(aiomisc.PoolBase):
-    async def _create_instance(self):
+    async def _create_instance(self) -> asyncio.Future:
+        assert self._loop is not None
         return self._loop.create_future()
 
     async def _destroy_instance(self, instance):
@@ -70,11 +71,11 @@ async def test_simple_pool_recycle(loop):
 
     await asyncio.sleep(2 * recycle)
 
-    async def run():
+    async def run_blank():
         async with pool.acquire():
             pass
 
-    await asyncio.gather(*[run() for _ in range(size)])
+    await asyncio.gather(*[run_blank() for _ in range(size)])
 
     await asyncio.gather(*futures)
     await pool.close()
