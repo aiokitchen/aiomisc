@@ -30,7 +30,7 @@ speedups = ["Brotli", "aiodns", "cchardet"]
 
 [[package]]
 name = "aiohttp-asgi"
-version = "0.4.0"
+version = "0.4.1"
 description = "Adapter to running ASGI applications on aiohttp"
 category = "dev"
 optional = false
@@ -1135,7 +1135,7 @@ uvloop = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "f4e5a531dfe77edef88dde12dac5a042fd2b537b5fc6fb6dad1be4e784d804b4"
+content-hash = "fedbdb2344cc68ba08badc5114d5ebb266bfb0c198c65e68f04419f6cdbdb3de"
 
 [metadata.files]
 aiocontextvars = [
@@ -1232,8 +1232,8 @@ aiohttp = [
     {file = "aiohttp-3.8.3.tar.gz", hash = "sha256:3828fb41b7203176b82fe5d699e0d845435f2374750a44b480ea6b930f6be269"},
 ]
 aiohttp-asgi = [
-    {file = "aiohttp-asgi-0.4.0.tar.gz", hash = "sha256:0ee1bfb7fc844f307fd0b6d28d6929772809d99c16cb74260d5f4b6b6db306e2"},
-    {file = "aiohttp_asgi-0.4.0-py3-none-any.whl", hash = "sha256:e0637e8cf02c42db117bae2bdc75e15db43c270ed3f3bf4e0e261e4e4ed50642"},
+    {file = "aiohttp-asgi-0.4.1.tar.gz", hash = "sha256:954a324c1f8e1028e22fea493521899c0078b9daa88a9a60708acb291c28302d"},
+    {file = "aiohttp_asgi-0.4.1-py3-none-any.whl", hash = "sha256:3d5a519a3b9e18d4f0089b9572de70a841f91690b6e66351d27b87082ff7ba40"},
 ]
 aiosignal = [
     {file = "aiosignal-1.3.1-py3-none-any.whl", hash = "sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17"},

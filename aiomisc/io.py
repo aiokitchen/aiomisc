@@ -60,7 +60,7 @@ def proxy_method_async(
 @total_ordering
 class AsyncFileIO(EventLoopMixin, Generic[T]):
     __slots__ = (
-        "__opener", "fp", "executor", "__iterator_lock",
+        "__opener", "_fp", "executor", "__iterator_lock",
     ) + EventLoopMixin.__slots__
 
     opener = staticmethod(threaded(open))

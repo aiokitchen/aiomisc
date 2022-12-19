@@ -55,6 +55,9 @@ class Service(metaclass=ServiceMeta):
         self.__context: Optional[Context] = None
         self.__start_event: Optional[asyncio.Event] = None
 
+    def __getattr__(self, item: str) -> Any:
+        return self.__instance_params[item]
+
     @property
     def start_event(self) -> asyncio.Event:
         if self.__start_event is None:

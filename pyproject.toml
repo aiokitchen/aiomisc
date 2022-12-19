@@ -75,7 +75,7 @@ aiomisc = "aiomisc_pytest.pytest_plugin"
 
 [tool.poetry.extras]
 aiohttp = ["aiohttp"]
-asgi = ["aiohttp-asgi"]
+asgi = ["aiohttp-asgi~=0.4.2"]
 carbon = ["aiocarbon~=0.15"]
 raven = ["aiohttp', 'raven"]
 uvloop = ["uvloop>=0.14,<1"]

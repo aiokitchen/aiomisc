@@ -5,7 +5,7 @@ from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
-from typing import Any
+from typing import Any, Callable, Coroutine, Optional, Tuple, Union
 
 import aiohttp.web
 import fastapi
@@ -16,7 +16,10 @@ from aiomisc import Signal
 from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
-from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
+from aiomisc.service.asgi import (
+    ASGIApplicationType, ASGIHTTPService, ASGIReceiveType, ASGIScopeType,
+    ASGISendType,
+)
 from aiomisc.service.tcp import RobustTCPClient, TCPClient
 from aiomisc.service.tls import RobustTLSClient, TLSClient
 from tests import unix_only
@@ -26,7 +29,7 @@ try:
     import uvloop
     uvloop_loop_type = uvloop.Loop
 except ImportError:
-    uvloop_loop_type = None
+    uvloop_loop_type = None     # type: ignore
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -75,12 +78,8 @@ def unix_socket_tcp():
 
 def test_service_class():
     with pytest.raises(TypeError):
-        services = (
-            aiomisc.Service(running=False, stopped=False),
-            aiomisc.Service(running=False, stopped=False),
-        )
-
-        with aiomisc.entrypoint(*services):
+        service = aiomisc.Service(running=False, stopped=False)  # type: ignore
+        with aiomisc.entrypoint(service):
             pass
 
 
@@ -90,31 +89,34 @@ def test_simple():
             self.running = True
 
     class DummyService(StartingService):
-        async def stop(self, err: Exception = None):
+        async def stop(self, err: Optional[Exception] = None):
             self.stopped = True
 
-    services = (
+    services: Tuple[StartingService, ...]
+    dummy_services: Tuple[DummyService, ...]
+
+    dummy_services = (
         DummyService(running=False, stopped=False),
         DummyService(running=False, stopped=False),
     )
 
-    with aiomisc.entrypoint(*services):
+    with aiomisc.entrypoint(*dummy_services):
         pass
 
-    for svc in services:
+    for svc in dummy_services:
         assert svc.running
         assert svc.stopped
 
-    services = (
+    dummy_services = (
         DummyService(running=False, stopped=False),
         DummyService(running=False, stopped=False),
     )
 
     with pytest.raises(RuntimeError):
-        with aiomisc.entrypoint(*services):
+        with aiomisc.entrypoint(*dummy_services):
             raise RuntimeError
 
-    for svc in services:
+    for svc in dummy_services:
         assert svc.running
         assert svc.stopped
 
@@ -127,13 +129,13 @@ def test_simple():
         with aiomisc.entrypoint(*services):
             raise RuntimeError
 
-    for svc in services:
-        assert svc.running
+    for starting_svc in services:
+        assert starting_svc.running
 
 
-def test_wrong_sublclass():
+def test_wrong_subclass():
     with pytest.raises(TypeError):
-        class _(aiomisc.Service):
+        class NoAsyncStartService(aiomisc.Service):
             def start(self):
                 return True
 
@@ -142,11 +144,11 @@ def test_wrong_sublclass():
             return
 
     with pytest.raises(TypeError):
-        class _(MyService):
+        class NoAsyncStopServiceSubclass(MyService):
             def stop(self):
                 return True
 
-    class _(MyService):
+    class AsyncStopServiceSubclass(MyService):
         async def stop(self):
             return True
 
@@ -343,7 +345,7 @@ async def test_tls_client(loop, certs, localhost, aiomisc_socket_factory):
             writer.close()
 
     class TestClient(TLSClient):
-        event: asyncio.Event()
+        event: asyncio.Event
 
         async def handle_connection(
             self, reader: asyncio.StreamReader,
@@ -447,7 +449,7 @@ def test_udp_server(aiomisc_socket_factory):
     class TestService(UDPServer):
         DATA = []
 
-        async def handle_datagram(self, data: bytes, addr: tuple):
+        async def handle_datagram(self, data: bytes, addr: tuple) -> None:
             self.DATA.append(data)
 
     service = TestService("127.0.0.1", sock=sock)
@@ -551,11 +553,11 @@ def test_tcp_server_unix(unix_socket_tcp):
 
 def test_aiohttp_service_create_app():
     with pytest.raises(TypeError):
-        class _(AIOHTTPService):
+        class NoAsyncCreateApplication(AIOHTTPService):
             def create_application(self):
                 return None
 
-    class _(AIOHTTPService):
+    class AsyncCreateApplication(AIOHTTPService):
         async def create_application(self):
             return aiohttp.web.Application()
 
@@ -606,11 +608,11 @@ def test_aiohttp_service_sock(unix_socket_tcp):
 
 def test_asgi_service_create_app():
     with pytest.raises(TypeError):
-        class _(ASGIHTTPService):
-            def create_asgi_app(self) -> ASGIApplicationType:
-                return lambda: None
+        class NoAsyncCreateASGIApp(ASGIHTTPService):
+            def create_asgi_app(self) -> ASGIApplicationType:   # type: ignore
+                return lambda: None                             # type: ignore
 
-    class _(ASGIHTTPService):
+    class AsyncCreateASGIApp(ASGIHTTPService):
         async def create_asgi_app(self) -> ASGIApplicationType:
             return fastapi.FastAPI()
 
@@ -786,7 +788,7 @@ async def test_entrypoint_with_with_async():
         async def start(self):
             self.__class__.ctx = 1
 
-        async def stop(self, exc: Exception = None):
+        async def stop(self, exc: Optional[Exception] = None) -> None:
             self.__class__.ctx = 2
 
     service = MyService()

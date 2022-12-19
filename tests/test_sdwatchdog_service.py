@@ -28,7 +28,7 @@ def test_sdwatchdog_service(loop):
         packets: Deque[Tuple[Any, ...]] = deque()
 
         class FakeSystemd(UDPServer):
-            def handle_datagram(
+            async def handle_datagram(
                 self, data: bytes, addr: Tuple[Any, ...],
             ) -> None:
                 key: str
