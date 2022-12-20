@@ -20,7 +20,10 @@ async def test_profiler_start_stop():
 
 
 @unix_only
-@pytest.mark.skipif(sys.version_info < (3, 9))
+@pytest.mark.skipif(
+    sys.version_info < (3, 9),
+    reason="get_stats_profile available on 3.9+",
+)
 async def test_profiler_dump():
     profiler = None
     fl = NamedTemporaryFile(delete=False)
