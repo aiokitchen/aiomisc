@@ -1,7 +1,10 @@
 import asyncio
 import os
+import sys
 from pstats import Stats
 from tempfile import NamedTemporaryFile
+
+import pytest
 
 from aiomisc.service.profiler import Profiler
 from tests import unix_only
@@ -17,6 +20,7 @@ async def test_profiler_start_stop():
 
 
 @unix_only
+@pytest.mark.skipif(sys.version_info < (3, 9))
 async def test_profiler_dump():
     profiler = None
     fl = NamedTemporaryFile(delete=False)
