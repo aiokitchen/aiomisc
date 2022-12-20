@@ -25,6 +25,7 @@ from .utils import (
     SelectResult, awaitable, bind_socket, cancel_tasks, chunk_list,
     new_event_loop, select, shield,
 )
+from .version import __version__, version_info
 from .worker_pool import WorkerPool
 
 
@@ -75,5 +76,7 @@ __all__ = (
     "threaded_iterable_separate",
     "threaded_separate",
     "timeout",
+    "version",
+    "version_info",
     "wait_coroutine",
 )
