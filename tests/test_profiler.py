@@ -21,8 +21,8 @@ async def test_profiler_start_stop():
 
 @unix_only
 @pytest.mark.skipif(
-    sys.version_info < (3, 9),
-    reason="get_stats_profile available on 3.9+",
+    sys.version_info < (3, 10),
+    reason="get_stats_profile available on 3.10+",
 )
 async def test_profiler_dump():
     profiler = None
