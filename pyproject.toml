@@ -149,3 +149,13 @@ disallow_incomplete_defs = false
 disallow_untyped_calls = false
 disallow_untyped_decorators = false
 disallow_untyped_defs = false
+
+[tool.pylama]
+linters = "mccabe,pycodestyle,pyflakes"
+skip = "*env*,.tox*,*build*,.*,env/*,.venv/*"
+ignore = "C901"
+
+[tool.pylama.linter.pycodestyle]
+max_line_length = 80
+show-pep8 = true
+show-source = true
