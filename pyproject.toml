@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aiomisc"
-version = "16.2.11"
+version = "16.3.0"
 description = "aiomisc - miscellaneous utils for asyncio"
 authors = ["Dmitry Orlov <me@mosquito.su>"]
 readme = "README.rst"
