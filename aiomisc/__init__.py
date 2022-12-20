@@ -48,6 +48,7 @@ __all__ = (
     "StrategyStop",
     "ThreadPoolExecutor",
     "WorkerPool",
+    "__version__",
     "aggregate",
     "aggregate_async",
     "asyncbackoff",
@@ -76,7 +77,6 @@ __all__ = (
     "threaded_iterable_separate",
     "threaded_separate",
     "timeout",
-    "version",
     "version_info",
     "wait_coroutine",
 )
