@@ -38,7 +38,6 @@ class ProcessService(Service):
     _process_start_event: synchronize.Event
     _process_stop_event: synchronize.Event
     _lock: Lock
-    _instance_params: Dict[str, Any]
 
     def get_process_kwargs(self) -> Dict[str, Any]:
         return {}

@@ -164,6 +164,8 @@ def test_required_kwargs():
 
 
 def test_tcp_server():
+    event = asyncio.Event()
+
     class TestService(TCPServer):
         DATA = []
 
@@ -173,6 +175,7 @@ def test_tcp_server():
         ):
             self.DATA.append(await reader.readline())
             writer.close()
+            event.set()
 
     service = TestService("127.0.0.1", 0)
 
@@ -185,12 +188,15 @@ def test_tcp_server():
         loop.run_until_complete(
             asyncio.wait_for(writer(service.port), timeout=10),
         )
+        loop.run_until_complete(event.wait())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
 
 
 def test_tcp_client(aiomisc_socket_factory, localhost):
+    event = asyncio.Event()
+
     class TestService(TCPServer):
         DATA = []
 
@@ -199,23 +205,21 @@ def test_tcp_client(aiomisc_socket_factory, localhost):
             writer: asyncio.StreamWriter,
         ):
             self.DATA.append(await reader.readline())
+            event.set()
 
     class TestClient(TCPClient):
-        event: asyncio.Event
-
         async def handle_connection(
             self, reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter,
         ) -> None:
             writer.write(b"hello server\n")
             await writer.drain()
-            self.loop.call_soon(self.event.set)
 
     port, sock = aiomisc_socket_factory()
     event = asyncio.Event()
     services = [
         TestService(sock=sock),
-        TestClient(address=localhost, port=port, event=event),
+        TestClient(address=localhost, port=port),
     ]
 
     async def go():
@@ -225,6 +229,7 @@ def test_tcp_client(aiomisc_socket_factory, localhost):
         loop.run_until_complete(
             asyncio.wait_for(go(), timeout=10),
         )
+        loop.run_until_complete(event.wait())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
@@ -286,6 +291,8 @@ async def test_robust_tcp_client(loop, aiomisc_socket_factory, localhost):
 def test_tls_server(
     client_cert_required, certs, ssl_client_context, localhost,
 ):
+    event = asyncio.Event()
+
     class TestService(TLSServer):
         DATA = []
 
@@ -295,6 +302,7 @@ def test_tls_server(
         ):
             self.DATA.append(await reader.readline())
             writer.close()
+            event.set()
 
     service = TestService(
         address="127.0.0.1", port=0,
@@ -325,6 +333,7 @@ def test_tls_server(
         loop.run_until_complete(
             asyncio.wait_for(writer(service.port), timeout=10),
         )
+        loop.run_until_complete(event.wait())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]

@@ -44,7 +44,12 @@ class Service(metaclass=ServiceMeta):
     __async_required__: Tuple[str, ...] = ("start", "stop")
     __required__: Tuple[str, ...] = ()
 
-    __instance_params: Dict[str, Any]
+    _instance_params: Dict[str, Any]
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> "Service":
+        instance = super().__new__(cls)
+        instance._instance_params = {}
+        return instance
 
     def __init__(self, **kwargs: Any):
         lost_kw = self.__required__ - kwargs.keys()
@@ -55,11 +60,16 @@ class Service(metaclass=ServiceMeta):
         self.__context: Optional[Context] = None
         self.__start_event: Optional[asyncio.Event] = None
 
-    def __getattr__(self, item: str) -> Any:
+    def __getattr__(self, key: str) -> Any:
         try:
-            return self.__instance_params[item]
+            return self._instance_params[key]
         except KeyError as e:
-            raise AttributeError from e
+            raise AttributeError() from e
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        super(Service, self).__setattr__(key, value)
+        if key in self._instance_params:
+            self._instance_params[key] = value
 
     @property
     def start_event(self) -> asyncio.Event:
@@ -80,13 +90,13 @@ class Service(metaclass=ServiceMeta):
         self.__start_event = asyncio.Event()
 
     def _set_params(self, **kwargs: Any) -> None:
-        self.__instance_params = kwargs
+        self._instance_params = kwargs
 
         for name, value in kwargs.items():
             setattr(self, name, value)
 
     def __getstate__(self) -> Dict[str, Any]:
-        return self.__instance_params
+        return self._instance_params
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
         self._set_params(**state)
