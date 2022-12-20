@@ -8,7 +8,6 @@ from typing import (
 )
 
 from .compat import EventLoopMixin
-from .thread_pool import threaded
 
 
 T = TypeVar("T", bound=Union[str, bytes])

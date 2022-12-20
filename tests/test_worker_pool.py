@@ -6,7 +6,7 @@ import threading
 from multiprocessing.context import ProcessError
 from os import getpid
 from time import sleep
-from typing import Any, AsyncGenerator
+from typing import AsyncGenerator
 
 import pytest
 from setproctitle import setproctitle

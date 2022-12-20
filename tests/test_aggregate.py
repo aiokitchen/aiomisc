@@ -4,7 +4,7 @@ import math
 import platform
 import time
 from asyncio import Event, wait
-from typing import Any, List, Optional, Sequence
+from typing import Any, List, Sequence
 
 import pytest
 from aiocontextvars import ContextVar  # type: ignore

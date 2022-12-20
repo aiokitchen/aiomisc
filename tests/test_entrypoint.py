@@ -5,7 +5,7 @@ from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
-from typing import Any, Callable, Coroutine, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 
 import aiohttp.web
 import fastapi
@@ -16,10 +16,7 @@ from aiomisc import Signal
 from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
-from aiomisc.service.asgi import (
-    ASGIApplicationType, ASGIHTTPService, ASGIReceiveType, ASGIScopeType,
-    ASGISendType,
-)
+from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from aiomisc.service.tcp import RobustTCPClient, TCPClient
 from aiomisc.service.tls import RobustTLSClient, TLSClient
 from tests import unix_only
