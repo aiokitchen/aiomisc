@@ -42,7 +42,7 @@ and retry mechanisms such as :doc:`asyncbackoff </async_backoff>` and
 :ref:`asyncretry <asyncretry>` to make your asyncio code more robust and
 easier to maintain. In this documentation, we'll take a closer look at what
 ``aiomisc`` has to offer and how it can help you streamline your asyncio
-development.
+service development.
 
 Installation
 ------------
@@ -85,23 +85,23 @@ With aiohttp_:
 
 Complete table of extras bellow:
 
-+-----------------------------------+-------------------+------------------------------------------------+
-| example                           | dependencies      | description                                    |
-+===================================+===================+================================================+
-| ``pip install aiomisc[aiohttp]``  | ``aiohttp``       | For running aiohttp_ applications.             |
-+-----------------------------------+-------------------+------------------------------------------------+
-| ``pip install aiomisc[asgi]``     | ``aiohttp-asgi``  | For running ASGI_ applications                 |
-+-----------------------------------+-------------------+------------------------------------------------+
-| ``pip install aiomisc[carbon]``   | ``aiocarbon``     | Sending metrics to carbon_ (part of graphite_) |
-+-----------------------------------+-------------------+------------------------------------------------+
-| ``pip install aiomisc[cron]``     | ``croniter``      | use croniter_ for sheduling tasks              |
-+-----------------------------------+-------------------+------------------------------------------------+
-| ``pip install aiomisc[raven]``    | ``raven``         | Sending exceptions to sentry_ using raven_     |
-+-----------------------------------+-------------------+------------------------------------------------+
-| ``pip install aiomisc[rich]``     | ``rich``          | You might using rich_ for logging              |
-+-----------------------------------+-------------------+------------------------------------------------+
-| ``pip install aiomisc[uvloop]``   | ``uvloop``        | use uvloop_ as a default event loop            |
-+-----------------------------------+-------------------+------------------------------------------------+
++-----------------------------------+------------------------------------------------+
+| example                           |  description                                   |
++===================================+================================================+
+| ``pip install aiomisc[aiohttp]``  | For running aiohttp_ applications.             |
++-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[asgi]``     | For running ASGI_ applications                 |
++-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[carbon]``   | Sending metrics to carbon_ (part of graphite_) |
++-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[cron]``     | use croniter_ for sheduling tasks              |
++-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[raven]``    | Sending exceptions to sentry_ using raven_     |
++-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[rich]``     | You might using rich_ for logging              |
++-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[uvloop]``   | use uvloop_ as a default event loop            |
++-----------------------------------+------------------------------------------------+
 
 .. _ASGI: https://asgi.readthedocs.io/en/latest/
 .. _PyPI: https://pypi.org/
@@ -113,6 +113,13 @@ Complete table of extras bellow:
 .. _rich: https://pypi.org/project/rich
 .. _sentry: https://sentry.io/
 .. _uvloop: https://pypi.org/project/uvloop
+
+You can combine extras values by separating them with commas, for example:
+
+.. code-block:: bash
+
+    pip3 install "aiomisc[aiohttp,cron,rich,uvloop]"
+
 
 Quick Start
 -----------
@@ -293,16 +300,19 @@ How to develop?
 
 Should be installed:
 
-* `virtualenv`
-* GNU Make as `make`
-* Python 3.7+ as `python3`
+* ``virtualenv``
+* GNU Make as ``make``
+* Python 3.7+ as ``python3``
+* Installed Poetry_ as ``poetry``
+
+.. _Poetry: https://python-poetry.org/docs/
 
 
 For setting up developer environment just type
 
     .. code-block::
 
-        make develop
+        poetry install
 
 
 .. _Semantic Versioning: http://semver.org/

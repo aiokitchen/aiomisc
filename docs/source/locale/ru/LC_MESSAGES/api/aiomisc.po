@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-03 19:00+0300\n"
+"POT-Creation-Date: 2022-12-29 11:05+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/api/aiomisc.rst:2
 msgid "``aiomisc`` module"
@@ -223,12 +223,6 @@ msgstr ""
 msgid "minimum time in passing state (seconds)"
 msgstr ""
 
-#: aiomisc.circuit_breaker.CircuitBreakerStates:1
-#: aiomisc.circuit_breaker.CounterKey:1 aiomisc_log.enum.LogFormat:1
-#: aiomisc_log.enum.LogLevel:1 of
-msgid "An enumeration."
-msgstr ""
-
 #: ../../source/api/aiomisc.rst:26
 msgid "``aiomisc.compat`` module"
 msgstr "Модуль ``aiomisc.compat``"
@@ -312,237 +306,6 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.io`` module"
 msgstr "Модуль ``aiomisc.io``"
-
-#: io.open:1 of
-msgid "Open file and return a stream.  Raise OSError upon failure."
-msgstr "Модуль "
-
-#: io.open:3 of
-msgid ""
-"file is either a text or byte string giving the name (and the path if the"
-" file isn't in the current working directory) of the file to be opened or"
-" an integer file descriptor of the file to be wrapped. (If a file "
-"descriptor is given, it is closed when the returned I/O object is closed,"
-" unless closefd is set to False.)"
-msgstr ""
-
-#: io.open:9 of
-msgid ""
-"mode is an optional string that specifies the mode in which the file is "
-"opened. It defaults to 'r' which means open for reading in text mode.  "
-"Other common values are 'w' for writing (truncating the file if it "
-"already exists), 'x' for creating and writing to a new file, and 'a' for "
-"appending (which on some Unix systems, means that all writes append to "
-"the end of the file regardless of the current seek position). In text "
-"mode, if encoding is not specified the encoding used is platform "
-"dependent: locale.getpreferredencoding(False) is called to get the "
-"current locale encoding. (For reading and writing raw bytes use binary "
-"mode and leave encoding unspecified.) The available modes are:"
-msgstr ""
-
-#: io.open:21 of
-msgid "Character"
-msgstr ""
-
-#: io.open:21 of
-msgid "Meaning"
-msgstr ""
-
-#: io.open:23 of
-msgid "'r'"
-msgstr ""
-
-#: io.open:23 of
-msgid "open for reading (default)"
-msgstr ""
-
-#: io.open:24 of
-msgid "'w'"
-msgstr ""
-
-#: io.open:24 of
-msgid "open for writing, truncating the file first"
-msgstr ""
-
-#: io.open:25 of
-msgid "'x'"
-msgstr ""
-
-#: io.open:25 of
-msgid "create a new file and open it for writing"
-msgstr ""
-
-#: io.open:26 of
-msgid "'a'"
-msgstr ""
-
-#: io.open:26 of
-msgid "open for writing, appending to the end of the file if it exists"
-msgstr ""
-
-#: io.open:27 of
-msgid "'b'"
-msgstr ""
-
-#: io.open:27 of
-msgid "binary mode"
-msgstr ""
-
-#: io.open:28 of
-msgid "'t'"
-msgstr ""
-
-#: io.open:28 of
-msgid "text mode (default)"
-msgstr ""
-
-#: io.open:29 of
-msgid "'+'"
-msgstr ""
-
-#: io.open:29 of
-msgid "open a disk file for updating (reading and writing)"
-msgstr ""
-
-#: io.open:30 of
-msgid "'U'"
-msgstr ""
-
-#: io.open:30 of
-msgid "universal newline mode (deprecated)"
-msgstr ""
-
-#: io.open:33 of
-msgid ""
-"The default mode is 'rt' (open for reading text). For binary random "
-"access, the mode 'w+b' opens and truncates the file to 0 bytes, while "
-"'r+b' opens the file without truncation. The 'x' mode implies 'w' and "
-"raises an `FileExistsError` if the file already exists."
-msgstr ""
-
-#: io.open:38 of
-msgid ""
-"Python distinguishes between files opened in binary and text modes, even "
-"when the underlying operating system doesn't. Files opened in binary mode"
-" (appending 'b' to the mode argument) return contents as bytes objects "
-"without any decoding. In text mode (the default, or when 't' is appended "
-"to the mode argument), the contents of the file are returned as strings, "
-"the bytes having been first decoded using a platform-dependent encoding "
-"or using the specified encoding if given."
-msgstr ""
-
-#: io.open:46 of
-msgid ""
-"'U' mode is deprecated and will raise an exception in future versions of "
-"Python.  It has no effect in Python 3.  Use newline to control universal "
-"newlines mode."
-msgstr ""
-
-#: io.open:50 of
-msgid ""
-"buffering is an optional integer used to set the buffering policy. Pass 0"
-" to switch buffering off (only allowed in binary mode), 1 to select line "
-"buffering (only usable in text mode), and an integer > 1 to indicate the "
-"size of a fixed-size chunk buffer.  When no buffering argument is given, "
-"the default buffering policy works as follows:"
-msgstr ""
-
-#: io.open:56 of
-msgid ""
-"Binary files are buffered in fixed-size chunks; the size of the buffer is"
-" chosen using a heuristic trying to determine the underlying device's "
-"\"block size\" and falling back on `io.DEFAULT_BUFFER_SIZE`. On many "
-"systems, the buffer will typically be 4096 or 8192 bytes long."
-msgstr ""
-
-#: io.open:61 of
-msgid ""
-"\"Interactive\" text files (files for which isatty() returns True) use "
-"line buffering.  Other text files use the policy described above for "
-"binary files."
-msgstr ""
-
-#: io.open:65 of
-msgid ""
-"encoding is the name of the encoding used to decode or encode the file. "
-"This should only be used in text mode. The default encoding is platform "
-"dependent, but any encoding supported by Python can be passed.  See the "
-"codecs module for the list of supported encodings."
-msgstr ""
-
-#: io.open:70 of
-msgid ""
-"errors is an optional string that specifies how encoding errors are to be"
-" handled---this argument should not be used in binary mode. Pass 'strict'"
-" to raise a ValueError exception if there is an encoding error (the "
-"default of None has the same effect), or pass 'ignore' to ignore errors. "
-"(Note that ignoring encoding errors can lead to data loss.) See the "
-"documentation for codecs.register or run 'help(codecs.Codec)' for a list "
-"of the permitted encoding error strings."
-msgstr ""
-
-#: io.open:78 of
-msgid ""
-"newline controls how universal newlines works (it only applies to text "
-"mode). It can be None, '', '\\n', '\\r', and '\\r\\n'.  It works as "
-"follows:"
-msgstr ""
-
-#: io.open:82 of
-msgid ""
-"On input, if newline is None, universal newlines mode is enabled. Lines "
-"in the input can end in '\\n', '\\r', or '\\r\\n', and these are "
-"translated into '\\n' before being returned to the caller. If it is '', "
-"universal newline mode is enabled, but line endings are returned to the "
-"caller untranslated. If it has any of the other legal values, input lines"
-" are only terminated by the given string, and the line ending is returned"
-" to the caller untranslated."
-msgstr ""
-
-#: io.open:90 of
-msgid ""
-"On output, if newline is None, any '\\n' characters written are "
-"translated to the system default line separator, os.linesep. If newline "
-"is '' or '\\n', no translation takes place. If newline is any of the "
-"other legal values, any '\\n' characters written are translated to the "
-"given string."
-msgstr ""
-
-#: io.open:96 of
-msgid ""
-"If closefd is False, the underlying file descriptor will be kept open "
-"when the file is closed. This does not work when a file name is given and"
-" must be True in that case."
-msgstr ""
-
-#: io.open:100 of
-msgid ""
-"A custom opener can be used by passing a callable as *opener*. The "
-"underlying file descriptor for the file object is then obtained by "
-"calling *opener* with (*file*, *flags*). *opener* must return an open "
-"file descriptor (passing os.open as *opener* results in functionality "
-"similar to passing None)."
-msgstr ""
-
-#: io.open:106 of
-msgid ""
-"open() returns a file object whose type depends on the mode, and through "
-"which the standard file operations such as reading and writing are "
-"performed. When open() is used to open a file in a text mode ('w', 'r', "
-"'wt', 'rt', etc.), it returns a TextIOWrapper. When used to open a file "
-"in a binary mode, the returned class varies: in read binary mode, it "
-"returns a BufferedReader; in write binary and append binary modes, it "
-"returns a BufferedWriter, and in read/write mode, it returns a "
-"BufferedRandom."
-msgstr ""
-
-#: io.open:115 of
-msgid ""
-"It is also possible to use a string or bytearray as a file for both "
-"reading and writing. For strings StringIO can be used like a file opened "
-"in a text mode, and for bytes a BytesIO can be used like a file opened in"
-" a binary mode."
-msgstr ""
 
 #: ../../source/api/aiomisc.rst:68
 msgid "``aiomisc.iterator_wrapper`` module"
@@ -791,3 +554,280 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "False.)"
 #~ msgstr ""
 
+#~ msgid "An enumeration."
+#~ msgstr ""
+
+#~ msgid "Open file and return a stream.  Raise OSError upon failure."
+#~ msgstr "Модуль "
+
+#~ msgid ""
+#~ "file is either a text or byte "
+#~ "string giving the name (and the "
+#~ "path if the file isn't in the "
+#~ "current working directory) of the file"
+#~ " to be opened or an integer "
+#~ "file descriptor of the file to be"
+#~ " wrapped. (If a file descriptor is"
+#~ " given, it is closed when the "
+#~ "returned I/O object is closed, unless"
+#~ " closefd is set to False.)"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "mode is an optional string that "
+#~ "specifies the mode in which the "
+#~ "file is opened. It defaults to 'r'"
+#~ " which means open for reading in "
+#~ "text mode.  Other common values are "
+#~ "'w' for writing (truncating the file "
+#~ "if it already exists), 'x' for "
+#~ "creating and writing to a new "
+#~ "file, and 'a' for appending (which "
+#~ "on some Unix systems, means that "
+#~ "all writes append to the end of"
+#~ " the file regardless of the current"
+#~ " seek position). In text mode, if "
+#~ "encoding is not specified the encoding"
+#~ " used is platform dependent: "
+#~ "locale.getpreferredencoding(False) is called to "
+#~ "get the current locale encoding. (For"
+#~ " reading and writing raw bytes use"
+#~ " binary mode and leave encoding "
+#~ "unspecified.) The available modes are:"
+#~ msgstr ""
+
+#~ msgid "Character"
+#~ msgstr ""
+
+#~ msgid "Meaning"
+#~ msgstr ""
+
+#~ msgid "'r'"
+#~ msgstr ""
+
+#~ msgid "open for reading (default)"
+#~ msgstr ""
+
+#~ msgid "'w'"
+#~ msgstr ""
+
+#~ msgid "open for writing, truncating the file first"
+#~ msgstr ""
+
+#~ msgid "'x'"
+#~ msgstr ""
+
+#~ msgid "create a new file and open it for writing"
+#~ msgstr ""
+
+#~ msgid "'a'"
+#~ msgstr ""
+
+#~ msgid "open for writing, appending to the end of the file if it exists"
+#~ msgstr ""
+
+#~ msgid "'b'"
+#~ msgstr ""
+
+#~ msgid "binary mode"
+#~ msgstr ""
+
+#~ msgid "'t'"
+#~ msgstr ""
+
+#~ msgid "text mode (default)"
+#~ msgstr ""
+
+#~ msgid "'+'"
+#~ msgstr ""
+
+#~ msgid "open a disk file for updating (reading and writing)"
+#~ msgstr ""
+
+#~ msgid "'U'"
+#~ msgstr ""
+
+#~ msgid "universal newline mode (deprecated)"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The default mode is 'rt' (open for"
+#~ " reading text). For binary random "
+#~ "access, the mode 'w+b' opens and "
+#~ "truncates the file to 0 bytes, "
+#~ "while 'r+b' opens the file without "
+#~ "truncation. The 'x' mode implies 'w' "
+#~ "and raises an `FileExistsError` if the"
+#~ " file already exists."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Python distinguishes between files opened "
+#~ "in binary and text modes, even "
+#~ "when the underlying operating system "
+#~ "doesn't. Files opened in binary mode "
+#~ "(appending 'b' to the mode argument) "
+#~ "return contents as bytes objects without"
+#~ " any decoding. In text mode (the "
+#~ "default, or when 't' is appended "
+#~ "to the mode argument), the contents "
+#~ "of the file are returned as "
+#~ "strings, the bytes having been first "
+#~ "decoded using a platform-dependent "
+#~ "encoding or using the specified encoding"
+#~ " if given."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "'U' mode is deprecated and will "
+#~ "raise an exception in future versions"
+#~ " of Python.  It has no effect "
+#~ "in Python 3.  Use newline to "
+#~ "control universal newlines mode."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "buffering is an optional integer used"
+#~ " to set the buffering policy. Pass"
+#~ " 0 to switch buffering off (only "
+#~ "allowed in binary mode), 1 to "
+#~ "select line buffering (only usable in"
+#~ " text mode), and an integer > 1"
+#~ " to indicate the size of a "
+#~ "fixed-size chunk buffer.  When no "
+#~ "buffering argument is given, the default"
+#~ " buffering policy works as follows:"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Binary files are buffered in fixed-"
+#~ "size chunks; the size of the "
+#~ "buffer is chosen using a heuristic "
+#~ "trying to determine the underlying "
+#~ "device's \"block size\" and falling back"
+#~ " on `io.DEFAULT_BUFFER_SIZE`. On many "
+#~ "systems, the buffer will typically be"
+#~ " 4096 or 8192 bytes long."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "\"Interactive\" text files (files for "
+#~ "which isatty() returns True) use line"
+#~ " buffering.  Other text files use the"
+#~ " policy described above for binary "
+#~ "files."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "encoding is the name of the "
+#~ "encoding used to decode or encode "
+#~ "the file. This should only be used"
+#~ " in text mode. The default encoding"
+#~ " is platform dependent, but any "
+#~ "encoding supported by Python can be "
+#~ "passed.  See the codecs module for "
+#~ "the list of supported encodings."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "errors is an optional string that "
+#~ "specifies how encoding errors are to "
+#~ "be handled---this argument should not"
+#~ " be used in binary mode. Pass "
+#~ "'strict' to raise a ValueError exception"
+#~ " if there is an encoding error "
+#~ "(the default of None has the same"
+#~ " effect), or pass 'ignore' to ignore"
+#~ " errors. (Note that ignoring encoding "
+#~ "errors can lead to data loss.) See"
+#~ " the documentation for codecs.register or"
+#~ " run 'help(codecs.Codec)' for a list "
+#~ "of the permitted encoding error strings."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "newline controls how universal newlines "
+#~ "works (it only applies to text "
+#~ "mode). It can be None, '', '\\n',"
+#~ " '\\r', and '\\r\\n'.  It works as"
+#~ " follows:"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "On input, if newline is None, "
+#~ "universal newlines mode is enabled. "
+#~ "Lines in the input can end in "
+#~ "'\\n', '\\r', or '\\r\\n', and these "
+#~ "are translated into '\\n' before being"
+#~ " returned to the caller. If it "
+#~ "is '', universal newline mode is "
+#~ "enabled, but line endings are returned"
+#~ " to the caller untranslated. If it"
+#~ " has any of the other legal "
+#~ "values, input lines are only terminated"
+#~ " by the given string, and the "
+#~ "line ending is returned to the "
+#~ "caller untranslated."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "On output, if newline is None, any"
+#~ " '\\n' characters written are translated"
+#~ " to the system default line "
+#~ "separator, os.linesep. If newline is ''"
+#~ " or '\\n', no translation takes "
+#~ "place. If newline is any of the"
+#~ " other legal values, any '\\n' "
+#~ "characters written are translated to the"
+#~ " given string."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "If closefd is False, the underlying "
+#~ "file descriptor will be kept open "
+#~ "when the file is closed. This does"
+#~ " not work when a file name is"
+#~ " given and must be True in that"
+#~ " case."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A custom opener can be used by "
+#~ "passing a callable as *opener*. The "
+#~ "underlying file descriptor for the file"
+#~ " object is then obtained by calling"
+#~ " *opener* with (*file*, *flags*). *opener*"
+#~ " must return an open file descriptor"
+#~ " (passing os.open as *opener* results "
+#~ "in functionality similar to passing "
+#~ "None)."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "open() returns a file object whose "
+#~ "type depends on the mode, and "
+#~ "through which the standard file "
+#~ "operations such as reading and writing"
+#~ " are performed. When open() is used"
+#~ " to open a file in a text "
+#~ "mode ('w', 'r', 'wt', 'rt', etc.), "
+#~ "it returns a TextIOWrapper. When used"
+#~ " to open a file in a binary "
+#~ "mode, the returned class varies: in "
+#~ "read binary mode, it returns a "
+#~ "BufferedReader; in write binary and "
+#~ "append binary modes, it returns a "
+#~ "BufferedWriter, and in read/write mode, "
+#~ "it returns a BufferedRandom."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "It is also possible to use a "
+#~ "string or bytearray as a file for"
+#~ " both reading and writing. For "
+#~ "strings StringIO can be used like "
+#~ "a file opened in a text mode, "
+#~ "and for bytes a BytesIO can be "
+#~ "used like a file opened in a "
+#~ "binary mode."
+#~ msgstr ""

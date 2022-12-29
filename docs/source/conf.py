@@ -244,3 +244,4 @@ html_favicon = "_static/icon.png"
 
 locale_dirs = ["locale/"]   # path is example but recommended.
 gettext_compact = False     # optional.
+gettext_additional_targets = ["literal-block"]

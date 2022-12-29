@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2021-10-15 17:18+0300\n"
+"POT-Creation-Date: 2022-12-29 11:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/logging.rst:2
 msgid "Logging configuration"
@@ -24,8 +24,8 @@ msgid ""
 "Default logging configuration might be configured by setting environment "
 "variables:"
 msgstr ""
-"Конфигурация логирования по умолчанию может быть осуществлена "
-"через переменные окружения:"
+"Конфигурация логирования по умолчанию может быть осуществлена через "
+"переменные окружения:"
 
 #: ../../source/logging.rst:6
 msgid "`AIOMISC_LOG_LEVEL` - default logging level"
@@ -47,6 +47,12 @@ msgstr "`AIOMISC_LOG_FLUSH` - интервал сброса буфера лог�
 msgid "`AIOMISC_LOG_BUFFER` - maximum log buffer size"
 msgstr "`AIOMISC_LOG_BUFFER` - максимальный размер буфера логов"
 
+#: ../../source/logging.rst:12
+msgid ""
+"$ export AIOMISC_LOG_LEVEL=debug\n"
+"$ export AIOMISC_LOG_FORMAT=rich"
+msgstr ""
+
 #: ../../source/logging.rst:19
 msgid "Color"
 msgstr "Color"
@@ -55,6 +61,16 @@ msgstr "Color"
 msgid "Setting up colorized logs:"
 msgstr "Настройка цветных логов:"
 
+#: ../../source/logging.rst:23
+msgid ""
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"\n"
+"\n"
+"# Configure logging\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='color')"
+msgstr ""
+
 #: ../../source/logging.rst:34
 msgid "JSON"
 msgstr "JSON"
@@ -62,6 +78,16 @@ msgstr "JSON"
 #: ../../source/logging.rst:36
 msgid "Setting up json logs:"
 msgstr "Настройка json логов:"
+
+#: ../../source/logging.rst:38
+msgid ""
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"\n"
+"\n"
+"# Configure logging\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='json')"
+msgstr ""
 
 #: ../../source/logging.rst:49
 msgid "JournalD"
@@ -80,43 +106,92 @@ msgid ""
 "This handler is the default when the program starting as a systemd "
 "service."
 msgstr ""
-"Этот обработчик выбирается по умолчанию если программа запускается как systemd "
-"сервис."
+"Этот обработчик выбирается по умолчанию если программа запускается как "
+"systemd сервис."
 
 #: ../../source/logging.rst:58
 msgid "`aiomisc.log.LogFormat.default()` will returns `journald`  in this case."
 msgstr "`aiomisc.log.LogFormat.default()` вернет `journald` в этом случае."
 
-#: ../../source/logging.rst:73
+#: ../../source/logging.rst:60
+msgid ""
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"\n"
+"# Configure rich log handler\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='journald')\n"
+"\n"
+"logging.info(\"JournalD log record\")"
+msgstr ""
+
+#: ../../source/logging.rst:74
 msgid "Rich"
 msgstr "Rich"
 
-#: ../../source/logging.rst:75
+#: ../../source/logging.rst:76
 msgid ""
 "`Rich`_ is a Python library for rich text and beautiful formatting in the"
 " terminal."
 msgstr ""
-"`Rich`_ это Python библиотека которая делает форматирование в "
-"терминал прекрасным."
+"`Rich`_ это Python библиотека которая делает форматирование в терминал "
+"прекрасным."
 
-#: ../../source/logging.rst:77
+#: ../../source/logging.rst:78
 msgid ""
 "`aiomisc.basic_config` has support for using `Rich`_ as a logging "
 "handler. But it isn't dependency and you have to install `Rich`_ "
 "manually."
 msgstr ""
-"`aiomisc.basic_config` может использовать `Rich`_ для логирования. "
-"Но это не обязательно, поэтому вам придется установить `Rich`_ самостоятельно."
+"`aiomisc.basic_config` может использовать `Rich`_ для логирования. Но это"
+" не обязательно, поэтому вам придется установить `Rich`_ самостоятельно."
 
-#: ../../source/logging.rst:86
+#: ../../source/logging.rst:81
+msgid "pip install rich"
+msgstr ""
+
+#: ../../source/logging.rst:87
 msgid "This handler is the default when the `Rich` has been installed."
 msgstr "Этот обработчик будет обработчиком по умолчанию если `Rich` установлен."
 
-#: ../../source/logging.rst:111
+#: ../../source/logging.rst:89
+msgid ""
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"\n"
+"# Configure rich log handler\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='rich')\n"
+"\n"
+"logging.info(\"Rich logger\")\n"
+"\n"
+"# Configure rich log handler with rich tracebacks display\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='rich_tb')\n"
+"\n"
+"try:\n"
+"    1 / 0\n"
+"except:\n"
+"    logging.exception(\"Rich traceback logger\")"
+msgstr ""
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"\n"
+"# Конфигурируем rich обработчик для журналов\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='rich')\n"
+"\n"
+"logging.info(\"Rich logger\")\n"
+"\n"
+"# Конфигурируем rich обработчик для журналов но с показом трейсбеков\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='rich_tb')\n"
+"\n"
+"try:\n"
+"    1 / 0\n"
+"except:\n"
+"    logging.exception(\"Rich traceback logger\")"
+
+#: ../../source/logging.rst:112
 msgid "Buffered log handler"
 msgstr "Буфферизирующий лог-хендлер"
 
-#: ../../source/logging.rst:113
+#: ../../source/logging.rst:114
 msgid ""
 "Parameter `buffered=True` enables a memory buffer that flushes logs in a "
 "thread."
@@ -124,17 +199,79 @@ msgstr ""
 "Параметр `buffered=True` включает буферизацию логов в памяти, отдельный "
 "поток переодически сбрасывает логи в поток."
 
-#: ../../source/logging.rst:151
+#: ../../source/logging.rst:116
+#, python-format
+msgid ""
+"import asyncio\n"
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"from aiomisc.periodic import PeriodicCallback\n"
+"from aiomisc.utils import new_event_loop\n"
+"\n"
+"\n"
+"# Configure logging globally\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='json')\n"
+"\n"
+"async def write_log(loop):\n"
+"    logging.info(\"Hello %f\", loop.time())\n"
+"\n"
+"if __name__ == '__main__':\n"
+"    loop = new_event_loop()\n"
+"\n"
+"    # Configure\n"
+"    basic_config(\n"
+"        level=logging.INFO,\n"
+"        buffered=True,\n"
+"        log_format='color',\n"
+"        flush_interval=0.5\n"
+"    )\n"
+"\n"
+"    periodic = PeriodicCallback(write_log, loop)\n"
+"    periodic.start(0.3)\n"
+"\n"
+"    # Wait for flush just for example\n"
+"    loop.run_until_complete(asyncio.sleep(1))"
+msgstr ""
+"import asyncio\n"
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"from aiomisc.periodic import PeriodicCallback\n"
+"from aiomisc.utils import new_event_loop\n"
+"\n"
+"\n"
+"# Глобально конфигурируем журналы\n"
+"basic_config(level=logging.INFO, buffered=False, log_format='json')\n"
+"\n"
+"async def write_log(loop):\n"
+"    logging.info(\"Hello %f\", loop.time())\n"
+"\n"
+"if __name__ == '__main__':\n"
+"    loop = new_event_loop()\n"
+"\n"
+"    # Конфигурируем\n"
+"    basic_config(\n"
+"        level=logging.INFO,\n"
+"        buffered=True,\n"
+"        log_format='color',\n"
+"        flush_interval=0.5\n"
+"    )\n"
+"\n"
+"    periodic = PeriodicCallback(write_log, loop)\n"
+"    periodic.start(0.3)\n"
+"\n"
+"    # Ждем пока журналы не попадут в журнал\n"
+"    loop.run_until_complete(asyncio.sleep(1))"
+
+#: ../../source/logging.rst:152
 msgid "``entrypoint`` accepts ``log_format`` parameter for configure it."
 msgstr ""
 "``entrypoint`` принимает аргумент ``log_format`` через который можно это "
 "настроить."
 
-#: ../../source/logging.rst:153
+#: ../../source/logging.rst:154
 msgid ""
 "List of all supported log formats is available from "
 "``aiomisc.log.LogFormat.choices()``"
 msgstr ""
 "Список всех поддерживаемых форматов журналов доступен через "
 "``aiomisc.log.LogFormat.choices()``"
-

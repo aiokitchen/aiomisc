@@ -636,3 +636,12 @@ You should always specify the ``max_size`` parameter, which limits the
 size of this queue and prevents threaded code from sending too much items to
 asynchronous code, in case the asynchronous iteration in case the asynchronous
 iteration slacking.
+
+Conclusion
+~~~~~~~~~~
+
+On this we need to finish this tutorial, I hope everything was clear here,
+and you learned a lot of useful things for yourself. A full description of
+the remaining services is presented in the :doc:`/modules` section, or in the
+source code. The authors have tried to make the source code as clear and
+simple as possible, so feel free to explore it.
