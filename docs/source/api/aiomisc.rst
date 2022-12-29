@@ -57,6 +57,13 @@
     :members:
     :undoc-members:
 
+``aiomisc.gather`` module
++++++++++++++++++++++++++++++
+
+.. automodule:: aiomisc.gather
+    :members:
+    :undoc-members:
+
 ``aiomisc.io`` module
 +++++++++++++++++++++
 
