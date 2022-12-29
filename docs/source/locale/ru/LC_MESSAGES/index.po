@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-12-29 15:50+0300\n"
+"POT-Creation-Date: 2022-12-29 15:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -181,8 +181,8 @@ msgid "``pip install aiomisc[cron]``"
 msgstr ""
 
 #: ../../source/index.rst:97
-msgid "use croniter_ for sheduling tasks"
-msgstr "планирование задачи с croniter_"
+msgid "use croniter_ for scheduling tasks"
+msgstr "планирование задач с библиотекой croniter_"
 
 #: ../../source/index.rst:99
 msgid "``pip install aiomisc[raven]``"
@@ -371,7 +371,6 @@ msgstr ""
 "Exception]) -> None``."
 
 #: ../../source/index.rst:221
-#, fuzzy
 msgid ""
 "The concept of stopping a service is not necessarily is pressing "
 "``Ctrl+C`` keys by user, it's actually just exiting the ``entrypoint`` "
@@ -548,15 +547,16 @@ msgid ""
 "merge requests."
 msgstr ""
 "Этот проект, как и многие другие open source проекты, разрабатывается "
-"энтузиастами, и вы можете присоединиться к разработке, создавайте "
-"issues в github или присылайте свои правки как merge request."
+"энтузиастами, и вы можете присоединиться к разработке, создавайте issues "
+"в github или присылайте свои правки как merge request."
 
 #: ../../source/index.rst:319
 msgid ""
 "In order to start developing in this repository, you need to do the "
 "following things."
 msgstr ""
-"Чтобы начать разработку в этом репозитории, вам необходимо сделать следующее:"
+"Чтобы начать разработку в этом репозитории, вам необходимо сделать "
+"следующее:"
 
 #: ../../source/index.rst:322
 msgid "Should be installed:"
@@ -571,9 +571,8 @@ msgid "Installed Poetry_ as ``poetry``"
 msgstr "Установлен Poetry_ как ``poetry``"
 
 #: ../../source/index.rst:329
-#, fuzzy
 msgid "For setting up developer environment just execute:"
-msgstr "Для настройки окружения разработчика просто наберите"
+msgstr "Для настройки окружения разработчика выполните:"
 
 #: ../../source/index.rst:331
 msgid "poetry install"

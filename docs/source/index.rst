@@ -94,7 +94,7 @@ Complete table of extras bellow:
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[carbon]``   | Sending metrics to carbon_ (part of graphite_) |
 +-----------------------------------+------------------------------------------------+
-| ``pip install aiomisc[cron]``     | use croniter_ for sheduling tasks              |
+| ``pip install aiomisc[cron]``     | use croniter_ for scheduling tasks             |
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[raven]``    | Sending exceptions to sentry_ using raven_     |
 +-----------------------------------+------------------------------------------------+

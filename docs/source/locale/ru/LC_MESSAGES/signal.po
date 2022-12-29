@@ -28,9 +28,8 @@ msgstr ""
 "entrypoint."
 
 #: ../../source/signal.rst:7
-#, fuzzy
 msgid "``pre_start``"
-msgstr "pre_start"
+msgstr "``pre_start``"
 
 #: ../../source/signal.rst:9
 msgid ""

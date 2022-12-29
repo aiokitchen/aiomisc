@@ -546,9 +546,8 @@ msgid "requires installed croniter_:"
 msgstr "необходимо установить библиотеку croniter_:"
 
 #: ../../source/services.rst:406
-#, fuzzy
 msgid "pip install croniter"
-msgstr "необходимо установить библиотеку croniter_:"
+msgstr ""
 
 #: ../../source/services.rst:410 ../../source/services.rst:552
 #: ../../source/services.rst:618
@@ -760,9 +759,8 @@ msgid "pip install aiohttp"
 msgstr "требуется установленная библиотека aiohttp"
 
 #: ../../source/services.rst:554
-#, fuzzy
 msgid "pip install aiomisc[aiohttp]"
-msgstr "требуется установленная библиотека aiohttp"
+msgstr ""
 
 #: ../../source/services.rst:559
 msgid "aiohttp application can be started as a service:"
@@ -1221,13 +1219,12 @@ msgid "``SDWatchdogService``"
 msgstr "``SDWatchdogService``"
 
 #: ../../source/services.rst:883
-#, fuzzy
 msgid ""
 "Ready to use service just adding to your entrypoint and notifying SystemD"
 " service watchdog timer."
 msgstr ""
-"Просто добавьте этот сервис в entrypoint и он будет отправлять "
-"уведомления сторожевому таймеру SystemD."
+"Готовый к использованию сервис, просто добавьте его в entrypoint и он будет "
+"отправлять уведомления сторожевому таймеру SystemD."
 
 #: ../../source/services.rst:886
 msgid ""
