@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.10\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-04 00:12+0300\n"
+"POT-Creation-Date: 2022-12-29 08:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/tutorial.rst:2
 msgid "Tutorial"
@@ -21,13 +21,18 @@ msgstr "Учебник"
 
 #: ../../source/tutorial.rst:5
 msgid ""
-"``aiomisc`` - is a one library collection of utilities that helps you "
-"write asynchronous services."
+"``aiomisc`` is a Python library that provides a set of utilities for "
+"building asynchronous services. It allows you to split your program into "
+"smaller, independent services that can run concurrently, improving the "
+"overall performance and scalability of your application."
 msgstr ""
-"``aiomisc`` - это набор утилит в одной библиотеке, которые помогают вам "
-"писать асинхронные сервисы."
+"``aiomisc`` — это библиотека Python, которая предоставляет набор утилит "
+"для создание асинхронных сервисов. Это позволяет вам разделить вашу "
+"программу на небольшие независимые службы, которые могут работать "
+"одновременно, улучшая общую производительность и масштабируемость вашего "
+"приложения."
 
-#: ../../source/tutorial.rst:8
+#: ../../source/tutorial.rst:10
 msgid ""
 "The main approach in this library is to split your program into "
 "independent services that can work concurrently in asynchronous mode. The"
@@ -39,7 +44,7 @@ msgstr ""
 "режиме. Библиотека также предоставляет набор готовых к использованию "
 "сервисов с заранее написанной логикой запуска и остановки."
 
-#: ../../source/tutorial.rst:12
+#: ../../source/tutorial.rst:14
 msgid ""
 "The vast majority of functions and classes are written in such a way that"
 " they can be used in a program that was not originally designed according"
@@ -55,10 +60,18 @@ msgstr ""
 "все должно работать."
 
 #: ../../source/tutorial.rst:20
+msgid ""
+"Overall, aiomisc is a powerful tool for developers looking to build "
+"efficient and scalable asynchronous services in Python."
+msgstr ""
+"В целом, aiomisc — это мощный инструмент для разработчиков, стремящихся "
+"создавать эффективные и масштабируемые асинхронные сервисы на Python."
+
+#: ../../source/tutorial.rst:24
 msgid "Services"
 msgstr "Сервисы"
 
-#: ../../source/tutorial.rst:22
+#: ../../source/tutorial.rst:26
 msgid ""
 "If you want to run a tcp or web server, you will have to write something "
 "like this:"
@@ -66,7 +79,7 @@ msgstr ""
 "Если вы хотите запустить tcp или веб-сервер, вам придется написать что-то"
 " вроде этого:"
 
-#: ../../source/tutorial.rst:41
+#: ../../source/tutorial.rst:45
 msgid ""
 "In order to start or stop an async programs, usually using function "
 "``asyncio.run(example_async_func())`` which available since Python 3.7. "
@@ -81,7 +94,7 @@ msgstr ""
 "Чтобы продолжить выполнение кода вечно, вы можете применить следующий "
 "трюк:"
 
-#: ../../source/tutorial.rst:66
+#: ../../source/tutorial.rst:70
 msgid ""
 "When the user presses `Ctrl+C`, the program simply terminates, but if you"
 " want to explicitly free up some resources, for example, close database "
@@ -93,7 +106,7 @@ msgstr ""
 "соединения с базой данных или откатить незавершенные транзакции, то вам "
 "нужно сделать что-то вроде этого:"
 
-#: ../../source/tutorial.rst:96
+#: ../../source/tutorial.rst:100
 msgid ""
 "It is a good solution because it is implemented without any 3rd-party "
 "libraries. When your program starts to grow, you will probably want to "
@@ -107,7 +120,7 @@ msgstr ""
 "инициализацию конкурентно. На первый взгляд кажется, что этот код решит "
 "проблему:"
 
-#: ../../source/tutorial.rst:128
+#: ../../source/tutorial.rst:132
 msgid ""
 "But if suddenly some part of the initialization does not go according to "
 "plan, then you somehow have to figure out what exactly went wrong, so "
@@ -119,7 +132,7 @@ msgstr ""
 "конкурентном выполнении код уже не будет таким простым, как в этом "
 "примере."
 
-#: ../../source/tutorial.rst:132
+#: ../../source/tutorial.rst:136
 msgid ""
 "And in order to somehow organize the code, you should make a separate "
 "function that will contain the ``try/except/finally`` block and contain "
@@ -129,7 +142,7 @@ msgstr ""
 "функцию, которая будет содержать блок ``try/except/finally`` и содержать "
 "обработку ошибок."
 
-#: ../../source/tutorial.rst:172
+#: ../../source/tutorial.rst:176
 msgid ""
 "And now if the user presses Ctrl+C, you need to describe the shutdown "
 "logic again, but now in the ``except`` block."
@@ -137,7 +150,7 @@ msgstr ""
 "И теперь, если пользователь нажимает Ctrl+C, вам нужно снова описать "
 "логику завершения работы, но уже в блоке ``except``."
 
-#: ../../source/tutorial.rst:175
+#: ../../source/tutorial.rst:179
 msgid ""
 "In order to describe the logic of starting and stopping in one place, as "
 "well as testing in one single way, there is a ``Service`` abstraction."
@@ -146,7 +159,7 @@ msgstr ""
 " тестирования одним-единственным способом, и существует абстракция "
 "``Service``."
 
-#: ../../source/tutorial.rst:178
+#: ../../source/tutorial.rst:182
 msgid ""
 "The service is an abstract base class with mandatory ``start()`` and "
 "optional ``stop()`` methods."
@@ -154,7 +167,7 @@ msgstr ""
 "Сервис представляет из себя абстрактный базовый класс, в котором нужно "
 "реализовать метод ``start()`` и не обязательно метод ``stop()``"
 
-#: ../../source/tutorial.rst:181
+#: ../../source/tutorial.rst:185
 msgid ""
 "The service can operate in two modes. The first is when the ``start()`` "
 "method runs forever, then you do not need to implement a ``stop()``, but "
@@ -165,7 +178,7 @@ msgstr ""
 "выполняется вечно, тогда не нужно реализовывать стоп, но нужно сообщить "
 "что инициализация успешно закончена с помощью ``self.start_event.set()``."
 
-#: ../../source/tutorial.rst:202
+#: ../../source/tutorial.rst:206
 msgid ""
 "In this case, stopping the service will consist in the completion of the "
 "coroutine that was created by ``start()``."
@@ -173,7 +186,7 @@ msgstr ""
 "В этом случае остановка сервиса будет заключаться в завершении "
 "сопрограммы которую породила ``start()``"
 
-#: ../../source/tutorial.rst:205
+#: ../../source/tutorial.rst:209
 msgid ""
 "The second method is an explicit description of the way to ``start()`` "
 "and ``stop()``."
@@ -181,15 +194,15 @@ msgstr ""
 "Второй способ это явное описание способа запуска и остановки реализовав "
 "методы ``start()`` и ``stop()``"
 
-#: ../../source/tutorial.rst:225
+#: ../../source/tutorial.rst:229
 msgid "In this case, the service will be started and stopped once."
 msgstr "В этом случае запуск и остановка сервиса будут выполнены однократно."
 
-#: ../../source/tutorial.rst:229
+#: ../../source/tutorial.rst:233
 msgid "Service configuration"
 msgstr "Конфигурация сервисов"
 
-#: ../../source/tutorial.rst:231
+#: ../../source/tutorial.rst:235
 msgid ""
 "The ``Service`` is a metaclass, it handles the special attributes of "
 "classes inherited from it at on the their declaration stage."
@@ -197,7 +210,7 @@ msgstr ""
 "Так как ``Service`` это метакласс, он может обрабатывать специальные "
 "аттрибуты классов наследуемых от него на этапе объявления класса."
 
-#: ../../source/tutorial.rst:234
+#: ../../source/tutorial.rst:238
 msgid ""
 "Here is a simple imperative example of how service initialization can be "
 "extended through inheritance."
@@ -205,7 +218,7 @@ msgstr ""
 "Вот простой императивный пример как инициализация сервиса может быть "
 "расширена через наследование."
 
-#: ../../source/tutorial.rst:260
+#: ../../source/tutorial.rst:264
 msgid ""
 "In fact, you can do nothing of this, since the Service metaclass sets all"
 " the passed keyword parameters to self by default."
@@ -213,7 +226,7 @@ msgstr ""
 "На самом деле, можно было ничего и не делать, так как метакласс установит"
 " все переданные именованные параметры в self по умолчанию."
 
-#: ../../source/tutorial.rst:283
+#: ../../source/tutorial.rst:287
 msgid ""
 "If a special class property ``__required__`` is declared, then the "
 "service will required for the user to declare these named parameters."
@@ -222,7 +235,7 @@ msgstr ""
 "требовать чтобы он был передан явно при инициализации как именованный "
 "параметр."
 
-#: ../../source/tutorial.rst:305
+#: ../../source/tutorial.rst:309
 msgid ""
 "Also a very useful special class attribute is ``__async_required__``. It "
 "is useful for writing base classes, in general. This contains the tuple "
@@ -234,7 +247,7 @@ msgstr ""
 "классов. Он содержит кортеж имен методов, которые должны быть явно "
 "объявлены асинхронными (через ``async def``)."
 
-#: ../../source/tutorial.rst:341
+#: ../../source/tutorial.rst:345
 msgid ""
 "If the inheritor declares these methods differently, there will be an "
 "error at the class declaration stage."
@@ -242,11 +255,11 @@ msgstr ""
 "Если наследник объявит эти методы по-другому, будет ошибка на этапе "
 "объявления класса."
 
-#: ../../source/tutorial.rst:356
+#: ../../source/tutorial.rst:360
 msgid "dependency injection"
 msgstr ""
 
-#: ../../source/tutorial.rst:360
+#: ../../source/tutorial.rst:364
 msgid ""
 "In some cases, you need to execute some asynchronous code before the "
 "service starts, for example, to pass a database connection to the service"
@@ -255,10 +268,10 @@ msgid ""
 msgstr ""
 "В некоторых случаях перед запуском службы необходимо выполнить некоторый "
 "асинхронный код, например, чтобы передать соединение с базой данных "
-"экземпляру сервиса. Или если вы хотите использовать один экземпляр какой-то "
-"сущности для нескольких сервисов."
+"экземпляру сервиса. Или если вы хотите использовать один экземпляр "
+"какой-то сущности для нескольких сервисов."
 
-#: ../../source/tutorial.rst:364
+#: ../../source/tutorial.rst:368
 msgid ""
 "For such complex configurations, there is `aiomisc-dependency`_ plugin "
 "which is distributed as a independent separate package."
@@ -266,7 +279,7 @@ msgstr ""
 "Для таких сложных конфигураций существует плагин `aiomisc-dependency`_, "
 "который распространяется как независимый отдельный пакет."
 
-#: ../../source/tutorial.rst:367
+#: ../../source/tutorial.rst:371
 msgid ""
 "Look at the examples in the documentation, `aiomisc-dependency`_ are "
 "transparently integrates with the ``entrypoint``."
@@ -274,11 +287,11 @@ msgstr ""
 "Посмотрите на примеры в документации, `aiomisc-dependency`_ прозрачно "
 "интегрируется с ``entrypoint``."
 
-#: ../../source/tutorial.rst:371
+#: ../../source/tutorial.rst:375
 msgid "``entrypoint``"
 msgstr ""
 
-#: ../../source/tutorial.rst:373
+#: ../../source/tutorial.rst:377
 msgid ""
 "So the service abstraction is declared, what's next? ``asyncio.run`` does"
 " not know how to work with them, calling them manually has not become "
@@ -287,7 +300,7 @@ msgstr ""
 "Итак сервисы описаны, что дальше? ``asyncio.run`` не умеет с ними "
 "работать, вызывать их вручную не стало проще, что тут можно предложить?"
 
-#: ../../source/tutorial.rst:377
+#: ../../source/tutorial.rst:381
 msgid ""
 "Probably the most magical, complex, and at the same time quite well-"
 "tested code in the library is ``entrypoint``. Initially, the idea of "
@@ -299,11 +312,11 @@ msgstr ""
 "``entrypoint`` было избавление от рутины: настройка логов, настройка пула"
 " потоков, ну и запуск и корректная остановка сервисов."
 
-#: ../../source/tutorial.rst:382
+#: ../../source/tutorial.rst:386
 msgid "Lets check an example:"
 msgstr "Давайте посмотрим на пример:"
 
-#: ../../source/tutorial.rst:397
+#: ../../source/tutorial.rst:401
 msgid ""
 "In this example, we will launch the two services described above and "
 "continue execution until the user interrupts them. Next, thanks to the "
@@ -313,16 +326,17 @@ msgstr ""
 "выполнение до тех пор пока пользователь его не прервёт. Далее, благодаря "
 "контекстному менеджеру, мы корректно завершаем все экземпляры сервисов."
 
-#: ../../source/tutorial.rst:403
+#: ../../source/tutorial.rst:407
 msgid ""
 "Entrypoint calls all the ``start()`` methods in all services "
 "concurrently, and if at least one of them fails, then all services will "
 "be stopped."
 msgstr ""
 "Entrypoint вызывает все методы ``start()`` во всех сервисах конкурентно, "
-"и если хотя-бы один из них упадет, все остальные сервисы будут остановлены."
+"и если хотя-бы один из них упадет, все остальные сервисы будут "
+"остановлены."
 
-#: ../../source/tutorial.rst:406
+#: ../../source/tutorial.rst:410
 msgid ""
 "As mentioned above I just wanted to remove a lot of routine, let's look "
 "at the same example, just pass all the default parameters to the "
@@ -332,7 +346,7 @@ msgstr ""
 "пример, только передадим явно все параметры по умолчанию в "
 "``entrypoint``."
 
-#: ../../source/tutorial.rst:433
+#: ../../source/tutorial.rst:437
 msgid ""
 "Let's not describe what each parameter does. But in general, "
 "``entrypoint`` has create an event-loop, a four threads pool, set it for "
@@ -344,7 +358,7 @@ msgstr ""
 "настроила его для текущего цикла событий, настроила логгер с \"цветным\" "
 "буферизованным выводом и запустила два сервиса."
 
-#: ../../source/tutorial.rst:438
+#: ../../source/tutorial.rst:442
 msgid ""
 "You can also run the ``entrypoint`` without services, just configure "
 "logging and so on.:"
@@ -352,7 +366,7 @@ msgstr ""
 "Также вы можете запустить ``entrypoint`` без сервисов, просто "
 "сконфигурировать логирование и прочее:"
 
-#: ../../source/tutorial.rst:457
+#: ../../source/tutorial.rst:461
 msgid ""
 "It is also worth paying attention to the ``aiomisc.run``, which is "
 "similar by its purpose to ``asyncio.run`` while supporting the start and "
@@ -362,7 +376,7 @@ msgstr ""
 "назначению на ``asyncio.run`` при этом поддерживает запуск и остановку "
 "сервисов и прочее."
 
-#: ../../source/tutorial.rst:489
+#: ../../source/tutorial.rst:493
 msgid ""
 "As I mentioned above, the library contains lots of already realized "
 "abstract services that you can use in your project by simply implement "
@@ -372,7 +386,7 @@ msgstr ""
 "абстрактных сервисов, которые вы можете использовать в своем проекте, "
 "просто реализовав несколько методов."
 
-#: ../../source/tutorial.rst:493
+#: ../../source/tutorial.rst:497
 msgid ""
 "A full list of services and usage examples can be found on the on the "
 ":doc:`Services page </services>`."
@@ -380,11 +394,11 @@ msgstr ""
 "Полный список сервисов и примеры их использования можно найти на странице"
 " :doc:`Сервисы </services>`."
 
-#: ../../source/tutorial.rst:497
+#: ../../source/tutorial.rst:501
 msgid "Executing code in thread or process-pools"
 msgstr "Выполнение кода в пуле потоков или процессов"
 
-#: ../../source/tutorial.rst:501
+#: ../../source/tutorial.rst:505
 msgid ""
 "As explained in `working with threads`_ section in official python "
 "documentation asyncio event loop starts thread pool."
@@ -392,7 +406,7 @@ msgstr ""
 "Как объясняется в разделе `working with threads`_ в официальной "
 "документации по Python, eventloop в asyncio запускает пул потоков."
 
-#: ../../source/tutorial.rst:504
+#: ../../source/tutorial.rst:508
 msgid ""
 "This pool is needed in order to run, for example, name resolution and not"
 " blocks the event loop while low-level ``gethostbyname`` call works."
@@ -401,7 +415,7 @@ msgstr ""
 "блокировать eventloop, пока работает низкоуровневый вызов "
 "`gethostbyname`."
 
-#: ../../source/tutorial.rst:507
+#: ../../source/tutorial.rst:511
 msgid ""
 "The size of this thread pool should be configured at application startup,"
 " otherwise you may run into all sorts of problems when this pool is too "
@@ -411,7 +425,7 @@ msgstr ""
 "иначе вы можете столкнуться со всевозможными проблемами, когда этот пул "
 "слишком велик или слишком мал."
 
-#: ../../source/tutorial.rst:511
+#: ../../source/tutorial.rst:515
 msgid ""
 "By default, the ``entrypoint`` creates a thread pool with size equal to "
 "the number of CPU cores, but not less than 4 and no more than 32 threads."
@@ -421,11 +435,11 @@ msgstr ""
 "количеству ядер процессора (минимум — 4, и максимум — 32). Конечно, вы "
 "можете указать столько, сколько вам нужно."
 
-#: ../../source/tutorial.rst:516
+#: ../../source/tutorial.rst:520
 msgid "``@aiomisc.threaded`` decorator"
 msgstr "Декоратор ``@aiomisc.threaded``"
 
-#: ../../source/tutorial.rst:518
+#: ../../source/tutorial.rst:522
 msgid ""
 "The following recommendations for calling blocking functions in threads "
 "given in `working with threads`_ section in official Python "
@@ -434,11 +448,11 @@ msgstr ""
 "В разделе `working with threads`_ официальной документации по python "
 "даются следующие рекомендации по вызову блокирующих функций в потоках:"
 
-#: ../../source/tutorial.rst:536
+#: ../../source/tutorial.rst:540
 msgid "This library provides a very simple way to do the same:"
 msgstr "Эта библиотека содержит очень простой способ сделать тоже самое:"
 
-#: ../../source/tutorial.rst:552
+#: ../../source/tutorial.rst:556
 msgid ""
 "As you can see in this example, it is enough to wrap the function with a "
 "decorator ``aiomisc.threaded``, after that it will return an awaitable "
@@ -449,11 +463,11 @@ msgstr ""
 "``aiomisc.threaded``, и она начнет возвращать awaitable объект, но код "
 "внутри функции будет отправлен в пул потоков по умолчанию."
 
-#: ../../source/tutorial.rst:558
+#: ../../source/tutorial.rst:562
 msgid "``@aiomisc.threaded_separate`` decorator"
 msgstr "Декоратор ``@aiomisc.threaded_separate``"
 
-#: ../../source/tutorial.rst:560
+#: ../../source/tutorial.rst:564
 msgid ""
 "If the blocking function runs for a long time, or even indefinitely, in "
 "other words, if the cost of creating a thread is insignificant compared "
@@ -465,7 +479,7 @@ msgstr ""
 "сколько функция работает, то можно попробовать использовать декоратор "
 "``aiomisc.threaded_separate``."
 
-#: ../../source/tutorial.rst:564
+#: ../../source/tutorial.rst:568
 msgid ""
 "The decorator starts a new thread not associated with any pool. Тhe "
 "thread will be terminated after the function execution is done."
@@ -473,7 +487,7 @@ msgstr ""
 "Декоратор запускает новый поток, не связанный с каким-либо пулом потоков."
 " Поток завершится после выхода из функции."
 
-#: ../../source/tutorial.rst:591
+#: ../../source/tutorial.rst:595
 msgid ""
 "This approach allows you not to occupy threads in the pool for a long "
 "time, but at the same time does not limit the number of created threads "
@@ -482,15 +496,15 @@ msgstr ""
 "Такой подход позволяет не занимать потоки в пуле надолго, но при этом "
 "никак не ограничивает количество создаваемых потоков."
 
-#: ../../source/tutorial.rst:595
+#: ../../source/tutorial.rst:599
 msgid "More examples you can be found in :doc:`/threads`."
 msgstr "Больше примеров можно найти на странице :doc:`/threads`"
 
-#: ../../source/tutorial.rst:598
+#: ../../source/tutorial.rst:602
 msgid "``@aiomisc.threaded_iterable`` decorator"
 msgstr "Декоратор ``@aiomisc.threaded_iterable``"
 
-#: ../../source/tutorial.rst:600
+#: ../../source/tutorial.rst:604
 msgid ""
 "If a generator needs to be executed in a thread, there are problems with "
 "synchronization of the thread and the eventloop. This library provides a "
@@ -502,7 +516,7 @@ msgstr ""
 "пользовательский декоратор, предназначенный для превращения синхронного "
 "генератора в асинхронный."
 
-#: ../../source/tutorial.rst:605
+#: ../../source/tutorial.rst:609
 msgid ""
 "This is very useful if, for example, a queue or database driver has "
 "written synchronous, but you want to use it efficiently in asynchronous "
@@ -511,7 +525,7 @@ msgstr ""
 "Это очень полезно, если, например, драйвер очереди или базы данных "
 "синхронный, но вы хотите эффективно использовать его в асинхронном коде."
 
-#: ../../source/tutorial.rst:628
+#: ../../source/tutorial.rst:632
 msgid ""
 "Under the hood, this decorator returns a special object that has a queue,"
 " and asynchronous iterator interface provides access to that queue."
@@ -519,7 +533,7 @@ msgstr ""
 "Под капотом этот декоратор возвращает специальный объект с очередью, а "
 "интерфейс асинхронного итератора обеспечивает доступ к этой очереди."
 
-#: ../../source/tutorial.rst:631
+#: ../../source/tutorial.rst:635
 msgid ""
 "You should always specify the ``max_size`` parameter, which limits the "
 "size of this queue and prevents threaded code from sending too much items"
@@ -531,4 +545,3 @@ msgstr ""
 "потоке, слишком большого количества элементов в асинхронный код, в случае"
 " асинхронной итерации в случае, если асинхронный итератор забирает "
 "элементы из этой очереди реже чем они поступают."
-

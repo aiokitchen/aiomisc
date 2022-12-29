@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-08-26 23:08+0300\n"
+"POT-Creation-Date: 2022-12-29 08:57+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/index.rst:2
 msgid "aiomisc - miscellaneous utils for asyncio"
@@ -35,83 +35,405 @@ msgstr "Актуальная версия"
 msgid "Miscellaneous utils for asyncio."
 msgstr "Различные утилиты для asyncio"
 
-#: ../../source/index.rst:30
+#: ../../source/index.rst:28
+msgid ""
+"As a programmer, you are no stranger to the challenges that come with "
+"building and maintaining software applications. One area that can be "
+"particularly difficult is making architecture of the software that using "
+"asynchronous I/O."
+msgstr ""
+"Вам, как программисту, знакомы проблемы, связанные с созданием и "
+"обслуживанием программных приложений. Одной из областей, которая может "
+"быть особенно сложной, является создание архитектуры программного "
+"обеспечения, использующего асинхронный ввод-вывод."
+
+#: ../../source/index.rst:32
+msgid ""
+"This is where aiomisc comes in. aiomisc is a Python library that provides"
+" a collection of utility functions and classes for working with "
+"asynchronous I/O in a more intuitive and efficient way. It is built on "
+"top of the ``asyncio`` library and is designed to make it easier for "
+"developers to write asynchronous code that is both reliable and scalable."
+msgstr ""
+"Здесь на помощь приходит aiomisc. aiomisc — это библиотека Python, "
+"которая предоставляет набор служебных функций и классов для работы с "
+"асинхронным вводом-выводом более интуитивно понятным и эффективным "
+"способом. Он построен на основе популярной библиотеки ``asyncio`` и "
+"предназначен для облегчения написания асинхронного кода разработчиками, "
+"который является одновременно надежным и масштабируемым."
+
+#: ../../source/index.rst:38
+msgid ""
+"With aiomisc, you can take advantage of powerful features like "
+":doc:`worker pools </worker_pool>`, :doc:`connection pools </pool>`, "
+":doc:`circuit breaker pattern </circuit_breaker>`, and retry mechanisms "
+"such as :doc:`asyncbackoff </async_backoff>` and :ref:`asyncretry "
+"<asyncretry>` to make your asyncio code more robust and easier to "
+"maintain. In this documentation, we'll take a closer look at what "
+"``aiomisc`` has to offer and how it can help you streamline your asyncio "
+"development."
+msgstr ""
+"С aiomisc вы можете воспользоваться такими мощными функциями, как: "
+":doc:`worker пул </worker_pool>`, :doc:`connection пул </pool>`, "
+":doc:`шаблон «предохранитель» </circuit_breaker>`, и механизмы повторов "
+"такие как :doc:`asyncbackoff </async_backoff>` и :ref:`asyncretry "
+"<asyncretry>"
+
+#: ../../source/index.rst:48
 msgid "Installation"
 msgstr "Установка"
 
-#: ../../source/index.rst:32
-msgid "Installing from PyPI:"
-msgstr "Установка с PyPI"
+#: ../../source/index.rst:50
+msgid ""
+"Installation is possible in standard ways, such as PyPI or installation "
+"from a git repository directly."
+msgstr ""
+"Возможна установка стандартными способами, такими как PyPI или установка "
+"из репозитория git напрямую."
 
-#: ../../source/index.rst:38
+#: ../../source/index.rst:53
+msgid "Installing from PyPI_:"
+msgstr "Установка с PyPI_:"
+
+#: ../../source/index.rst:59
+msgid "Installing from github.com:"
+msgstr "Установка из репозитория на github.com:"
+
+#: ../../source/index.rst:70
+msgid ""
+"The package contains several extras and you can install additional "
+"dependencies if you specify them in this way."
+msgstr ""
+"Пакет содержит несколько дополнений, и вы можете установить "
+"дополнительные зависимости, если вы укажете их таким образом."
+
+#: ../../source/index.rst:73
 msgid "With uvloop_:"
 msgstr "Вместе с uvloop_"
 
-#: ../../source/index.rst:45
+#: ../../source/index.rst:80
 msgid "With aiohttp_:"
 msgstr "Вместе с aiohttp_:"
 
-#: ../../source/index.rst:52
-msgid "Installing from github.com:"
-msgstr "Установка с github.com:"
+#: ../../source/index.rst:86
+msgid "Complete table of extras bellow:"
+msgstr "Полная таблица дополнений ниже:"
 
-#: ../../source/index.rst:65
+#: ../../source/index.rst:89
+msgid "example"
+msgstr "пример"
+
+#: ../../source/index.rst:89
+msgid "dependencies"
+msgstr "зависимости"
+
+#: ../../source/index.rst:89
+msgid "description"
+msgstr "описание"
+
+#: ../../source/index.rst:91
+msgid "``pip install aiomisc[aiohttp]``"
+msgstr ""
+
+#: ../../source/index.rst:91
+msgid "``aiohttp``"
+msgstr ""
+
+#: ../../source/index.rst:91
+msgid "For running aiohttp_ applications."
+msgstr "Для запуска приложений написанных с aiohttp_."
+
+#: ../../source/index.rst:93
+msgid "``pip install aiomisc[asgi]``"
+msgstr ""
+
+#: ../../source/index.rst:93
+msgid "``aiohttp-asgi``"
+msgstr ""
+
+#: ../../source/index.rst:93
+msgid "For running ASGI_ applications"
+msgstr "Для запуска ASGI_ приложений"
+
+#: ../../source/index.rst:95
+msgid "``pip install aiomisc[carbon]``"
+msgstr ""
+
+#: ../../source/index.rst:95
+msgid "``aiocarbon``"
+msgstr ""
+
+#: ../../source/index.rst:95
+msgid "Sending metrics to carbon_ (part of graphite_)"
+msgstr "Чтобы посылать метрики в carbon_ (часть graphite_)"
+
+#: ../../source/index.rst:97
+msgid "``pip install aiomisc[cron]``"
+msgstr ""
+
+#: ../../source/index.rst:97
+msgid "``croniter``"
+msgstr ""
+
+#: ../../source/index.rst:97
+msgid "use croniter_ for sheduling tasks"
+msgstr "планирование задачи с croniter_"
+
+#: ../../source/index.rst:99
+msgid "``pip install aiomisc[raven]``"
+msgstr ""
+
+#: ../../source/index.rst:99
+msgid "``raven``"
+msgstr ""
+
+#: ../../source/index.rst:99
+msgid "Sending exceptions to sentry_ using raven_"
+msgstr "Чтобы посылать исключения в sentry_ используя raven_"
+
+#: ../../source/index.rst:101
+msgid "``pip install aiomisc[rich]``"
+msgstr ""
+
+#: ../../source/index.rst:101
+msgid "``rich``"
+msgstr ""
+
+#: ../../source/index.rst:101
+msgid "You might using rich_ for logging"
+msgstr "Можете использовать rich_ для логирования"
+
+#: ../../source/index.rst:103
+msgid "``pip install aiomisc[uvloop]``"
+msgstr ""
+
+#: ../../source/index.rst:103
+msgid "``uvloop``"
+msgstr ""
+
+#: ../../source/index.rst:103
+msgid "use uvloop_ as a default event loop"
+msgstr "используйте uvloop_ как основной event-loop"
+
+#: ../../source/index.rst:118
 msgid "Quick Start"
 msgstr "Быстрый старт"
 
-#: ../../source/index.rst:67
-msgid "Complete the :doc:`/tutorial` or see this quick start."
-msgstr "Пройдите :doc:`/tutorial` или посмотрите примеры ниже."
-
-#: ../../source/index.rst:69
-msgid "Async entrypoint with logging and useful arguments:"
+#: ../../source/index.rst:120
+msgid ""
+"This section will cover how this library creates and uses the event loop "
+"and creates services. Of course, you can't write about everything here, "
+"but you can read about a lot in the :doc:`/tutorial` section, and you can"
+" always refer to the :doc:`/modules` and :doc:`/api/index` sections for "
+"help."
 msgstr ""
-"Асинхронная точка входа (entrypoint) с логированием и полезными "
-"аргументами"
+"В этом разделе будет рассказано, как эта библиотека создает и использует "
+"цикл обработки событий и создает службы. Конечно, обо всем тут не "
+"напишешь, но о многом можно прочитать в разделе :doc:`/tutorial`, и "
+"всегда можно обратиться к разделу :doc:`/modules` и разделу "
+":doc:`/api/index` для справки."
 
-#: ../../source/index.rst:93
-msgid "Install event loop on program start:"
-msgstr "Установка event loop на старте программы:"
+#: ../../source/index.rst:126
+msgid "Event-loop and entrypoint"
+msgstr "Eventloop и entrypoint"
 
-#: ../../source/index.rst:114
-msgid "Close current event loop and install a new one:"
-msgstr "Закрываем текущий event loop и устанавлиаем новый:"
+#: ../../source/index.rst:128
+msgid "Let's look at this simple example first:"
+msgstr "Сначала рассмотрим этот простой пример:"
 
-#: ../../source/index.rst:130
+#: ../../source/index.rst:150
+msgid ""
+"This code declares an asynchronous ``main()`` function that exits after 3"
+" seconds. It would seem nothing interesting, but the whole point is in "
+"the ``entrypoint``."
+msgstr ""
+"Этот код объявляет асинхронную функцию ``main()``, которая завершается "
+"через 3 секунды. Казалось бы, ничего интересного, но все дело в "
+"``entrypoint``."
+
+#: ../../source/index.rst:154
+msgid ""
+"What does the ``entrypoint`` do, it would seem not so much, it creates an"
+" event-loop and transfers control to the user. However, under the hood, "
+"the logger is configured in a separate thread, a pool of threads is "
+"created, services are started, but more on that later and there are no "
+"services in this example."
+msgstr ""
+"Что делает ``entrypoint``, казалось бы не так уж и много, она создает "
+"event-loop и передает управление пользователю. Однако под капотом "
+"настраивается журналирование в отдельном потоке, создается пул потоков, "
+"запускаются сервисы, но об этом позже и сервисов в данном примере нет."
+
+#: ../../source/index.rst:160
+msgid ""
+"Alternatively, you can choose not to use an entrypoint, just create an "
+"event-loop and set this as a default event loop for current thread:"
+msgstr ""
+"В принципе вы можете не использовать точку входа, а просто создать "
+"eventloop и установите его по умолчанию для текущего потока:"
+
+#: ../../source/index.rst:182
+msgid ""
+"The example above is useful if your code is already using an implicitly "
+"created event loop, you will have to modify less code, just add "
+"``aiomisc.new_event_loop()`` and all calls to "
+"``asyncio.get_event_loop()`` will return the created instance."
+msgstr ""
+"Приведенный выше пример полезен, если в вашем коде уже неявно "
+"используется созданный eventloop, тогда вам придется изменить меньше "
+"кода, просто добавьте ``aiomisc.new_event_loop()`` и все вызовы "
+"``asyncio.get_event_loop()`` вернет созданный экземпляр."
+
+#: ../../source/index.rst:187
+msgid ""
+"However, you can do with one call. Following example closes implicitly "
+"created asyncio event loop and install a new one:"
+msgstr ""
+"Однако можно обойтись и одним вызовом. Следующий пример закрывает неявно "
+"созданный eventloop asyncio и устанавливает новый:"
+
+#: ../../source/index.rst:204
+msgid "Services"
+msgstr "Сервисы"
+
+#: ../../source/index.rst:206
+msgid ""
+"The main thing that an ``entrypoint`` does is start and gracefully stop "
+"services."
+msgstr ""
+"Главное, что делает точка входа, — это запускает и корректно "
+"останавливает «Сервисы»."
+
+#: ../../source/index.rst:209
+msgid ""
+"The service concept within this library means a class derived from the "
+"``aiosmic.Service`` class and implementing the ``async def start(self) ->"
+" None:`` method and optionally the ``async def stop(self, exc: Optional[ "
+"Exception]) -> None`` method."
+msgstr ""
+"Концепция «Сервис», в этой библиотеке, означает класс, наследованный от "
+"класса ``aiosmic.Service`` и реализующий метод ``async def start(self) ->"
+" None`` и, опционально, метод ``async def stop(self, exc: Optional[ "
+"Exception]) -> None``."
+
+#: ../../source/index.rst:214
+#, fuzzy
+msgid ""
+"The concept of stopping a service is not necessarily is pressing "
+"``Ctrl+C`` keys by user, it's actually just exiting the ``entrypoint`` "
+"context manager."
+msgstr ""
+"Концепция остановки службы не обязательно заключается в нажатии "
+"пользователем клавиш ``Ctrl+C``, на самом деле это просто выход из "
+"контекстного менеджера ``entrypoint``."
+
+#: ../../source/index.rst:217
+msgid "The example below shows what your service might look like:"
+msgstr "Пример ниже иллюстрирует, как может выглядеть ваш сервис:"
+
+#: ../../source/index.rst:234
+msgid ""
+"The entry point can start as many instances of the service as it likes, "
+"and all of them will start concurrently."
+msgstr ""
+"Точка входа может запускать любое количество экземпляров службы, и все "
+"они будут запускаться конкурентно."
+
+#: ../../source/index.rst:237
+msgid ""
+"There is also a way if the ``start`` method is a payload for a service, "
+"and then there is no need to implement the stop method, since the running"
+" task with the ``start`` function will be canceled at the stop stage. But"
+" in this case, you will have to notify the ``entrypoint`` that the "
+"initialization of the service instance is complete and it can continue."
+msgstr ""
+"Также есть способ, если метод ``start`` является полезной нагрузкой для "
+"сервиса, и тогда нет необходимости реализовывать метод ``stop``, так как "
+"задача с функцией ``start`` будет отменена на этапе выхода из entrypoint."
+" Но в этом случае вам придется уведомить ``entrypoint`` о том, что "
+"инициализация экземпляра службы завершена и ее можно продолжить."
+
+#: ../../source/index.rst:243
+msgid "Like this:"
+msgstr "Примерно так:"
+
+#: ../../source/index.rst:265
+msgid ""
+"The ``entrypoint`` passes control to the body of the context manager only"
+" after all service instances have started. As mentioned above, a start is"
+" considered to be the completion of the ``start`` method or the setting "
+"of an start event with ``self.start_event.set()``."
+msgstr ""
+"``entrypoint`` передает управление телу контекстного менеджера только "
+"после того, как все экземпляры службы запущены. Как упоминалось выше, "
+"стартом считается завершение метода ``start`` или установка стартового "
+"события с помощью ``self.start_event.set()``."
+
+#: ../../source/index.rst:270
+msgid ""
+"The whole power of this library is in the set of already implemented or "
+"abstract services. Such as: :ref:`AIOHTTPService <aiohttp-service>`, "
+":ref:`ASGIService <asgi-service>`, :ref:`TCPServer <tcp-server>`, "
+":ref:`UDPServer <udp-server>`, :ref:`TCPClient <tcp-client>`, "
+":ref:`PeriodicService <periodic-service>`, :ref:`CronService <cron-"
+"service>` and so on."
+msgstr ""
+"Вся мощь этой библиотеки это набор уже реализованных или абстрактных "
+"сервисов таких как: :ref:`AIOHTTPService <aiohttp-service>`, "
+":ref:`ASGIService <asgi-service>`, :ref:`TCPServer <tcp-server>`, "
+":ref:`UDPServer <udp-server>`, :ref:`TCPClient <tcp-client>`, "
+":ref:`PeriodicService <periodic-service>`, :ref:`CronService <cron-"
+"service>` и так далее."
+
+#: ../../source/index.rst:278
+msgid ""
+"Unfortunately in this section it is not possible to pay more attention to"
+" this, please pay attention to the :doc:`/tutorial` section section, "
+"there are more examples and explanations, and of cource you always can "
+"find out an answer on the :doc:`/api/index` or in the source code. The "
+"authors have tried to make the source code as clear and simple as "
+"possible, so feel free to explore it."
+msgstr ""
+"К сожалению в данном разделе нет возможности уделить этому больше внимания, "
+"обратите внимание на раздел :doc:`/tutorial`, там больше примеров и "
+"пояснений, ну и конечно вы всегда можете узнать ответ на :doc:`/api/index` "
+"или в исходном коде. Авторы постарались сделать исходный код максимально "
+"понятным и простым, поэтому не стесняйтесь исследовать его."
+
+#: ../../source/index.rst:286
 msgid "Versioning"
 msgstr "Версионирование"
 
-#: ../../source/index.rst:132
+#: ../../source/index.rst:288
 msgid "This software follows `Semantic Versioning`_"
 msgstr ""
 "Это программное обеспечение следует методологиии `Семантического "
 "Версионирования`_"
 
-#: ../../source/index.rst:136
+#: ../../source/index.rst:292
 msgid "How to develop?"
 msgstr "Как начать разработку?"
 
-#: ../../source/index.rst:138
+#: ../../source/index.rst:294
 msgid "Should be installed:"
 msgstr "Должно быть установлено"
 
-#: ../../source/index.rst:140
+#: ../../source/index.rst:296
 msgid "`virtualenv`"
 msgstr "`virtualenv`"
 
-#: ../../source/index.rst:141
+#: ../../source/index.rst:297
 msgid "GNU Make as `make`"
 msgstr "GNU Make как `make`"
 
-#: ../../source/index.rst:142
+#: ../../source/index.rst:298
 msgid "Python 3.7+ as `python3`"
 msgstr "Python 3.7+ как `python3`"
 
-#: ../../source/index.rst:145
+#: ../../source/index.rst:301
 msgid "For setting up developer environment just type"
 msgstr "Для настройки окружения разработчика просто наберите"
 
-#: ../../source/index.rst:155
+#: ../../source/index.rst:311
 msgid "Table Of Contents"
 msgstr "Содержание"
-

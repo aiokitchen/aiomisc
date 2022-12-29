@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-08-01 23:17+0300\n"
+"POT-Creation-Date: 2022-12-29 08:09+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/services.rst:2
 msgid "Services"
@@ -81,11 +81,11 @@ msgstr ""
 "Этот пакет содержит несколько полезных базовых классов для написания "
 "простых сервисов."
 
-#: ../../source/services.rst:53
+#: ../../source/services.rst:56
 msgid "``TCPServer``"
 msgstr "Класс ``TCPServer``"
 
-#: ../../source/services.rst:55
+#: ../../source/services.rst:58
 msgid ""
 "``TCPServer`` - it's a base class for writing TCP servers. Just implement"
 " ``handle_client(reader, writer)`` to use it."
@@ -94,11 +94,11 @@ msgstr ""
 "реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
 "соединения."
 
-#: ../../source/services.rst:98
+#: ../../source/services.rst:103
 msgid "``UDPServer``"
 msgstr "Класс ``UDPServer``"
 
-#: ../../source/services.rst:100
+#: ../../source/services.rst:105
 msgid ""
 "``UDPServer`` - it's a base class for writing UDP servers. Just implement"
 " ``handle_datagram(data, addr)`` to use it."
@@ -107,11 +107,11 @@ msgstr ""
 "реализуйте ``handle_datagram(data, addr)``, чтобы принимать UDP "
 "соединения."
 
-#: ../../source/services.rst:115
+#: ../../source/services.rst:120
 msgid "``TLSServer``"
 msgstr "Класс ``TLSServer``"
 
-#: ../../source/services.rst:117
+#: ../../source/services.rst:122
 msgid ""
 "``TLSServer`` - it's a base class for writing TCP servers with TLS. Just "
 "implement ``handle_client(reader, writer)`` to use it."
@@ -119,11 +119,11 @@ msgstr ""
 "TLSServer - это базовый класс для написания TCP-серверов с использованием"
 " TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
-#: ../../source/services.rst:142
+#: ../../source/services.rst:149
 msgid "``TCPClient``"
 msgstr ""
 
-#: ../../source/services.rst:144
+#: ../../source/services.rst:151
 msgid ""
 "``TCPClient`` - it's a base class for writing TCP clients. Just implement"
 " ``handle_connection(reader, writer)`` to use it."
@@ -132,11 +132,11 @@ msgstr ""
 "реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
 "соединения."
 
-#: ../../source/services.rst:190
+#: ../../source/services.rst:197
 msgid "``TLSClient``"
 msgstr ""
 
-#: ../../source/services.rst:192
+#: ../../source/services.rst:199
 msgid ""
 "``TLSClient`` - it's a base class for writing TLS clients. Just implement"
 " ``handle_connection(reader, writer)`` to use it."
@@ -145,11 +145,11 @@ msgstr ""
 "реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
 "соединения."
 
-#: ../../source/services.rst:247
+#: ../../source/services.rst:254
 msgid "``RobustTCPClient``"
 msgstr ""
 
-#: ../../source/services.rst:249
+#: ../../source/services.rst:256
 msgid ""
 "``RobustTCPClient`` - it's a base class for writing TCP clients with "
 "auto-reconnection when connection lost. Just implement "
@@ -158,11 +158,11 @@ msgstr ""
 "TLSServer - это базовый класс для написания TCP-серверов с использованием"
 " TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
-#: ../../source/services.rst:296
+#: ../../source/services.rst:303
 msgid "``RobustTLSClient``"
 msgstr ""
 
-#: ../../source/services.rst:298
+#: ../../source/services.rst:305
 msgid ""
 "``RobustTLSClient`` - it's a base class for writing TLS clients with "
 "auto-reconnection when connection lost. Just implement "
@@ -171,11 +171,11 @@ msgstr ""
 "TLSServer - это базовый класс для написания TCP-серверов с использованием"
 " TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
-#: ../../source/services.rst:353
+#: ../../source/services.rst:363
 msgid "``PeriodicService``"
 msgstr "Класс ``PeriodicService``"
 
-#: ../../source/services.rst:355
+#: ../../source/services.rst:365
 msgid ""
 "``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for "
 "the running callback to complete on the stop method. You need to use "
@@ -187,7 +187,7 @@ msgstr ""
 "PeriodicService в качестве базового класса и переопределить асинхронный "
 "метод callback."
 
-#: ../../source/services.rst:359
+#: ../../source/services.rst:369
 msgid ""
 "Service class accepts required ``interval`` argument - periodic interval "
 "in seconds and optional ``delay`` argument - periodic execution delay in "
@@ -197,11 +197,11 @@ msgstr ""
 "запуска в секундах и необязательный аргумент ``delay`` - задержку первого"
 " выполнения в секундах (по умолчанию 0)."
 
-#: ../../source/services.rst:381
+#: ../../source/services.rst:393
 msgid "``CronService``"
 msgstr "Класс ``CronService``"
 
-#: ../../source/services.rst:385
+#: ../../source/services.rst:395
 msgid ""
 "``CronService`` runs ``CronCallback's`` as a service and waits for "
 "running callbacks to complete on the stop method."
@@ -209,7 +209,7 @@ msgstr ""
 "``CronService`` запускает ``CronCallback`` в качестве сервиса и ожидает "
 "завершения выполнения обратных вызовов при остановке."
 
-#: ../../source/services.rst:388
+#: ../../source/services.rst:398
 msgid ""
 "It's based on croniter_. You can register async coroutine method with "
 "``spec`` argument - cron like format:"
@@ -217,16 +217,16 @@ msgstr ""
 "Основан на croniter_. Вы можете зарегистрировать асинхронный метод с "
 "аргументом ``spec`` - формат, подобный cron:"
 
-#: ../../source/services.rst:392
+#: ../../source/services.rst:404
 msgid "requires installed croniter_:"
 msgstr "необходимо установить библиотеку croniter_:"
 
-#: ../../source/services.rst:398 ../../source/services.rst:538
-#: ../../source/services.rst:602
+#: ../../source/services.rst:410 ../../source/services.rst:552
+#: ../../source/services.rst:618
 msgid "or using extras:"
 msgstr "или как дополнительную зависимость"
 
-#: ../../source/services.rst:422
+#: ../../source/services.rst:434
 msgid ""
 "You can also inherit from ``CronService``, but remember that callback "
 "registration should be proceeded before start"
@@ -234,11 +234,11 @@ msgstr ""
 "Вы также можете наследовать от ``CronService``, но помните, что "
 "регистрация обратного вызова должна выполняться до запуска"
 
-#: ../../source/services.rst:447
+#: ../../source/services.rst:459
 msgid "Multiple services"
 msgstr "Несколько сервисов"
 
-#: ../../source/services.rst:449
+#: ../../source/services.rst:461
 msgid ""
 "Pass several service instances to the ``entrypoint`` to run all of them. "
 "After exiting the entrypoint service instances will be gracefully shut "
@@ -249,11 +249,11 @@ msgstr ""
 "корректно закрыты вызовом метода ``stop()`` или через отмену метода "
 "``start()``."
 
-#: ../../source/services.rst:488
+#: ../../source/services.rst:500
 msgid "Configuration"
 msgstr "Конфигурация"
 
-#: ../../source/services.rst:490
+#: ../../source/services.rst:502
 msgid ""
 "``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
 "attributes."
@@ -261,19 +261,19 @@ msgstr ""
 "Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
 "и устанавливает из как атрибуты в ``self``."
 
-#: ../../source/services.rst:528
+#: ../../source/services.rst:542
 msgid "aiohttp service"
 msgstr "aiohttp сервис"
 
-#: ../../source/services.rst:532
+#: ../../source/services.rst:546
 msgid "requires installed aiohttp:"
 msgstr "требуется установленная библиоткеа aiohttp"
 
-#: ../../source/services.rst:545
+#: ../../source/services.rst:559
 msgid "aiohttp application can be started as a service:"
 msgstr "Приложение aiohttp может быть запущено как сервис:"
 
-#: ../../source/services.rst:587
+#: ../../source/services.rst:601
 msgid ""
 "Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
 "an HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
@@ -283,19 +283,19 @@ msgstr ""
 " сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
 "TLSServer)."
 
-#: ../../source/services.rst:592
+#: ../../source/services.rst:608
 msgid "asgi service"
 msgstr "asgi сервис"
 
-#: ../../source/services.rst:596
+#: ../../source/services.rst:612
 msgid "requires installed aiohttp-asgi:"
 msgstr "требуется установленная библиоткеа aiohttp-asgi:"
 
-#: ../../source/services.rst:609
+#: ../../source/services.rst:625
 msgid "Any ASGI-like application can be started as a service:"
 msgstr "Любое ASGI совместимое приложение может быть запущено как сервис:"
 
-#: ../../source/services.rst:649
+#: ../../source/services.rst:665
 msgid ""
 "Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
 "creates HTTPS server. You must pass SSL-required options (see "
@@ -305,11 +305,11 @@ msgstr ""
 "HTTPS сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
 "``TLSServer``)."
 
-#: ../../source/services.rst:653
+#: ../../source/services.rst:672
 msgid "Memory Tracer"
 msgstr "Трассировщик памяти"
 
-#: ../../source/services.rst:655
+#: ../../source/services.rst:674
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
@@ -317,15 +317,15 @@ msgstr ""
 "Простой и полезный сервис для логирования больших объектов Python, "
 "размещенных в памяти."
 
-#: ../../source/services.rst:679 ../../source/services.rst:726
+#: ../../source/services.rst:698 ../../source/services.rst:747
 msgid "Output example:"
 msgstr "Пример вывода:"
 
-#: ../../source/services.rst:701
+#: ../../source/services.rst:722
 msgid "Profiler"
 msgstr "``Profiler`` - профилировщик"
 
-#: ../../source/services.rst:703
+#: ../../source/services.rst:724
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "
@@ -337,43 +337,44 @@ msgstr ""
 "позже могут быть использованы, например, snakeviz. Также можно изменить "
 "порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
 
-#: ../../source/services.rst:743
+#: ../../source/services.rst:766
 msgid "Raven service"
 msgstr "Raven сервис"
 
-#: ../../source/services.rst:745
+#: ../../source/services.rst:768
 msgid ""
 "Simple service for sending unhandled exceptions to the `sentry`_ service "
 "instance."
 msgstr "Простой сервис для отправки необработанных исключений в сервис `sentry`_."
 
-#: ../../source/services.rst:750
+#: ../../source/services.rst:773
 msgid "Simple example:"
 msgstr "Простой пример:"
 
-#: ../../source/services.rst:792
+#: ../../source/services.rst:815
 msgid "Full configuration:"
 msgstr "Все опции для клиента:"
 
-#: ../../source/services.rst:852
+#: ../../source/services.rst:875
 msgid ""
 "You will find the full specification of options in the `Raven "
 "documentation`_."
 msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
 
-#: ../../source/services.rst:858
+#: ../../source/services.rst:881
 msgid "``SDWatchdogService``"
 msgstr "``SDWatchdogService``"
 
-#: ../../source/services.rst:860
+#: ../../source/services.rst:883
+#, fuzzy
 msgid ""
-"Service just adding to your entrypoint and notifying SystemD service "
-"watchdog timer."
+"Ready to use service just adding to your entrypoint and notifying SystemD"
+" service watchdog timer."
 msgstr ""
 "Просто добавьте этот сервис в entrypoint и он будет отправлять "
 "уведомления сторожевому таймеру SystemD."
 
-#: ../../source/services.rst:863
+#: ../../source/services.rst:886
 msgid ""
 "This can be safely added at any time, since if the service does not "
 "detect systemd-related environment variables, then its initialization is "
@@ -383,19 +384,19 @@ msgstr ""
 "найдет переменных окружения, которые устанавливает systemd, Сервис просто"
 " не запустится, однако выполнение приложения продолжится."
 
-#: ../../source/services.rst:866
+#: ../../source/services.rst:889
 msgid "Example of python file:"
 msgstr "Пример python файла:"
 
-#: ../../source/services.rst:883
+#: ../../source/services.rst:906
 msgid "Example of systemd service file:"
 msgstr "Пример systemd сервис-файла:"
 
-#: ../../source/services.rst:917
+#: ../../source/services.rst:943
 msgid "``ProcessService``"
 msgstr "Класс ``ProcessService``"
 
-#: ../../source/services.rst:919
+#: ../../source/services.rst:945
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped."
@@ -403,11 +404,11 @@ msgstr ""
 "Базовый класс для запуска функции отдельным системным процессом и "
 "завершения при остановке родительского процесса."
 
-#: ../../source/services.rst:963
+#: ../../source/services.rst:989
 msgid "``RespawningProcessService``"
 msgstr "Класс ``RespawningProcessService``"
 
-#: ../../source/services.rst:965
+#: ../../source/services.rst:991
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped, It's pretty like "
@@ -418,4 +419,3 @@ msgstr ""
 "завершения при остановке родительского процесса. Это очень похоже на "
 "`ProcessService` с одним отличием - если дочерний процесс неожиданно "
 "завершится, то он будет перезапущен."
-

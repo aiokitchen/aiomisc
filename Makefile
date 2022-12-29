@@ -1,10 +1,10 @@
 all: bump clean sdist test upload
 
-NAME:=$(shell python3 setup.py --name)
-VERSION:=$(shell python3 setup.py --version | sed 's/+/-/g')
+NAME:=$(shell poetry version -n | awk '{print $1}')
+VERSION:=$(shell poetry version -n | awk '{print $2}')
 
 bump:
-	python3 bump.py aiomisc/version.py
+	poetry build
 
 uml:
 	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
