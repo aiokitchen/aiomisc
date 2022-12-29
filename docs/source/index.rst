@@ -313,17 +313,20 @@ which takes the number of commits between tag to the head of branch.
 How to develop?
 ---------------
 
+This project, like most open source projects, is developed by enthusiasts,
+you can join the development, submit issues, or send your merge requests.
+
+In order to start developing in this repository, you need to do the
+following things.
+
 Should be installed:
 
-* ``virtualenv``
-* GNU Make as ``make``
 * Python 3.7+ as ``python3``
 * Installed Poetry_ as ``poetry``
 
 .. _Poetry: https://python-poetry.org/docs/
 
-
-For setting up developer environment just type
+For setting up developer environment just execute:
 
     .. code-block::
 
