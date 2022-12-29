@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-12-29 12:06+0300\n"
+"POT-Creation-Date: 2022-12-29 15:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -500,38 +500,74 @@ msgstr ""
 "Это программное обеспечение следует методологиии `Семантического "
 "Версионирования`_"
 
-#: ../../source/index.rst:299
+#: ../../source/index.rst:298
+msgid "Summary: it's given a version number MAJOR.MINOR.PATCH, increment the:"
+msgstr "Кратко: учитывая номер версии МАЖОРНАЯ.МИНОРНАЯ.ПАТЧ, следует увеличивать:"
+
+#: ../../source/index.rst:300
+msgid "MAJOR version when you make incompatible API changes"
+msgstr "МАЖОРНУЮ версию, когда сделаны обратно несовместимые изменения API."
+
+#: ../../source/index.rst:301
+msgid "MINOR version when you add functionality in a backwards compatible manner"
+msgstr "МИНОРНУЮ версию, когда вы добавляете новую функциональность, не нарушая обратной совместимости."
+
+#: ../../source/index.rst:302
+msgid "PATCH version when you make backwards compatible bug fixes"
+msgstr "ПАТЧ-версию, когда вы делаете обратно совместимые исправления."
+
+#: ../../source/index.rst:303
+msgid ""
+"Additional labels for pre-release and build metadata are available as "
+"extensions to the MAJOR.MINOR.PATCH format."
+msgstr ""
+"Дополнительные обозначения для предрелизных и билд-метаданных возможны как "
+"дополнения к МАЖОРНАЯ.МИНОРНАЯ.ПАТЧ формату."
+
+#: ../../source/index.rst:306
+msgid ""
+"In this project, the package version is assigned automatically with poem-"
+"plugins_, it using on the tag in the repository as a major and minor and "
+"the counter, which takes the number of commits between tag to the head of"
+" branch."
+msgstr ""
+"В этом проекте версия пакета назначается автоматически с помощью "
+"poem-plugins_, он использует тег в репозитории как МАЖОР и МИНОР, "
+"а также счетчик, который берет количество коммитов между тегом и "
+"головой ветки."
+
+#: ../../source/index.rst:314
 msgid "How to develop?"
 msgstr "Как начать разработку?"
 
-#: ../../source/index.rst:301
+#: ../../source/index.rst:316
 msgid "Should be installed:"
 msgstr "Должно быть установлено"
 
-#: ../../source/index.rst:303
+#: ../../source/index.rst:318
 msgid "``virtualenv``"
 msgstr "``virtualenv``"
 
-#: ../../source/index.rst:304
+#: ../../source/index.rst:319
 msgid "GNU Make as ``make``"
 msgstr "GNU Make как ``make``"
 
-#: ../../source/index.rst:305
+#: ../../source/index.rst:320
 msgid "Python 3.7+ as ``python3``"
 msgstr "Python 3.7+ как ``python3``"
 
-#: ../../source/index.rst:306
+#: ../../source/index.rst:321
 msgid "Installed Poetry_ as ``poetry``"
 msgstr "Установлен Poetry_ как ``poetry``"
 
-#: ../../source/index.rst:311
+#: ../../source/index.rst:326
 msgid "For setting up developer environment just type"
 msgstr "Для настройки окружения разработчика просто наберите"
 
-#: ../../source/index.rst:313
+#: ../../source/index.rst:328
 msgid "poetry install"
 msgstr ""
 
-#: ../../source/index.rst:321
+#: ../../source/index.rst:336
 msgid "Table Of Contents"
 msgstr "Содержание"

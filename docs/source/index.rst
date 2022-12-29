@@ -295,6 +295,21 @@ Versioning
 This software follows `Semantic Versioning`_
 
 
+Summary: it's given a version number MAJOR.MINOR.PATCH, increment the:
+
+* MAJOR version when you make incompatible API changes
+* MINOR version when you add functionality in a backwards compatible manner
+* PATCH version when you make backwards compatible bug fixes
+* Additional labels for pre-release and build metadata are available as
+  extensions to the MAJOR.MINOR.PATCH format.
+
+In this case, the package version is assigned automatically with poem-plugins_,
+it using on the tag in the repository as a major and minor and the counter,
+which takes the number of commits between tag to the head of branch.
+
+.. _poem-plugins: https://pypi.org/project/poem-plugins
+
+
 How to develop?
 ---------------
 
