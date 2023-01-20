@@ -76,9 +76,8 @@ msgid ""
 msgstr ""
 
 #: ../../source/signal.rst:42
-#, fuzzy
 msgid "``pre_stop``"
-msgstr "pre_stop"
+msgstr ""
 
 #: ../../source/signal.rst:44
 msgid ""

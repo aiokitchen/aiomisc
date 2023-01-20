@@ -8,14 +8,11 @@ from enum import Enum
 from functools import partial, total_ordering
 from pathlib import Path
 from typing import (
-    IO, Any, Awaitable, BinaryIO, Callable, Generator, Generic, List, Optional,
-    TextIO, TypeVar, Union,
+    IO, Any, AnyStr, Awaitable, Callable, Generator, Generic, List, Optional,
+    TextIO, Union,
 )
 
 from .compat import EventLoopMixin
-
-
-T = TypeVar("T", bound=Union[str, bytes])
 
 
 def proxy_method_async(
@@ -24,7 +21,7 @@ def proxy_method_async(
 ) -> Callable[..., Any]:
     def wrap_to_future(
         loop: asyncio.AbstractEventLoop,
-        func: Callable[..., T],
+        func: Callable[..., AnyStr],
         *args: Any, **kwargs: Any,
     ) -> asyncio.Future:
         future = loop.create_future()
@@ -39,10 +36,10 @@ def proxy_method_async(
         return future
 
     def wrap_to_thread(
-        loop: asyncio.AbstractEventLoop, func: Callable[..., T],
+        loop: asyncio.AbstractEventLoop, func: Callable[..., AnyStr],
         executor: Executor,
         *args: Any, **kwargs: Any,
-    ) -> Awaitable[T]:
+    ) -> Awaitable[AnyStr]:
         callee = partial(func, *args, **kwargs)
         # noinspection PyTypeChecker
         return loop.run_in_executor(executor, callee)
@@ -62,14 +59,16 @@ def proxy_method_async(
 
 
 @total_ordering
-class AsyncFileIO(EventLoopMixin, Generic[T]):
+class AsyncFileIO(EventLoopMixin, Generic[AnyStr]):
     __slots__ = (
         "_fp", "executor", "__iterator_lock",
     ) + EventLoopMixin.__slots__
 
-    opener = staticmethod(open)
+    _fp: Optional[IO[AnyStr]]
 
-    _fp: Optional[Union[IO, BinaryIO, TextIO]]
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return open
 
     def __init__(
         self, fname: Union[str, Path], mode: str = "r",
@@ -96,10 +95,12 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
             return
 
         args, kwargs = self.__open_args
-        self._fp = await self.__execute_in_thread(self.opener, *args, **kwargs)
+        self._fp = await self.__execute_in_thread(
+            self.get_opener(), *args, **kwargs,
+        )
 
     @property
-    def fp(self) -> Union[IO, BinaryIO, TextIO]:
+    def fp(self) -> IO[AnyStr]:
         if self._fp is not None:
             return self._fp
         raise RuntimeError("file is not opened")
@@ -111,7 +112,7 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
         yield from self.open().__await__()
         return self
 
-    async def __aenter__(self) -> "AsyncFileIOBase":
+    async def __aenter__(self) -> "AsyncFileIO[AnyStr]":
         await self.open()
         return self
 
@@ -133,10 +134,10 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
         self.fp.close()
         del self._fp
 
-    def __aiter__(self) -> "AsyncFileIOBase":
+    def __aiter__(self) -> "AsyncFileIO[AnyStr]":
         return self
 
-    async def __anext__(self) -> T:
+    async def __anext__(self) -> AnyStr:
         async with self.__iterator_lock:
             line = await self.readline()
 
@@ -206,13 +207,13 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
     async def flush(self) -> None:
         await self.__execute_in_thread(self.fp.flush)
 
-    async def read(self, n: int = -1) -> T:
+    async def read(self, n: int = -1) -> AnyStr:
         return await self.__execute_in_thread(self.fp.read, n)
 
-    async def readline(self, limit: int = -1) -> T:
+    async def readline(self, limit: int = -1) -> AnyStr:
         return await self.__execute_in_thread(self.fp.readline, limit)
 
-    async def readlines(self, limit: int = -1) -> List[T]:
+    async def readlines(self, limit: int = -1) -> List[AnyStr]:
         return await self.__execute_in_thread(self.fp.readlines, limit)
 
     async def seek(self, offset: int, whence: int = 0) -> int:
@@ -221,10 +222,10 @@ class AsyncFileIO(EventLoopMixin, Generic[T]):
     async def truncate(self, size: Optional[int] = None) -> int:
         return await self.__execute_in_thread(self.fp.truncate, size)
 
-    async def write(self, s: T) -> int:
+    async def write(self, s: AnyStr) -> int:
         return await self.__execute_in_thread(self.fp.write, s)
 
-    async def writelines(self, lines: List[T]) -> None:
+    async def writelines(self, lines: List[AnyStr]) -> None:
         await self.__execute_in_thread(self.fp.writelines, lines)
 
 
@@ -232,15 +233,7 @@ AsyncFileIOBase = AsyncFileIO
 
 
 class AsyncBinaryIO(AsyncFileIO[bytes]):
-    @property
-    def fp(self) -> BinaryIO:
-        return self._fp  # type: ignore
-
-    def __aiter__(self) -> "AsyncBytesFileIO":
-        return self
-
-    async def __aenter__(self) -> "AsyncBinaryIO":
-        return await super().__aenter__()      # type: ignore
+    pass
 
 
 class AsyncTextIO(AsyncFileIO[str]):
@@ -267,40 +260,52 @@ class AsyncTextIO(AsyncFileIO[str]):
     def buffer(self) -> AsyncBinaryIO:
         return AsyncBinaryIO.open_fp(self.fp.buffer)    # type: ignore
 
-    def __aiter__(self) -> "AsyncTextFileIO":
-        return self
-
-    async def __aenter__(self) -> "AsyncTextIO":
-        return await super().__aenter__()      # type: ignore
-
 
 # Aliases
 AsyncBytesFileIO = AsyncBinaryIO
 AsyncTextFileIO = AsyncTextIO
 
 
-class AsyncGzipBinaryIO(AsyncBytesFileIO):
-    opener = staticmethod(gzip.open)        # type: ignore
+class GzipIOMixin(Generic[AnyStr]):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return gzip.open        # type: ignore
 
 
-class AsyncGzipTextIO(AsyncTextFileIO):
-    opener = staticmethod(gzip.open)        # type: ignore
+class AsyncGzipBinaryIO(AsyncBytesFileIO, GzipIOMixin[bytes]):
+    pass
 
 
-class AsyncBz2BinaryIO(AsyncBytesFileIO):
-    opener = staticmethod(bz2.open)         # type: ignore
+class AsyncGzipTextIO(AsyncTextFileIO, GzipIOMixin[str]):
+    pass
 
 
-class AsyncBz2TextIO(AsyncTextFileIO):
-    opener = staticmethod(bz2.open)         # type: ignore
+class Bz2IOMixin(Generic[AnyStr]):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return bz2.open
 
 
-class AsyncLzmaBinaryIO(AsyncBytesFileIO):
-    opener = staticmethod(lzma.open)        # type: ignore
+class AsyncBz2BinaryIO(AsyncBytesFileIO, Bz2IOMixin[bytes]):
+    pass
 
 
-class AsyncLzmaTextIO(AsyncTextFileIO):
-    opener = staticmethod(lzma.open)        # type: ignore
+class AsyncBz2TextIO(AsyncTextFileIO, Bz2IOMixin[str]):
+    pass
+
+
+class LzmaIOMixin(Generic[AnyStr]):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return lzma.open
+
+
+class AsyncLzmaBinaryIO(AsyncBytesFileIO, LzmaIOMixin[bytes]):
+    pass
+
+
+class AsyncLzmaTextIO(AsyncTextFileIO, LzmaIOMixin[str]):
+    pass
 
 
 class Compression(Enum):
@@ -333,7 +338,7 @@ def async_open(
     compression: Compression = Compression.NONE,
     encoding: str = sys.getdefaultencoding(),
     *args: Any, **kwargs: Any,
-) -> AsyncFileType:
+) -> AsyncFileIO[AnyStr]:
     binary_io_class, text_io_class = compression.value
 
     if "b" in mode:

@@ -23,19 +23,17 @@ aiomisc - miscellaneous utils for asyncio
    :target: https://pypi.python.org/pypi/aiomisc/
 
 
-Miscellaneous utils for asyncio.
-
 As a programmer, you are no stranger to the challenges that come with building
 and maintaining software applications. One area that can be particularly
-difficult is making architecture of the software that using asynchronous I/O.
+difficult is making architecture of the asynchronous I/O software.
 
-This is where aiomisc comes in. aiomisc is a Python library that provides a
-collection of utility functions and classes for working with asynchronous I/O
-in a more intuitive and efficient way. It is built on top of the ``asyncio``
-library and is designed to make it easier for developers to write
-asynchronous code that is both reliable and scalable.
+This is where ``aiomisc`` comes in. It is a Python library that
+provides a collection of utility functions and classes for working with
+asynchronous I/O in a more intuitive and efficient way. It is built on
+top of the ``asyncio`` library and is designed to make it easier for
+developers to write asynchronous code that is both reliable and scalable.
 
-With aiomisc, you can take advantage of powerful features like
+With ``aiomisc``, you can take advantage of powerful features like
 :doc:`worker pools </worker_pool>`, :doc:`connection pools </pool>`,
 :doc:`circuit breaker pattern </circuit_breaker>`,
 and retry mechanisms such as :doc:`asyncbackoff </async_backoff>` and
@@ -125,9 +123,8 @@ Quick Start
 -----------
 
 This section will cover how this library creates and uses the event loop and
-creates services. Of course, you can't write about everything here, but you
-can read about a lot in the :doc:`/tutorial` section, and you can always refer
-to the :doc:`/modules` and :doc:`/api/index` sections for help.
+creates services. For more details see :doc:`/tutorial` section, and you can
+always refer to the :doc:`/modules` and :doc:`/api/index` sections for help.
 
 Event-loop and entrypoint
 +++++++++++++++++++++++++
@@ -150,22 +147,22 @@ Let's look at this simple example first:
 
 
     if __name__ == '__main__':
-        with entrypoint(log_level="info", log_format="color") as loop:
+        with aiomisc.entrypoint(log_level="info", log_format="color") as loop:
             loop.run_until_complete(main())
 
 
-This code declares an asynchronous ``main()`` function that exits after
+This code declares an asynchronous ``main()`` function that exits for
 3 seconds. It would seem nothing interesting, but the whole point is in
 the ``entrypoint``.
 
-What does the ``entrypoint`` do, it would seem not so much, it creates an
+At the first glance the ``entrypoint`` did not do much, just creates an
 event-loop and transfers control to the user. However, under the hood, the
 logger is configured in a separate thread, a pool of threads is created,
-services are started, but more on that later and there are no services
+services are started, but more on that later as there are no services
 in this example.
 
-Alternatively, you can choose not to use an entrypoint, just create an
-event-loop and set this as a default event loop for current thread:
+Alternatively, you can choose not to use an ``entrypoint``, just create an
+event-loop and set it as a default for current thread:
 
 .. code-block:: python
     :name: test_index_get_loop
@@ -335,8 +332,6 @@ For setting up developer environment just execute:
 
 .. _Semantic Versioning: http://semver.org/
 
-Table Of Contents
-+++++++++++++++++
 
 .. toctree::
    :glob:

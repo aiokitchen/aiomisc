@@ -754,9 +754,8 @@ msgid "requires installed aiohttp:"
 msgstr "требуется установленная библиотека aiohttp"
 
 #: ../../source/services.rst:548
-#, fuzzy
 msgid "pip install aiohttp"
-msgstr "требуется установленная библиотека aiohttp"
+msgstr ""
 
 #: ../../source/services.rst:554
 msgid "pip install aiomisc[aiohttp]"
@@ -825,9 +824,8 @@ msgid "requires installed aiohttp-asgi:"
 msgstr "требуется установленная библиотека aiohttp-asgi:"
 
 #: ../../source/services.rst:614
-#, fuzzy
 msgid "pip install aiohttp-asgi"
-msgstr "требуется установленная библиотека aiohttp-asgi:"
+msgstr ""
 
 #: ../../source/services.rst:620
 msgid "pip install aiomisc[asgi]"
