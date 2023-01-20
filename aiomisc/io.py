@@ -9,10 +9,13 @@ from functools import partial, total_ordering
 from pathlib import Path
 from typing import (
     IO, Any, AnyStr, Awaitable, Callable, Generator, Generic, List, Optional,
-    TextIO, Union,
+    TextIO, TypeVar, Union,
 )
 
 from .compat import EventLoopMixin
+
+
+T = TypeVar("T", bound=Any)
 
 
 def proxy_method_async(
@@ -21,7 +24,7 @@ def proxy_method_async(
 ) -> Callable[..., Any]:
     def wrap_to_future(
         loop: asyncio.AbstractEventLoop,
-        func: Callable[..., AnyStr],
+        func: Callable[..., T],
         *args: Any, **kwargs: Any,
     ) -> asyncio.Future:
         future = loop.create_future()
@@ -36,10 +39,10 @@ def proxy_method_async(
         return future
 
     def wrap_to_thread(
-        loop: asyncio.AbstractEventLoop, func: Callable[..., AnyStr],
+        loop: asyncio.AbstractEventLoop, func: Callable[..., T],
         executor: Executor,
         *args: Any, **kwargs: Any,
-    ) -> Awaitable[AnyStr]:
+    ) -> Awaitable[T]:
         callee = partial(func, *args, **kwargs)
         # noinspection PyTypeChecker
         return loop.run_in_executor(executor, callee)
