@@ -8,7 +8,7 @@ from typing import List
 import pytest
 
 import aiomisc
-from aiomisc.io import AsyncTextIO
+from aiomisc.io import AsyncFileIO
 from tests import unix_only
 
 
@@ -77,7 +77,7 @@ async def test_ordering(loop, tmp_path):
 
 async def test_async_for(loop, tmp_path):
     tdir = Path(tmp_path)
-    afp: AsyncTextIO
+    afp: AsyncFileIO[str]
 
     async with aiomisc.io.async_open(tdir / "path", "w", loop=loop) as afp:
         await afp.write("foo\nbar\nbaz\n")
@@ -161,7 +161,7 @@ async def test_object(loop):
 async def test_compression(compression: aiomisc.io.Compression, tmp_path):
     fname = Path(tmp_path) / "test.file"
 
-    afp: aiomisc.io.AsyncTextIOType
+    afp: aiomisc.io.AsyncTextIO
 
     async with aiomisc.io.async_open(
         fname, "w", compression=compression,

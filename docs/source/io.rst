@@ -16,6 +16,12 @@ Based on the thread pool under the hood.
         with tempfile.TemporaryDirectory() as tmp:
             fname = Path(tmp) / 'test.txt'
 
+            # Some tools, such as mypy, will not be able to infer the type
+            # from the `async_open` function based on the `b` character passed
+            # to the mode.
+            # We'll have to tell the type here explicitly.
+            afp: aiomisc.io.AsyncTextIO
+
             async with aiomisc.io.async_open(fname, 'w+') as afp:
                 await afp.write("Hello")
                 await afp.write(" ")
@@ -132,7 +138,8 @@ An example of usage:
                 for _ in range(10000):
                     await afp.write("Hello World\n")
 
-            assert fname.stat().st_size < 10000
+            file_size = fname.stat().st_size
+            assert file_size < 10000, f"File too large {file_size} bytes"
 
     run(file_write())
 

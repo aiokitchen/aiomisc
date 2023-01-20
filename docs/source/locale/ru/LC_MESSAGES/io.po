@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-01-20 13:47+0300\n"
+"POT-Creation-Date: 2023-01-20 17:50+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,6 +38,13 @@ msgid ""
 "    with tempfile.TemporaryDirectory() as tmp:\n"
 "        fname = Path(tmp) / 'test.txt'\n"
 "\n"
+"        # Some tools, such as mypy, will not be able to infer the type\n"
+"        # from the `async_open` function based on the `b` character "
+"passed\n"
+"        # to the mode.\n"
+"        # We'll have to tell the type here explicitly.\n"
+"        afp: aiomisc.io.AsyncTextIO\n"
+"\n"
 "        async with aiomisc.io.async_open(fname, 'w+') as afp:\n"
 "            await afp.write(\"Hello\")\n"
 "            await afp.write(\" \")\n"
@@ -50,8 +57,34 @@ msgid ""
 "with aiomisc.entrypoint() as loop:\n"
 "    loop.run_until_complete(file_write())"
 msgstr ""
+"import aiomisc\n"
+"import tempfile\n"
+"from pathlib import Path\n"
+"\n"
+"\n"
+"async def file_write():\n"
+"    with tempfile.TemporaryDirectory() as tmp:\n"
+"        fname = Path(tmp) / 'test.txt'\n"
+"\n"
+"        # Некоторые инструменты, такие как mypy, не смогут вывести тип \n"
+"        # из функции async_open основываясь на переданном символе `b` в режим."
+"\n"
+"        # Придется тут подсказать тип явно.\n"
+"        afp: aiomisc.io.AsyncTextIO\n"
+"\n"
+"        async with aiomisc.io.async_open(fname, 'w+') as afp:\n"
+"            await afp.write(\"Hello\")\n"
+"            await afp.write(\" \")\n"
+"            await afp.write(\"world\")\n"
+"\n"
+"            await afp.seek(0)\n"
+"            print(await afp.read())\n"
+"\n"
+"\n"
+"with aiomisc.entrypoint() as loop:\n"
+"    loop.run_until_complete(file_write())"
 
-#: ../../source/io.rst:32
+#: ../../source/io.rst:38
 msgid ""
 "This is the way to working with files based on threads. It's very similar"
 " to `aiofiles`_ project and same limitations."
@@ -59,7 +92,7 @@ msgstr ""
 "Этот способ работы с файлами основан на потоках. Это очень похоже на то "
 "как сделано в библиотеке `aiofiles`_ с теми-же ограничениями."
 
-#: ../../source/io.rst:35
+#: ../../source/io.rst:41
 msgid ""
 "Of course, you can use `aiofile`_ project for this. But it's not a silver"
 " bullet and has OS API-related limitations."
@@ -68,7 +101,7 @@ msgstr ""
 " не панацея, так как имеет ограничения связанные с API операционной "
 "системы."
 
-#: ../../source/io.rst:38
+#: ../../source/io.rst:44
 msgid ""
 "In general, for light loads, I would advise you to adhere to the "
 "following rules:"
@@ -76,7 +109,7 @@ msgstr ""
 "В основном, для небольших нагрузок приложений, я рекомендую "
 "придерживаться следующих правил:"
 
-#: ../../source/io.rst:40
+#: ../../source/io.rst:46
 msgid ""
 "If reading and writing small or big chunks from files with random access "
 "is the main task in your project, use `aiofile`_."
@@ -84,11 +117,11 @@ msgstr ""
 "Если чтение и запись маленьких или больших кусочков в файлы со случайным "
 "доступом основная задача приложения - стоит использовать `aiofile`_."
 
-#: ../../source/io.rst:42
+#: ../../source/io.rst:48
 msgid "Otherwise use this module or `aiofiles`_"
 msgstr "Иначе можно взять этот модуль или `aiofiles`_"
 
-#: ../../source/io.rst:43
+#: ../../source/io.rst:49
 msgid ""
 "If the main task is to read large chunks of files for processing, both of"
 " the above methods are not optimal cause you will switch context each IO "
@@ -106,7 +139,7 @@ msgstr ""
 "потоками может оказаться выше чем суммарно время исполнения всех IO "
 "операций."
 
-#: ../../source/io.rst:51
+#: ../../source/io.rst:57
 msgid ""
 "Just try pack all blocking staff in separate functions and call it in a "
 "thread pool, see the example bellow:"
@@ -114,7 +147,7 @@ msgstr ""
 "Просто попробуйте завернуть все блокирующие вызовы в отдельные функции и "
 "вызывайте их используя пул потоков (см. пример ниже):"
 
-#: ../../source/io.rst:54
+#: ../../source/io.rst:60
 msgid ""
 "import os\n"
 "import aiomisc\n"
@@ -161,11 +194,11 @@ msgid ""
 "   )"
 msgstr ""
 
-#: ../../source/io.rst:102
+#: ../../source/io.rst:108
 msgid "In the fly compression"
 msgstr "Поточное сжатие"
 
-#: ../../source/io.rst:104
+#: ../../source/io.rst:110
 msgid ""
 "To enable compression, you need to pass the `compression` argument to the"
 " `async_open` function."
@@ -173,31 +206,31 @@ msgstr ""
 "Чтобы включить поточное сжатие, нужно передать аргумент `compression` в "
 "функцию `async_open`."
 
-#: ../../source/io.rst:107
+#: ../../source/io.rst:113
 msgid "Supported compressors:"
 msgstr "Поддерживаемые алгоритмы сжатия:"
 
-#: ../../source/io.rst:109
+#: ../../source/io.rst:115
 msgid ":class:`aiomisc.io.Compression.NONE`"
 msgstr ""
 
-#: ../../source/io.rst:110
+#: ../../source/io.rst:116
 msgid ":class:`aiomisc.io.Compression.GZIP`"
 msgstr ""
 
-#: ../../source/io.rst:111
+#: ../../source/io.rst:117
 msgid ":class:`aiomisc.io.Compression.BZ2`"
 msgstr ""
 
-#: ../../source/io.rst:112
+#: ../../source/io.rst:118
 msgid ":class:`aiomisc.io.Compression.LZMA`"
 msgstr ""
 
-#: ../../source/io.rst:114
+#: ../../source/io.rst:120
 msgid "An example of usage:"
 msgstr "Пример использования"
 
-#: ../../source/io.rst:116
+#: ../../source/io.rst:122
 msgid ""
 "import tempfile\n"
 "from aiomisc import run\n"

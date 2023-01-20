@@ -266,46 +266,40 @@ AsyncBytesFileIO = AsyncBinaryIO
 AsyncTextFileIO = AsyncTextIO
 
 
-class GzipIOMixin(Generic[AnyStr]):
+class AsyncGzipBinaryIO(AsyncBytesFileIO):
     @staticmethod
     def get_opener() -> Callable[..., IO[AnyStr]]:
-        return gzip.open        # type: ignore
+        return gzip.open  # type: ignore
 
 
-class AsyncGzipBinaryIO(AsyncBytesFileIO, GzipIOMixin[bytes]):
-    pass
-
-
-class AsyncGzipTextIO(AsyncTextFileIO, GzipIOMixin[str]):
-    pass
-
-
-class Bz2IOMixin(Generic[AnyStr]):
+class AsyncGzipTextIO(AsyncTextFileIO):
     @staticmethod
     def get_opener() -> Callable[..., IO[AnyStr]]:
-        return bz2.open
+        return gzip.open  # type: ignore
 
 
-class AsyncBz2BinaryIO(AsyncBytesFileIO, Bz2IOMixin[bytes]):
-    pass
-
-
-class AsyncBz2TextIO(AsyncTextFileIO, Bz2IOMixin[str]):
-    pass
-
-
-class LzmaIOMixin(Generic[AnyStr]):
+class AsyncBz2BinaryIO(AsyncBytesFileIO):
     @staticmethod
     def get_opener() -> Callable[..., IO[AnyStr]]:
-        return lzma.open
+        return bz2.open   # type: ignore
 
 
-class AsyncLzmaBinaryIO(AsyncBytesFileIO, LzmaIOMixin[bytes]):
-    pass
+class AsyncBz2TextIO(AsyncTextFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return bz2.open   # type: ignore
 
 
-class AsyncLzmaTextIO(AsyncTextFileIO, LzmaIOMixin[str]):
-    pass
+class AsyncLzmaBinaryIO(AsyncBytesFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return lzma.open  # type: ignore
+
+
+class AsyncLzmaTextIO(AsyncTextFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return lzma.open  # type: ignore
 
 
 class Compression(Enum):
@@ -315,21 +309,9 @@ class Compression(Enum):
     LZMA = (AsyncLzmaBinaryIO, AsyncLzmaTextIO)
 
 
-AsyncBinaryIOType = Union[
-    AsyncBinaryIO,
-    AsyncBz2BinaryIO,
-    AsyncGzipBinaryIO,
-    AsyncLzmaBinaryIO,
-]
+AsyncFileType = Union[AsyncFileIO[AnyStr], AsyncTextIO, AsyncBinaryIO]
 
-AsyncTextIOType = Union[
-    AsyncBz2TextIO,
-    AsyncGzipTextIO,
-    AsyncLzmaTextIO,
-    AsyncTextIO,
-]
-
-AsyncFileType = Union[AsyncBinaryIOType, AsyncTextIOType]
+# Deprecated excluded from __all__
 AsyncFileT = AsyncFileType
 
 
@@ -338,7 +320,7 @@ def async_open(
     compression: Compression = Compression.NONE,
     encoding: str = sys.getdefaultencoding(),
     *args: Any, **kwargs: Any,
-) -> AsyncFileIO[AnyStr]:
+) -> AsyncFileType:
     binary_io_class, text_io_class = compression.value
 
     if "b" in mode:
@@ -354,7 +336,7 @@ __all__ = (
     "AsyncBinaryIO",
     "AsyncBz2BinaryIO",
     "AsyncBz2TextIO",
-    "AsyncFileT",
+    "AsyncFileIO",
     "AsyncFileType",
     "AsyncGzipBinaryIO",
     "AsyncGzipTextIO",

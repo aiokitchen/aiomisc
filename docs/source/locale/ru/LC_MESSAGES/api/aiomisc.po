@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-20 13:36+0300\n"
+"POT-Creation-Date: 2023-01-20 17:50+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -306,100 +306,6 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.io`` module"
 msgstr "Модуль ``aiomisc.io``"
-
-#: bz2.open:1 of
-msgid "Open a bzip2-compressed file in binary or text mode."
-msgstr ""
-
-#: bz2.open:3 of
-msgid ""
-"The filename argument can be an actual filename (a str, bytes, or "
-"PathLike object), or an existing file object to read from or write to."
-msgstr ""
-
-#: bz2.open:7 gzip.open:6 of
-msgid ""
-"The mode argument can be \"r\", \"rb\", \"w\", \"wb\", \"x\", \"xb\", "
-"\"a\" or \"ab\" for binary mode, or \"rt\", \"wt\", \"xt\" or \"at\" for "
-"text mode. The default mode is \"rb\", and the default compresslevel is "
-"9."
-msgstr ""
-
-#: bz2.open:11 of
-msgid ""
-"For binary mode, this function is equivalent to the BZ2File constructor: "
-"BZ2File(filename, mode, compresslevel). In this case, the encoding, "
-"errors and newline arguments must not be provided."
-msgstr ""
-
-#: bz2.open:15 of
-msgid ""
-"For text mode, a BZ2File object is created, and wrapped in an "
-"io.TextIOWrapper instance with the specified encoding, error handling "
-"behavior, and line ending(s)."
-msgstr ""
-
-#: gzip.open:1 of
-msgid "Open a gzip-compressed file in binary or text mode."
-msgstr ""
-
-#: gzip.open:3 of
-msgid ""
-"The filename argument can be an actual filename (a str or bytes object), "
-"or an existing file object to read from or write to."
-msgstr ""
-
-#: gzip.open:10 of
-msgid ""
-"For binary mode, this function is equivalent to the GzipFile constructor:"
-" GzipFile(filename, mode, compresslevel). In this case, the encoding, "
-"errors and newline arguments must not be provided."
-msgstr ""
-
-#: gzip.open:14 of
-msgid ""
-"For text mode, a GzipFile object is created, and wrapped in an "
-"io.TextIOWrapper instance with the specified encoding, error handling "
-"behavior, and line ending(s)."
-msgstr ""
-
-#: lzma.open:1 of
-msgid "Open an LZMA-compressed file in binary or text mode."
-msgstr ""
-
-#: lzma.open:3 of
-msgid ""
-"filename can be either an actual file name (given as a str, bytes, or "
-"PathLike object), in which case the named file is opened, or it can be an"
-" existing file object to read from or write to."
-msgstr ""
-
-#: lzma.open:7 of
-msgid ""
-"The mode argument can be \"r\", \"rb\" (default), \"w\", \"wb\", \"x\", "
-"\"xb\", \"a\", or \"ab\" for binary mode, or \"rt\", \"wt\", \"xt\", or "
-"\"at\" for text mode."
-msgstr ""
-
-#: lzma.open:11 of
-msgid ""
-"The format, check, preset and filters arguments specify the compression "
-"settings, as for LZMACompressor, LZMADecompressor and LZMAFile."
-msgstr ""
-
-#: lzma.open:15 of
-msgid ""
-"For binary mode, this function is equivalent to the LZMAFile constructor:"
-" LZMAFile(filename, mode, ...). In this case, the encoding, errors and "
-"newline arguments must not be provided."
-msgstr ""
-
-#: lzma.open:19 of
-msgid ""
-"For text mode, an LZMAFile object is created, and wrapped in an "
-"io.TextIOWrapper instance with the specified encoding, error handling "
-"behavior, and line ending(s)."
-msgstr ""
 
 #: ../../source/api/aiomisc.rst:68
 msgid "``aiomisc.iterator_wrapper`` module"
@@ -924,4 +830,110 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "and for bytes a BytesIO can be "
 #~ "used like a file opened in a "
 #~ "binary mode."
+#~ msgstr ""
+
+#~ msgid "Open a bzip2-compressed file in binary or text mode."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The filename argument can be an "
+#~ "actual filename (a str, bytes, or "
+#~ "PathLike object), or an existing file"
+#~ " object to read from or write "
+#~ "to."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The mode argument can be \"r\", "
+#~ "\"rb\", \"w\", \"wb\", \"x\", \"xb\", "
+#~ "\"a\" or \"ab\" for binary mode, "
+#~ "or \"rt\", \"wt\", \"xt\" or \"at\" "
+#~ "for text mode. The default mode is"
+#~ " \"rb\", and the default compresslevel "
+#~ "is 9."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "For binary mode, this function is "
+#~ "equivalent to the BZ2File constructor: "
+#~ "BZ2File(filename, mode, compresslevel). In "
+#~ "this case, the encoding, errors and "
+#~ "newline arguments must not be provided."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "For text mode, a BZ2File object is"
+#~ " created, and wrapped in an "
+#~ "io.TextIOWrapper instance with the specified"
+#~ " encoding, error handling behavior, and "
+#~ "line ending(s)."
+#~ msgstr ""
+
+#~ msgid "Open a gzip-compressed file in binary or text mode."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The filename argument can be an "
+#~ "actual filename (a str or bytes "
+#~ "object), or an existing file object "
+#~ "to read from or write to."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "For binary mode, this function is "
+#~ "equivalent to the GzipFile constructor: "
+#~ "GzipFile(filename, mode, compresslevel). In "
+#~ "this case, the encoding, errors and "
+#~ "newline arguments must not be provided."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "For text mode, a GzipFile object "
+#~ "is created, and wrapped in an "
+#~ "io.TextIOWrapper instance with the specified"
+#~ " encoding, error handling behavior, and "
+#~ "line ending(s)."
+#~ msgstr ""
+
+#~ msgid "Open an LZMA-compressed file in binary or text mode."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "filename can be either an actual "
+#~ "file name (given as a str, bytes,"
+#~ " or PathLike object), in which case"
+#~ " the named file is opened, or "
+#~ "it can be an existing file object"
+#~ " to read from or write to."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The mode argument can be \"r\", "
+#~ "\"rb\" (default), \"w\", \"wb\", \"x\", "
+#~ "\"xb\", \"a\", or \"ab\" for binary "
+#~ "mode, or \"rt\", \"wt\", \"xt\", or "
+#~ "\"at\" for text mode."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The format, check, preset and filters"
+#~ " arguments specify the compression "
+#~ "settings, as for LZMACompressor, "
+#~ "LZMADecompressor and LZMAFile."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "For binary mode, this function is "
+#~ "equivalent to the LZMAFile constructor: "
+#~ "LZMAFile(filename, mode, ...). In this "
+#~ "case, the encoding, errors and newline"
+#~ " arguments must not be provided."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "For text mode, an LZMAFile object "
+#~ "is created, and wrapped in an "
+#~ "io.TextIOWrapper instance with the specified"
+#~ " encoding, error handling behavior, and "
+#~ "line ending(s)."
 #~ msgstr ""
