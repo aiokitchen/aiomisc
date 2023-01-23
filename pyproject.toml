@@ -1,26 +1,46 @@
 [tool.poetry]
 name = "aiomisc"
 # This is a dummy version which will be rewritten with poem-plugins
-version = "16.3.1"
+version = "16.3.5"
 description = "aiomisc - miscellaneous utils for asyncio"
 authors = ["Dmitry Orlov <me@mosquito.su>"]
 readme = "README.rst"
 license = "MIT"
 homepage = "https://github.com/aiokitchen/aiomisc"
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: AsyncIO",
     "Framework :: Pytest",
+    "Framework :: aiohttp",
     "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
     "Natural Language :: Russian",
     "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX",
-    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Topic :: System :: Archiving :: Compression",
+    "Topic :: System :: Logging",
+    "Topic :: System",
+    "Topic :: Utilities",
+    "Typing :: Typed",
 ]
 packages = [
     { include = "aiomisc" },
