@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pickle
 import socket
 from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
@@ -851,3 +852,18 @@ async def test_entrypoint_graceful_shutdown_loop_owner(loop):
 
     assert task.done()
     assert not task.cancelled()
+
+
+class CucumberService(aiomisc.Service):
+    async def start(self) -> None:
+        return
+
+
+async def test_service_pickle():
+    cucumbers = [CucumberService(index=i) for i in range(100)]
+    pickled_cucumbers = pickle.dumps(cucumbers)
+
+    cucumbers.clear()
+
+    for idx, cucumber in enumerate(pickle.loads(pickled_cucumbers)):
+        assert cucumber.index == idx
