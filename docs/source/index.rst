@@ -327,7 +327,14 @@ For setting up developer environment just execute:
 
     .. code-block::
 
+        # installing all dependencies
         poetry install
+
+        # setting up pre-commit hooks
+        poetry run pre-commit install
+
+        # adding poem-plugins to the poetry
+        poetry self add poem-plugins
 
 
 .. _Semantic Versioning: http://semver.org/
