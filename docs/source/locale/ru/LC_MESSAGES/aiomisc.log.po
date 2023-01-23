@@ -17,30 +17,29 @@ msgstr ""
 
 #: ../../source/aiomisc.log.rst:2
 msgid "aiomisc.log package"
-msgstr ""
+msgstr "Пакет aiomisc.log"
 
 #: ../../source/aiomisc.log.rst:5
 msgid "Subpackages"
-msgstr ""
+msgstr "Подпакеты"
 
 #: ../../source/aiomisc.log.rst:13
 msgid "Submodules"
-msgstr ""
+msgstr "Подмодули"
 
 #: aiomisc.log.enum.DateFormat:1 of
 msgid "Bases: :class:`enum.Enum`"
-msgstr ""
+msgstr "Базовый класс: :class:`enum.Enum`"
 
 #: aiomisc.log.enum.DateFormat:1 aiomisc.log.enum.LogFormat:1
 #: aiomisc.log.enum.LogLevel:1 of
 msgid "An enumeration."
-msgstr ""
+msgstr "Перечисление"
 
 #: aiomisc.log.enum.LogFormat:1 aiomisc.log.enum.LogLevel:1 of
 msgid "Bases: :class:`enum.IntEnum`"
-msgstr ""
+msgstr "Базовый класс: :class:`enum.IntEnum`"
 
 #: ../../source/aiomisc.log.rst:34
 msgid "Module contents"
-msgstr ""
-
+msgstr "Содержимое модуля"

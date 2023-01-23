@@ -1,14 +1,21 @@
 import asyncio
+import bz2
+import gzip
+import lzma
+import sys
 from concurrent.futures import Executor
+from enum import Enum
 from functools import partial, total_ordering
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Generator, Optional, TypeVar, Union
+from typing import (
+    IO, Any, AnyStr, Awaitable, Callable, Generator, Generic, List, Optional,
+    TextIO, TypeVar, Union,
+)
 
 from .compat import EventLoopMixin
-from .thread_pool import threaded
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Any)
 
 
 def proxy_method_async(
@@ -54,62 +61,61 @@ def proxy_method_async(
     return method
 
 
-def proxy_method(name: str) -> Callable[..., Awaitable[Any]]:
-    def method(self: Any, *args: Any, **kwargs: Any) -> Any:
-        return getattr(self.fp, name)(*args, **kwargs)
-
-    method.__name__ = name
-    return method
-
-
-def proxy_property(name: str) -> property:
-    def fset(self: Any, value: Any) -> None:
-        setattr(self.fp, name, value)
-
-    def fget(self: Any) -> Any:
-        return getattr(self.fp, name)
-
-    def fdel(self: Any) -> None:
-        delattr(self.fp, name)
-
-    return property(fget, fset, fdel)
-
-
 @total_ordering
-class AsyncFileIOBase(EventLoopMixin):
+class AsyncFileIO(EventLoopMixin, Generic[AnyStr]):
     __slots__ = (
-        "__opener", "fp", "executor", "__iterator_lock",
+        "_fp", "executor", "__iterator_lock",
     ) + EventLoopMixin.__slots__
 
-    opener = staticmethod(threaded(open))
+    _fp: Optional[IO[AnyStr]]
+
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return open
 
     def __init__(
         self, fname: Union[str, Path], mode: str = "r",
         executor: Optional[Executor] = None, *args: Any,
         loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any,
     ):
-        self._loop = loop
-        self.fp = None
         self.executor = executor
-        self.__opener = partial(self.opener, fname, mode, *args, **kwargs)
+        self._loop = loop
+        self._fp = None
+        self.__open_args = (str(fname), mode, *args), kwargs
         self.__iterator_lock = asyncio.Lock()
 
-    def closed(self) -> bool:
-        if self.fp is None:
-            raise RuntimeError("file is not opened")
-        return self.fp.closed
+    @classmethod
+    def open_fp(
+        cls, fp: IO, executor: Optional[Executor] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+    ) -> "AsyncFileIO":
+        async_fp = cls(fp.name, mode=fp.mode, executor=executor, loop=loop)
+        async_fp._fp = fp
+        return async_fp
 
     async def open(self) -> None:
-        if self.fp is not None:
+        if self._fp is not None:
             return
 
-        self.fp = await self.__opener()     # type: ignore
+        args, kwargs = self.__open_args
+        self._fp = await self.__execute_in_thread(
+            self.get_opener(), *args, **kwargs,
+        )
 
-    def __await__(self) -> Generator[Any, Any, "AsyncFileIOBase"]:
+    @property
+    def fp(self) -> IO[AnyStr]:
+        if self._fp is not None:
+            return self._fp
+        raise RuntimeError("file is not opened")
+
+    def closed(self) -> bool:
+        return self.fp.closed
+
+    def __await__(self) -> Generator[Any, Any, "AsyncFileIO"]:
         yield from self.open().__await__()
         return self
 
-    async def __aenter__(self) -> "AsyncFileIOBase":
+    async def __aenter__(self) -> "AsyncFileIO[AnyStr]":
         await self.open()
         return self
 
@@ -129,12 +135,12 @@ class AsyncFileIOBase(EventLoopMixin):
             return
 
         self.fp.close()
-        del self.fp
+        del self._fp
 
-    def __aiter__(self) -> "AsyncFileIOBase":
+    def __aiter__(self) -> "AsyncFileIO[AnyStr]":
         return self
 
-    async def __anext__(self) -> Union[str, bytes]:
+    async def __anext__(self) -> AnyStr:
         async with self.__iterator_lock:
             line = await self.readline()
 
@@ -156,67 +162,190 @@ class AsyncFileIOBase(EventLoopMixin):
     def __hash__(self) -> int:
         return hash((self.__class__, self.fp))
 
-    fileno = proxy_method("fileno")
-    isatty = proxy_method("isatty")
+    async def __execute_in_thread(
+        self, method: Callable[..., Any], *args: Any, **kwargs: Any,
+    ) -> Any:
+        return await self.loop.run_in_executor(
+            self.executor, partial(method, *args, **kwargs),
+        )
 
-    mode = proxy_property("mode")
-    name = proxy_property("name")
+    @property
+    def mode(self) -> str:
+        return self.fp.mode
 
-    close = proxy_method_async("close")
-    detach = proxy_method_async("detach")
-    flush = proxy_method_async("flush")
-    peek = proxy_method_async("peek")
-    raw = proxy_property("raw")
-    read = proxy_method_async("read")
-    read1 = proxy_method_async("read1")
-    readinto = proxy_method_async("readinto")
-    readinto1 = proxy_method_async("readinto1")
-    readline = proxy_method_async("readline")
-    readlines = proxy_method_async("readlines")
-    seek = proxy_method_async("seek")
-    peek = proxy_method_async("peek")
-    truncate = proxy_method_async("truncate")
-    write = proxy_method_async("write")
-    writelines = proxy_method_async("writelines")
+    @property
+    def name(self) -> str:
+        return self.fp.name
 
-    tell = proxy_method_async("tell", in_executor=False)
-    readable = proxy_method_async("readable", in_executor=False)
-    seekable = proxy_method_async("seekable", in_executor=False)
-    writable = proxy_method_async("writable", in_executor=False)
+    def fileno(self) -> int:
+        return self.fp.fileno()
+
+    def isatty(self) -> bool:
+        return self.fp.isatty()
+
+    async def close(self) -> None:
+        return await self.__execute_in_thread(self.fp.close)
+
+    def __getattr__(self, name: str) -> Callable[..., Awaitable[Any]]:
+        async def method(*args: Any) -> Any:
+            getter = getattr(self.fp, name)
+            if callable(getter):
+                return await self.__execute_in_thread(getter, *args)
+            return getter
+        method.__name__ = name
+        return method
+
+    async def tell(self) -> int:
+        return self.fp.tell()
+
+    async def readable(self) -> bool:
+        return self.fp.readable()
+
+    async def seekable(self) -> bool:
+        return self.fp.seekable()
+
+    async def writable(self) -> bool:
+        return self.fp.writable()
+
+    async def flush(self) -> None:
+        await self.__execute_in_thread(self.fp.flush)
+
+    async def read(self, n: int = -1) -> AnyStr:
+        return await self.__execute_in_thread(self.fp.read, n)
+
+    async def readline(self, limit: int = -1) -> AnyStr:
+        return await self.__execute_in_thread(self.fp.readline, limit)
+
+    async def readlines(self, limit: int = -1) -> List[AnyStr]:
+        return await self.__execute_in_thread(self.fp.readlines, limit)
+
+    async def seek(self, offset: int, whence: int = 0) -> int:
+        return await self.__execute_in_thread(self.fp.seek, offset, whence)
+
+    async def truncate(self, size: Optional[int] = None) -> int:
+        return await self.__execute_in_thread(self.fp.truncate, size)
+
+    async def write(self, s: AnyStr) -> int:
+        return await self.__execute_in_thread(self.fp.write, s)
+
+    async def writelines(self, lines: List[AnyStr]) -> None:
+        await self.__execute_in_thread(self.fp.writelines, lines)
 
 
-class AsyncTextFileIOBase:
-    newlines = proxy_property("newlines")
-    errors = proxy_property("errors")
-    line_buffering = proxy_property("line_buffering")
-    encoding = proxy_property("encoding")
-    buffer = proxy_property("buffer")
+AsyncFileIOBase = AsyncFileIO
 
 
-class AsyncBytesFileIOBase:
+class AsyncBinaryIO(AsyncFileIO[bytes]):
     pass
 
 
-class AsyncTextFileIO(AsyncFileIOBase, AsyncTextFileIOBase):
-    pass
+class AsyncTextIO(AsyncFileIO[str]):
+    @property
+    def fp(self) -> TextIO:
+        return self._fp     # type: ignore
+
+    @property
+    def newlines(self) -> Any:
+        return self.fp.newlines
+
+    @property
+    def errors(self) -> Optional[str]:
+        return self.fp.errors
+
+    @property
+    def line_buffering(self) -> int:
+        return self.fp.line_buffering
+
+    @property
+    def encoding(self) -> str:
+        return self.fp.encoding
+
+    def buffer(self) -> AsyncBinaryIO:
+        return AsyncBinaryIO.open_fp(self.fp.buffer)    # type: ignore
 
 
-class AsyncBytesFileIO(AsyncFileIOBase, AsyncBytesFileIOBase):
-    pass
+# Aliases
+AsyncBytesFileIO = AsyncBinaryIO
+AsyncTextFileIO = AsyncTextIO
 
 
-AsyncFileT = Union[
-    AsyncBytesFileIO,
-    AsyncTextFileIO,
-]
+class AsyncGzipBinaryIO(AsyncBytesFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return gzip.open  # type: ignore
+
+
+class AsyncGzipTextIO(AsyncTextFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return gzip.open  # type: ignore
+
+
+class AsyncBz2BinaryIO(AsyncBytesFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return bz2.open   # type: ignore
+
+
+class AsyncBz2TextIO(AsyncTextFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return bz2.open   # type: ignore
+
+
+class AsyncLzmaBinaryIO(AsyncBytesFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return lzma.open  # type: ignore
+
+
+class AsyncLzmaTextIO(AsyncTextFileIO):
+    @staticmethod
+    def get_opener() -> Callable[..., IO[AnyStr]]:
+        return lzma.open  # type: ignore
+
+
+class Compression(Enum):
+    NONE = (AsyncBinaryIO, AsyncTextIO)
+    GZIP = (AsyncGzipBinaryIO, AsyncGzipTextIO)
+    BZ2 = (AsyncBz2BinaryIO, AsyncBz2TextIO)
+    LZMA = (AsyncLzmaBinaryIO, AsyncLzmaTextIO)
+
+
+AsyncFileType = Union[AsyncFileIO[AnyStr], AsyncTextIO, AsyncBinaryIO]
+
+# Deprecated excluded from __all__
+AsyncFileT = AsyncFileType
 
 
 def async_open(
     fname: Union[str, Path], mode: str = "r",
+    compression: Compression = Compression.NONE,
+    encoding: str = sys.getdefaultencoding(),
     *args: Any, **kwargs: Any,
-) -> AsyncFileT:
+) -> AsyncFileType:
+    binary_io_class, text_io_class = compression.value
+
     if "b" in mode:
-        return AsyncBytesFileIO(
-            fname, mode, *args, **kwargs,
-        )
-    return AsyncTextFileIO(fname, mode, *args, **kwargs)
+        return binary_io_class(fname, mode, *args, **kwargs)
+
+    if "t" not in mode:
+        mode = f"t{mode}"
+
+    return text_io_class(fname, mode, encoding=encoding, *args, **kwargs)
+
+
+__all__ = (
+    "AsyncBinaryIO",
+    "AsyncBz2BinaryIO",
+    "AsyncBz2TextIO",
+    "AsyncFileIO",
+    "AsyncFileType",
+    "AsyncGzipBinaryIO",
+    "AsyncGzipTextIO",
+    "AsyncLzmaBinaryIO",
+    "AsyncLzmaTextIO",
+    "AsyncTextIO",
+    "Compression",
+    "async_open",
+)

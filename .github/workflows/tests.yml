@@ -1,0 +1,172 @@
+name: tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  pylama:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - run: python -m pip install poetry
+      - run: poetry install
+      - run: poetry run pylama
+        env:
+          FORCE_COLOR: 1
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - run: python -m pip install poetry
+      - run: poetry install
+      - run: poetry run mypy
+        env:
+          FORCE_COLOR: 1
+  docs-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - run: python -m pip install poetry
+      - run: poetry install
+      - run: poetry run pytest -svv docs/source
+        env:
+          FORCE_COLOR: 1
+
+  tests-on-linux:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python:
+          - '3.7'
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "${{ matrix.python }}"
+      - run: python -m pip install poetry
+      - run: poetry install --with=uvloop
+      - run: >-
+          poetry run pytest \
+            -vv \
+            --cov=aiomisc \
+            --cov=aiomisc_log \
+            --cov=aiomisc_pytest \
+            --cov=aiomisc_worker \
+            --cov-report=term-missing \
+            --doctest-modules \
+            --aiomisc-test-timeout=120 \
+            tests
+        env:
+          FORCE_COLOR: 1
+      - run: poetry run coveralls
+        env:
+          COVERALLS_PARALLEL: 'true'
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  tests-on-macos:
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python:
+          - '3.9'
+          - '3.10'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "${{ matrix.python }}"
+      - run: python -m pip install poetry
+      - run: poetry install --without=uvloop
+      - run: poetry run pytest -vv --aiomisc-test-timeout=120 tests
+        env:
+          FORCE_COLOR: 1
+
+  tests-on-windows:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python:
+          - '3.9'
+          - '3.10'
+          - '3.11'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "${{ matrix.python }}"
+      - run: python -m pip install poetry
+      - run: poetry install --without=uvloop
+      - run: poetry run pytest -vv --aiomisc-test-timeout=120 tests
+        env:
+          FORCE_COLOR: 1
+
+  tests-rpc-example:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        example:
+          - 'rpc'
+          - 'rpc_udp'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - run: python -m pip install poetry
+      - run: poetry install --with=uvloop
+      - run: poetry run python -m pip install msgspec~=0.9.1
+      - run: >-
+          cd examples/${{ matrix.example }} &&
+          poetry run pytest -v --doctest-modules tests.py
+        env:
+          FORCE_COLOR: 1
+
+  finish:
+    needs:
+       - tests-on-linux
+       - tests-on-macos
+       - tests-on-windows
+       - tests-rpc-example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true

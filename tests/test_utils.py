@@ -5,6 +5,7 @@ import socket
 import time
 import uuid
 from random import shuffle
+from typing import List, Optional, Sequence
 
 import pytest
 
@@ -31,7 +32,7 @@ async def test_select(loop: asyncio.AbstractEventLoop):
 
 
 async def test_select_cancelling(loop: asyncio.AbstractEventLoop):
-    results = []
+    results: List[Optional[bool]] = []
 
     async def good_coro(wait):
         nonlocal results
@@ -130,7 +131,9 @@ def test_shield():
 
 
 def test_chunk_list():
-    data = tuple(map(tuple, aiomisc.chunk_list(range(10), 3)))
+    data: Sequence[Sequence[int]] = tuple(
+        map(tuple, aiomisc.chunk_list(range(10), 3)),
+    )
 
     assert data == ((0, 1, 2), (3, 4, 5), (6, 7, 8), (9,))
 

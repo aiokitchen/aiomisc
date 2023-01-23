@@ -4,7 +4,6 @@ import hmac
 import os
 import socket
 import sys
-import warnings
 from inspect import Traceback
 from multiprocessing import ProcessError
 from os import chmod, urandom
@@ -25,13 +24,6 @@ from aiomisc_worker import (
     COOKIE_SIZE, INET_AF, INT_SIGNAL, SIGNAL, AddressType, PacketTypes, T, log,
 )
 from aiomisc_worker.protocol import AsyncProtocol, FileIOProtocol
-
-
-if sys.version_info < (3, 7):
-    warnings.warn(
-        "Python 3.6 works not well see https://bugs.python.org/issue37380",
-        RuntimeWarning,
-    )
 
 
 class WorkerPoolStatistic(Statistic):
@@ -124,7 +116,7 @@ class WorkerPool:
 
     def __init__(
         self, workers: int, max_overflow: int = 0, *,
-        initializer: Optional[Callable[[], Any]] = None,
+        initializer: Optional[Callable[..., Any]] = None,
         initializer_args: Tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
         statistic_name: Optional[str] = None,

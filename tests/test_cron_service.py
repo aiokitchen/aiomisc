@@ -11,7 +11,7 @@ pytestmark = pytest.mark.catch_loop_exceptions
 
 def test_cron():
     counter = 0
-    condition = None
+    condition: asyncio.Condition
 
     async def callback():
         nonlocal counter
@@ -57,7 +57,7 @@ def test_cron():
 
 def test_register():
     counter = 0
-    condition = None
+    condition: asyncio.Condition
 
     async def callback():
         nonlocal counter

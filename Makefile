@@ -1,52 +1,61 @@
 all: bump clean sdist test upload
 
-NAME:=$(shell python3 setup.py --name)
-VERSION:=$(shell python3 setup.py --version | sed 's/+/-/g')
+NAME:=$(shell poetry version -n | awk '{print $1}')
+VERSION:=$(shell poetry version -n | awk '{print $2}')
+
+clean:
+	rm -vrf *.egg-info dist build
 
 bump:
-	python3 bump.py aiomisc/version.py
+	poetry build
+
+
+install:
+	poetry install
+
+
+upload: clean sdist
+	poetry publish
+
+
+.venv/bin/python: install
+.venv: .venv/bin/python
+
 
 uml:
-	docker run --rm -v $(shell pwd):/mnt hrektts/plantuml \
+	docker run --rm -v $(shell pwd):/mnt -w /mnt hrektts/plantuml \
 		java -jar /usr/local/share/java/plantuml.jar \
-		-tsvg -o /mnt/docs/source/_static '/mnt/resources/uml/*/**.puml'
+		-tsvg -o docs/source/_static 'resources/uml/*/**.puml'
 
 sdist: bump uml
 	rm -fr dist
 	python3 setup.py sdist bdist_wheel
 
-upload: clean sdist
-	twine upload dist/*
 
-test:
-	tox
+test: .venv
+	poetry run pytest -vv
 
-test-docker:
-	docker run --rm -i -v $(shell pwd):/mnt -w /mnt \
-	    snakepacker/python:all tox --workdir /tmp
-
-clean:
-	rm -fr *.egg-info .tox dist build
 
 develop: clean
-	python3 -m venv .venv
-	.venv/bin/pip install pre-commit gray pylava
-	.venv/bin/pre-commit install
-	.venv/bin/pip install -Ue '.'
-	.venv/bin/pip install -Ue '.[develop]'
+	poetry install
+	poetry run pre-commit install
+
 
 mypy:
-	mypy aiomisc aiomisc_log aiomisc_worker
+	poetry run mypy
 
-translate: bump
+
+reformat:
+	poetry run gray aiomisc*
+
+
+translate: .venv
 	make -C docs/ gettext
 	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
+
 
 docs: translate
 	make -C docs/ -e BUILDDIR="build/en" html
 	make -C docs/ -e SPHINXOPTS="-D language='ru'" -e BUILDDIR="build/ru" html
 	python -m webbrowser -t "file://$(shell pwd)/docs/build/en/html/index.html"
 	python -m webbrowser -t "file://$(shell pwd)/docs/build/ru/html/index.html"
-
-gray:
-	gray aiomisc*

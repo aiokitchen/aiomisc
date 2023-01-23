@@ -71,7 +71,7 @@ class UDPServer(SimpleServer):
         return self._transport.sendto(data, addr)
 
     @abstractmethod
-    def handle_datagram(self, data: bytes, addr: tuple) -> None:
+    async def handle_datagram(self, data: bytes, addr: tuple) -> None:
         raise NotImplementedError
 
     async def start(self) -> None:

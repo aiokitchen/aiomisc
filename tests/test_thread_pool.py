@@ -16,7 +16,7 @@ from aiomisc.iterator_wrapper import ChannelClosed, FromThreadChannel
 try:
     import contextvars
 except ImportError:
-    contextvars = None
+    contextvars = None      # type: ignore
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
@@ -249,7 +249,7 @@ async def test_threaded_generator(loop, timer):
 
         result = []
         agen = arange(count)
-        async for item in agen:
+        async for item in agen:     # type: ignore
             result.append(item)
 
         assert result == list(range(count))
@@ -407,7 +407,7 @@ async def test_threaded_generator_func_raises(iterator_decorator, loop, timer):
 
 @pytest.mark.skipif(contextvars is None, reason="no contextvars support")
 async def test_context_vars(threaded_decorator, loop):
-    ctx_var = contextvars.ContextVar("test")
+    ctx_var = contextvars.ContextVar("test")    # type: ignore
 
     @threaded_decorator
     def test(arg):

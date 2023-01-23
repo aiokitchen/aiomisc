@@ -103,6 +103,8 @@ Keyword arguments notation:
         ...
 
 
+.. _asyncretry:
+
 ``asyncretry``
 ==============
 

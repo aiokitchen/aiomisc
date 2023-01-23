@@ -5,6 +5,7 @@ import socket
 from collections import Counter, defaultdict, deque
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any, Deque, MutableMapping, Tuple
 
 import pytest
 
@@ -24,11 +25,16 @@ def test_sdwatchdog_service(loop):
         tmp_path = Path(tmp_dir)
         sock_path = str(tmp_path / "notify.sock")
 
-        packets = deque()
+        packets: Deque[Tuple[Any, ...]] = deque()
 
         class FakeSystemd(UDPServer):
-            def handle_datagram(self, data: bytes, addr: tuple) -> None:
-                packets.append((data.decode().split("=", 1), addr))
+            async def handle_datagram(
+                self, data: bytes, addr: Tuple[Any, ...],
+            ) -> None:
+                key: str
+                value: str
+                key, value = data.decode().split("=", 1)
+                packets.append(((key, value), addr))
 
         with bind_socket(
             socket.AF_UNIX, socket.SOCK_DGRAM, address=sock_path,
@@ -52,7 +58,7 @@ def test_sdwatchdog_service(loop):
                     os.environ.pop(key)
 
     assert packets
-    messages_count = Counter()
+    messages_count: MutableMapping[str, int] = Counter()
     messages = defaultdict(set)
 
     for (key, value), sender in packets:

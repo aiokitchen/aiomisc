@@ -28,7 +28,7 @@ async def test_simple(pool, loop, timer):
             asyncio.gather(
                 *[
                     loop.run_in_executor(pool, sleep, 1) for _ in range(4)
-                ]
+                ],
             ), timeout=2,
         )
 
@@ -49,6 +49,6 @@ async def test_exit(pool, loop):
     with pytest.raises(asyncio.TimeoutError):
         await asyncio.wait_for(
             asyncio.gather(
-                *[loop.run_in_executor(pool, suicide) for _ in range(4)]
+                *[loop.run_in_executor(pool, suicide) for _ in range(4)],
             ), timeout=2,
         )

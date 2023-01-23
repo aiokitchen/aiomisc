@@ -2,8 +2,10 @@ Tutorial
 ========
 
 
-``aiomisc`` - is a one library collection of utilities that helps
-you write asynchronous services.
+``aiomisc`` is a Python library that provides a set of utilities for building
+asynchronous services. It allows you to split your program into smaller,
+independent services that can run concurrently, improving the overall
+performance and scalability of your application.
 
 The main approach in this library is to split your program into independent
 services that can work concurrently in asynchronous mode. The library also
@@ -15,6 +17,8 @@ to the principles outlined in this manual. This means that if you don't
 plan to modify your code too much, but only use a few useful functions or
 classes, then everything should work.
 
+Overall, aiomisc is a powerful tool for developers looking to build efficient
+and scalable asynchronous services in Python.
 
 Services
 ++++++++
@@ -632,3 +636,12 @@ You should always specify the ``max_size`` parameter, which limits the
 size of this queue and prevents threaded code from sending too much items to
 asynchronous code, in case the asynchronous iteration in case the asynchronous
 iteration slacking.
+
+Conclusion
+~~~~~~~~~~
+
+On this we need to finish this tutorial, I hope everything was clear here,
+and you learned a lot of useful things for yourself. A full description of
+the remaining services is presented in the :doc:`/modules` section, or in the
+source code. The authors have tried to make the source code as clear and
+simple as possible, so feel free to explore it.

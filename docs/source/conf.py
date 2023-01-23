@@ -20,8 +20,8 @@
 import os
 import sys
 from datetime import datetime
-
 from importlib.machinery import SourceFileLoader
+from typing import Any, Dict, List
 
 
 sys.path.insert(0, os.path.abspath(os.path.dirname("__file__")))
@@ -88,12 +88,12 @@ release = ".".join(map(str, module.version_info))
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns: List[Any] = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -163,7 +163,7 @@ htmlhelp_basename = "aiomiscdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, Any] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'a4paper',
@@ -242,5 +242,6 @@ html_favicon = "_static/icon.png"
 
 # html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
-locale_dirs = ['locale/']   # path is example but recommended.
+locale_dirs = ["locale/"]   # path is example but recommended.
 gettext_compact = False     # optional.
+gettext_additional_targets = ["literal-block"]

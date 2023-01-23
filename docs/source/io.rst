@@ -1,7 +1,8 @@
 asynchronous file operations
 ============================
 
-Asynchronous files operations. Based on the thread pool under the hood.
+Asynchronous files operations including support for data compression on the fly.
+Based on the thread pool under the hood.
 
 .. code-block:: python
     :name: test_io
@@ -14,6 +15,12 @@ Asynchronous files operations. Based on the thread pool under the hood.
     async def file_write():
         with tempfile.TemporaryDirectory() as tmp:
             fname = Path(tmp) / 'test.txt'
+
+            # Some tools, such as mypy, will not be able to infer the type
+            # from the `async_open` function based on the `b` character passed
+            # to the mode.
+            # We'll have to tell the type here explicitly.
+            afp: aiomisc.io.AsyncTextIO
 
             async with aiomisc.io.async_open(fname, 'w+') as afp:
                 await afp.write("Hello")
@@ -96,6 +103,45 @@ In general, for light loads, I would advise you to adhere to the following rules
         aiomisc.run(
             main(Path(path))
         )
+
+In the fly compression
+----------------------
+
+To enable compression, you need to pass the `compression` argument to the
+`async_open` function.
+
+Supported compressors:
+
+* :class:`aiomisc.io.Compression.NONE`
+* :class:`aiomisc.io.Compression.GZIP`
+* :class:`aiomisc.io.Compression.BZ2`
+* :class:`aiomisc.io.Compression.LZMA`
+
+An example of usage:
+
+.. code-block:: python
+    :name: test_compressed_gzip_io
+
+    import tempfile
+    from aiomisc import run
+    from aiomisc.io import async_open, Compression
+    from pathlib import Path
+
+
+    async def file_write():
+        with tempfile.TemporaryDirectory() as tmp:
+            fname = Path(tmp) / 'test.txt'
+
+            async with async_open(
+                fname, 'w+', compression=Compression.GZIP
+            ) as afp:
+                for _ in range(10000):
+                    await afp.write("Hello World\n")
+
+            file_size = fname.stat().st_size
+            assert file_size < 10000, f"File too large {file_size} bytes"
+
+    run(file_write())
 
 
 .. _aiofiles: https://pypi.org/project/aiofiles/

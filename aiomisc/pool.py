@@ -5,14 +5,14 @@ from collections import defaultdict
 from random import random
 from typing import (
     Any, AsyncContextManager, Awaitable, Callable, Coroutine, DefaultDict,
-    NoReturn, Optional, Set, TypeVar, Union,
+    Generic, NoReturn, Optional, Set, TypeVar, Union,
 )
 
 from .compat import EventLoopMixin
 from .utils import cancel_tasks
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Any)
 Number = Union[int, float]
 
 log = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class ContextManager(AsyncContextManager):
         await self.__aexit(self.__instance)
 
 
-class PoolBase(ABC, EventLoopMixin):
+class PoolBase(ABC, EventLoopMixin, Generic[T]):
     __slots__ = (
         "_create_lock",
         "_instances",
@@ -142,7 +142,7 @@ class PoolBase(ABC, EventLoopMixin):
 
         await self._instances.put(instance)
 
-    async def __acquire(self) -> Any:
+    async def __acquire(self) -> T:
         if not self._semaphore.locked():
             await self.__create_new_instance()
 
@@ -170,7 +170,7 @@ class PoolBase(ABC, EventLoopMixin):
 
         self._instances.put_nowait(instance)
 
-    def acquire(self) -> ContextManager:
+    def acquire(self) -> AsyncContextManager[T]:
         return ContextManager(self.__acquire, self.__release)
 
     async def close(self, timeout: Optional[Number] = None) -> None:

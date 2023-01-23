@@ -28,8 +28,9 @@ class EventLoopMixin:
         return self._loop   # type: ignore
 
 
+event_loop_policy: asyncio.AbstractEventLoopPolicy
 try:
-    import uvloop  # type: ignore
+    import uvloop
     event_loop_policy = uvloop.EventLoopPolicy()
 except ImportError:
     event_loop_policy = asyncio.DefaultEventLoopPolicy()

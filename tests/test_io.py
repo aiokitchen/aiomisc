@@ -3,14 +3,22 @@ import struct
 import uuid
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import List
 
 import pytest
 
 import aiomisc
+from aiomisc.io import AsyncFileIO
 from tests import unix_only
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
+
+
+compressors = pytest.mark.parametrize(
+    "compression", list(aiomisc.io.Compression),
+    ids=list(map(lambda c: c.name.lower(), aiomisc.io.Compression)),
+)
 
 
 async def test_simple(loop, tmp_path):
@@ -69,6 +77,7 @@ async def test_ordering(loop, tmp_path):
 
 async def test_async_for(loop, tmp_path):
     tdir = Path(tmp_path)
+    afp: AsyncFileIO[str]
 
     async with aiomisc.io.async_open(tdir / "path", "w", loop=loop) as afp:
         await afp.write("foo\nbar\nbaz\n")
@@ -81,8 +90,8 @@ async def test_async_for(loop, tmp_path):
 
     assert expected
 
+    result: List[str] = []
     async with aiomisc.io.async_open(tdir / "path", "r", loop=loop) as afp:
-        result = []
         async for line in afp:
             result.append(line)
 
@@ -146,3 +155,22 @@ async def test_object(loop):
                 assert isinstance(afp.errors, str)
                 assert isinstance(afp.line_buffering, bool)
                 assert afp.newlines is None
+
+
+@compressors
+async def test_compression(compression: aiomisc.io.Compression, tmp_path):
+    fname = Path(tmp_path) / "test.file"
+
+    afp: aiomisc.io.AsyncTextIO
+
+    async with aiomisc.io.async_open(
+        fname, "w", compression=compression,
+    ) as afp:
+        for i in range(1000):
+            await afp.write(f"{i}\n")
+
+    async with aiomisc.io.async_open(
+        fname, "r", compression=compression,
+    ) as afp:
+        for i in range(1000):
+            assert await afp.readline() == f"{i}\n"

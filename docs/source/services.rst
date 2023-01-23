@@ -49,6 +49,9 @@ and after that, all running tasks will be canceled (including ``start()``).
 
 This package contains some useful base classes for simple services writing.
 
+
+.. _tcp-server:
+
 ``TCPServer``
 +++++++++++++
 
@@ -94,6 +97,8 @@ Just implement ``handle_client(reader, writer)`` to use it.
         loop.run_until_complete(echo_client("::1", 8901))
 
 
+.. _udp-server:
+
 ``UDPServer``
 +++++++++++++
 
@@ -137,6 +142,8 @@ Just implement ``handle_client(reader, writer)`` to use it.
     with entrypoint(service) as loop:
         loop.run_forever()
 
+
+.. _tcp-client:
 
 ``TCPClient``
 +++++++++++++
@@ -349,6 +356,9 @@ Just implement ``handle_connection(reader, writer)`` to use it.
     ) as loop:
         loop.run_until_complete(asyncio.sleep(0.1))
 
+
+.. _periodic-service:
+
 ``PeriodicService``
 +++++++++++++++++++
 
@@ -377,15 +387,17 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
         loop.run_forever()
 
 
+.. _cron-service:
+
 ``CronService``
 +++++++++++++++
-
-.. _croniter: https://github.com/taichino/croniter
 
 ``CronService`` runs ``CronCallback's`` as a service and waits for
 running callbacks to complete on the stop method.
 
 It's based on croniter_. You can register async coroutine method with ``spec`` argument - cron like format:
+
+.. _croniter: https://github.com/taichino/croniter
 
 .. warning::
 
@@ -524,6 +536,8 @@ to ``self`` as attributes.
         loop.run_forever()
 
 
+.. _aiohttp-service:
+
 aiohttp service
 +++++++++++++++
 
@@ -588,6 +602,8 @@ Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates an HTTP
 server. You must pass SSL-required options (see ``TLSServer`` class).
 
 
+.. _asgi-service:
+
 asgi service
 ++++++++++++
 
@@ -649,6 +665,9 @@ Any ASGI-like application can be started as a service:
 Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but creates
 HTTPS server. You must pass SSL-required options (see ``TLSServer`` class).
 
+
+.. _memory-tracer:
+
 Memory Tracer
 +++++++++++++
 
@@ -697,6 +716,8 @@ Output example:
           14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40
 
 
+.. _profiler:
+
 Profiler
 ++++++++
 
@@ -738,6 +759,8 @@ Output example:
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/pstats.py:118(load_stats)
         1    0.000    0.000    0.000    0.000 <...>/lib/python3.7/cProfile.py:50(create_stats)
 
+
+.. _raven-service:
 
 Raven service
 +++++++++++++
@@ -857,7 +880,7 @@ You will find the full specification of options in the `Raven documentation`_.
 ``SDWatchdogService``
 +++++++++++++++++++++
 
-Service just adding to your entrypoint and notifying SystemD
+Ready to use service just adding to your entrypoint and notifying SystemD
 service watchdog timer.
 
 This can be safely added at any time, since if the service does not detect
@@ -912,6 +935,9 @@ Example of systemd service file:
     # Send SIGKILL when timeouts are exceeded
     FinalKillSignal=SIGKILL
     SendSIGKILL=yes
+
+
+.. _process-service:
 
 ``ProcessService``
 ++++++++++++++++++
@@ -987,4 +1013,3 @@ unexpectedly exited this will be respawned.
     if __name__ == '__main__':
         with aiomisc.entrypoint(SuicideService()) as loop:
             loop.run_forever()
-

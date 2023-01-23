@@ -5,8 +5,10 @@ import logging.handlers
 import time
 import traceback
 from contextlib import suppress
+from functools import partial
 from socket import socket
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from weakref import finalize
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
@@ -38,6 +40,16 @@ def _thread_flusher(
         time.sleep(flush_interval)
 
 
+def suppressor(
+    callback: Callable[..., None],
+    exceptions: Tuple[Type[BaseException], ...] = (Exception,),
+) -> Callable[..., None]:
+    def wrapper() -> None:
+        with suppress(*exceptions):
+            callback()
+    return wrapper
+
+
 def wrap_logging_handler(
     handler: logging.Handler,
     loop: Optional[asyncio.AbstractEventLoop] = None,
@@ -56,7 +68,9 @@ def wrap_logging_handler(
         ), no_return=True, statistic_name="logger",
     )
 
-    atexit.register(handler.flush)
+    at_exit_flusher = suppressor(handler.flush)
+    atexit.register(at_exit_flusher)
+    finalize(buffered_handler, partial(atexit.unregister, at_exit_flusher))
 
     return buffered_handler
 
