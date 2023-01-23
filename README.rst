@@ -92,7 +92,7 @@ Complete table of extras bellow:
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[carbon]``   | Sending metrics to carbon_ (part of graphite_) |
 +-----------------------------------+------------------------------------------------+
-| ``pip install aiomisc[cron]``     | use croniter_ for scheduling tasks              |
+| ``pip install aiomisc[cron]``     | use croniter_ for scheduling tasks             |
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[raven]``    | Sending exceptions to sentry_ using raven_     |
 +-----------------------------------+------------------------------------------------+
@@ -280,7 +280,7 @@ Such as: ``AIOHTTPService``, ``ASGIService``, ``TCPServer``,
 Unfortunately in this section it is not possible to pay more attention to this,
 please pay attention to the Tutorial_ section section, there are more
 examples and explanations, and of cource you always can find out an answer on
-the :doc:`/api/index` or in the source code. The authors have tried to make
+the `/api/index` or in the source code. The authors have tried to make
 the source code as clear and simple as possible, so feel free to explore it.
 
 
@@ -340,15 +340,3 @@ For setting up developer environment just execute:
 .. _API reference: https://aiomisc.readthedocs.io/en/latest/api/index.html
 .. _Modules: https://aiomisc.readthedocs.io/en/latest/modules.html
 .. _Tutorial: https://aiomisc.readthedocs.io/en/latest/tutorial.html
-
-Table Of Contents
-+++++++++++++++++
-
-.. toctree::
-   :glob:
-   :numbered:
-   :maxdepth: 3
-
-   tutorial
-   modules
-   api/index
