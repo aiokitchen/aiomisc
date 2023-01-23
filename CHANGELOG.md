@@ -9,6 +9,31 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+16.3.x
+------
+
+* Migrate to poetry #154
+  * Use `poem-plugins` for creating `aiomisc/version.py` file and bump version
+    when publishing.
+  * some non-public imports might be broken, mainly typing, and the
+   `aiomisc.io` module
+  * Buffered log handler in `aiomisc.log`, is now correct finalize when an
+    entrypoint stops. This is useful if the program uses multiple entrypoints
+    while the program is running, and especially in tests.
+  * Lots of changes in `aiomisc.io` module:
+    * Support stream compression for opening files with:
+      * `GZIP` - compressed files
+      * `LZMA` - compressed files
+      * `BZ2` - compressed files
+  * Added `aiohttp_asgi` objects to `__all__` in `aiomisc.service.asgi`
+  * `aiomisc.Service` subclasses is now can be serialized with `pickle`
+  * Improves typing for:
+    * `aiomisc.io`
+    * `aiomisc.pool`
+    * `aiomisc.service.udp`
+    * `aiomisc.worker_pool.WorkerPool`
+* Improve documentation
+
 16.2.x
 ------
 
