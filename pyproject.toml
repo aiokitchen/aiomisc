@@ -59,6 +59,13 @@ packages = [
 python = "^3.7"
 colorlog = "^6.0"
 logging-journald = [{ version = '*', platform = 'linux' }]
+aiohttp = { version = "*", optional = true }
+raven = { version = "*", optional = true }
+rich = { version = "*", optional = true }
+aiohttp-asgi = { version = "~=0.4.3", optional = true }
+aiocarbon = { version = "~=0.15", optional = true }
+croniter = { version = "~=1.3.8", optional = true }
+uvloop = { version = ">=0.14,<1", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 aiocontextvars = "0.2.2"
@@ -98,12 +105,12 @@ aiomisc = "aiomisc_pytest.pytest_plugin"
 
 [tool.poetry.extras]
 aiohttp = ["aiohttp"]
-asgi = ["aiohttp-asgi~=0.4.3"]
-carbon = ["aiocarbon~=0.15"]
-cron = ["croniter~=1.3.8"]
+asgi = ["aiohttp-asgi"]
+carbon = ["aiocarbon"]
+cron = ["croniter"]
 raven = ["aiohttp', 'raven"]
 rich = ["rich"]
-uvloop = ["uvloop>=0.14,<1"]
+uvloop = ["uvloop"]
 
 [build-system]
 requires = ["poetry-core"]
