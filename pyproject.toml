@@ -108,7 +108,7 @@ aiohttp = ["aiohttp"]
 asgi = ["aiohttp-asgi"]
 carbon = ["aiocarbon"]
 cron = ["croniter"]
-raven = ["aiohttp', 'raven"]
+raven = ["aiohttp", "raven"]
 rich = ["rich"]
 uvloop = ["uvloop"]
 
