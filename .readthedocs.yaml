@@ -6,9 +6,8 @@ build:
     python: "3.10"
 
   jobs:
-    pre_create_environment:
+    post_install:
       - pip install poetry
       - poetry config virtualenvs.create false
-    post_install:
       - poetry install
       - pip install -Ur docs/requirements.txt
