@@ -3,11 +3,12 @@ import itertools
 import logging.handlers
 import socket
 import uuid
+from contextvars import ContextVar
 from functools import wraps
 from random import getrandbits
 from typing import (
-    Any, Awaitable, Callable, Collection, Coroutine, Generator, Iterable,
-    Iterator, List, Optional, Set, Tuple, TypeVar, Union,
+    Any, Awaitable, Callable, Collection, Coroutine, Generator, Generic,
+    Iterable, Iterator, List, Optional, Set, Tuple, TypeVar, Union,
 )
 
 from .compat import (
@@ -16,7 +17,7 @@ from .compat import (
 from .thread_pool import ThreadPoolExecutor
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Any)
 TimeoutType = Union[int, float]
 
 
@@ -376,9 +377,12 @@ def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
     return waiter
 
 
+AT = TypeVar("AT", bound=Any)
+
+
 def awaitable(
-    func: Callable[..., Union[T, Awaitable[T]]],
-) -> Callable[..., Awaitable[T]]:
+    func: Callable[..., Union[AT, Awaitable[AT]]],
+) -> Callable[..., Awaitable[AT]]:
     """
 
     Decorator wraps function and returns a function which returns
@@ -395,11 +399,11 @@ def awaitable(
     if asyncio.iscoroutinefunction(func):
         return func
 
-    async def awaiter(obj: T) -> T:
+    async def awaiter(obj: AT) -> AT:
         return obj
 
     @wraps(func)
-    def wrap(*args: Any, **kwargs: Any) -> Awaitable[T]:
+    def wrap(*args: Any, **kwargs: Any) -> Awaitable[AT]:
         result = func(*args, **kwargs)
 
         if hasattr(result, "__await__"):
@@ -407,6 +411,29 @@ def awaitable(
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
             return result
 
-        return awaiter(result)
+        return awaiter(result)      # type: ignore
 
     return wrap
+
+
+CT = TypeVar("CT", bound=Any)
+
+
+class StrictContextVar(Generic[CT]):
+    def __init__(self, name: str, exc: Exception):
+        self.exc: Exception = exc
+        self.context_var: ContextVar = ContextVar(name)
+
+    def get(self) -> CT:
+        value: Optional[CT] = self.context_var.get(None)
+        if value is None:
+            raise self.exc
+        return value
+
+    def set(self, value: CT) -> None:
+        self.context_var.set(value)
+
+
+EVENT_LOOP: StrictContextVar[asyncio.AbstractEventLoop] = StrictContextVar(
+    "EVENT_LOOP", RuntimeError("no current event loop is set"),
+)

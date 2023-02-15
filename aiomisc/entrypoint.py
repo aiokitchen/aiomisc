@@ -10,12 +10,14 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
-from .compat import StrictContextVar, event_loop_policy, final, set_current_loop
+from .compat import event_loop_policy, final
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import cancel_tasks, create_default_event_loop
+from .utils import (
+    EVENT_LOOP, StrictContextVar, cancel_tasks, create_default_event_loop,
+)
 
 
 ExecutorType = Executor
@@ -65,19 +67,14 @@ class Entrypoint:
         "AIOMISC_POOL_SIZE", int, None,
     )
 
-    CURRENT: StrictContextVar["Entrypoint"] = StrictContextVar(
-        "CURRENT_ENTRYPOINT",
-        RuntimeError("no current entrypoint is set"),
-    )
-
     PRE_START = Signal()
     POST_STOP = Signal()
     POST_START = Signal()
     PRE_STOP = Signal()
 
     @classmethod
-    def get_current_entrypoint(cls) -> "Entrypoint":
-        return cls.CURRENT.get()
+    def get_current(cls) -> "Entrypoint":
+        return CURRENT_ENTRYPOINT.get()
 
     async def _start(self) -> None:
         if self.log_config:
@@ -90,8 +87,8 @@ class Entrypoint:
                 flush_interval=self.log_flush_interval,
             )
 
-        set_current_loop(self.loop)
-        self.CURRENT.set(self)
+        CURRENT_ENTRYPOINT.set(self)
+        EVENT_LOOP.set(self.loop)
 
         for signal in (
             self.pre_start, self.post_stop,
@@ -162,7 +159,9 @@ class Entrypoint:
             )
 
         if self._loop is not None:
-            set_current_loop(self._loop)
+            EVENT_LOOP.set(self._loop)
+
+        CURRENT_ENTRYPOINT.set(self)
 
     @property
     def services(self) -> Iterable[Service]:
@@ -184,7 +183,7 @@ class Entrypoint:
                 debug=self._debug,
             )
             self._loop_owner = True
-            set_current_loop(self._loop)
+            EVENT_LOOP.set(self._loop)
         return self._loop
 
     def __del__(self) -> None:
@@ -327,6 +326,10 @@ class Entrypoint:
         await self.loop.shutdown_asyncgens()
 
 
+CURRENT_ENTRYPOINT: StrictContextVar[Entrypoint] = StrictContextVar(
+    "CURRENT_ENTRYPOINT",
+    RuntimeError("no current entrypoint is set"),
+)
 entrypoint = Entrypoint
 
 

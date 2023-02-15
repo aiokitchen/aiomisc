@@ -15,9 +15,9 @@ from typing import (
     Set, Tuple, TypeVar,
 )
 
-from .compat import get_current_loop
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
+from .utils import EVENT_LOOP
 
 
 T = TypeVar("T")
@@ -398,7 +398,7 @@ class CoroutineWaiter:
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
         self.__coro: Coroutine[Any, Any, T] = coroutine
-        self.__loop = loop or get_current_loop()
+        self.__loop = loop or EVENT_LOOP.get()
         self.__event = threading.Event()
         self.__result: Optional[T] = None
         self.__exception: Optional[BaseException] = None
