@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-02 17:01+0300\n"
+"POT-Creation-Date: 2023-02-15 22:21+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,17 +23,259 @@ msgstr "Модуль ``aiomisc``"
 msgid "``aiomisc.aggregate`` module"
 msgstr "Модуль ``aiomisc.aggregate``"
 
+#: aiomisc.aggregate.Arg:1 of
+msgid "Create new instance of Arg(value, future)"
+msgstr ""
+
+#: ../../docstring aiomisc.aggregate.Arg.future:1
+#: aiomisc.counters.StatisticResult.name:1
+#: aiomisc.thread_pool.WorkItemBase.args:1 of
+msgid "Alias for field number 1"
+msgstr ""
+
+#: ../../docstring aiomisc.aggregate.Arg.value:1
+#: aiomisc.counters.StatisticResult.kind:1
+#: aiomisc.thread_pool.WorkItemBase.func:1 of
+msgid "Alias for field number 0"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:1 of
+msgid ""
+"Parametric decorator that aggregates multiple (but no more than "
+"``max_count`` defaulting to ``None``) single-argument executions (``res1 "
+"= await func(arg1)``, ``res2 = await func(arg2)``, ...) of an "
+"asynchronous function with variadic positional arguments (``async def "
+"func(*args, pho=1, bo=2) -> Iterable``) into its single execution with "
+"multiple positional arguments (``res1, res2, ... = await func(arg1, arg2,"
+" ...)``) collected within a time window ``leeway_ms``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:12 of
+msgid ""
+"``func`` must return a sequence of values of length equal to the number "
+"of arguments (and in the same order)."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:17 of
+msgid ""
+"if some unexpected error occurs, exception is propagated to each future; "
+"to set an individual error for each aggregated call refer to "
+"``aggregate_async``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
+#: aiomisc.backoff.asyncretry aiomisc.circuit_breaker.CircuitBreaker
+#: aiomisc.entrypoint.Entrypoint aiomisc.utils.SelectAwaitable
+#: aiomisc.utils.bind_socket aiomisc.utils.cancel_tasks
+#: aiomisc.utils.create_default_event_loop of
+msgid "Parameters"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:21 of
+msgid ""
+"The maximum approximate delay between the first collected argument and "
+"the aggregated execution."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate:23 of
+msgid ""
+"The maximum number of arguments to call decorated function with. Default "
+"``None``."
+msgstr ""
+
+#: aiomisc.aggregate.aggregate aiomisc.aggregate.aggregate_async
+#: aiomisc.utils.bind_socket of
+msgid "Returns"
+msgstr ""
+
+#: aiomisc.aggregate.aggregate_async:1 of
+msgid ""
+"Same as ``aggregate``, but with ``func`` arguments of type ``Arg`` "
+"containing ``value`` and ``future`` attributes instead. In this setting "
+"``func`` is responsible for setting individual results/exceptions for all"
+" of the futures or throwing an exception (it will propagate to futures "
+"automatically). If ``func`` mistakenly does not set a result of some "
+"future, then, ``ResultNotSetError`` exception is set."
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:12
 msgid "``aiomisc.backoff`` module"
 msgstr "Модуль ``aiomisc.backoff``"
+
+#: aiomisc.backoff.asyncbackoff:1 of
+msgid ""
+"Patametric decorator that ensures that ``attempt_timeout`` and "
+"``deadline`` time limits are met by decorated function."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:4 aiomisc.backoff.asyncretry:3 of
+msgid ""
+"In case of exception function will be called again with similar arguments"
+" after ``pause`` seconds."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:7 aiomisc.backoff.asyncretry:11 of
+msgid "name filed for statistic instances"
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:8 of
+msgid "is maximum execution time for one execution attempt."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:10 of
+msgid "is maximum execution time for all execution attempts."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:11 aiomisc.backoff.asyncretry:10 of
+msgid "is time gap between execution attempts."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:12 of
+msgid "retrying when this exceptions was raised."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:8 of
+msgid "similar as exc but keyword only."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:14 of
+msgid "is maximum count of execution attempts (>= 1)."
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:15 aiomisc.backoff.asyncretry:9 of
+msgid "is a predicate function which can decide by a given"
+msgstr ""
+
+#: aiomisc.backoff.asyncbackoff:16 of
+msgid "statistic class"
+msgstr ""
+
+#: aiomisc.backoff.asyncretry:1 of
+msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
+msgstr ""
+
+#: aiomisc.backoff.asyncretry:6 of
+msgid "is maximum count of execution attempts (>= 1 or ``None`` means infinity)."
+msgstr ""
 
 #: ../../source/api/aiomisc.rst:19
 msgid "``aiomisc.circuit_breaker`` module"
 msgstr "Модуль ``aiomisc.circuit_breaker``"
 
+#: aiomisc.circuit_breaker.CircuitBreaker:1 of
+msgid ""
+"Circuit Breaker pattern implementation. The class instance collects call "
+"statistics through the ``call`` or ``call async`` methods."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:4 of
+msgid ""
+"The state machine has three states: * ``CircuitBreakerStates.PASSING`` * "
+"``CircuitBreakerStates.BROKEN`` * ``CircuitBreakerStates.RECOVERING``"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:9 of
+msgid ""
+"In passing mode all results or exceptions will be returned as is. "
+"Statistic collects for each call."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:12 of
+msgid ""
+"In broken mode returns exception ``CircuitBroken`` for each call. "
+"Statistic doesn't collecting."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:15 of
+msgid ""
+"In recovering mode the part of calls is real function calls and "
+"remainings raises ``CircuitBroken``. The count of real calls grows "
+"exponentially in this case but when 20% (by default) will be failed the "
+"state returns to broken state."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:20 of
+msgid ""
+"Failed to success calls ratio. The state might be changed if ratio will "
+"reach given value within ``response time`` (in seconds). Value between "
+"0.0 and 1.0."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:24 of
+msgid "Time window to collect statistics (seconds)"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:25 of
+msgid ""
+"Only this exceptions will affect ratio. Base class  ``Exception`` used by"
+" default."
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:27 of
+msgid "minimal time in recovery state (seconds)"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:28 of
+msgid "minimal time in broken state (seconds)"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreaker:29 of
+msgid "minimum time in passing state (seconds)"
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:26
 msgid "``aiomisc.compat`` module"
 msgstr "Модуль ``aiomisc.compat``"
+
+#: of typing.final:1
+msgid "A decorator to indicate final methods and final classes."
+msgstr ""
+
+#: of typing.final:3
+msgid ""
+"Use this decorator to indicate to type checkers that the decorated method"
+" cannot be overridden, and decorated class cannot be subclassed. For "
+"example:"
+msgstr ""
+
+#: of typing.final:9
+msgid "class Base:"
+msgstr ""
+
+#: of typing.final:8
+msgid "@final def done(self) -> None:"
+msgstr ""
+
+#: of typing.final:10 typing.final:13 typing.final:17 typing.final:19
+msgid "..."
+msgstr ""
+
+#: of typing.final:13
+msgid "class Sub(Base):"
+msgstr ""
+
+#: of typing.final:13
+msgid "def done(self) -> None:  # Error reported by type checker"
+msgstr ""
+
+#: of typing.final:15
+msgid "@final class Leaf:"
+msgstr ""
+
+#: of typing.final:19
+msgid "class Other(Leaf):  # Error reported by type checker"
+msgstr ""
+
+#: of typing.final:21
+msgid ""
+"There is no runtime checking of these properties. The decorator sets the "
+"``__final__`` attribute to ``True`` on the decorated object to allow "
+"runtime introspection."
+msgstr ""
+
+#: of time.time_ns:1
+msgid "Return the current time in nanoseconds since the Epoch."
+msgstr ""
 
 #: ../../source/api/aiomisc.rst:33
 msgid "``aiomisc.context`` module"
@@ -43,13 +285,73 @@ msgstr "Модуль ``aiomisc.context``"
 msgid "``aiomisc.counters`` module"
 msgstr "Модуль ``aiomisc.counters``"
 
+#: aiomisc.counters.StatisticResult:1 of
+msgid "Create new instance of StatisticResult(kind, name, metric, value)"
+msgstr ""
+
+#: ../../docstring aiomisc.counters.StatisticResult.metric:1
+#: aiomisc.thread_pool.WorkItemBase.kwargs:1 of
+msgid "Alias for field number 2"
+msgstr ""
+
+#: ../../docstring aiomisc.counters.StatisticResult.value:1
+#: aiomisc.thread_pool.WorkItemBase.future:1 of
+msgid "Alias for field number 3"
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:47
 msgid "``aiomisc.cron`` module"
 msgstr "Модуль ``aiomisc.cron``"
 
+#: aiomisc.cron.CronCallback:3 of
+msgid ""
+"When the cron function executes longer then execution interval a next "
+"call will be skipping and warning will be logged."
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:54
 msgid "``aiomisc.entrypoint`` module"
 msgstr "Модуль ``aiomisc.entrypoint``"
+
+#: aiomisc.entrypoint.Entrypoint:1 of
+msgid "Creates a new Entrypoint"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:3 of
+msgid "set debug to event-loop"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:4 of
+msgid "loop"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:5 of
+msgid "Service instances which will be starting."
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:6 of
+msgid "thread pool size"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:7 of
+msgid "Logging level which will be configured"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:8 of
+msgid "Logging format which will be configured"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:9 of
+msgid "Buffer size for logging"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:10 of
+msgid "interval in seconds for flushing logs"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:11 of
+msgid "if False do not configure logging"
+msgstr ""
 
 #: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.io`` module"
@@ -67,6 +369,12 @@ msgstr "Модуль ``aiomisc.log``"
 msgid "``aiomisc.periodic`` module"
 msgstr "Модуль ``aiomisc.periodic``"
 
+#: aiomisc.periodic.PeriodicCallback:3 of
+msgid ""
+"When the periodic function executes longer then execution interval a next"
+" call would be skipped and warning would be logged."
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:89
 msgid "``aiomisc.plugins`` module"
 msgstr "Модуль ``aiomisc.plugins``"
@@ -79,9 +387,61 @@ msgstr "Модуль ``aiomisc.pool``"
 msgid "``aiomisc.process_pool`` module"
 msgstr "Модуль ``aiomisc.process_pool``"
 
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
+msgid "Clean-up the resources associated with the Executor."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:3
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:3 of
+msgid ""
+"It is safe to call this method several times. Otherwise, no other methods"
+" can be called after this one."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "Args:"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+msgid "wait: If True then shutdown will not return until all running"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+msgid ""
+"futures have finished executing and the resources used by the executor "
+"have been reclaimed."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "cancel_futures: If True then shutdown will cancel all pending"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "futures. Futures that are completed or running will not be cancelled."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor.submit:1
+#: aiomisc.thread_pool.ThreadPoolExecutor.submit:1 of
+msgid "Submit blocking function to the pool"
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:110
 msgid "``aiomisc.recurring`` module"
 msgstr "Модуль ``aiomisc.recurring``"
+
+#: aiomisc.recurring.StrategySkip:1 of
+msgid "Strategy function might raise this exception as way to skip current call"
+msgstr ""
+
+#: aiomisc.recurring.StrategyStop:1 of
+msgid "Strategy function might raise this exception as way to  stop recurring"
+msgstr ""
 
 #: ../../source/api/aiomisc.rst:117
 msgid "``aiomisc.signal`` module"
@@ -91,6 +451,14 @@ msgstr "Модуль ``aiomisc.signal``"
 msgid "``aiomisc.thread_pool`` module"
 msgstr "Модуль ``aiomisc.thread_pool``"
 
+#: aiomisc.thread_pool.WorkItem:1 aiomisc.thread_pool.WorkItemBase:1 of
+msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
+msgstr ""
+
+#: ../../docstring aiomisc.thread_pool.WorkItemBase.loop:1 of
+msgid "Alias for field number 4"
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:131
 msgid "``aiomisc.timeout`` module"
 msgstr "Модуль ``aiomisc.timeout``"
@@ -99,785 +467,125 @@ msgstr "Модуль ``aiomisc.timeout``"
 msgid "``aiomisc.utils`` module"
 msgstr "Модуль ``aiomisc.utils``"
 
+#: aiomisc.utils.SelectAwaitable:1 of
+msgid "Select one of passed awaitables"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:3 of
+msgid "awaitable objects"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:4 of
+msgid "if True exception will not be raised just returned as result"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:6 of
+msgid "cancel unfinished coroutines (default True)"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:7 of
+msgid "execution timeout"
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:8 of
+msgid ""
+"when False and ``cancel=True``, unfinished coroutines will be cancelled "
+"in the background."
+msgstr ""
+
+#: aiomisc.utils.SelectAwaitable:10 of
+msgid "event loop"
+msgstr ""
+
+#: aiomisc.utils.awaitable:1 of
+msgid ""
+"Decorator wraps function and returns a function which returns awaitable "
+"object. In case than a function returns a future, the original future "
+"will be returned. In case then the function returns a coroutine, the "
+"original coroutine will be returned. In case than function returns non-"
+"awaitable object, it's will be wrapped to a new coroutine which just "
+"returns this object. It's useful when you don't want to check function "
+"result before use it in ``await`` expression."
+msgstr ""
+
+#: aiomisc.utils.bind_socket:1 of
+msgid ""
+"Bind socket and set ``setblocking(False)`` for just created socket. This "
+"detects ``address`` format and select socket family automatically."
+msgstr ""
+
+#: aiomisc.utils.bind_socket:4 of
+msgid "which will be passed to stdlib's socket constructor (optional)"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:5 of
+msgid "bind address"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:6 of
+msgid "bind port"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:7 of
+msgid "Tuple of pairs which contain socket option to set and the option value."
+msgstr ""
+
+#: aiomisc.utils.bind_socket:9 of
+msgid "set socket.SO_REUSEADDR"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:10 of
+msgid "set socket.SO_REUSEPORT"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:11 of
+msgid "protocol name which will be logged after binding"
+msgstr ""
+
+#: aiomisc.utils.bind_socket:12 of
+msgid "socket.socket"
+msgstr ""
+
+#: aiomisc.utils.cancel_tasks:1 of
+msgid "All passed tasks will be cancelled and a new task will be returned."
+msgstr ""
+
+#: aiomisc.utils.cancel_tasks:3 of
+msgid "tasks which will be cancelled"
+msgstr ""
+
+#: aiomisc.utils.chunk_list:1 of
+msgid "Split list or generator by chunks with fixed maximum size."
+msgstr ""
+
+#: aiomisc.utils.create_default_event_loop:1 of
+msgid "Creates an event loop and thread pool executor"
+msgstr ""
+
+#: aiomisc.utils.create_default_event_loop:3 of
+msgid "thread pool maximal size"
+msgstr ""
+
+#: aiomisc.utils.create_default_event_loop:4 of
+msgid "event loop policy"
+msgstr ""
+
+#: aiomisc.utils.create_default_event_loop:5 of
+msgid "set ``loop.set_debug(True)`` if True"
+msgstr ""
+
+#: aiomisc.utils.fast_uuid1:1 of
+msgid "Fast UUID1 like identifier"
+msgstr ""
+
+#: aiomisc.utils.fast_uuid4:1 of
+msgid "Fast UUID4 like identifier"
+msgstr ""
+
+#: aiomisc.utils.shield:1 of
+msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:145
 msgid "``aiomisc.worker_pool`` module"
 msgstr "Модуль ``aiomisc.worker_pool``"
-
-#~ msgid ""
-#~ "Модуль file is either a text or"
-#~ " byte string giving the name (and "
-#~ "the path if the file isn't in "
-#~ "the current working directory) of the"
-#~ " file to be opened or an "
-#~ "integer file descriptor of the file "
-#~ "to be wrapped. (If a file "
-#~ "descriptor is given, it is closed "
-#~ "when the returned I/O object is "
-#~ "closed, unless closefd is set to "
-#~ "False.)"
-#~ msgstr ""
-
-#~ msgid "An enumeration."
-#~ msgstr ""
-
-#~ msgid "Open file and return a stream.  Raise OSError upon failure."
-#~ msgstr "Модуль "
-
-#~ msgid ""
-#~ "file is either a text or byte "
-#~ "string giving the name (and the "
-#~ "path if the file isn't in the "
-#~ "current working directory) of the file"
-#~ " to be opened or an integer "
-#~ "file descriptor of the file to be"
-#~ " wrapped. (If a file descriptor is"
-#~ " given, it is closed when the "
-#~ "returned I/O object is closed, unless"
-#~ " closefd is set to False.)"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "mode is an optional string that "
-#~ "specifies the mode in which the "
-#~ "file is opened. It defaults to 'r'"
-#~ " which means open for reading in "
-#~ "text mode.  Other common values are "
-#~ "'w' for writing (truncating the file "
-#~ "if it already exists), 'x' for "
-#~ "creating and writing to a new "
-#~ "file, and 'a' for appending (which "
-#~ "on some Unix systems, means that "
-#~ "all writes append to the end of"
-#~ " the file regardless of the current"
-#~ " seek position). In text mode, if "
-#~ "encoding is not specified the encoding"
-#~ " used is platform dependent: "
-#~ "locale.getpreferredencoding(False) is called to "
-#~ "get the current locale encoding. (For"
-#~ " reading and writing raw bytes use"
-#~ " binary mode and leave encoding "
-#~ "unspecified.) The available modes are:"
-#~ msgstr ""
-
-#~ msgid "Character"
-#~ msgstr ""
-
-#~ msgid "Meaning"
-#~ msgstr ""
-
-#~ msgid "'r'"
-#~ msgstr ""
-
-#~ msgid "open for reading (default)"
-#~ msgstr ""
-
-#~ msgid "'w'"
-#~ msgstr ""
-
-#~ msgid "open for writing, truncating the file first"
-#~ msgstr ""
-
-#~ msgid "'x'"
-#~ msgstr ""
-
-#~ msgid "create a new file and open it for writing"
-#~ msgstr ""
-
-#~ msgid "'a'"
-#~ msgstr ""
-
-#~ msgid "open for writing, appending to the end of the file if it exists"
-#~ msgstr ""
-
-#~ msgid "'b'"
-#~ msgstr ""
-
-#~ msgid "binary mode"
-#~ msgstr ""
-
-#~ msgid "'t'"
-#~ msgstr ""
-
-#~ msgid "text mode (default)"
-#~ msgstr ""
-
-#~ msgid "'+'"
-#~ msgstr ""
-
-#~ msgid "open a disk file for updating (reading and writing)"
-#~ msgstr ""
-
-#~ msgid "'U'"
-#~ msgstr ""
-
-#~ msgid "universal newline mode (deprecated)"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The default mode is 'rt' (open for"
-#~ " reading text). For binary random "
-#~ "access, the mode 'w+b' opens and "
-#~ "truncates the file to 0 bytes, "
-#~ "while 'r+b' opens the file without "
-#~ "truncation. The 'x' mode implies 'w' "
-#~ "and raises an `FileExistsError` if the"
-#~ " file already exists."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Python distinguishes between files opened "
-#~ "in binary and text modes, even "
-#~ "when the underlying operating system "
-#~ "doesn't. Files opened in binary mode "
-#~ "(appending 'b' to the mode argument) "
-#~ "return contents as bytes objects without"
-#~ " any decoding. In text mode (the "
-#~ "default, or when 't' is appended "
-#~ "to the mode argument), the contents "
-#~ "of the file are returned as "
-#~ "strings, the bytes having been first "
-#~ "decoded using a platform-dependent "
-#~ "encoding or using the specified encoding"
-#~ " if given."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "'U' mode is deprecated and will "
-#~ "raise an exception in future versions"
-#~ " of Python.  It has no effect "
-#~ "in Python 3.  Use newline to "
-#~ "control universal newlines mode."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "buffering is an optional integer used"
-#~ " to set the buffering policy. Pass"
-#~ " 0 to switch buffering off (only "
-#~ "allowed in binary mode), 1 to "
-#~ "select line buffering (only usable in"
-#~ " text mode), and an integer > 1"
-#~ " to indicate the size of a "
-#~ "fixed-size chunk buffer.  When no "
-#~ "buffering argument is given, the default"
-#~ " buffering policy works as follows:"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Binary files are buffered in fixed-"
-#~ "size chunks; the size of the "
-#~ "buffer is chosen using a heuristic "
-#~ "trying to determine the underlying "
-#~ "device's \"block size\" and falling back"
-#~ " on `io.DEFAULT_BUFFER_SIZE`. On many "
-#~ "systems, the buffer will typically be"
-#~ " 4096 or 8192 bytes long."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "\"Interactive\" text files (files for "
-#~ "which isatty() returns True) use line"
-#~ " buffering.  Other text files use the"
-#~ " policy described above for binary "
-#~ "files."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "encoding is the name of the "
-#~ "encoding used to decode or encode "
-#~ "the file. This should only be used"
-#~ " in text mode. The default encoding"
-#~ " is platform dependent, but any "
-#~ "encoding supported by Python can be "
-#~ "passed.  See the codecs module for "
-#~ "the list of supported encodings."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "errors is an optional string that "
-#~ "specifies how encoding errors are to "
-#~ "be handled---this argument should not"
-#~ " be used in binary mode. Pass "
-#~ "'strict' to raise a ValueError exception"
-#~ " if there is an encoding error "
-#~ "(the default of None has the same"
-#~ " effect), or pass 'ignore' to ignore"
-#~ " errors. (Note that ignoring encoding "
-#~ "errors can lead to data loss.) See"
-#~ " the documentation for codecs.register or"
-#~ " run 'help(codecs.Codec)' for a list "
-#~ "of the permitted encoding error strings."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "newline controls how universal newlines "
-#~ "works (it only applies to text "
-#~ "mode). It can be None, '', '\\n',"
-#~ " '\\r', and '\\r\\n'.  It works as"
-#~ " follows:"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "On input, if newline is None, "
-#~ "universal newlines mode is enabled. "
-#~ "Lines in the input can end in "
-#~ "'\\n', '\\r', or '\\r\\n', and these "
-#~ "are translated into '\\n' before being"
-#~ " returned to the caller. If it "
-#~ "is '', universal newline mode is "
-#~ "enabled, but line endings are returned"
-#~ " to the caller untranslated. If it"
-#~ " has any of the other legal "
-#~ "values, input lines are only terminated"
-#~ " by the given string, and the "
-#~ "line ending is returned to the "
-#~ "caller untranslated."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "On output, if newline is None, any"
-#~ " '\\n' characters written are translated"
-#~ " to the system default line "
-#~ "separator, os.linesep. If newline is ''"
-#~ " or '\\n', no translation takes "
-#~ "place. If newline is any of the"
-#~ " other legal values, any '\\n' "
-#~ "characters written are translated to the"
-#~ " given string."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "If closefd is False, the underlying "
-#~ "file descriptor will be kept open "
-#~ "when the file is closed. This does"
-#~ " not work when a file name is"
-#~ " given and must be True in that"
-#~ " case."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "A custom opener can be used by "
-#~ "passing a callable as *opener*. The "
-#~ "underlying file descriptor for the file"
-#~ " object is then obtained by calling"
-#~ " *opener* with (*file*, *flags*). *opener*"
-#~ " must return an open file descriptor"
-#~ " (passing os.open as *opener* results "
-#~ "in functionality similar to passing "
-#~ "None)."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "open() returns a file object whose "
-#~ "type depends on the mode, and "
-#~ "through which the standard file "
-#~ "operations such as reading and writing"
-#~ " are performed. When open() is used"
-#~ " to open a file in a text "
-#~ "mode ('w', 'r', 'wt', 'rt', etc.), "
-#~ "it returns a TextIOWrapper. When used"
-#~ " to open a file in a binary "
-#~ "mode, the returned class varies: in "
-#~ "read binary mode, it returns a "
-#~ "BufferedReader; in write binary and "
-#~ "append binary modes, it returns a "
-#~ "BufferedWriter, and in read/write mode, "
-#~ "it returns a BufferedRandom."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "It is also possible to use a "
-#~ "string or bytearray as a file for"
-#~ " both reading and writing. For "
-#~ "strings StringIO can be used like "
-#~ "a file opened in a text mode, "
-#~ "and for bytes a BytesIO can be "
-#~ "used like a file opened in a "
-#~ "binary mode."
-#~ msgstr ""
-
-#~ msgid "Open a bzip2-compressed file in binary or text mode."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The filename argument can be an "
-#~ "actual filename (a str, bytes, or "
-#~ "PathLike object), or an existing file"
-#~ " object to read from or write "
-#~ "to."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The mode argument can be \"r\", "
-#~ "\"rb\", \"w\", \"wb\", \"x\", \"xb\", "
-#~ "\"a\" or \"ab\" for binary mode, "
-#~ "or \"rt\", \"wt\", \"xt\" or \"at\" "
-#~ "for text mode. The default mode is"
-#~ " \"rb\", and the default compresslevel "
-#~ "is 9."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "For binary mode, this function is "
-#~ "equivalent to the BZ2File constructor: "
-#~ "BZ2File(filename, mode, compresslevel). In "
-#~ "this case, the encoding, errors and "
-#~ "newline arguments must not be provided."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "For text mode, a BZ2File object is"
-#~ " created, and wrapped in an "
-#~ "io.TextIOWrapper instance with the specified"
-#~ " encoding, error handling behavior, and "
-#~ "line ending(s)."
-#~ msgstr ""
-
-#~ msgid "Open a gzip-compressed file in binary or text mode."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The filename argument can be an "
-#~ "actual filename (a str or bytes "
-#~ "object), or an existing file object "
-#~ "to read from or write to."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "For binary mode, this function is "
-#~ "equivalent to the GzipFile constructor: "
-#~ "GzipFile(filename, mode, compresslevel). In "
-#~ "this case, the encoding, errors and "
-#~ "newline arguments must not be provided."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "For text mode, a GzipFile object "
-#~ "is created, and wrapped in an "
-#~ "io.TextIOWrapper instance with the specified"
-#~ " encoding, error handling behavior, and "
-#~ "line ending(s)."
-#~ msgstr ""
-
-#~ msgid "Open an LZMA-compressed file in binary or text mode."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "filename can be either an actual "
-#~ "file name (given as a str, bytes,"
-#~ " or PathLike object), in which case"
-#~ " the named file is opened, or "
-#~ "it can be an existing file object"
-#~ " to read from or write to."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The mode argument can be \"r\", "
-#~ "\"rb\" (default), \"w\", \"wb\", \"x\", "
-#~ "\"xb\", \"a\", or \"ab\" for binary "
-#~ "mode, or \"rt\", \"wt\", \"xt\", or "
-#~ "\"at\" for text mode."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The format, check, preset and filters"
-#~ " arguments specify the compression "
-#~ "settings, as for LZMACompressor, "
-#~ "LZMADecompressor and LZMAFile."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "For binary mode, this function is "
-#~ "equivalent to the LZMAFile constructor: "
-#~ "LZMAFile(filename, mode, ...). In this "
-#~ "case, the encoding, errors and newline"
-#~ " arguments must not be provided."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "For text mode, an LZMAFile object "
-#~ "is created, and wrapped in an "
-#~ "io.TextIOWrapper instance with the specified"
-#~ " encoding, error handling behavior, and "
-#~ "line ending(s)."
-#~ msgstr ""
-
-#~ msgid "Create new instance of Arg(value, future)"
-#~ msgstr ""
-
-#~ msgid "Alias for field number 1"
-#~ msgstr ""
-
-#~ msgid "Alias for field number 0"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Parametric decorator that aggregates multiple"
-#~ " (but no more than ``max_count`` "
-#~ "defaulting to ``None``) single-argument "
-#~ "executions (``res1 = await func(arg1)``, "
-#~ "``res2 = await func(arg2)``, ...) of "
-#~ "an asynchronous function with variadic "
-#~ "positional arguments (``async def func(*args,"
-#~ " pho=1, bo=2) -> Iterable``) into its"
-#~ " single execution with multiple positional"
-#~ " arguments (``res1, res2, ... = await"
-#~ " func(arg1, arg2, ...)``) collected within"
-#~ " a time window ``leeway_ms``."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "``func`` must return a sequence of "
-#~ "values of length equal to the "
-#~ "number of arguments (and in the "
-#~ "same order)."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "if some unexpected error occurs, "
-#~ "exception is propagated to each future;"
-#~ " to set an individual error for "
-#~ "each aggregated call refer to "
-#~ "``aggregate_async``."
-#~ msgstr ""
-
-#~ msgid "Parameters"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The maximum approximate delay between "
-#~ "the first collected argument and the "
-#~ "aggregated execution."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The maximum number of arguments to "
-#~ "call decorated function with. Default "
-#~ "``None``."
-#~ msgstr ""
-
-#~ msgid "Returns"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Same as ``aggregate``, but with ``func``"
-#~ " arguments of type ``Arg`` containing "
-#~ "``value`` and ``future`` attributes instead."
-#~ " In this setting ``func`` is "
-#~ "responsible for setting individual "
-#~ "results/exceptions for all of the "
-#~ "futures or throwing an exception (it "
-#~ "will propagate to futures automatically). "
-#~ "If ``func`` mistakenly does not set "
-#~ "a result of some future, then, "
-#~ "``ResultNotSetError`` exception is set."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Patametric decorator that ensures that "
-#~ "``attempt_timeout`` and ``deadline`` time "
-#~ "limits are met by decorated function."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "In case of exception function will "
-#~ "be called again with similar arguments"
-#~ " after ``pause`` seconds."
-#~ msgstr ""
-
-#~ msgid "name filed for statistic instances"
-#~ msgstr ""
-
-#~ msgid "is maximum execution time for one execution attempt."
-#~ msgstr ""
-
-#~ msgid "is maximum execution time for all execution attempts."
-#~ msgstr ""
-
-#~ msgid "is time gap between execution attempts."
-#~ msgstr ""
-
-#~ msgid "retrying when this exceptions was raised."
-#~ msgstr ""
-
-#~ msgid "similar as exc but keyword only."
-#~ msgstr ""
-
-#~ msgid "is maximum count of execution attempts (>= 1)."
-#~ msgstr ""
-
-#~ msgid "is a predicate function which can decide by a given"
-#~ msgstr ""
-
-#~ msgid "statistic class"
-#~ msgstr ""
-
-#~ msgid "Shortcut of ``asyncbackoff(None, None, 0, Exception)``."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "is maximum count of execution attempts"
-#~ " (>= 1 or ``None`` means infinity)."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Circuit Breaker pattern implementation. The"
-#~ " class instance collects call statistics"
-#~ " through the ``call`` or ``call "
-#~ "async`` methods."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The state machine has three states: "
-#~ "* ``CircuitBreakerStates.PASSING`` * "
-#~ "``CircuitBreakerStates.BROKEN`` * "
-#~ "``CircuitBreakerStates.RECOVERING``"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "In passing mode all results or "
-#~ "exceptions will be returned as is. "
-#~ "Statistic collects for each call."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "In broken mode returns exception "
-#~ "``CircuitBroken`` for each call. Statistic "
-#~ "doesn't collecting."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "In recovering mode the part of "
-#~ "calls is real function calls and "
-#~ "remainings raises ``CircuitBroken``. The count"
-#~ " of real calls grows exponentially in"
-#~ " this case but when 20% (by "
-#~ "default) will be failed the state "
-#~ "returns to broken state."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Failed to success calls ratio. The "
-#~ "state might be changed if ratio "
-#~ "will reach given value within ``response"
-#~ " time`` (in seconds). Value between "
-#~ "0.0 and 1.0."
-#~ msgstr ""
-
-#~ msgid "Time window to collect statistics (seconds)"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Only this exceptions will affect ratio."
-#~ " Base class  ``Exception`` used by "
-#~ "default."
-#~ msgstr ""
-
-#~ msgid "minimal time in recovery state (seconds)"
-#~ msgstr ""
-
-#~ msgid "minimal time in broken state (seconds)"
-#~ msgstr ""
-
-#~ msgid "minimum time in passing state (seconds)"
-#~ msgstr ""
-
-#~ msgid "Return the current time in nanoseconds since the Epoch."
-#~ msgstr ""
-
-#~ msgid "Create new instance of StatisticResult(kind, name, metric, value)"
-#~ msgstr ""
-
-#~ msgid "Alias for field number 2"
-#~ msgstr ""
-
-#~ msgid "Alias for field number 3"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "When the cron function executes longer"
-#~ " then execution interval a next call"
-#~ " will be skipping and warning will"
-#~ " be logged."
-#~ msgstr ""
-
-#~ msgid "set debug to event loop"
-#~ msgstr ""
-
-#~ msgid "loop"
-#~ msgstr ""
-
-#~ msgid "Service instances which will be starting."
-#~ msgstr ""
-
-#~ msgid "thread pool size"
-#~ msgstr ""
-
-#~ msgid "Logging level which will be configured"
-#~ msgstr ""
-
-#~ msgid "Logging format which will be configured"
-#~ msgstr ""
-
-#~ msgid "Buffer size for logging"
-#~ msgstr ""
-
-#~ msgid "interval in seconds for flushing logs"
-#~ msgstr ""
-
-#~ msgid "if False do not configure logging"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "When the periodic function executes "
-#~ "longer then execution interval a next"
-#~ " call would be skipped and warning"
-#~ " would be logged."
-#~ msgstr ""
-
-#~ msgid "Clean-up the resources associated with the Executor."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "It is safe to call this method "
-#~ "several times. Otherwise, no other "
-#~ "methods can be called after this "
-#~ "one."
-#~ msgstr ""
-
-#~ msgid "Args:"
-#~ msgstr ""
-
-#~ msgid "wait: If True then shutdown will not return until all running"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "futures have finished executing and the"
-#~ " resources used by the executor have"
-#~ " been reclaimed."
-#~ msgstr ""
-
-#~ msgid "cancel_futures: If True then shutdown will cancel all pending"
-#~ msgstr ""
-
-#~ msgid "futures. Futures that are completed or running will not be cancelled."
-#~ msgstr ""
-
-#~ msgid "Submit blocking function to the pool"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Strategy function might raise this "
-#~ "exception as way to skip current "
-#~ "call"
-#~ msgstr ""
-
-#~ msgid "Strategy function might raise this exception as way to  stop recurring"
-#~ msgstr ""
-
-#~ msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
-#~ msgstr ""
-
-#~ msgid "Alias for field number 4"
-#~ msgstr ""
-
-#~ msgid "Select one of passed awaitables"
-#~ msgstr ""
-
-#~ msgid "awaitable objects"
-#~ msgstr ""
-
-#~ msgid "if True exception will not be raised just returned as result"
-#~ msgstr ""
-
-#~ msgid "cancel unfinished coroutines (default True)"
-#~ msgstr ""
-
-#~ msgid "execution timeout"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "when False and ``cancel=True``, unfinished "
-#~ "coroutines will be cancelled in the "
-#~ "background."
-#~ msgstr ""
-
-#~ msgid "event loop"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Decorator wraps function and returns a"
-#~ " function which returns awaitable object."
-#~ " In case than a function returns "
-#~ "a future, the original future will "
-#~ "be returned. In case then the "
-#~ "function returns a coroutine, the "
-#~ "original coroutine will be returned. In"
-#~ " case than function returns non-"
-#~ "awaitable object, it's will be wrapped"
-#~ " to a new coroutine which just "
-#~ "returns this object. It's useful when"
-#~ " you don't want to check function "
-#~ "result before use it in ``await`` "
-#~ "expression."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Bind socket and set ``setblocking(False)`` "
-#~ "for just created socket. This detects"
-#~ " ``address`` format and select socket "
-#~ "family automatically."
-#~ msgstr ""
-
-#~ msgid "which will be passed to stdlib's socket constructor (optional)"
-#~ msgstr ""
-
-#~ msgid "bind address"
-#~ msgstr ""
-
-#~ msgid "bind port"
-#~ msgstr ""
-
-#~ msgid "Tuple of pairs which contain socket option to set and the option value."
-#~ msgstr ""
-
-#~ msgid "set socket.SO_REUSEADDR"
-#~ msgstr ""
-
-#~ msgid "set socket.SO_REUSEPORT"
-#~ msgstr ""
-
-#~ msgid "protocol name which will be logged after binding"
-#~ msgstr ""
-
-#~ msgid "socket.socket"
-#~ msgstr ""
-
-#~ msgid "All passed tasks will be cancelled and a new task will be returned."
-#~ msgstr ""
-
-#~ msgid "tasks which will be cancelled"
-#~ msgstr ""
-
-#~ msgid "Split list or generator by chunks with fixed maximum size."
-#~ msgstr ""
-
-#~ msgid "Creates an event loop and thread pool executor"
-#~ msgstr ""
-
-#~ msgid "thread pool maximal size"
-#~ msgstr ""
-
-#~ msgid "event loop policy"
-#~ msgstr ""
-
-#~ msgid "set ``loop.set_debug(True)`` if True"
-#~ msgstr ""
-
-#~ msgid "Fast UUID1 like identifier"
-#~ msgstr ""
-
-#~ msgid "Fast UUID4 like identifier"
-#~ msgstr ""
-
-#~ msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
-#~ msgstr ""
