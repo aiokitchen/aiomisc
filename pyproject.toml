@@ -95,6 +95,7 @@ types-setuptools = "^65.6.0.1"
 pylama = "^8.4.1"
 furo = "^2022.12.7"
 autodoc = "^0.5.0"
+aiomisc-pytest = "^1.0.8"
 
 [tool.poetry.group.uvloop.dependencies]
 uvloop = "^0.17.0"
