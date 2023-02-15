@@ -581,6 +581,3 @@ msgid ""
 "# adding poem-plugins to the poetry\n"
 "poetry self add poem-plugins"
 msgstr ""
-
-#~ msgid "poetry install"
-#~ msgstr ""
