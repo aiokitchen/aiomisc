@@ -15,9 +15,9 @@ from typing import (
     Set, Tuple, TypeVar,
 )
 
+from ._context_vars import EVENT_LOOP
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
-from .utils import EVENT_LOOP
 
 
 T = TypeVar("T")

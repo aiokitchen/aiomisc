@@ -10,14 +10,13 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
+from ._context_vars import EVENT_LOOP, StrictContextVar
 from .compat import event_loop_policy, final
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import (
-    EVENT_LOOP, StrictContextVar, cancel_tasks, create_default_event_loop,
-)
+from .utils import cancel_tasks, create_default_event_loop
 
 
 ExecutorType = Executor
