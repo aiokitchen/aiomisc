@@ -56,7 +56,7 @@ def test_periodic(event_loop):
         )
 
 
-def test_delay(loop):
+def test_delay(event_loop):
     counter = 0
     condition = asyncio.Condition()
 
@@ -85,5 +85,5 @@ def test_delay(loop):
 
         await svc.stop(None)
 
-    with aiomisc.entrypoint(svc, loop=loop) as loop:
+    with aiomisc.entrypoint(svc, loop=event_loop) as loop:
         loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))

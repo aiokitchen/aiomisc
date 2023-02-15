@@ -420,7 +420,7 @@ async def test_threaded_generator_func_raises(
 
 
 @pytest.mark.skipif(contextvars is None, reason="no contextvars support")
-async def test_context_vars(threaded_decorator, loop):
+async def test_context_vars(threaded_decorator, event_loop):
     ctx_var = contextvars.ContextVar("test")    # type: ignore
 
     @threaded_decorator
@@ -437,7 +437,7 @@ async def test_context_vars(threaded_decorator, loop):
     await asyncio.gather(*futures)
 
 
-async def test_wait_coroutine_sync(threaded_decorator, loop):
+async def test_wait_coroutine_sync(threaded_decorator, event_loop):
     result = 0
 
     async def coro():
@@ -447,7 +447,7 @@ async def test_wait_coroutine_sync(threaded_decorator, loop):
 
     @threaded_decorator
     def test():
-        aiomisc.sync_wait_coroutine(loop, coro)
+        aiomisc.sync_wait_coroutine(event_loop, coro)
 
     await test()
     assert result == 1
@@ -485,7 +485,7 @@ async def test_wait_awaitable(threaded_decorator):
     assert result == 1
 
 
-async def test_wait_coroutine_sync_exc(threaded_decorator, loop):
+async def test_wait_coroutine_sync_exc(threaded_decorator, event_loop):
     result = 0
 
     async def coro():
@@ -496,7 +496,26 @@ async def test_wait_coroutine_sync_exc(threaded_decorator, loop):
 
     @threaded_decorator
     def test():
-        aiomisc.sync_wait_coroutine(loop, coro)
+        aiomisc.sync_wait_coroutine(event_loop, coro)
+
+    with pytest.raises(RuntimeError):
+        await test()
+
+    assert result == 1
+
+
+async def test_wait_coroutine_sync_exc_noloop(threaded_decorator, event_loop):
+    result = 0
+
+    async def coro():
+        nonlocal result
+        await asyncio.sleep(1)
+        result = 1
+        raise RuntimeError("Test")
+
+    @threaded_decorator
+    def test():
+        aiomisc.sync_wait_coroutine(None, coro)
 
     with pytest.raises(RuntimeError):
         await test()

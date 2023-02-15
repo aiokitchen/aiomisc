@@ -97,7 +97,7 @@ async def test_control_flow_stop(event_loop):
 
 
 @aiomisc.timeout(5)
-async def test_control_flow_skip(loop):
+async def test_control_flow_skip(event_loop):
     start_event = asyncio.Event()
     stop_event = asyncio.Event()
     counter = 0
@@ -123,7 +123,7 @@ async def test_control_flow_skip(loop):
         return 0
 
     recurring = aiomisc.RecurringCallback(task)
-    start_task = recurring.start(strategy=strategy, loop=loop)
+    start_task = recurring.start(strategy=strategy, loop=event_loop)
 
     await start_event.wait()
     await stop_event.wait()
@@ -134,7 +134,7 @@ async def test_control_flow_skip(loop):
 
 
 @aiomisc.timeout(5)
-async def test_wrong_strategy(loop):
+async def test_wrong_strategy(event_loop):
     counter = 0
     strategy_counter = 0
 
@@ -148,7 +148,7 @@ async def test_wrong_strategy(loop):
         return None
 
     recurring = aiomisc.RecurringCallback(task)
-    start_task = recurring.start(strategy=strategy, loop=loop)
+    start_task = recurring.start(strategy=strategy, loop=event_loop)
 
     await start_task
     assert strategy_counter == 1

@@ -19,24 +19,25 @@ def pool():
 
 
 @aiomisc.timeout(10)
-async def test_simple(pool, loop, timer):
-    current_time = await loop.run_in_executor(pool, time)
+async def test_simple(pool, event_loop, timer):
+    current_time = await event_loop.run_in_executor(pool, time)
     assert current_time > 0
 
     with timer(1):
         await asyncio.wait_for(
             asyncio.gather(
                 *[
-                    loop.run_in_executor(pool, sleep, 1) for _ in range(4)
+                    event_loop.run_in_executor(pool, sleep, 1)
+                    for _ in range(4)
                 ],
             ), timeout=2,
         )
 
 
 @aiomisc.timeout(10)
-async def test_exception(pool, loop):
+async def test_exception(pool, event_loop):
     with pytest.raises(ZeroDivisionError):
-        await loop.run_in_executor(pool, divmod, 1, 0)
+        await event_loop.run_in_executor(pool, divmod, 1, 0)
 
 
 def suicide():
@@ -45,10 +46,13 @@ def suicide():
 
 @pytest.mark.skip(reason="Stuck tests in GH actions")
 @aiomisc.timeout(10)
-async def test_exit(pool, loop):
+async def test_exit(pool, event_loop):
     with pytest.raises(asyncio.TimeoutError):
         await asyncio.wait_for(
             asyncio.gather(
-                *[loop.run_in_executor(pool, suicide) for _ in range(4)],
+                *[
+                    event_loop.run_in_executor(pool, suicide)
+                    for _ in range(4)
+                ],
             ), timeout=2,
         )

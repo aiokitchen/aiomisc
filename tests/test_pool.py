@@ -120,7 +120,7 @@ async def test_simple_pool_check_after(event_loop):
     await pool.close()
 
 
-async def test_simple_pool_parallel(loop):
+async def test_simple_pool_parallel(event_loop):
     size = 5
     pool = SimplePool(maxsize=size, recycle=None)
 
@@ -128,7 +128,7 @@ async def test_simple_pool_parallel(loop):
         async with pool.acquire() as future:
             assert not future.done()
 
-    tasks = [loop.create_task(run()) for _ in range(1000)]
+    tasks = [event_loop.create_task(run()) for _ in range(1000)]
 
     await asyncio.gather(*tasks)
 
@@ -136,7 +136,7 @@ async def test_simple_pool_parallel(loop):
     await pool.close()
 
 
-async def test_simple_pool_parallel_broken_instances(loop):
+async def test_simple_pool_parallel_broken_instances(event_loop):
     size = 5
     pool = SimplePool(maxsize=size, recycle=None)
 
@@ -145,7 +145,7 @@ async def test_simple_pool_parallel_broken_instances(loop):
             assert not future.done()
             future.set_result(True)
 
-    tasks = [loop.create_task(run()) for _ in range(1000)]
+    tasks = [event_loop.create_task(run()) for _ in range(1000)]
 
     await asyncio.gather(*tasks)
 

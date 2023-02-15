@@ -235,7 +235,9 @@ def test_tcp_client(aiomisc_socket_factory, localhost):
     assert TestService.DATA == [b"hello server\n"]
 
 
-async def test_robust_tcp_client(loop, aiomisc_socket_factory, localhost):
+async def test_robust_tcp_client(
+    event_loop, aiomisc_socket_factory, localhost,
+):
     condition = asyncio.Condition()
 
     class TestService(TCPServer):
@@ -339,7 +341,7 @@ def test_tls_server(
     assert TestService.DATA == [b"hello server\n"]
 
 
-async def test_tls_client(loop, certs, localhost, aiomisc_socket_factory):
+async def test_tls_client(event_loop, certs, localhost, aiomisc_socket_factory):
     class TestService(TLSServer):
         DATA = []
 
@@ -391,7 +393,7 @@ async def test_tls_client(loop, certs, localhost, aiomisc_socket_factory):
 
 
 async def test_robust_tls_client(
-    loop, aiomisc_socket_factory, localhost, certs,
+    event_loop, aiomisc_socket_factory, localhost, certs,
 ):
     condition = asyncio.Condition()
 
@@ -808,7 +810,7 @@ async def test_entrypoint_with_with_async():
     assert service.ctx == 2
 
 
-async def test_entrypoint_graceful_shutdown_loop_owner(loop):
+async def test_entrypoint_graceful_shutdown_loop_owner(event_loop):
     event = Event()
     task: Task
 
@@ -830,7 +832,7 @@ async def test_entrypoint_graceful_shutdown_loop_owner(loop):
     Entrypoint.POST_STOP.connect(post_stop)
 
     async with Entrypoint() as entrypoint:
-        assert entrypoint.loop is loop
+        assert entrypoint.loop is event_loop
 
     Entrypoint.PRE_START.disconnect(pre_start)
     Entrypoint.POST_STOP.disconnect(post_stop)

@@ -383,7 +383,7 @@ async def test_max_count_multiple_batches_cancel(event_loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_low_level_sloppy(loop, leeway):
+async def test_low_level_sloppy(event_loop, leeway):
     max_count = 2
 
     @aggregate_async(leeway * 1000, max_count=max_count)
@@ -392,8 +392,8 @@ async def test_low_level_sloppy(loop, leeway):
             if arg.value:
                 arg.future.set_result(True)
 
-    task1 = loop.create_task(pho(True))
-    task2 = loop.create_task(pho(False))
+    task1 = event_loop.create_task(pho(True))
+    task2 = event_loop.create_task(pho(False))
     await wait([task1, task2])
 
     assert task1.done()
@@ -402,7 +402,7 @@ async def test_low_level_sloppy(loop, leeway):
     assert isinstance(task2.exception(), ResultNotSetError)
 
 
-async def test_low_level_ok(loop, leeway):
+async def test_low_level_ok(event_loop, leeway):
 
     @aggregate_async(leeway * 1000)
     async def pow(*args: Arg, power: float = 2):
@@ -411,7 +411,7 @@ async def test_low_level_ok(loop, leeway):
 
     tasks = []
     for i in range(5):
-        tasks.append(loop.create_task(pow(i)))
+        tasks.append(event_loop.create_task(pow(i)))
 
     await wait(tasks)
     for i, task in enumerate(tasks):
@@ -419,7 +419,7 @@ async def test_low_level_ok(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_low_level_error(loop, leeway):
+async def test_low_level_error(event_loop, leeway):
 
     @aggregate_async(leeway * 1000)
     async def pho(*args: Arg):
@@ -429,8 +429,8 @@ async def test_low_level_error(loop, leeway):
             else:
                 arg.future.set_exception(ValueError)
 
-    task1 = loop.create_task(pho(True))
-    task2 = loop.create_task(pho(False))
+    task1 = event_loop.create_task(pho(True))
+    task2 = event_loop.create_task(pho(False))
     await wait([task1, task2])
 
     assert task1.done()

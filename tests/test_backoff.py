@@ -111,7 +111,7 @@ async def test_too_long_multiple_times(event_loop):
     assert mana < 11
 
 
-async def test_exit(loop):
+async def test_exit(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(0.05, 0)
@@ -129,7 +129,7 @@ async def test_exit(loop):
     assert mana < 11
 
 
-async def test_pause(loop):
+async def test_pause(event_loop):
     mana = 0
     condition = asyncio.Condition()
 
@@ -144,7 +144,7 @@ async def test_pause(loop):
         await asyncio.sleep(0.2)
         raise ValueError("Not enough mana")
 
-    task = loop.create_task(test())
+    task = event_loop.create_task(test())
 
     async with condition:
         await asyncio.wait_for(
@@ -156,7 +156,7 @@ async def test_pause(loop):
         await task
 
 
-async def test_no_waterline(loop):
+async def test_no_waterline(event_loop):
     mana = 0
     condition = asyncio.Condition()
 
@@ -170,7 +170,7 @@ async def test_no_waterline(loop):
             condition.notify_all()
             raise ValueError("RETRY")
 
-    task = loop.create_task(test())
+    task = event_loop.create_task(test())
 
     async with condition:
         await asyncio.wait_for(
@@ -183,7 +183,7 @@ async def test_no_waterline(loop):
 
 
 @pytest.mark.parametrize("max_sleep", (0.5, 1))
-async def test_no_deadline(loop, max_sleep):
+async def test_no_deadline(event_loop, max_sleep):
     mana = 0
     condition = asyncio.Condition()
 
@@ -197,7 +197,7 @@ async def test_no_deadline(loop, max_sleep):
         async with condition:
             condition.notify_all()
 
-    task = loop.create_task(test())
+    task = event_loop.create_task(test())
 
     async with condition:
         await asyncio.wait_for(
@@ -208,7 +208,7 @@ async def test_no_deadline(loop, max_sleep):
     await asyncio.wait_for(task, timeout=max_sleep)
 
 
-def test_values(loop):
+def test_values(event_loop):
     with pytest.raises(ValueError):
         aiomisc.asyncbackoff(-1, 1)
 
@@ -222,7 +222,7 @@ def test_values(loop):
         aiomisc.asyncbackoff(0, 0)(lambda x: None)
 
 
-async def test_too_long_multiple(loop):
+async def test_too_long_multiple(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception)
@@ -250,7 +250,7 @@ async def test_too_long_multiple(loop):
 
 
 @pytest.mark.parametrize("max_tries", (1, 2, 5))
-async def test_max_tries(loop, max_tries):
+async def test_max_tries(event_loop, max_tries):
     mana = 0
 
     @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception, max_tries=max_tries)
@@ -266,7 +266,7 @@ async def test_max_tries(loop, max_tries):
 
 
 @pytest.mark.parametrize("max_mana", (1, 2, 5))
-async def test_giveup(loop, max_mana):
+async def test_giveup(event_loop, max_mana):
     mana = 0
     giveup_exception = None
 
@@ -288,7 +288,7 @@ async def test_giveup(loop, max_mana):
     assert mana == max_mana
 
 
-async def test_last_exception_is_last(loop):
+async def test_last_exception_is_last(event_loop):
     mana = 0
 
     class TestExc(Exception):
@@ -308,7 +308,7 @@ async def test_last_exception_is_last(loop):
         await test()
 
 
-async def test_asyncbackoff_retry(loop):
+async def test_asyncbackoff_retry(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(None, None, 0, Exception, max_tries=5)
@@ -323,7 +323,7 @@ async def test_asyncbackoff_retry(loop):
     assert mana == 5
 
 
-async def test_asyncretry(loop):
+async def test_asyncretry(event_loop):
     mana = 0
 
     @aiomisc.asyncretry(5)

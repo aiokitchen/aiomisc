@@ -23,9 +23,9 @@ class FooService(Service):
         ...
 
 
-def test_pre_start_signal(loop):
+def test_pre_start_signal(event_loop):
     expected_services = frozenset(FooService() for _ in range(2))
-    ep = entrypoint(*expected_services, loop=loop)
+    ep = entrypoint(*expected_services, loop=event_loop)
     received_services = None
 
     async def pre_start_callback(services, entrypoint):
@@ -38,8 +38,8 @@ def test_pre_start_signal(loop):
         assert received_services == expected_services
 
 
-def test_post_stop_signal(loop):
-    ep = entrypoint(FooService(), loop=loop)
+def test_post_stop_signal(event_loop):
+    ep = entrypoint(FooService(), loop=event_loop)
     called = False
 
     async def post_stop_callback(entrypoint):
@@ -55,7 +55,7 @@ def test_post_stop_signal(loop):
     assert called
 
 
-def test_entrypoint_class_pre_start_signal(loop):
+def test_entrypoint_class_pre_start_signal(event_loop):
     received_services, received_entrypoint = None, None
 
     async def pre_start_callback(services, entrypoint):
@@ -66,13 +66,13 @@ def test_entrypoint_class_pre_start_signal(loop):
     entrypoint.PRE_START.connect(pre_start_callback)
 
     expected_services = (FooService(),)
-    ep = entrypoint(*expected_services, loop=loop)
+    ep = entrypoint(*expected_services, loop=event_loop)
     with ep:
         assert received_services == expected_services
         assert received_entrypoint == ep
 
 
-def test_entrypoint_class_post_stop_signal(loop):
+def test_entrypoint_class_post_stop_signal(event_loop):
     received_entrypoint = None
 
     async def post_stop_callback(entrypoint):
@@ -81,7 +81,7 @@ def test_entrypoint_class_post_stop_signal(loop):
 
     entrypoint.POST_STOP.connect(post_stop_callback)
 
-    ep = entrypoint(FooService(), loop=loop)
+    ep = entrypoint(FooService(), loop=event_loop)
 
     with ep:
         ...

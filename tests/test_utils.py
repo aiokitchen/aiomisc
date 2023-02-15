@@ -193,11 +193,11 @@ def test_bind_address(address, family, aiomisc_unused_port):
     assert sock.family == family
 
 
-async def test_cancel_tasks(loop):
+async def test_cancel_tasks(event_loop):
     semaphore = asyncio.Semaphore(10)
 
     tasks = [
-        loop.create_task(semaphore.acquire()) for _ in range(20)
+        event_loop.create_task(semaphore.acquire()) for _ in range(20)
     ]
 
     done, pending = await asyncio.wait(tasks, timeout=0.5)
@@ -220,17 +220,17 @@ async def test_cancel_tasks(loop):
             await task
 
 
-async def test_cancel_tasks_futures(loop):
+async def test_cancel_tasks_futures(event_loop):
     counter = 0
 
     def create_future():
         nonlocal counter
 
-        future = loop.create_future()
+        future = event_loop.create_future()
         counter += 1
 
         if counter <= 10:
-            loop.call_soon(future.set_result, True)
+            event_loop.call_soon(future.set_result, True)
 
         return future
 
@@ -260,7 +260,7 @@ async def test_cancel_tasks_futures(loop):
             await task
 
 
-async def test_cancel_tasks_futures_and_tasks(loop):
+async def test_cancel_tasks_futures_and_tasks(event_loop):
     tasks = []
 
     counter = 0
@@ -268,11 +268,11 @@ async def test_cancel_tasks_futures_and_tasks(loop):
     def create_future():
         nonlocal counter
 
-        future = loop.create_future()
+        future = event_loop.create_future()
         counter += 1
 
         if counter <= 10:
-            loop.call_soon(future.set_result, True)
+            event_loop.call_soon(future.set_result, True)
 
         return future
 
@@ -282,7 +282,7 @@ async def test_cancel_tasks_futures_and_tasks(loop):
     semaphore = asyncio.Semaphore(10)
 
     for _ in range(20):
-        tasks.append(loop.create_task(semaphore.acquire()))
+        tasks.append(event_loop.create_task(semaphore.acquire()))
 
     shuffle(tasks)
 
@@ -306,9 +306,9 @@ async def test_cancel_tasks_futures_and_tasks(loop):
             await task
 
 
-async def test_awaitable_decorator(loop):
-    future = loop.create_future()
-    loop.call_soon(future.set_result, 654321)
+async def test_awaitable_decorator(event_loop):
+    future = event_loop.create_future()
+    event_loop.call_soon(future.set_result, 654321)
 
     @aiomisc.awaitable
     def no_awaitable():
