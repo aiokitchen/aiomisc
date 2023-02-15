@@ -67,7 +67,7 @@ class Entrypoint:
 
     CURRENT: StrictContextVar["Entrypoint"] = StrictContextVar(
         "CURRENT_ENTRYPOINT",
-        RuntimeError("no current event loop is set"),
+        RuntimeError("no current entrypoint is set"),
     )
 
     PRE_START = Signal()
