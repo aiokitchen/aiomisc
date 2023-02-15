@@ -3,6 +3,8 @@ import logging
 import socket
 from typing import Optional
 
+from ._context_vars import EVENT_LOOP
+
 
 log = logging.getLogger(__name__)
 
@@ -62,11 +64,16 @@ else:
             "underlying library. Skipping.",
         )
 
+# 16.x.x reverse compatibility
+set_current_loop = EVENT_LOOP.set
+get_current_loop = EVENT_LOOP.get
 
 __all__ = (
     "EventLoopMixin",
     "event_loop_policy",
     "final",
+    "get_current_loop",
+    "set_current_loop",
     "sock_set_nodelay",
     "sock_set_reuseport",
     "time_ns",
