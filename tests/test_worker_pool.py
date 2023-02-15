@@ -21,7 +21,7 @@ PROCESS_NUM = 4
 
 @pytest.fixture
 async def worker_pool(
-    request: pytest.FixtureRequest, loop: asyncio.AbstractEventLoop,
+    request: pytest.FixtureRequest, event_loop: asyncio.AbstractEventLoop,
 ) -> AsyncGenerator[WorkerPool, None]:
     async with WorkerPool(
         PROCESS_NUM,

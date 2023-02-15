@@ -11,6 +11,13 @@ except ImportError:
     def check_journal_stream() -> bool:
         return False
 
+try:
+    import rich
+
+    RICH_INSTALLED = bool(rich)
+except ImportError:
+    RICH_INSTALLED = False
+
 
 @unique
 class LogFormat(IntEnum):
@@ -35,12 +42,10 @@ class LogFormat(IntEnum):
         if not os.isatty(sys.stderr.fileno()):
             return cls.plain.name
 
-        try:
-            import rich  # noqa
-
+        if RICH_INSTALLED:
             return cls.rich.name
-        except ImportError:
-            return cls.color.name
+
+        return cls.color.name
 
 
 class LogLevel(IntEnum):

@@ -15,12 +15,12 @@ import aiomisc
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
-async def test_select(loop: asyncio.AbstractEventLoop):
+async def test_select(event_loop: asyncio.AbstractEventLoop):
     f_one = asyncio.Event()
     f_two = asyncio.Event()
 
-    loop.call_soon(f_one.set)
-    loop.call_later(1, f_two.set)
+    event_loop.call_soon(f_one.set)
+    event_loop.call_later(1, f_two.set)
 
     two, one = await aiomisc.select(f_two.wait(), f_one.wait())
 
@@ -31,7 +31,7 @@ async def test_select(loop: asyncio.AbstractEventLoop):
     assert one
 
 
-async def test_select_cancelling(loop: asyncio.AbstractEventLoop):
+async def test_select_cancelling(event_loop: asyncio.AbstractEventLoop):
     results: List[Optional[bool]] = []
 
     async def good_coro(wait):
@@ -53,7 +53,7 @@ async def test_select_cancelling(loop: asyncio.AbstractEventLoop):
     assert results[1] is None
 
 
-async def test_select_exception(loop: asyncio.AbstractEventLoop):
+async def test_select_exception(event_loop: asyncio.AbstractEventLoop):
     event = asyncio.Event()
 
     async def bad_coro():
@@ -68,7 +68,7 @@ async def test_select_exception(loop: asyncio.AbstractEventLoop):
 
 
 @aiomisc.timeout(1)
-async def test_select_cancel_false(loop: asyncio.AbstractEventLoop):
+async def test_select_cancel_false(event_loop: asyncio.AbstractEventLoop):
     event1 = asyncio.Event()
     event2 = asyncio.Event()
     event3 = asyncio.Event()
@@ -87,7 +87,7 @@ async def test_select_cancel_false(loop: asyncio.AbstractEventLoop):
 
 
 @aiomisc.timeout(1)
-async def test_select_cancel_true(loop: asyncio.AbstractEventLoop):
+async def test_select_cancel_true(event_loop: asyncio.AbstractEventLoop):
     event1 = asyncio.Event()
     event2 = asyncio.Event()
     event3 = asyncio.Event()
@@ -114,8 +114,8 @@ def test_shield():
         await asyncio.sleep(0.5)
         results.append(True)
 
-    async def main(loop):
-        task = loop.create_task(coro())
+    async def main(event_loop):
+        task = event_loop.create_task(coro())
         task.cancel()
         try:
             await task
@@ -124,8 +124,10 @@ def test_shield():
         finally:
             await asyncio.sleep(1)
 
-    with aiomisc.entrypoint() as loop:
-        loop.run_until_complete(asyncio.wait_for(main(loop), timeout=10))
+    with aiomisc.entrypoint() as event_loop:
+        event_loop.run_until_complete(
+            asyncio.wait_for(main(event_loop), timeout=10),
+        )
 
     assert results == [True]
 

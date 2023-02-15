@@ -21,10 +21,12 @@ compressors = pytest.mark.parametrize(
 )
 
 
-async def test_simple(loop, tmp_path):
+async def test_simple(event_loop, tmp_path):
     tdir = Path(tmp_path)
 
-    async with aiomisc.io.async_open(tdir / "test", "w+", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "test", "w+", loop=event_loop,
+    ) as afp:
         await afp.open()
 
         assert await afp.writable()
@@ -55,10 +57,12 @@ async def test_simple(loop, tmp_path):
         assert await afp.writable()
 
 
-async def test_ordering(loop, tmp_path):
+async def test_ordering(event_loop, tmp_path):
     tdir = Path(tmp_path)
 
-    async with aiomisc.io.async_open(tdir / "file", "wb+", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "file", "wb+", loop=event_loop,
+    ) as afp:
         await afp.seek(4)
         assert await afp.tell() == 4
 
@@ -67,7 +71,9 @@ async def test_ordering(loop, tmp_path):
 
     assert afp.closed()
 
-    async with aiomisc.io.async_open(tdir / "file", "rb+", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "file", "rb+", loop=event_loop,
+    ) as afp:
         assert (await afp.read(4)) == b"\0\0\0\0"
         assert await afp.tell() == 4
 

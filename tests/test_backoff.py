@@ -6,7 +6,7 @@ import pytest
 import aiomisc
 
 
-async def test_kwargs(loop):
+async def test_kwargs(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(
@@ -38,7 +38,7 @@ async def test_kwargs(loop):
     assert mana < 3.8
 
 
-async def test_simple(loop):
+async def test_simple(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(0.10, 1, 0, Exception)
@@ -55,7 +55,7 @@ async def test_simple(loop):
     assert mana == 5
 
 
-async def test_simple_fail(loop):
+async def test_simple_fail(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(0.10, 0.5)
@@ -73,7 +73,7 @@ async def test_simple_fail(loop):
     assert mana
 
 
-async def test_too_long(loop):
+async def test_too_long(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(0.5, 0.5, 0, Exception)
@@ -91,7 +91,7 @@ async def test_too_long(loop):
     assert mana < 2
 
 
-async def test_too_long_multiple_times(loop):
+async def test_too_long_multiple_times(event_loop):
     mana = 0
     deadline = 0.5
     attempt_time = 0.06

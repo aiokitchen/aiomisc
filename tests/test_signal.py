@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 
+import aiomisc
 from aiomisc import Service, Signal, entrypoint, receiver
 
 
@@ -23,13 +24,13 @@ class FooService(Service):
 
 
 def test_pre_start_signal(loop):
-    expected_services = tuple(FooService() for _ in range(2))
+    expected_services = frozenset(FooService() for _ in range(2))
     ep = entrypoint(*expected_services, loop=loop)
     received_services = None
 
     async def pre_start_callback(services, entrypoint):
         nonlocal received_services
-        received_services = services
+        received_services = frozenset(services)
 
     ep.pre_start.connect(pre_start_callback)
 
@@ -152,3 +153,39 @@ async def multiple_receivers(signal):
     await signal.call()
 
     assert all((foo_called, bar_called))
+
+
+async def test_add_remove_service_with_signals(
+    entrypoint: aiomisc.Entrypoint,
+):
+    all_services = list()
+
+    async def pre_start_hook(*, entrypoint, services):
+        for service in services:
+            all_services.append(service)
+
+    pre_start_services = list()
+
+    class SimpleService(aiomisc.Service):
+        async def start(self) -> None:
+            nonlocal pre_start_services
+            pre_start_services.append(self)
+
+    entrypoint.pre_start = entrypoint.pre_start.copy()
+    entrypoint.post_start = entrypoint.post_start.copy()
+
+    entrypoint.pre_start.connect(pre_start_hook)
+    entrypoint.post_start.connect(pre_start_hook)
+
+    entrypoint.pre_start.freeze()
+    entrypoint.post_start.freeze()
+
+    service = SimpleService()
+
+    await entrypoint.start_services(service)
+
+    assert len(all_services) == 2
+    assert all_services == [service, service]
+
+    assert len(pre_start_services) == 1
+    assert service in pre_start_services

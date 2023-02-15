@@ -19,7 +19,7 @@ def test_str_representation():
     assert str(svc) == "FooPeriodicService(interval=42,delay=4815162342)"
 
 
-def test_periodic(loop):
+def test_periodic(event_loop):
     counter = 0
     condition = asyncio.Condition()
 
@@ -47,7 +47,7 @@ def test_periodic(loop):
                 )
             assert counter == i
 
-    with aiomisc.entrypoint(svc, loop=loop) as loop:
+    with aiomisc.entrypoint(svc, loop=event_loop) as loop:
         loop.run_until_complete(
             asyncio.wait_for(
                 assert_counter(),

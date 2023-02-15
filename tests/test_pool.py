@@ -8,7 +8,7 @@ import aiomisc
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
-async def test_base_class(loop: asyncio.AbstractEventLoop):
+async def test_base_class(event_loop: asyncio.AbstractEventLoop):
     with pytest.raises(TypeError):
         aiomisc.PoolBase()      # type: ignore
 
@@ -28,7 +28,7 @@ class SimplePool(aiomisc.PoolBase):
         return not instance.done()
 
 
-async def test_simple_pool_no_reuse_context_manager(loop):
+async def test_simple_pool_no_reuse_context_manager(event_loop):
     size = 5
     recycle = 1
 
@@ -46,7 +46,7 @@ async def test_simple_pool_no_reuse_context_manager(loop):
     await pool.close()
 
 
-async def test_simple_pool_recycle(loop):
+async def test_simple_pool_recycle(event_loop):
     size = 5
     recycle = 1
 
@@ -64,7 +64,7 @@ async def test_simple_pool_recycle(loop):
         async with pool.acquire() as future:
             assert not future.done()
             futures.append(future)
-            loop.call_later(5 * recycle, on_fail, future)
+            event_loop.call_later(5 * recycle, on_fail, future)
 
     await asyncio.gather(*[run() for _ in range(size)])
     assert len(pool) == size
@@ -81,7 +81,7 @@ async def test_simple_pool_recycle(loop):
     await pool.close()
 
 
-async def test_simple_pool_check_before(loop):
+async def test_simple_pool_check_before(event_loop):
     size = 5
     pool = SimplePool(maxsize=size, recycle=None)
 
@@ -100,7 +100,7 @@ async def test_simple_pool_check_before(loop):
     await pool.close()
 
 
-async def test_simple_pool_check_after(loop):
+async def test_simple_pool_check_after(event_loop):
     size = 5
     pool = SimplePool(maxsize=size, recycle=None)
 
@@ -113,7 +113,7 @@ async def test_simple_pool_check_after(loop):
         async with pool.acquire() as future:
             assert not future.done()
             futures.add(future)
-            loop.call_soon(future.set_result, True)
+            event_loop.call_soon(future.set_result, True)
 
     assert len(futures) == size * 2
     await asyncio.gather(*futures)

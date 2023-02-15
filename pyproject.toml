@@ -45,7 +45,6 @@ classifiers = [
 packages = [
     { include = "aiomisc" },
     { include = "aiomisc_log" },
-    { include = "aiomisc_pytest" },
     { include = "aiomisc_worker" },
 ]
 
@@ -59,7 +58,7 @@ packages = [
 python = "^3.7"
 colorlog = "^6.0"
 logging-journald = [{ version = '*', platform = 'linux' }]
-aiohttp = { version = "*", optional = true }
+aiohttp = { version = ">3", optional = true }
 raven = { version = "*", optional = true }
 rich = { version = "*", optional = true }
 aiohttp-asgi = { version = "^0.4.3", optional = true }
@@ -69,7 +68,7 @@ uvloop = { version = ">=0.14, <1", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 aiocontextvars = "0.2.2"
-aiohttp = "<4"
+aiohttp = ">3"
 aiohttp-asgi = "^0.4.3"
 async-timeout = "^4.0.2"
 autoflake = "1.4"
@@ -99,9 +98,6 @@ autodoc = "^0.5.0"
 
 [tool.poetry.group.uvloop.dependencies]
 uvloop = "^0.17.0"
-
-[tool.poetry.plugins.pytest11]
-aiomisc = "aiomisc_pytest.pytest_plugin"
 
 [tool.poetry.extras]
 aiohttp = ["aiohttp"]

@@ -41,7 +41,7 @@ class PatchedCircuitBreaker(aiomisc.CircuitBreaker):
         return float(self._TIME)
 
 
-async def test_simple(loop):
+async def test_simple(event_loop):
 
     PatchedCircuitBreaker.reset()
     circuit_breaker = PatchedCircuitBreaker(

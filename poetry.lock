@@ -297,14 +297,14 @@ pytz = ">=2015.7"
 
 [[package]]
 name = "beautifulsoup4"
-version = "4.11.1"
+version = "4.11.2"
 description = "Screen-scraping library"
 category = "dev"
 optional = false
 python-versions = ">=3.6.0"
 files = [
-    {file = "beautifulsoup4-4.11.1-py3-none-any.whl", hash = "sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30"},
-    {file = "beautifulsoup4-4.11.1.tar.gz", hash = "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"},
+    {file = "beautifulsoup4-4.11.2-py3-none-any.whl", hash = "sha256:0e79446b10b3ecb499c1556f7e228a53e64a2bfcebd455f370d8927cb5b59e39"},
+    {file = "beautifulsoup4-4.11.2.tar.gz", hash = "sha256:bc4bdda6717de5a2987436fb8d72f45dc90dd856bdfd512a1314ce90349a0106"},
 ]
 
 [package.dependencies]
@@ -748,14 +748,14 @@ sphinx-basic-ng = "*"
 
 [[package]]
 name = "identify"
-version = "2.5.15"
+version = "2.5.17"
 description = "File identification library for Python"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "identify-2.5.15-py2.py3-none-any.whl", hash = "sha256:1f4b36c5f50f3f950864b2a047308743f064eaa6f6645da5e5c780d1c7125487"},
-    {file = "identify-2.5.15.tar.gz", hash = "sha256:c22aa206f47cc40486ecf585d27ad5f40adbfc494a3fa41dc3ed0499a23b123f"},
+    {file = "identify-2.5.17-py2.py3-none-any.whl", hash = "sha256:7d526dd1283555aafcc91539acc061d8f6f59adb0a7bba462735b0a318bff7ed"},
+    {file = "identify-2.5.17.tar.gz", hash = "sha256:93cc61a861052de9d4c541a7acb7e3dcc9c11b398a2144f6e52ae5285f5f4f06"},
 ]
 
 [package.extras]
@@ -1674,14 +1674,14 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "66.1.1"
+version = "67.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-66.1.1-py3-none-any.whl", hash = "sha256:6f590d76b713d5de4e49fe4fbca24474469f53c83632d5d0fd056f7ff7e8112b"},
-    {file = "setuptools-66.1.1.tar.gz", hash = "sha256:ac4008d396bc9cd983ea483cb7139c0240a07bbc74ffb6232fceffedc6cf03a8"},
+    {file = "setuptools-67.1.0-py3-none-any.whl", hash = "sha256:a7687c12b444eaac951ea87a9627c4f904ac757e7abdc5aac32833234af90378"},
+    {file = "setuptools-67.1.0.tar.gz", hash = "sha256:e261cdf010c11a41cb5cb5f1bf3338a7433832029f559a6a7614bd42a967c300"},
 ]
 
 [package.extras]
@@ -2026,14 +2026,14 @@ files = [
 
 [[package]]
 name = "types-croniter"
-version = "1.3.2.2"
+version = "1.3.2.3"
 description = "Typing stubs for croniter"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-croniter-1.3.2.2.tar.gz", hash = "sha256:c9faac268046df4c4a7c9df3632e743f531711568d09bffc3a99621ad1e8594d"},
-    {file = "types_croniter-1.3.2.2-py3-none-any.whl", hash = "sha256:46ce48b34ef47ccba78bf6df69ec2cf1059dd135802123a14d51f50b3934fc1a"},
+    {file = "types-croniter-1.3.2.3.tar.gz", hash = "sha256:60fb02c85514050d9773e1b467213d0ab37c9fc3c9fc39081cd8b33346fc502a"},
+    {file = "types_croniter-1.3.2.3-py3-none-any.whl", hash = "sha256:e62375bfc31f816fad580cd17e462a0cd485470c9a61e3d4a46bad4a7b02d04d"},
 ]
 
 [[package]]
@@ -2303,18 +2303,18 @@ typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "zipp"
-version = "3.11.0"
+version = "3.12.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "zipp-3.11.0-py3-none-any.whl", hash = "sha256:83a28fcb75844b5c0cdaf5aa4003c2d728c77e05f5aeabe8e95e56727005fbaa"},
-    {file = "zipp-3.11.0.tar.gz", hash = "sha256:a7a22e05929290a67401440b39690ae6563279bced5f314609d9d03798f56766"},
+    {file = "zipp-3.12.0-py3-none-any.whl", hash = "sha256:9eb0a4c5feab9b08871db0d672745b53450d7f26992fd1e4653aa43345e97b86"},
+    {file = "zipp-3.12.0.tar.gz", hash = "sha256:73efd63936398aac78fd92b6f4865190119d6c91b531532e798977ea8dd402eb"},
 ]
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)"]
+docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
 testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
 
 [extras]
@@ -2329,4 +2329,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "30b7abf2aa687bd57b92007213fed6dd2059631a44922590d4ff33d022affa9b"
+content-hash = "e1aefac22b6cd06aed50d8a2b350ced1f7824b8690499ef7e793954b01c29539"

@@ -2,7 +2,7 @@ import asyncio
 import logging
 import socket
 from contextvars import ContextVar
-from typing import Optional
+from typing import Any, Generic, Optional, TypeVar
 
 
 log = logging.getLogger(__name__)
@@ -58,18 +58,29 @@ else:
         )
 
 
-EVENT_LOOP: ContextVar = ContextVar("EVENT_LOOP")
+T = TypeVar("T", bound=Any)
 
 
-def get_current_loop() -> asyncio.AbstractEventLoop:
-    loop: Optional[asyncio.AbstractEventLoop] = EVENT_LOOP.get(None)
-    if loop is None:
-        raise RuntimeError("no current event loop is set")
-    return loop
+class StrictContextVar(Generic[T]):
+    def __init__(self, name: str, exc: Exception):
+        self.exc: Exception = exc
+        self.context_var: ContextVar = ContextVar(name)
+
+    def get(self) -> T:
+        value: Optional[Any] = self.context_var.get()
+        if value is None:
+            raise self.exc
+        return value
+
+    def set(self, value: T) -> None:
+        self.context_var.set(value)
 
 
-def set_current_loop(loop: asyncio.AbstractEventLoop) -> None:
-    EVENT_LOOP.set(loop)
+EVENT_LOOP: StrictContextVar[asyncio.AbstractEventLoop] = StrictContextVar(
+    "EVENT_LOOP", RuntimeError("no current event loop is set"),
+)
+get_current_loop = EVENT_LOOP.get
+set_current_loop = EVENT_LOOP.set
 
 
 __all__ = (

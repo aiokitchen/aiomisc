@@ -6,14 +6,13 @@ from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Set, Tuple
 
 import aiohttp.web
 import fastapi
 import pytest
 
 import aiomisc
-from aiomisc import Signal
 from aiomisc.entrypoint import Entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
@@ -520,14 +519,7 @@ def test_udp_socket_server(unix_socket_udp):
             sock.sendto(b"hello server\n", unix_socket_udp.getsockname())
 
     with aiomisc.entrypoint(service) as loop:
-        if type(loop) == uvloop_loop_type:
-            raise pytest.skip(
-                "https://github.com/MagicStack/uvloop/issues/269",
-            )
-
-        loop.run_until_complete(
-            asyncio.wait_for(writer(), timeout=10),
-        )
+        loop.run_until_complete(asyncio.wait_for(writer(), timeout=10))
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
@@ -817,16 +809,6 @@ async def test_entrypoint_with_with_async():
 
 
 async def test_entrypoint_graceful_shutdown_loop_owner(loop):
-    class MyEntrypoint(Entrypoint):
-        PRE_START = Signal()
-        POST_STOP = Signal()
-        POST_START = Signal()
-        PRE_STOP = Signal()
-
-        def __del__(self):
-            # No close event loop when del
-            pass
-
     event = Event()
     task: Task
 
@@ -844,11 +826,14 @@ async def test_entrypoint_graceful_shutdown_loop_owner(loop):
         with suppress(asyncio.TimeoutError):
             await asyncio.wait_for(task, timeout=1.0)
 
-    MyEntrypoint.PRE_START.connect(pre_start)
-    MyEntrypoint.POST_STOP.connect(post_stop)
+    Entrypoint.PRE_START.connect(pre_start)
+    Entrypoint.POST_STOP.connect(post_stop)
 
-    async with MyEntrypoint() as entrypoint:
+    async with Entrypoint() as entrypoint:
         assert entrypoint.loop is loop
+
+    Entrypoint.PRE_START.disconnect(pre_start)
+    Entrypoint.POST_STOP.disconnect(post_stop)
 
     assert task.done()
     assert not task.cancelled()
@@ -867,3 +852,33 @@ async def test_service_pickle():
 
     for idx, cucumber in enumerate(pickle.loads(pickled_cucumbers)):
         assert cucumber.index == idx
+
+
+class StorageService(aiomisc.Service):
+    INSTANCES: Set["StorageService"] = set()
+
+    async def start(self) -> None:
+        self.INSTANCES.add(self)
+
+    async def stop(self, exc: Optional[Exception] = None) -> None:
+        self.INSTANCES.remove(self)
+
+
+async def test_add_remove_service(entrypoint: aiomisc.Entrypoint):
+    StorageService.INSTANCES.clear()
+
+    service = StorageService()
+
+    await entrypoint.start_services(service)
+    assert len(StorageService.INSTANCES) == 1
+    assert service in StorageService.INSTANCES
+
+    await entrypoint.stop_services(service)
+    assert service not in StorageService.INSTANCES
+
+    assert len(StorageService.INSTANCES) == 0
+
+    for service in map(lambda _: StorageService(), range(10)):
+        await entrypoint.start_services(service)
+
+    assert len(StorageService.INSTANCES) == 10
