@@ -16,6 +16,12 @@ except ImportError:
         return int(time() * 1000000000)
 
 
+try:
+    from typing import final
+except ImportError:
+    from typing_extensions import final  # type: ignore
+
+
 class EventLoopMixin:
     __slots__ = "_loop",
 
@@ -91,4 +97,5 @@ __all__ = (
     "sock_set_nodelay",
     "sock_set_reuseport",
     "time_ns",
+    "final",
 )

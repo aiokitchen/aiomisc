@@ -4,14 +4,13 @@ import os
 from concurrent.futures import Executor
 from typing import (
     Any, Callable, Coroutine, Iterable, MutableSet, Optional, TypeVar, Union,
-    final,
 )
 from weakref import WeakSet
 
 import aiomisc_log
 from aiomisc_log import LogLevel
 
-from .compat import StrictContextVar, event_loop_policy, set_current_loop
+from .compat import StrictContextVar, event_loop_policy, final, set_current_loop
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
