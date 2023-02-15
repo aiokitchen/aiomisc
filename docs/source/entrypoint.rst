@@ -73,6 +73,48 @@ Running entrypoint from async code
 
     asyncio.run(main())
 
+Dynamic running of services
++++++++++++++++++++++++++++
+
+Sometimes it is not enough to add services to the entrypoint at the start,
+or it is not possible to get the service parameters before the start of
+the event-loop. In this case it is possible to start services after the
+event-loop has started, this feature available from version ``17``.
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+    import logging
+
+    from aiomisc.service.periodic import PeriodicService
+
+    log = logging.getLogger(__name__)
+
+
+    class MyPeriodicService(PeriodicService):
+        async def callback(self):
+            log.info('Running periodic callback')
+
+
+    async def add_services():
+        entrypoint = aiomisc.entrypoint.get_current()
+
+        services = [
+            MyPeriodicService(interval=2, delay=1),
+            MyPeriodicService(interval=2, delay=0),
+        ]
+
+        await entrypoint.start_services(*services)
+        await asyncio.sleep(10)
+        await entrypoint.stop_services(*services)
+
+
+    with aiomisc.entrypoint() as loop:
+        loop.create_task(add_services())
+        loop.run_forever()
+
+
 Configuration from environment
 ++++++++++++++++++++++++++++++
 
