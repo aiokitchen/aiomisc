@@ -8,5 +8,4 @@ API Reference
 
    aiomisc
    aiomisc_log
-   aiomisc_pytest
    aiomisc_worker
