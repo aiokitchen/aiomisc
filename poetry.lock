@@ -158,18 +158,18 @@ develop = ["coverage (!=4.3)", "coveralls", "fastapi", "pylava", "pytest", "pyte
 
 [[package]]
 name = "aiomisc-pytest"
-version = "1.0.8"
+version = "1.1.1"
 description = "pytest integration for aiomisc"
 category = "dev"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "aiomisc_pytest-1.0.8-py3-none-any.whl", hash = "sha256:137e7d10c3ef5ba42640a4bd6b65546076a483baec26629e854679f5ae851b62"},
-    {file = "aiomisc_pytest-1.0.8.tar.gz", hash = "sha256:67d3b245ba6354cb5d042a79210c3665d6cafebca52dec428825146e9cc86968"},
+    {file = "aiomisc_pytest-1.1.1-py3-none-any.whl", hash = "sha256:c07251f79c936c85c7589429f43c728cf1a34b80c0089b268f2cfa6186e77020"},
+    {file = "aiomisc_pytest-1.1.1.tar.gz", hash = "sha256:2c378c41b078c0576027de6bf7fbc537a7e69285d23eaf4d45738d5d0de56dd3"},
 ]
 
 [package.dependencies]
-aiomisc = ">=16"
+aiomisc = ">=17"
 pytest = ">=7.2.1,<8.0.0"
 
 [[package]]
@@ -2428,4 +2428,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "749d46db5d7ac2f19cecf39fb8f7e8708be4605d20d7a050cd8f34e04af348cb"
+content-hash = "5a7e5657675a3698d88e2a601fcd3e0677c975997b964b7c3abfc169667a41dd"
