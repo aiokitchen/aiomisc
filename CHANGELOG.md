@@ -9,6 +9,24 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+17.0.x
+------
+
+In this release, the aiomisc_pytest module has been mostly removed, and has
+been separated into a separate package. This is the main, breaking change
+of this release.
+
+* Dynamic running of services see
+  [also](https://aiomisc.readthedocs.io/en/latest/entrypoint.html#dynamic-running-of-services)
+* New `aiomisc.entrypoint.get_current()` function returns current
+  running entrypoint
+* Removed `aiomisc_pytest` because is now a separate package
+  [aiomisc-pytest](https://pypi.org/project/aiomisc-pytest/)
+* `entrypoint` class is final now.
+* Instance ordering not guaranteed in `Entrypoint.services` method
+* The main function in `aiomisc_worker/forking.py` returns 0 when keyboard
+  interrupt received
+
 16.3.x
 ------
 
