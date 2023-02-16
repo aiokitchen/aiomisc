@@ -16,7 +16,7 @@ from .compat import (
 from .thread_pool import ThreadPoolExecutor
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Any)
 TimeoutType = Union[int, float]
 
 
@@ -376,9 +376,12 @@ def cancel_tasks(tasks: Iterable[asyncio.Future]) -> asyncio.Future:
     return waiter
 
 
+AT = TypeVar("AT", bound=Any)
+
+
 def awaitable(
-    func: Callable[..., Union[T, Awaitable[T]]],
-) -> Callable[..., Awaitable[T]]:
+    func: Callable[..., Union[AT, Awaitable[AT]]],
+) -> Callable[..., Awaitable[AT]]:
     """
 
     Decorator wraps function and returns a function which returns
@@ -395,11 +398,11 @@ def awaitable(
     if asyncio.iscoroutinefunction(func):
         return func
 
-    async def awaiter(obj: T) -> T:
+    async def awaiter(obj: AT) -> AT:
         return obj
 
     @wraps(func)
-    def wrap(*args: Any, **kwargs: Any) -> Awaitable[T]:
+    def wrap(*args: Any, **kwargs: Any) -> Awaitable[AT]:
         result = func(*args, **kwargs)
 
         if hasattr(result, "__await__"):
@@ -407,6 +410,6 @@ def awaitable(
         if asyncio.iscoroutine(result) or asyncio.isfuture(result):
             return result
 
-        return awaiter(result)
+        return awaiter(result)      # type: ignore
 
     return wrap

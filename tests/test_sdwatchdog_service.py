@@ -20,7 +20,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_sdwatchdog_service(loop):
+def test_sdwatchdog_service(event_loop):
     with TemporaryDirectory(dir="/tmp") as tmp_dir:
         tmp_path = Path(tmp_dir)
         sock_path = str(tmp_path / "notify.sock")
@@ -50,9 +50,9 @@ def test_sdwatchdog_service(loop):
                 assert service.watchdog_interval == 0.1
 
                 with aiomisc.entrypoint(
-                    FakeSystemd(sock=sock), service, loop=loop,
+                    FakeSystemd(sock=sock), service, loop=event_loop,
                 ):
-                    loop.run_until_complete(asyncio.sleep(1))
+                    event_loop.run_until_complete(asyncio.sleep(1))
             finally:
                 for key in ("NOTIFY_SOCKET", "WATCHDOG_USEC"):
                     os.environ.pop(key)

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-12-29 11:36+0300\n"
+"POT-Creation-Date: 2023-02-16 09:55+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,8 +77,8 @@ msgstr ""
 "with aiomisc.entrypoint(\n"
 "    pool_size=2,\n"
 "    log_level='info',\n"
-"    log_format='color',                         # по умолчанию если \"rich\" "
-"не установлен\n"
+"    log_format='color',                         # по умолчанию если "
+"\"rich\" не установлен\n"
 "    log_buffer_size=1024,                       # по умолчанию\n"
 "    log_flush_interval=0.2,                     # по умолчанию\n"
 "    log_config=True,                            # по умолчанию\n"
@@ -146,46 +146,93 @@ msgstr ""
 "asyncio.run(main())"
 
 #: ../../source/entrypoint.rst:77
+msgid "Dynamic running of services"
+msgstr ""
+
+#: ../../source/entrypoint.rst:79
+msgid ""
+"Sometimes it is not enough to add services to the entrypoint at the "
+"start, or it is not possible to get the service parameters before the "
+"start of the event-loop. In this case it is possible to start services "
+"after the event-loop has started, this feature available from version "
+"``17``."
+msgstr ""
+
+#: ../../source/entrypoint.rst:84
+msgid ""
+"import asyncio\n"
+"import aiomisc\n"
+"import logging\n"
+"\n"
+"from aiomisc.service.periodic import PeriodicService\n"
+"\n"
+"log = logging.getLogger(__name__)\n"
+"\n"
+"\n"
+"class MyPeriodicService(PeriodicService):\n"
+"    async def callback(self):\n"
+"        log.info('Running periodic callback')\n"
+"\n"
+"\n"
+"async def add_services():\n"
+"    entrypoint = aiomisc.entrypoint.get_current()\n"
+"\n"
+"    services = [\n"
+"        MyPeriodicService(interval=2, delay=1),\n"
+"        MyPeriodicService(interval=2, delay=0),\n"
+"    ]\n"
+"\n"
+"    await entrypoint.start_services(*services)\n"
+"    await asyncio.sleep(10)\n"
+"    await entrypoint.stop_services(*services)\n"
+"\n"
+"\n"
+"with aiomisc.entrypoint() as loop:\n"
+"    loop.create_task(add_services())\n"
+"    loop.run_forever()"
+msgstr ""
+
+#: ../../source/entrypoint.rst:119
 msgid "Configuration from environment"
 msgstr "Конфигурация из переменных окружения"
 
-#: ../../source/entrypoint.rst:79
+#: ../../source/entrypoint.rst:121
 msgid "Module support configuration from environment variables:"
 msgstr "Модуль поддерживает конфигурацию из переменных окружения:"
 
-#: ../../source/entrypoint.rst:81
+#: ../../source/entrypoint.rst:123
 msgid "`AIOMISC_LOG_LEVEL` - default logging level"
 msgstr "`AIOMISC_LOG_LEVEL` - уровень логирования по умолчанию"
 
-#: ../../source/entrypoint.rst:82
+#: ../../source/entrypoint.rst:124
 msgid "`AIOMISC_LOG_FORMAT` - default log format"
 msgstr "`AIOMISC_LOG_FORMAT` - формат логирования по умолчанию"
 
-#: ../../source/entrypoint.rst:83
+#: ../../source/entrypoint.rst:125
 msgid "`AIOMISC_LOG_CONFIG` - should logging be configured"
 msgstr "`AIOMISC_LOG_CONFIG` - следует ли настраивать логирование"
 
-#: ../../source/entrypoint.rst:84
+#: ../../source/entrypoint.rst:126
 msgid "`AIOMISC_LOG_FLUSH` - interval between logs flushing from buffer"
 msgstr "`AIOMISC_LOG_FLUSH` - интервал сброса буфера логов logs"
 
-#: ../../source/entrypoint.rst:85
+#: ../../source/entrypoint.rst:127
 msgid "`AIOMISC_LOG_BUFFERING` - should logging be buffered"
 msgstr "`AIOMISC_LOG_BUFFERING` - следует ли включать буфферизацию логирования"
 
-#: ../../source/entrypoint.rst:86
+#: ../../source/entrypoint.rst:128
 msgid "`AIOMISC_LOG_BUFFER_SIZE` - maximum log buffer size"
 msgstr "`AIOMISC_LOG_BUFFER_SIZE` - максимальный размер буфера логов"
 
-#: ../../source/entrypoint.rst:87
+#: ../../source/entrypoint.rst:129
 msgid "`AIOMISC_POOL_SIZE` - thread pool size"
 msgstr "`AIOMISC_POOL_SIZE` - размер пула потоков"
 
-#: ../../source/entrypoint.rst:91
+#: ../../source/entrypoint.rst:133
 msgid "``run()`` shortcut"
 msgstr "Функция ``run()``"
 
-#: ../../source/entrypoint.rst:93
+#: ../../source/entrypoint.rst:135
 msgid ""
 "``aiomisc.run()`` - it's the short way to create and destroy "
 "``aiomisc.entrypoint``. It's very similar to ``asyncio.run()`` but handle"
@@ -196,7 +243,7 @@ msgstr ""
 "управляет сервисами ``aiomisc.Service`` и принимает прочие аргументы "
 "entrypoint."
 
-#: ../../source/entrypoint.rst:97
+#: ../../source/entrypoint.rst:139
 msgid ""
 "import asyncio\n"
 "import aiomisc\n"
@@ -211,11 +258,11 @@ msgid ""
 "aiomisc.run(main())"
 msgstr ""
 
-#: ../../source/entrypoint.rst:113
+#: ../../source/entrypoint.rst:155
 msgid "Logging configuration"
 msgstr "Конфигурация журналов"
 
-#: ../../source/entrypoint.rst:115
+#: ../../source/entrypoint.rst:157
 msgid ""
 "``entrypoint`` accepts a specific set of formats in which logs will be "
 "written to stderr."
@@ -223,29 +270,29 @@ msgstr ""
 "``entrypoint`` принимает определенный набор форматов, в которых журналы "
 "будут записываться в stderr."
 
-#: ../../source/entrypoint.rst:118
+#: ../../source/entrypoint.rst:160
 msgid "``stream`` - Python's default logging handler"
 msgstr "``stream`` - стандартный python логгер"
 
-#: ../../source/entrypoint.rst:119
+#: ../../source/entrypoint.rst:161
 msgid "``color`` - logging with `colorlog` module"
 msgstr "``color`` - логирование через модуль ``colorlog``"
 
-#: ../../source/entrypoint.rst:120
+#: ../../source/entrypoint.rst:162
 msgid "``json`` - json structure per each line"
 msgstr "``json`` - json структура, одна на строчку"
 
-#: ../../source/entrypoint.rst:121
+#: ../../source/entrypoint.rst:163
 msgid "``syslog`` - logging using stdlib `logging.handlers.SysLogHandler`"
 msgstr "``syslog`` - ``logging.handlers.SysLogHandler`` из стандартной библиотеки"
 
-#: ../../source/entrypoint.rst:122
+#: ../../source/entrypoint.rst:164
 msgid "``plain`` - just log messages, without date or level info"
 msgstr ""
 "``plain`` - просто сообщения, без даты или финормации об уровне "
 "логирования"
 
-#: ../../source/entrypoint.rst:123
+#: ../../source/entrypoint.rst:165
 msgid ""
 "``journald`` - available only when `logging-journald` module has been "
 "installed."
@@ -253,7 +300,7 @@ msgstr ""
 "``journald`` - доступно только если ``logging-journald`` модуль "
 "установлен."
 
-#: ../../source/entrypoint.rst:125
+#: ../../source/entrypoint.rst:167
 msgid ""
 "``rich``/``rich_tb` - available only when `rich` module has been "
 "installed. ``rich_tb`` it's the same as ``rich`` but with fully expanded "
@@ -262,7 +309,7 @@ msgstr ""
 "``rich``/``rich_tb`` - доступно только если ``rich`` модуль установлен. "
 "``rich_tb`` тоже самое что и ``rich`` только с подробными трейсбэками."
 
-#: ../../source/entrypoint.rst:128
+#: ../../source/entrypoint.rst:170
 msgid ""
 "An ``entrypoint`` will call ``aiomisc.log.basic_config`` function "
 "implicitly using passed ``log_level=`` and ``log_format=`` parameters. "
@@ -274,7 +321,7 @@ msgstr ""
 "вызвать ``aiomisc.log.basic_config`` вручную передав ей экземпляр "
 "``eventloop``."
 
-#: ../../source/entrypoint.rst:133
+#: ../../source/entrypoint.rst:175
 msgid ""
 "However, you can configure logging earlier using "
 "``aiomisc_log.basic_config``, but you will lose log buffering and "
@@ -288,7 +335,7 @@ msgstr ""
 "настройки ведения журнала, ``entrypoint`` передает обертку для logging "
 "handler, чтобы он записывал в буфер в отдельном потоке."
 
-#: ../../source/entrypoint.rst:139
+#: ../../source/entrypoint.rst:181
 msgid ""
 "import logging\n"
 "\n"
@@ -299,7 +346,7 @@ msgid ""
 "logging.info(\"Hello\")"
 msgstr ""
 
-#: ../../source/entrypoint.rst:149
+#: ../../source/entrypoint.rst:191
 msgid ""
 "If you want to configure logging before the ``entrypoint`` is started, "
 "for example after the arguments parsing, it is safe to configure it twice"
@@ -309,7 +356,7 @@ msgstr ""
 "например, после разбора аргументов, это безопасно настроить его дважды "
 "(или больше)."
 
-#: ../../source/entrypoint.rst:153
+#: ../../source/entrypoint.rst:195
 msgid ""
 "import logging\n"
 "\n"
@@ -329,7 +376,7 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/entrypoint.rst:173
+#: ../../source/entrypoint.rst:215
 msgid ""
 "Sometimes you want to configure logging manually, the following example "
 "demonstrates how to do this:"
@@ -337,7 +384,7 @@ msgstr ""
 "Иногда вы хотите настроить ведение журнала самостоятельно, пример ниже "
 "демонстрирует, как это сделать:"
 
-#: ../../source/entrypoint.rst:176
+#: ../../source/entrypoint.rst:218
 #, python-format
 msgid ""
 "import os\n"
@@ -456,8 +503,10 @@ msgstr ""
 "\n"
 "    logging.basicConfig(\n"
 "        level=logging.INFO,\n"
-"        # Обертывание всех обработчиков в отдельные потоки не заблокирует\n"
-"        # event-loop даже если gzip занимает много времени, чтобы открыть\n"
+"        # Обертывание всех обработчиков в отдельные потоки не заблокирует"
+"\n"
+"        # event-loop даже если gzip занимает много времени, чтобы открыть"
+"\n"
 "        # файл.\n"
 "        handlers=map(\n"
 "            aiomisc.log.wrap_logging_handler,\n"

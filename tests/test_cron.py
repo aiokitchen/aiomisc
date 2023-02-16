@@ -5,7 +5,7 @@ import pytest
 from aiomisc.cron import CronCallback
 
 
-async def test_cron(loop):
+async def test_cron(event_loop):
     counter = 0
 
     def task():
@@ -13,7 +13,7 @@ async def test_cron(loop):
         counter += 1
 
     cron = CronCallback(task)
-    cron.start("* * * * * *", loop)
+    cron.start("* * * * * *", event_loop)
 
     await asyncio.sleep(2)
     with pytest.raises(asyncio.CancelledError):
@@ -26,7 +26,7 @@ async def test_cron(loop):
     assert counter == 2
 
 
-async def test_long_func(loop):
+async def test_long_func(event_loop):
     counter = 0
     condition = asyncio.Condition()
 
@@ -38,7 +38,7 @@ async def test_long_func(loop):
             condition.notify_all()
 
     cron = CronCallback(task)
-    cron.start("* * * * * *", loop)
+    cron.start("* * * * * *", event_loop)
 
     async with condition:
         await condition.wait_for(lambda: counter >= 1)
@@ -49,7 +49,7 @@ async def test_long_func(loop):
     assert counter == 1
 
 
-async def test_shield(loop):
+async def test_shield(event_loop):
     counter = 0
     condition = asyncio.Condition()
 
@@ -62,7 +62,7 @@ async def test_shield(loop):
         counter += 1
 
     cron = CronCallback(task)
-    cron.start("* * * * * *", loop, shield=True)
+    cron.start("* * * * * *", event_loop, shield=True)
 
     # Wait for cron callback to start
     async with condition:
@@ -77,7 +77,7 @@ async def test_shield(loop):
     assert counter == 2
 
 
-async def test_restart(loop):
+async def test_restart(event_loop):
     counter = 0
     condition = asyncio.Condition()
 
@@ -88,7 +88,7 @@ async def test_restart(loop):
             condition.notify_all()
 
     cron = CronCallback(task)
-    cron.start("* * * * * *", loop)
+    cron.start("* * * * * *", event_loop)
 
     async with condition:
         await condition.wait_for(lambda: counter >= 2)
@@ -102,7 +102,7 @@ async def test_restart(loop):
 
     assert counter == 2
 
-    cron.start("* * * * * *", loop)
+    cron.start("* * * * * *", event_loop)
 
     async with condition:
         await condition.wait_for(lambda: counter >= 4)

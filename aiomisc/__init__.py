@@ -4,7 +4,7 @@ from .backoff import asyncbackoff, asyncretry
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
 from .counters import Statistic, get_statistics
-from .entrypoint import entrypoint, run
+from .entrypoint import Entrypoint, entrypoint, run
 from .iterator_wrapper import IteratorWrapper
 from .periodic import PeriodicCallback
 from .plugins import plugins
@@ -33,6 +33,7 @@ __all__ = (
     "CircuitBreaker",
     "CircuitBroken",
     "Context",
+    "Entrypoint",
     "IteratorWrapper",
     "IteratorWrapperSeparate",
     "PeriodicCallback",

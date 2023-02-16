@@ -21,10 +21,12 @@ compressors = pytest.mark.parametrize(
 )
 
 
-async def test_simple(loop, tmp_path):
+async def test_simple(event_loop, tmp_path):
     tdir = Path(tmp_path)
 
-    async with aiomisc.io.async_open(tdir / "test", "w+", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "test", "w+", loop=event_loop,
+    ) as afp:
         await afp.open()
 
         assert await afp.writable()
@@ -55,10 +57,12 @@ async def test_simple(loop, tmp_path):
         assert await afp.writable()
 
 
-async def test_ordering(loop, tmp_path):
+async def test_ordering(event_loop, tmp_path):
     tdir = Path(tmp_path)
 
-    async with aiomisc.io.async_open(tdir / "file", "wb+", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "file", "wb+", loop=event_loop,
+    ) as afp:
         await afp.seek(4)
         assert await afp.tell() == 4
 
@@ -67,7 +71,9 @@ async def test_ordering(loop, tmp_path):
 
     assert afp.closed()
 
-    async with aiomisc.io.async_open(tdir / "file", "rb+", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "file", "rb+", loop=event_loop,
+    ) as afp:
         assert (await afp.read(4)) == b"\0\0\0\0"
         assert await afp.tell() == 4
 
@@ -75,11 +81,13 @@ async def test_ordering(loop, tmp_path):
         assert await afp.tell() == 8
 
 
-async def test_async_for(loop, tmp_path):
+async def test_async_for(event_loop, tmp_path):
     tdir = Path(tmp_path)
     afp: AsyncFileIO[str]
 
-    async with aiomisc.io.async_open(tdir / "path", "w", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "path", "w", loop=event_loop,
+    ) as afp:
         await afp.write("foo\nbar\nbaz\n")
 
     with open(tdir / "path", "r") as fp:
@@ -91,7 +99,9 @@ async def test_async_for(loop, tmp_path):
     assert expected
 
     result: List[str] = []
-    async with aiomisc.io.async_open(tdir / "path", "r", loop=loop) as afp:
+    async with aiomisc.io.async_open(
+        tdir / "path", "r", loop=event_loop,
+    ) as afp:
         async for line in afp:
             result.append(line)
 
@@ -99,11 +109,13 @@ async def test_async_for(loop, tmp_path):
 
 
 @unix_only
-async def test_async_for_parallel(loop):
+async def test_async_for_parallel(event_loop):
     tmp = NamedTemporaryFile(prefix="test_io")
 
     with tmp:
-        async with aiomisc.io.async_open(tmp.name, "w+", loop=loop) as afp:
+        async with aiomisc.io.async_open(
+            tmp.name, "w+", loop=event_loop,
+        ) as afp:
             for _ in range(1024):
                 await afp.write("{}\n".format(uuid.uuid4().hex))
 
@@ -115,7 +127,9 @@ async def test_async_for_parallel(loop):
 
         assert expected
 
-        async with aiomisc.io.async_open(tmp.name, "r", loop=loop) as afp:
+        async with aiomisc.io.async_open(
+            tmp.name, "r", loop=event_loop,
+        ) as afp:
             result = set()
 
             async def reader():
@@ -130,10 +144,10 @@ async def test_async_for_parallel(loop):
 
 
 @unix_only
-async def test_object(loop):
+async def test_object(event_loop):
     with NamedTemporaryFile(prefix="test_io") as tmp:
-        afp1 = await aiomisc.io.async_open(tmp.name, "w+", loop=loop)
-        afp2 = await aiomisc.io.async_open(tmp.name, "w+", loop=loop)
+        afp1 = await aiomisc.io.async_open(tmp.name, "w+", loop=event_loop)
+        afp2 = await aiomisc.io.async_open(tmp.name, "w+", loop=event_loop)
 
         async with afp1, afp2:
             assert afp1 == afp2

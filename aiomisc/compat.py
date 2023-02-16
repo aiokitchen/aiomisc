@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import socket
-from contextvars import ContextVar
 from typing import Optional
+
+from ._context_vars import EVENT_LOOP
 
 
 log = logging.getLogger(__name__)
@@ -14,6 +15,12 @@ except ImportError:
 
     def time_ns() -> int:
         return int(time() * 1000000000)
+
+
+try:
+    from typing import final
+except ImportError:
+    from typing_extensions import final  # type: ignore
 
 
 class EventLoopMixin:
@@ -57,24 +64,14 @@ else:
             "underlying library. Skipping.",
         )
 
-
-EVENT_LOOP: ContextVar = ContextVar("EVENT_LOOP")
-
-
-def get_current_loop() -> asyncio.AbstractEventLoop:
-    loop: Optional[asyncio.AbstractEventLoop] = EVENT_LOOP.get(None)
-    if loop is None:
-        raise RuntimeError("no current event loop is set")
-    return loop
-
-
-def set_current_loop(loop: asyncio.AbstractEventLoop) -> None:
-    EVENT_LOOP.set(loop)
-
+# 16.x.x reverse compatibility
+set_current_loop = EVENT_LOOP.set
+get_current_loop = EVENT_LOOP.get
 
 __all__ = (
     "EventLoopMixin",
     "event_loop_policy",
+    "final",
     "get_current_loop",
     "set_current_loop",
     "sock_set_nodelay",

@@ -103,7 +103,11 @@ def main() -> int:
 
     log.debug("Waiting workers")
     while not STOPPING.is_set():
-        pid, status = os.wait()
+        try:
+            pid, status = os.wait()
+        except KeyboardInterrupt:
+            return exit(0)
+
         log_func = log.debug if status == 0 else log.warning
         log_func("Worker PID: %d exited with status %d", pid, status)
 

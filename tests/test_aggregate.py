@@ -74,7 +74,7 @@ async def test_invalid_max_count(max_count):
     assert str(excinfo.value) == "max_count must be positive int or None"
 
 
-async def test_error(loop, leeway):
+async def test_error(event_loop, leeway):
     event = Event()
 
     @aggregate(leeway * 1000)
@@ -87,7 +87,7 @@ async def test_error(loop, leeway):
 
     tasks = []
     for i in range(10):
-        tasks.append(loop.create_task(pho(i)))
+        tasks.append(event_loop.create_task(pho(i)))
 
     await event.wait()
 
@@ -97,7 +97,7 @@ async def test_error(loop, leeway):
         assert isinstance(task.exception(), ValueError)
 
 
-async def test_leeway_ok(loop, leeway):
+async def test_leeway_ok(event_loop, leeway):
     t_exec: float = 0.
     event: Event = Event()
 
@@ -111,7 +111,7 @@ async def test_leeway_ok(loop, leeway):
 
     tasks = []
     for i in range(9):
-        tasks.append(loop.create_task(pow(i)))
+        tasks.append(event_loop.create_task(pow(i)))
 
     t = time.time()
 
@@ -128,7 +128,7 @@ async def test_leeway_ok(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_max_count(loop, leeway):
+async def test_max_count(event_loop, leeway):
     t_exec: float = 0.
     event = Event()
     max_count = 5
@@ -143,7 +143,7 @@ async def test_max_count(loop, leeway):
 
     tasks = []
     for i in range(5):
-        tasks.append(loop.create_task(pow(i)))
+        tasks.append(event_loop.create_task(pow(i)))
 
     t = time.time()
 
@@ -157,7 +157,7 @@ async def test_max_count(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_max_count_multiple_batches(loop, leeway):
+async def test_max_count_multiple_batches(event_loop, leeway):
     t_exec: float = 0.
     event = Event()
     max_count = 5
@@ -172,7 +172,7 @@ async def test_max_count_multiple_batches(loop, leeway):
 
     tasks = []
     for i in range(9):
-        tasks.append(loop.create_task(pow(i)))
+        tasks.append(event_loop.create_task(pow(i)))
 
     t = time.time()
 
@@ -188,7 +188,7 @@ async def test_max_count_multiple_batches(loop, leeway):
     for i in range(5, 9):
         assert not tasks[i].done()
 
-    tasks.append(loop.create_task(pow(9)))
+    tasks.append(event_loop.create_task(pow(9)))
 
     # Wait for the second batch
     await event.wait()
@@ -198,7 +198,7 @@ async def test_max_count_multiple_batches(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_leeway_cancel(loop, leeway):
+async def test_leeway_cancel(event_loop, leeway):
     t_exec: float = 0.
     delay_exec = 0.1
     event = Event()
@@ -223,7 +223,7 @@ async def test_leeway_cancel(loop, leeway):
         return await pow(float(num))
 
     for i in range(9):
-        tasks.append(loop.create_task(pho(i)))
+        tasks.append(event_loop.create_task(pho(i)))
 
     t = time.time()
 
@@ -255,7 +255,7 @@ async def test_leeway_cancel(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_max_count_cancel(loop):
+async def test_max_count_cancel(event_loop):
     t_exec: float = 0.
     delay_exec = 0.1
     event = Event()
@@ -283,7 +283,7 @@ async def test_max_count_cancel(loop):
 
     tasks = []
     for i in range(5):
-        tasks.append(loop.create_task(pho(i)))
+        tasks.append(event_loop.create_task(pho(i)))
 
     t = time.time()
 
@@ -316,7 +316,7 @@ async def test_max_count_cancel(loop):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_max_count_multiple_batches_cancel(loop, leeway):
+async def test_max_count_multiple_batches_cancel(event_loop, leeway):
     delay_exec = 0.1
     event = Event()
     executions = 0
@@ -341,7 +341,7 @@ async def test_max_count_multiple_batches_cancel(loop, leeway):
 
     tasks = []
     for i in range(9):
-        tasks.append(loop.create_task(pho(i)))
+        tasks.append(event_loop.create_task(pho(i)))
 
     # Execution of the first batch must have started
     await event.wait()
@@ -370,7 +370,7 @@ async def test_max_count_multiple_batches_cancel(loop, leeway):
         assert task.done()
         assert task.result() == math.pow(i, 2)
 
-    tasks.append(loop.create_task(pho(9)))
+    tasks.append(event_loop.create_task(pho(9)))
     # Second batch must have started execution
     await event.wait()
     assert all(not task.done() for task in tasks[5:])
@@ -383,7 +383,7 @@ async def test_max_count_multiple_batches_cancel(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_low_level_sloppy(loop, leeway):
+async def test_low_level_sloppy(event_loop, leeway):
     max_count = 2
 
     @aggregate_async(leeway * 1000, max_count=max_count)
@@ -392,8 +392,8 @@ async def test_low_level_sloppy(loop, leeway):
             if arg.value:
                 arg.future.set_result(True)
 
-    task1 = loop.create_task(pho(True))
-    task2 = loop.create_task(pho(False))
+    task1 = event_loop.create_task(pho(True))
+    task2 = event_loop.create_task(pho(False))
     await wait([task1, task2])
 
     assert task1.done()
@@ -402,7 +402,7 @@ async def test_low_level_sloppy(loop, leeway):
     assert isinstance(task2.exception(), ResultNotSetError)
 
 
-async def test_low_level_ok(loop, leeway):
+async def test_low_level_ok(event_loop, leeway):
 
     @aggregate_async(leeway * 1000)
     async def pow(*args: Arg, power: float = 2):
@@ -411,7 +411,7 @@ async def test_low_level_ok(loop, leeway):
 
     tasks = []
     for i in range(5):
-        tasks.append(loop.create_task(pow(i)))
+        tasks.append(event_loop.create_task(pow(i)))
 
     await wait(tasks)
     for i, task in enumerate(tasks):
@@ -419,7 +419,7 @@ async def test_low_level_ok(loop, leeway):
         assert task.result() == math.pow(i, 2)
 
 
-async def test_low_level_error(loop, leeway):
+async def test_low_level_error(event_loop, leeway):
 
     @aggregate_async(leeway * 1000)
     async def pho(*args: Arg):
@@ -429,8 +429,8 @@ async def test_low_level_error(loop, leeway):
             else:
                 arg.future.set_exception(ValueError)
 
-    task1 = loop.create_task(pho(True))
-    task2 = loop.create_task(pho(False))
+    task1 = event_loop.create_task(pho(True))
+    task2 = event_loop.create_task(pho(False))
     await wait([task1, task2])
 
     assert task1.done()

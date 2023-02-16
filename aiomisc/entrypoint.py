@@ -3,14 +3,15 @@ import logging
 import os
 from concurrent.futures import Executor
 from typing import (
-    Any, Callable, Coroutine, MutableSet, Optional, TypeVar, Union,
+    Any, Callable, Coroutine, Iterable, MutableSet, Optional, TypeVar, Union,
 )
 from weakref import WeakSet
 
 import aiomisc_log
 from aiomisc_log import LogLevel
 
-from .compat import event_loop_policy, set_current_loop
+from ._context_vars import EVENT_LOOP, StrictContextVar
+from .compat import event_loop_policy, final
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
@@ -39,6 +40,7 @@ def _get_env_convert(name: str, converter: Callable[..., T], default: T) -> T:
     return converter(value)
 
 
+@final
 class Entrypoint:
     DEFAULT_LOG_LEVEL: str = os.getenv(
         "AIOMISC_LOG_LEVEL", LogLevel.default(),
@@ -69,6 +71,10 @@ class Entrypoint:
     POST_START = Signal()
     PRE_STOP = Signal()
 
+    @classmethod
+    def get_current(cls) -> "Entrypoint":
+        return CURRENT_ENTRYPOINT.get()
+
     async def _start(self) -> None:
         if self.log_config:
             basic_config(
@@ -80,7 +86,8 @@ class Entrypoint:
                 flush_interval=self.log_flush_interval,
             )
 
-        set_current_loop(self.loop)
+        CURRENT_ENTRYPOINT.set(self)
+        EVENT_LOOP.set(self.loop)
 
         for signal in (
             self.pre_start, self.post_stop,
@@ -88,13 +95,10 @@ class Entrypoint:
         ):
             signal.freeze()
 
-        await self.pre_start.call(entrypoint=self, services=self.services)
-
-        await asyncio.gather(
-            *[self._start_service(svc) for svc in self.services],
-        )
-
-        await self.post_start.call(entrypoint=self, services=self.services)
+        services = self.services
+        await self.pre_start.call(entrypoint=self, services=services)
+        await asyncio.gather(*[self._start_service(svc) for svc in services])
+        await self.post_start.call(entrypoint=self, services=services)
 
     def __init__(
         self, *services: Service,
@@ -110,9 +114,9 @@ class Entrypoint:
         debug: bool = DEFAULT_AIOMISC_DEBUG,
     ):
 
-        """
+        """ Creates a new Entrypoint
 
-        :param debug: set debug to event loop
+        :param debug: set debug to event-loop
         :param loop: loop
         :param services: Service instances which will be starting.
         :param pool_size: thread pool size
@@ -139,12 +143,13 @@ class Entrypoint:
         self.log_level = log_level
         self.policy = policy
         self.pool_size = pool_size
-        self.services = services
+        self.__services = set(services)
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_start = self.POST_START.copy()
         self.pre_stop = self.PRE_STOP.copy()
         self.post_stop = self.POST_STOP.copy()
+        self._lock = asyncio.Lock()
 
         if self.log_config:
             aiomisc_log.basic_config(
@@ -153,7 +158,13 @@ class Entrypoint:
             )
 
         if self._loop is not None:
-            set_current_loop(self._loop)
+            EVENT_LOOP.set(self._loop)
+
+        CURRENT_ENTRYPOINT.set(self)
+
+    @property
+    def services(self) -> Iterable[Service]:
+        return tuple(self.__services)
 
     async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
@@ -171,7 +182,7 @@ class Entrypoint:
                 debug=self._debug,
             )
             self._loop_owner = True
-            set_current_loop(self._loop)
+            EVENT_LOOP.set(self._loop)
         return self._loop
 
     def __del__(self) -> None:
@@ -260,6 +271,27 @@ class Entrypoint:
 
         return None
 
+    async def start_services(self, *svc: Service) -> None:
+        await self.pre_start.call(entrypoint=self, services=svc)
+        try:
+            await asyncio.gather(*[self._start_service(s) for s in svc])
+        finally:
+            await self.post_start.call(entrypoint=self, services=svc)
+            for s in svc:
+                self.__services.add(s)
+
+    async def stop_services(
+        self, *svc: Service, exc: Optional[Exception] = None,
+    ) -> None:
+        await self.pre_stop.call(entrypoint=self, services=svc)
+
+        try:
+            await asyncio.gather(*[s.stop(exc) for s in svc])
+        finally:
+            for s in svc:
+                self.__services.remove(s)
+            await self.post_stop.call(entrypoint=self, services=svc)
+
     async def _cancel_background_tasks(self) -> None:
         tasks = asyncio_all_tasks(self._loop)
         current_task = asyncio_current_task(self.loop)
@@ -270,7 +302,7 @@ class Entrypoint:
             self._closing.set()
 
         tasks = []
-        for svc in self.services:
+        for svc in self.__services:
             try:
                 coro = svc.stop(exception)
             except TypeError as e:
@@ -293,6 +325,10 @@ class Entrypoint:
         await self.loop.shutdown_asyncgens()
 
 
+CURRENT_ENTRYPOINT: StrictContextVar[Entrypoint] = StrictContextVar(
+    "CURRENT_ENTRYPOINT",
+    RuntimeError("no current entrypoint is set"),
+)
 entrypoint = Entrypoint
 
 
