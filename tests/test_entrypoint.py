@@ -7,18 +7,21 @@ from asyncio.tasks import Task
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
 from typing import Any, Optional, Set, Tuple
+from unittest import mock
 
 import aiohttp.web
 import fastapi
 import pytest
 
 import aiomisc
-from aiomisc.entrypoint import Entrypoint
+from aiomisc.entrypoint import Entrypoint, entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from aiomisc.service.tcp import RobustTCPClient, TCPClient
 from aiomisc.service.tls import RobustTLSClient, TLSClient
+from aiomisc_log import LogFormat
+from aiomisc_log.enum import DateFormat, LogLevel
 from tests import unix_only
 
 
@@ -884,3 +887,38 @@ async def test_add_remove_service(entrypoint: aiomisc.Entrypoint):
         await entrypoint.start_services(service)
 
     assert len(StorageService.INSTANCES) == 10
+
+
+@pytest.mark.parametrize('entrypoint_logging_kwargs,basic_config_kwargs', [
+    (
+        {},
+        {
+            'level': LogLevel.info.name,
+            'log_format': LogFormat.plain.name,
+            'date_format': None
+        }
+    ),
+    (
+        {
+            'log_level': LogLevel.debug,
+            'log_format': LogFormat.stream,
+            'log_date_format': DateFormat.stream
+        },
+        {
+            'level': LogLevel.debug,
+            'log_format': LogFormat.stream,
+            'date_format': DateFormat.stream
+        }
+    )
+])
+def test_entrypoint_log_params(entrypoint_logging_kwargs, basic_config_kwargs):
+    with mock.patch("aiomisc_log.basic_config") as basic_config_mock:
+        with entrypoint(**entrypoint_logging_kwargs):
+            pass
+
+        # unbuffered logging is configured on init, buffered on start,
+        # unbuffered on stop.
+        assert basic_config_mock.call_count == 3
+        for call_args, call_kwargs in basic_config_mock.call_args_list:
+            for key, value in basic_config_kwargs.items():
+                assert call_kwargs[key] == value
