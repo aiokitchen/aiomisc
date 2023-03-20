@@ -14,7 +14,7 @@ def _create_app(asgi_app: ASGIApplicationType) -> Application:
     app = Application()
     asgi_resource = ASGIResource(asgi_app, root_path="/")
     app.router.register_resource(asgi_resource)
-    asgi_resource.lifespan_mount(app, startup=True, shutdown=True)
+    asgi_resource.lifespan_mount(app)
     return app
 
 
