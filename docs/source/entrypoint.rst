@@ -122,6 +122,7 @@ Module support configuration from environment variables:
 
 * `AIOMISC_LOG_LEVEL` - default logging level
 * `AIOMISC_LOG_FORMAT` - default log format
+* `AIOMISC_LOG_DATE_FORMAT` - default logging date format
 * `AIOMISC_LOG_CONFIG` - should logging be configured
 * `AIOMISC_LOG_FLUSH` - interval between logs flushing from buffer
 * `AIOMISC_LOG_BUFFERING` - should logging be buffered
@@ -154,8 +155,8 @@ but handle ``Service``'s and other ``entrypoint``'s kwargs.
 Logging configuration
 =====================
 
-``entrypoint`` accepts a specific set of formats in which logs will be
-written to stderr.
+``entrypoint`` accepts ``log_format`` argument with a specific set of formats,
+in which logs will be written to stderr:
 
 * ``stream`` - Python's default logging handler
 * ``color`` - logging with `colorlog` module
@@ -164,13 +165,16 @@ written to stderr.
 * ``plain`` - just log messages, without date or level info
 * ``journald`` - available only when `logging-journald` module
   has been installed.
-* ``rich``/``rich_tb` - available only when `rich` module has been installed.
+* ``rich``/``rich_tb`` - available only when `rich` module has been installed.
   ``rich_tb`` it's the same as ``rich`` but with fully expanded tracebacks.
 
+Additionally, you can specify log level using ``log_level`` argument and date
+format using ``log_date_format`` parameters.
+
 An ``entrypoint`` will call ``aiomisc.log.basic_config`` function implicitly
-using passed ``log_level=`` and ``log_format=`` parameters.
-Alternatively you can call ``aiomisc.log.basic_config`` function manually
-passing it already created eventloop.
+using passed ``log_*`` parameters. Alternatively you can call
+``aiomisc.log.basic_config`` function manually passing it already created
+eventloop.
 
 However, you can configure logging earlier using ``aiomisc_log.basic_config``,
 but you will lose log buffering and flushing in a separate thread.

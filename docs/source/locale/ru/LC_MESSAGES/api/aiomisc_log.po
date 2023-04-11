@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-15 22:21+0300\n"
+"POT-Creation-Date: 2023-04-11 22:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,3 +107,9 @@ msgstr "Модуль ``aiomisc_log.formatter.rich.py``"
 #: ../../source/api/aiomisc_log.rst:34
 msgid "``aiomisc_log.enum`` module"
 msgstr "Модуль ``aiomisc_log.enum``"
+
+#: aiomisc_log.enum.DateFormat:1 aiomisc_log.enum.LogFormat:1
+#: aiomisc_log.enum.LogLevel:1 of
+msgid "An enumeration."
+msgstr ""
+
