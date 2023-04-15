@@ -48,6 +48,9 @@ class Entrypoint:
     DEFAULT_LOG_FORMAT: str = os.getenv(
         "AIOMISC_LOG_FORMAT", LogFormat.default(),
     )
+    DEFAULT_LOG_DATE_FORMAT: Optional[str] = os.getenv(
+        "AIOMISC_LOG_DATE_FORMAT"
+    )
 
     DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
     DEFAULT_AIOMISC_LOG_CONFIG: bool = _get_env_bool(
@@ -80,6 +83,7 @@ class Entrypoint:
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
+                date_format=self.log_date_format,
                 buffered=self.log_buffering,
                 loop=self.loop,
                 buffer_size=self.log_buffer_size,
@@ -108,6 +112,7 @@ class Entrypoint:
         log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
         log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
         log_buffer_size: int = DEFAULT_AIOMISC_BUFFER_SIZE,
+        log_date_format: Optional[str] = DEFAULT_LOG_DATE_FORMAT,
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
@@ -138,6 +143,7 @@ class Entrypoint:
         self.log_buffer_size = log_buffer_size
         self.log_buffering = log_buffering
         self.log_config = log_config
+        self.log_date_format = log_date_format
         self.log_flush_interval = log_flush_interval
         self.log_format = log_format
         self.log_level = log_level
@@ -155,6 +161,7 @@ class Entrypoint:
             aiomisc_log.basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
+                date_format=log_date_format
             )
 
         if self._loop is not None:
@@ -206,6 +213,7 @@ class Entrypoint:
             basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
+                date_format=self.log_date_format,
                 buffered=False,
             )
 
