@@ -148,7 +148,7 @@ Let's look at this simple example first:
 
 
     if __name__ == '__main__':
-        with entrypoint(log_level="info", log_format="color") as loop:
+        with aiomisc.entrypoint(log_level="info", log_format="color") as loop:
             loop.run_until_complete(main())
 
 
