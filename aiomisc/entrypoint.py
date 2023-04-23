@@ -49,7 +49,7 @@ class Entrypoint:
         "AIOMISC_LOG_FORMAT", LogFormat.default(),
     )
     DEFAULT_LOG_DATE_FORMAT: Optional[str] = os.getenv(
-        "AIOMISC_LOG_DATE_FORMAT"
+        "AIOMISC_LOG_DATE_FORMAT",
     )
 
     DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
@@ -155,13 +155,12 @@ class Entrypoint:
         self.post_start = self.POST_START.copy()
         self.pre_stop = self.PRE_STOP.copy()
         self.post_stop = self.POST_STOP.copy()
-        self._lock = asyncio.Lock()
 
         if self.log_config:
             aiomisc_log.basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                date_format=log_date_format
+                date_format=log_date_format,
             )
 
         if self._loop is not None:
