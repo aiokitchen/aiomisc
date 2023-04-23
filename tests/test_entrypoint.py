@@ -889,28 +889,30 @@ async def test_add_remove_service(entrypoint: aiomisc.Entrypoint):
     assert len(StorageService.INSTANCES) == 10
 
 
-@pytest.mark.parametrize('entrypoint_logging_kwargs,basic_config_kwargs', [
-    (
-        {},
-        {
-            'level': LogLevel.info.name,
-            'log_format': LogFormat.plain.name,
-            'date_format': None
-        }
-    ),
-    (
-        {
-            'log_level': LogLevel.debug,
-            'log_format': LogFormat.stream,
-            'log_date_format': DateFormat.stream
-        },
-        {
-            'level': LogLevel.debug,
-            'log_format': LogFormat.stream,
-            'date_format': DateFormat.stream
-        }
-    )
-])
+@pytest.mark.parametrize(
+    "entrypoint_logging_kwargs,basic_config_kwargs", [
+        (
+            {},
+            {
+                "level": LogLevel.info.name,
+                "log_format": LogFormat.default(),
+                "date_format": None,
+            },
+        ),
+        (
+            {
+                "log_level": LogLevel.debug,
+                "log_format": LogFormat.stream,
+                "log_date_format": DateFormat.stream,
+            },
+            {
+                "level": LogLevel.debug,
+                "log_format": LogFormat.stream,
+                "date_format": DateFormat.stream,
+            },
+        ),
+    ],
+)
 def test_entrypoint_log_params(entrypoint_logging_kwargs, basic_config_kwargs):
     with mock.patch("aiomisc_log.basic_config") as basic_config_mock:
         with entrypoint(**entrypoint_logging_kwargs):
