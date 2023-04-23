@@ -1,9 +1,12 @@
 import asyncio
 import logging
 import os
+import sys
 from concurrent.futures import Executor
+from signal import SIGINT, SIGTERM
 from typing import (
-    Any, Callable, Coroutine, Iterable, MutableSet, Optional, TypeVar, Union,
+    Any, Callable, Coroutine, Iterable, MutableSet, Optional, Tuple, TypeVar,
+    Union,
 )
 from weakref import WeakSet
 
@@ -68,6 +71,9 @@ class Entrypoint:
     DEFAULT_AIOMISC_POOL_SIZE: Optional[int] = _get_env_convert(
         "AIOMISC_POOL_SIZE", int, None,
     )
+    AIOMISC_SHUTDOWN_TIMEOUT: float = _get_env_convert(
+        "AIOMISC_SHUTDOWN_TIMEOUT", float, 60.,
+    )
 
     PRE_START = Signal()
     POST_STOP = Signal()
@@ -104,6 +110,9 @@ class Entrypoint:
         await asyncio.gather(*[self._start_service(svc) for svc in services])
         await self.post_start.call(entrypoint=self, services=services)
 
+        for sig in self.catch_signals:
+            self.loop.add_signal_handler(sig, self._on_interrupt)
+
     def __init__(
         self, *services: Service,
         loop: Optional[asyncio.AbstractEventLoop] = None,
@@ -117,6 +126,8 @@ class Entrypoint:
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
         debug: bool = DEFAULT_AIOMISC_DEBUG,
+        catch_signals: Tuple[int, ...] = (SIGINT, SIGTERM),
+        shutdown_timeout: Union[int, float] = AIOMISC_SHUTDOWN_TIMEOUT,
     ):
 
         """ Creates a new Entrypoint
@@ -130,6 +141,8 @@ class Entrypoint:
         :param log_buffer_size: Buffer size for logging
         :param log_flush_interval: interval in seconds for flushing logs
         :param log_config: if False do not configure logging
+        :param catch_sigint: Perform shutdown when SIGINT received
+        :param shutdown_timeout: Timeout in seconds for graceful shutdown
         """
 
         self.__services = set(services)
@@ -141,6 +154,8 @@ class Entrypoint:
         self._thread_pool: Optional[ExecutorType] = None
         self._closing: Optional[asyncio.Event] = None
 
+        self.catch_signals = catch_signals
+        self.shutdown_timeout = float(shutdown_timeout)
         self.ctx: Optional[Context] = None
         self.log_buffer_size = log_buffer_size
         self.log_buffering = log_buffering
@@ -206,7 +221,7 @@ class Entrypoint:
     def __exit__(
         self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
-        if self.loop.is_closed():
+        if not self.loop.is_running():
             return
 
         if self.log_config:
@@ -236,20 +251,39 @@ class Entrypoint:
     async def __aexit__(
         self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
+        await self._stop(exc_val)
+
+    if sys.version_info < (3, 9):
+        async def __shutdown_thread_pool(
+            self, loop: asyncio.AbstractEventLoop,
+        ) -> None:
+            result = self._thread_pool.shutdown()
+            if hasattr(result, "__await__"):
+                await result
+    else:
+        def __shutdown_thread_pool(
+            self, loop: asyncio.AbstractEventLoop,
+        ) -> Coroutine[Any, Any, None]:
+            return loop.shutdown_default_executor()
+
+    async def _stop(self, exc: Exception) -> None:
+        loop = self.loop
+        for sig in self.catch_signals:
+            loop.remove_signal_handler(sig)
+
         await self.pre_stop.call(entrypoint=self)
 
         try:
-            if self.loop.is_closed():
+            if loop.is_closed():
                 return
-
-            await self.graceful_shutdown(exc_val)
+            await self.graceful_shutdown(exc)
             self.shutting_down = True
         finally:
             if self.ctx:
                 self.ctx.close()
 
             if self._thread_pool:
-                self._thread_pool.shutdown()
+                await self.__shutdown_thread_pool(loop)
 
     async def _start_service(
         self, svc: Service,
@@ -331,6 +365,28 @@ class Entrypoint:
         if self._loop_owner:
             await self._cancel_background_tasks()
         await self.loop.shutdown_asyncgens()
+
+    def _on_interrupt(self) -> None:
+        loop = self.loop
+
+        async def shutdown() -> None:
+            log.warning("Interrupt signal received, shutting down...")
+            try:
+                await asyncio.wait_for(
+                    self._stop(RuntimeError("Interrupt signal received")),
+                    timeout=self.shutdown_timeout,
+                )
+            except asyncio.TimeoutError as e:
+                log.warning(
+                    "Shutdown did not happen in %s seconds, aborting.",
+                    self.shutdown_timeout,
+                )
+                # 70 from sysexits.h means "internal software error"
+                raise SystemExit(70) from e
+
+        self.loop.create_task(shutdown()).add_done_callback(
+            lambda _: loop.stop(),
+        )
 
 
 CURRENT_ENTRYPOINT: StrictContextVar[Entrypoint] = StrictContextVar(
