@@ -2,17 +2,23 @@
 
 stages:
   - test
-  - upload
 
 test:
   stage: test
+  image: snakepacker/python:all
   script:
-    - make test
-
-upload:
-  stage: upload
-  only:
-    - master
-    - tags
-  script:
-    - make upload
+    - python${PYTHON} -m venv .venv
+    - source .venv/bin/activate
+    - pip install -U pip "poetry<1.4.0" setuptools
+    - poetry install --with=uvloop
+    - poetry run pytest -vv --aiomisc-test-timeout=120
+  variables:
+    FORCE_COLOR: "1"
+  parallel:
+    matrix:
+      - PYTHON:
+        - '3.7'
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
