@@ -92,9 +92,9 @@ Just implement ``handle_client(reader, writer)`` to use it.
 
 
     with entrypoint(
-        EchoServer(address='::1', port=8901),
+        EchoServer(address='localhost', port=8901),
     ) as loop:
-        loop.run_until_complete(echo_client("::1", 8901))
+        loop.run_until_complete(echo_client("localhost", 8901))
 
 
 .. _udp-server:
@@ -112,7 +112,7 @@ Just implement ``handle_datagram(data, addr)`` to use it.
             print(addr, '->', data)
 
 
-    with entrypoint(UDPPrinter(address='::1', port=3000)) as loop:
+    with entrypoint(UDPPrinter(address='localhost', port=3000)) as loop:
         loop.run_forever()
 
 
@@ -131,7 +131,7 @@ Just implement ``handle_client(reader, writer)`` to use it.
                 writer.write(await reader.readline())
 
     service = SecureEchoServer(
-        address='::1',
+        address='localhost',
         port=8900,
         ca='ca.pem',
         cert='cert.pem',
@@ -187,8 +187,8 @@ Just implement ``handle_connection(reader, writer)`` to use it.
 
 
     with entrypoint(
-        EchoServer(address='::1', port=8901),
-        EchoClient(address='::1', port=8901),
+        EchoServer(address='localhost', port=8901),
+        EchoClient(address='localhost', port=8901),
     ) as loop:
         loop.run_until_complete(asyncio.sleep(0.1))
 
@@ -235,13 +235,13 @@ Just implement ``handle_connection(reader, writer)`` to use it.
 
     with entrypoint(
         EchoServer(
-            address='::1', port=8901,
+            address='localhost', port=8901,
             ca='ca.pem',
             cert='server.pem',
             key='server.key',
         ),
         EchoClient(
-            address='::1', port=8901,
+            address='localhost', port=8901,
             ca='ca.pem',
             cert='client.pem',
             key='client.key',
@@ -293,8 +293,8 @@ Just implement ``handle_connection(reader, writer)`` to use it.
 
 
     with entrypoint(
-        EchoServer(address='::1', port=8901),
-        EchoClient(address='::1', port=8901),
+        EchoServer(address='localhost', port=8901),
+        EchoClient(address='localhost', port=8901),
     ) as loop:
         loop.run_until_complete(asyncio.sleep(0.1))
 
@@ -342,13 +342,13 @@ Just implement ``handle_connection(reader, writer)`` to use it.
 
     with entrypoint(
         EchoServer(
-            address='::1', port=8901,
+            address='localhost', port=8901,
             ca='ca.pem',
             cert='server.pem',
             key='server.key',
         ),
         EchoClient(
-            address='::1', port=8901,
+            address='localhost', port=8901,
             ca='ca.pem',
             cert='client.pem',
             key='client.key',
@@ -487,8 +487,8 @@ After exiting the entrypoint service instances will be gracefully shut down.
 
     services = (
         LoggingService(name='#1', interval=1),
-        EchoServer(address='::1', port=8901),
-        UDPPrinter(address='::1', port=3000),
+        EchoServer(address='localhost', port=8901),
+        UDPPrinter(address='localhost', port=3000),
     )
 
 
