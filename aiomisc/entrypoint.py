@@ -49,7 +49,7 @@ class Entrypoint:
         "AIOMISC_LOG_FORMAT", LogFormat.default(),
     )
     DEFAULT_LOG_DATE_FORMAT: Optional[str] = os.getenv(
-        "AIOMISC_LOG_DATE_FORMAT"
+        "AIOMISC_LOG_DATE_FORMAT",
     )
 
     DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
@@ -107,7 +107,7 @@ class Entrypoint:
     def __init__(
         self, *services: Service,
         loop: Optional[asyncio.AbstractEventLoop] = None,
-        pool_size: Optional[int] = None,
+        pool_size: Optional[int] = DEFAULT_AIOMISC_POOL_SIZE,
         log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
         log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
         log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
@@ -132,6 +132,8 @@ class Entrypoint:
         :param log_config: if False do not configure logging
         """
 
+        self.__services = set(services)
+
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
@@ -149,19 +151,17 @@ class Entrypoint:
         self.log_level = log_level
         self.policy = policy
         self.pool_size = pool_size
-        self.__services = set(services)
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_start = self.POST_START.copy()
         self.pre_stop = self.PRE_STOP.copy()
         self.post_stop = self.POST_STOP.copy()
-        self._lock = asyncio.Lock()
 
         if self.log_config:
             aiomisc_log.basic_config(
                 level=self.log_level,
                 log_format=self.log_format,
-                date_format=log_date_format
+                date_format=log_date_format,
             )
 
         if self._loop is not None:
