@@ -55,7 +55,7 @@ class SimpleRespawningProcessService(RespawningProcessService):
         self.queue.put(os.getpid())
 
 
-def test_respawning_process_service(tmpdir):
+def test_respawning_process_service():
     queue: Queue = Queue()
     svc = SimpleRespawningProcessService(
         queue=queue,

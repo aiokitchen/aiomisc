@@ -64,7 +64,7 @@ class Service(metaclass=ServiceMeta):
         try:
             return self._instance_params[key]
         except KeyError as e:
-            raise AttributeError() from e
+            raise AttributeError(key) from e
 
     def __setattr__(self, key: str, value: Any) -> None:
         super(Service, self).__setattr__(key, value)

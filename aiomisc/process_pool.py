@@ -34,7 +34,7 @@ class ProcessPoolExecutor(Executor, EventLoopMixin):
     DEFAULT_MAX_WORKERS = max((cpu_count(), 4))
 
     def __init__(self, max_workers: int = DEFAULT_MAX_WORKERS, **kwargs: Any):
-        self.__futures = set()      # type: FuturesSet
+        self.__futures: FuturesSet = set()
         self.__pool = Pool(processes=max_workers, **kwargs)
         self._statistic = ProcessPoolStatistic()
         self._statistic.processes = max_workers
@@ -43,7 +43,8 @@ class ProcessPoolExecutor(Executor, EventLoopMixin):
         future = self.loop.create_future()  # type: asyncio.Future
 
         self.__futures.add(future)
-        future.add_done_callback(self.__futures.remove)
+        future.add_done_callback(self.__futures.discard)
+
         start_time = self.loop.time()
 
         def callback(result: T) -> None:
@@ -84,18 +85,22 @@ class ProcessPoolExecutor(Executor, EventLoopMixin):
         return future
 
     # noinspection PyMethodOverriding
-    def shutdown(self, wait: bool = True) -> None:  # type: ignore
+    def shutdown(
+        self, wait: bool = True, cancel_futures: bool = False,
+    ) -> None:
+
         if not self.__pool:
             return
 
         self.__pool.terminate()
 
-        set_exception(self.__futures, asyncio.CancelledError())
+        if cancel_futures:
+            set_exception(self.__futures, asyncio.CancelledError())
+
+        self.__pool.close()
 
         if wait:
             self.__pool.join()
-
-        self.__pool.close()
 
     def __del__(self) -> None:
         self.shutdown()

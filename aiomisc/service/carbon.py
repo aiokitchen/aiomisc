@@ -59,4 +59,4 @@ class CarbonSender(Service):
         )
 
     async def stop(self, exc: Optional[Exception] = None) -> None:
-        await self._handle.stop()
+        await self._handle.stop(return_exceptions=True)

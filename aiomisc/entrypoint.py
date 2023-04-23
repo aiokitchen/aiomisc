@@ -1,12 +1,12 @@
 import asyncio
 import logging
 import os
+import signal
 import sys
 from concurrent.futures import Executor
-from signal import SIGINT, SIGTERM
 from typing import (
-    Any, Callable, Coroutine, Iterable, MutableSet, Optional, Tuple, TypeVar,
-    Union,
+    Any, Callable, Coroutine, FrozenSet, MutableSet, Optional, Set, Tuple,
+    TypeVar, Union,
 )
 from weakref import WeakSet
 
@@ -41,6 +41,24 @@ def _get_env_convert(name: str, converter: Callable[..., T], default: T) -> T:
     if value is None:
         return default
     return converter(value)
+
+
+class OSSignalHandler:
+    def __init__(
+        self, sig: int, handler: Callable[[int], None],
+    ):
+        self.default_handler = signal.getsignal(sig)
+        self.signal = sig
+        self.handler = handler
+
+    def __callback(self, *_: Any) -> None:
+        self.handler(self.signal)
+
+    def apply(self) -> None:
+        signal.signal(self.signal, self.__callback)
+
+    def restore(self) -> None:
+        signal.signal(self.signal, self.default_handler)
 
 
 @final
@@ -99,19 +117,18 @@ class Entrypoint:
         CURRENT_ENTRYPOINT.set(self)
         EVENT_LOOP.set(self.loop)
 
-        for signal in (
-            self.pre_start, self.post_stop,
-            self.pre_stop, self.post_start,
-        ):
-            signal.freeze()
+        signals = (
+            self.pre_start, self.post_stop, self.pre_stop, self.post_start,
+        )
 
-        services = self.services
-        await self.pre_start.call(entrypoint=self, services=services)
-        await asyncio.gather(*[self._start_service(svc) for svc in services])
-        await self.post_start.call(entrypoint=self, services=services)
+        for sig in signals:
+            sig.freeze()
 
-        for sig in self.catch_signals:
-            self.loop.add_signal_handler(sig, self._on_interrupt)
+        await self.start_services(*self.__passed_services)
+        del self.__passed_services
+
+        for handler in self._signal_handlers:
+            handler.apply()
 
     def __init__(
         self, *services: Service,
@@ -126,7 +143,7 @@ class Entrypoint:
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
         debug: bool = DEFAULT_AIOMISC_DEBUG,
-        catch_signals: Tuple[int, ...] = (SIGINT, SIGTERM),
+        catch_signals: Tuple[int, ...] = (signal.SIGINT, signal.SIGTERM),
         shutdown_timeout: Union[int, float] = AIOMISC_SHUTDOWN_TIMEOUT,
     ):
 
@@ -141,18 +158,25 @@ class Entrypoint:
         :param log_buffer_size: Buffer size for logging
         :param log_flush_interval: interval in seconds for flushing logs
         :param log_config: if False do not configure logging
-        :param catch_sigint: Perform shutdown when SIGINT received
+        :param catch_signals: Perform shutdown when this signals will
+                              be received
         :param shutdown_timeout: Timeout in seconds for graceful shutdown
         """
 
-        self.__services = set(services)
+        self.__passed_services: FrozenSet[Service] = frozenset(services)
 
+        self._services: Set[Service] = set()
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
         self._tasks: MutableSet[asyncio.Task] = WeakSet()
         self._thread_pool: Optional[ExecutorType] = None
         self._closing: Optional[asyncio.Event] = None
+
+        self._signal_handlers = [
+            OSSignalHandler(sig, self._on_interrupt_callback)
+            for sig in catch_signals
+        ]
 
         self.catch_signals = catch_signals
         self.shutdown_timeout = float(shutdown_timeout)
@@ -165,8 +189,9 @@ class Entrypoint:
         self.log_format = log_format
         self.log_level = log_level
         self.policy = policy
+
+        # signals
         self.pool_size = pool_size
-        self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_start = self.POST_START.copy()
         self.pre_stop = self.PRE_STOP.copy()
@@ -185,8 +210,8 @@ class Entrypoint:
         CURRENT_ENTRYPOINT.set(self)
 
     @property
-    def services(self) -> Iterable[Service]:
-        return tuple(self.__services)
+    def services(self) -> Tuple[Service, ...]:
+        return tuple(self._services)
 
     async def closing(self) -> None:
         # Lazy initialization because event loop might be not exists
@@ -221,7 +246,8 @@ class Entrypoint:
     def __exit__(
         self, exc_type: Any, exc_val: Any, exc_tb: Any,
     ) -> None:
-        if not self.loop.is_running():
+        loop = self.loop
+        if loop.is_closed():
             return
 
         if self.log_config:
@@ -232,12 +258,9 @@ class Entrypoint:
                 buffered=False,
             )
 
-        self.loop.run_until_complete(
-            self.__aexit__(exc_type, exc_val, exc_tb),
-        )
-
+        loop.run_until_complete(self.__aexit__(exc_type, exc_val, exc_tb))
         if self._loop_owner and self._loop is not None:
-            self._loop.close()
+            loop.close()
 
     async def __aenter__(self) -> "Entrypoint":
         if self._loop is None:
@@ -268,16 +291,14 @@ class Entrypoint:
 
     async def _stop(self, exc: Exception) -> None:
         loop = self.loop
-        for sig in self.catch_signals:
-            loop.remove_signal_handler(sig)
 
-        await self.pre_stop.call(entrypoint=self)
+        for handler in self._signal_handlers:
+            handler.restore()
 
         try:
             if loop.is_closed():
                 return
             await self.graceful_shutdown(exc)
-            self.shutting_down = True
         finally:
             if self.ctx:
                 self.ctx.close()
@@ -295,6 +316,8 @@ class Entrypoint:
                 svc.start(), svc.start_event.wait(),
             ),
         )
+
+        self._services.add(svc)
 
         await asyncio.wait(
             (start_task, ev_task),
@@ -319,19 +342,36 @@ class Entrypoint:
             await asyncio.gather(*[self._start_service(s) for s in svc])
         finally:
             await self.post_start.call(entrypoint=self, services=svc)
-            for s in svc:
-                self.__services.add(s)
 
     async def stop_services(
         self, *svc: Service, exc: Optional[Exception] = None,
     ) -> None:
         await self.pre_stop.call(entrypoint=self, services=svc)
 
+        if not svc:
+            await self.post_stop.call(entrypoint=self, services=svc)
+            return
+
+        tasks = []
+
         try:
-            await asyncio.gather(*[s.stop(exc) for s in svc])
-        finally:
             for s in svc:
-                self.__services.remove(s)
+                try:
+                    log.debug("Stopping service %r", s)
+                    coro = s.stop(exc)
+                    if hasattr(coro, "__await__"):
+                        tasks.append(self.loop.create_task(coro))
+                except TypeError as e:
+                    log.warning("Failed to stop service %r:\n%r", svc, e)
+                    log.debug("Service stop failed traceback", exc_info=True)
+
+            await asyncio.gather(*tasks)
+        finally:
+            await cancel_tasks(tasks)
+
+            for s in svc:
+                self._services.discard(s)
+
             await self.post_stop.call(entrypoint=self, services=svc)
 
     async def _cancel_background_tasks(self) -> None:
@@ -343,32 +383,19 @@ class Entrypoint:
         if self._closing:
             self._closing.set()
 
-        tasks = []
-        for svc in self.__services:
-            try:
-                coro = svc.stop(exception)
-            except TypeError as e:
-                log.warning(
-                    "Failed to stop service %r:\n%r", svc, e,
-                )
-                log.debug("Service stop failed traceback", exc_info=True)
-            else:
-                tasks.append(asyncio.shield(coro))
-
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
-
         await cancel_tasks(set(self._tasks))
-
-        await self.post_stop.call(entrypoint=self)
+        await self.stop_services(*self._services, exc=exception)
 
         if self._loop_owner:
             await self._cancel_background_tasks()
+
         await self.loop.shutdown_asyncgens()
 
-    def _on_interrupt(self) -> None:
+    def _on_interrupt_callback(self, _: Any) -> None:
         loop = self.loop
+        self.loop.call_soon_threadsafe(self._on_interrupt, loop)
 
+    def _on_interrupt(self, loop: asyncio.AbstractEventLoop) -> None:
         async def shutdown() -> None:
             log.warning("Interrupt signal received, shutting down...")
             try:

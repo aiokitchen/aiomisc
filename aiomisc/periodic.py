@@ -63,14 +63,14 @@ class PeriodicCallback(EventLoopMixin):
 
         self._task.add_done_callback(clean_task)
 
-    def stop(self) -> asyncio.Future:
+    def stop(self, return_exceptions: bool = False) -> asyncio.Future:
         if self._task is None:
             self._task = self.loop.create_future()
             self._task.set_exception(RuntimeError("Callback not started"))
         elif not self._task.done():
             self._task.cancel()
         task, self._task = self._task, None
-        return task
+        return asyncio.gather(task, return_exceptions=return_exceptions)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self._recurring_callback.name})"

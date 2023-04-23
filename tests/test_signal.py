@@ -42,7 +42,7 @@ def test_post_stop_signal(event_loop):
     ep = entrypoint(FooService(), loop=event_loop)
     called = False
 
-    async def post_stop_callback(entrypoint):
+    async def post_stop_callback(*_, **__):
         nonlocal called
         await asyncio.sleep(0.01)
         called = True
@@ -58,7 +58,7 @@ def test_post_stop_signal(event_loop):
 def test_entrypoint_class_pre_start_signal(event_loop):
     received_services, received_entrypoint = None, None
 
-    async def pre_start_callback(services, entrypoint):
+    async def pre_start_callback(*, services, entrypoint):
         nonlocal received_services, received_entrypoint
         received_services = services
         received_entrypoint = entrypoint
@@ -75,7 +75,7 @@ def test_entrypoint_class_pre_start_signal(event_loop):
 def test_entrypoint_class_post_stop_signal(event_loop):
     received_entrypoint = None
 
-    async def post_stop_callback(entrypoint):
+    async def post_stop_callback(*, services, entrypoint):
         nonlocal received_entrypoint
         received_entrypoint = entrypoint
 
