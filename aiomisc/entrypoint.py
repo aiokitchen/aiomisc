@@ -107,7 +107,7 @@ class Entrypoint:
     def __init__(
         self, *services: Service,
         loop: Optional[asyncio.AbstractEventLoop] = None,
-        pool_size: Optional[int] = None,
+        pool_size: Optional[int] = DEFAULT_AIOMISC_POOL_SIZE,
         log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
         log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
         log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
