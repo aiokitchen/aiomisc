@@ -132,6 +132,8 @@ class Entrypoint:
         :param log_config: if False do not configure logging
         """
 
+        self.__services = set(services)
+
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
@@ -149,7 +151,6 @@ class Entrypoint:
         self.log_level = log_level
         self.policy = policy
         self.pool_size = pool_size
-        self.__services = set(services)
         self.shutting_down = False
         self.pre_start = self.PRE_START.copy()
         self.post_start = self.POST_START.copy()
