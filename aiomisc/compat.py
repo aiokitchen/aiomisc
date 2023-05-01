@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import socket
 from typing import Optional
 
@@ -38,7 +39,13 @@ class EventLoopMixin:
 event_loop_policy: asyncio.AbstractEventLoopPolicy
 try:
     import uvloop
-    event_loop_policy = uvloop.EventLoopPolicy()
+    if (
+        os.getenv("AIOMISC_USE_UVLOOP", "1").lower() in
+        ("yes", "1", "enabled", "enable", "on", "true")
+    ):
+        event_loop_policy = uvloop.EventLoopPolicy()
+    else:
+        event_loop_policy = asyncio.DefaultEventLoopPolicy()
 except ImportError:
     event_loop_policy = asyncio.DefaultEventLoopPolicy()
 

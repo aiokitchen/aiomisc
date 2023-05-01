@@ -110,6 +110,9 @@ raven = ["aiohttp", "raven"]
 rich = ["rich"]
 uvloop = ["uvloop"]
 
+[tool.poetry.plugins.aiomisc]
+systemd_watchdog = "aiomisc.service.sdwatchdog"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

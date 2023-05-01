@@ -155,7 +155,7 @@ class RespawningProcessService(ProcessService, ABC):
         )
 
     async def stop(self, exception: Optional[Exception] = None) -> Any:
-        await self._supervisor.stop()
+        await self._supervisor.stop(return_exceptions=True)
         await super().stop(exception)
 
 

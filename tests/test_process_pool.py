@@ -9,13 +9,13 @@ import aiomisc
 from aiomisc.process_pool import ProcessPoolExecutor
 
 
+POOL_SIZE = 4
+
+
 @pytest.fixture
 def pool():
-    pool = ProcessPoolExecutor(4)
-    try:
+    with ProcessPoolExecutor(POOL_SIZE) as pool:
         yield pool
-    finally:
-        pool.shutdown(True)
 
 
 @aiomisc.timeout(10)
@@ -28,7 +28,7 @@ async def test_simple(pool, event_loop, timer):
             asyncio.gather(
                 *[
                     event_loop.run_in_executor(pool, sleep, 1)
-                    for _ in range(4)
+                    for _ in range(POOL_SIZE)
                 ],
             ), timeout=2,
         )

@@ -1,8 +1,6 @@
 import cProfile
 import io
 import logging
-from asyncio import CancelledError
-from contextlib import suppress
 from pstats import Stats
 from typing import Optional
 
@@ -49,9 +47,5 @@ class Profiler(Service):
 
     async def stop(self, exception: Optional[Exception] = None) -> None:
         self.logger.info("Stop profiler")
-
-        task = self.periodic.stop()
-        with suppress(CancelledError):
-            await task
-
+        await self.periodic.stop(return_exceptions=True)
         self.profiler.disable()

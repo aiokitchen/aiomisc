@@ -32,6 +32,29 @@ async def test_periodic(event_loop):
         await periodic.stop()
 
 
+async def test_periodic_return_exceptions(event_loop):
+    condition = asyncio.Condition()
+    counter = 0
+
+    async def task():
+        nonlocal counter
+        counter += 1
+
+        async with condition:
+            condition.notify_all()
+
+    periodic = aiomisc.PeriodicCallback(task)
+    periodic.start(0.1, event_loop)
+
+    async with condition:
+        await asyncio.wait_for(
+            condition.wait_for(lambda: counter >= 5),
+            timeout=5,
+        )
+
+    await periodic.stop(return_exceptions=True)
+
+
 async def test_long_func(event_loop):
     counter = 0
     condition = asyncio.Condition()

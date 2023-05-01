@@ -391,7 +391,7 @@ async def test_threaded_generator_close_break(
 
 
 async def test_threaded_generator_non_generator_raises(
-        iterator_decorator, loop, timer,
+        iterator_decorator, event_loop, timer,
 ):
     @iterator_decorator()
     def errored():
@@ -404,7 +404,7 @@ async def test_threaded_generator_non_generator_raises(
 
 
 async def test_threaded_generator_func_raises(
-    iterator_decorator, loop, timer,
+    iterator_decorator, event_loop, timer,
 ):
     @iterator_decorator
     def errored(val):

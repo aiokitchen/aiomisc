@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-15 22:21+0300\n"
+"POT-Creation-Date: 2023-04-24 11:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.12.1\n"
 
 #: ../../source/api/aiomisc.rst:2
 msgid "``aiomisc`` module"
@@ -27,14 +27,12 @@ msgstr "Модуль ``aiomisc.aggregate``"
 msgid "Create new instance of Arg(value, future)"
 msgstr ""
 
-#: ../../docstring aiomisc.aggregate.Arg.future:1
-#: aiomisc.counters.StatisticResult.name:1
+#: aiomisc.aggregate.Arg.future:1 aiomisc.counters.StatisticResult.name:1
 #: aiomisc.thread_pool.WorkItemBase.args:1 of
 msgid "Alias for field number 1"
 msgstr ""
 
-#: ../../docstring aiomisc.aggregate.Arg.value:1
-#: aiomisc.counters.StatisticResult.kind:1
+#: aiomisc.aggregate.Arg.value:1 aiomisc.counters.StatisticResult.kind:1
 #: aiomisc.thread_pool.WorkItemBase.func:1 of
 msgid "Alias for field number 0"
 msgstr ""
@@ -223,50 +221,53 @@ msgstr ""
 msgid "minimum time in passing state (seconds)"
 msgstr ""
 
+#: aiomisc.circuit_breaker.CircuitBreakerStates:1
+#: aiomisc.circuit_breaker.CounterKey:1 aiomisc.io.Compression:1
+#: aiomisc_log.enum.LogFormat:1 aiomisc_log.enum.LogLevel:1 of
+msgid "An enumeration."
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:26
 msgid "``aiomisc.compat`` module"
 msgstr "Модуль ``aiomisc.compat``"
 
-#: of typing.final:1
-msgid "A decorator to indicate final methods and final classes."
-msgstr ""
-
-#: of typing.final:3
+#: of typing_extensions.final:1
 msgid ""
-"Use this decorator to indicate to type checkers that the decorated method"
-" cannot be overridden, and decorated class cannot be subclassed. For "
-"example:"
+"This decorator can be used to indicate to type checkers that the "
+"decorated method cannot be overridden, and decorated class cannot be "
+"subclassed. For example:"
 msgstr ""
 
-#: of typing.final:9
+#: of typing_extensions.final:7
 msgid "class Base:"
 msgstr ""
 
-#: of typing.final:8
+#: of typing_extensions.final:6
 msgid "@final def done(self) -> None:"
 msgstr ""
 
-#: of typing.final:10 typing.final:13 typing.final:17 typing.final:19
+#: of typing_extensions.final:8 typing_extensions.final:11
+#: typing_extensions.final:14 typing_extensions.final:16
 msgid "..."
 msgstr ""
 
-#: of typing.final:13
+#: of typing_extensions.final:10
 msgid "class Sub(Base):"
 msgstr ""
 
-#: of typing.final:13
+#: of typing_extensions.final:10
 msgid "def done(self) -> None:  # Error reported by type checker"
 msgstr ""
 
-#: of typing.final:15
+#: of typing_extensions.final:12
 msgid "@final class Leaf:"
 msgstr ""
 
-#: of typing.final:19
+#: of typing_extensions.final:16
 msgid "class Other(Leaf):  # Error reported by type checker"
 msgstr ""
 
-#: of typing.final:21
+#: of typing_extensions.final:18
 msgid ""
 "There is no runtime checking of these properties. The decorator sets the "
 "``__final__`` attribute to ``True`` on the decorated object to allow "
@@ -289,12 +290,12 @@ msgstr "Модуль ``aiomisc.counters``"
 msgid "Create new instance of StatisticResult(kind, name, metric, value)"
 msgstr ""
 
-#: ../../docstring aiomisc.counters.StatisticResult.metric:1
+#: aiomisc.counters.StatisticResult.metric:1
 #: aiomisc.thread_pool.WorkItemBase.kwargs:1 of
 msgid "Alias for field number 2"
 msgstr ""
 
-#: ../../docstring aiomisc.counters.StatisticResult.value:1
+#: aiomisc.counters.StatisticResult.value:1
 #: aiomisc.thread_pool.WorkItemBase.future:1 of
 msgid "Alias for field number 3"
 msgstr ""
@@ -353,6 +354,14 @@ msgstr ""
 msgid "if False do not configure logging"
 msgstr ""
 
+#: aiomisc.entrypoint.Entrypoint:12 of
+msgid "Perform shutdown when this signals will be received"
+msgstr ""
+
+#: aiomisc.entrypoint.Entrypoint:14 of
+msgid "Timeout in seconds for graceful shutdown"
+msgstr ""
+
 #: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.io`` module"
 msgstr "Модуль ``aiomisc.io``"
@@ -399,8 +408,8 @@ msgid ""
 " can be called after this one."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
 msgid "Args:"
 msgstr ""
 
@@ -414,16 +423,6 @@ msgstr ""
 msgid ""
 "futures have finished executing and the resources used by the executor "
 "have been reclaimed."
-msgstr ""
-
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
-msgid "cancel_futures: If True then shutdown will cancel all pending"
-msgstr ""
-
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:11
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
-msgid "futures. Futures that are completed or running will not be cancelled."
 msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor.submit:1
@@ -455,7 +454,7 @@ msgstr "Модуль ``aiomisc.thread_pool``"
 msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
 msgstr ""
 
-#: ../../docstring aiomisc.thread_pool.WorkItemBase.loop:1 of
+#: aiomisc.thread_pool.WorkItemBase.loop:1 of
 msgid "Alias for field number 4"
 msgstr ""
 
@@ -589,3 +588,19 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:145
 msgid "``aiomisc.worker_pool`` module"
 msgstr "Модуль ``aiomisc.worker_pool``"
+
+#~ msgid "A decorator to indicate final methods and final classes."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Use this decorator to indicate to "
+#~ "type checkers that the decorated method"
+#~ " cannot be overridden, and decorated "
+#~ "class cannot be subclassed. For example:"
+#~ msgstr ""
+
+#~ msgid "cancel_futures: If True then shutdown will cancel all pending"
+#~ msgstr ""
+
+#~ msgid "futures. Futures that are completed or running will not be cancelled."
+#~ msgstr ""

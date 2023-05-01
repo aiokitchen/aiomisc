@@ -15,6 +15,9 @@ def setup_plugins() -> Mapping[str, Callable]:
     for entry_point in pkg_resources.iter_entry_points("aiomisc.plugins"):
         plugins[entry_point.name] = entry_point.load()
 
+    for entry_point in pkg_resources.iter_entry_points("aiomisc"):
+        plugins[entry_point.name] = entry_point.load()
+
     logger = logging.getLogger(__name__)
     for name, plugin in plugins.items():
         try:
@@ -31,12 +34,3 @@ plugins: Mapping[str, Callable] = setup_plugins()
 
 
 __all__ = ("plugins",)
-
-if __name__ == "__main__":
-    from aiomisc_log import LogFormat, basic_config
-
-    basic_config(log_format=LogFormat.plain)
-    logging.info("Available %s plugins.", len(plugins))
-
-    for name in plugins:
-        print(name)
