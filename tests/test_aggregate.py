@@ -7,8 +7,8 @@ from asyncio import Event, wait
 from typing import Any, List, Sequence
 
 import pytest
-from aiocontextvars import ContextVar  # type: ignore
 
+from contextvars import ContextVar
 from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
 
 

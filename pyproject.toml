@@ -68,7 +68,6 @@ typing_extensions = [{ version = '*', python = "< 3.8" }]
 uvloop = { version = ">=0.14, <1", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-aiocontextvars = "0.2.2"
 aiohttp = ">3"
 aiohttp-asgi = "~0.5.2"
 aiomisc-pytest = "^1.0.8"
