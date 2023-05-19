@@ -2,7 +2,6 @@ import asyncio
 import contextvars
 import inspect
 import logging
-import sys
 import threading
 import time
 import warnings
@@ -16,13 +15,8 @@ from typing import (
     Set, Tuple, TypeVar,
 )
 
-
-if sys.version_info >= (3, 10):
-    from typing import ParamSpec
-else:
-    from typing_extensions import ParamSpec
-
 from ._context_vars import EVENT_LOOP
+from .compat import ParamSpec
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
