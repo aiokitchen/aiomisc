@@ -2,6 +2,7 @@ import asyncio
 import contextvars
 import inspect
 import logging
+import sys
 import threading
 import time
 import warnings
@@ -15,11 +16,18 @@ from typing import (
     Set, Tuple, TypeVar,
 )
 
+
+if sys.version_info >= (3, 10):
+    from typing import ParamSpec
+else:
+    from typing_extensions import ParamSpec
+
 from ._context_vars import EVENT_LOOP
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
 
+P = ParamSpec("P")
 T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
 log = logging.getLogger(__name__)
@@ -252,8 +260,8 @@ async def _awaiter(future: asyncio.Future) -> T:
 
 
 def threaded(
-    func: Callable[..., T],
-) -> Callable[..., Awaitable[T]]:
+    func: Callable[P, T],
+) -> Callable[P, Awaitable[T]]:
     if asyncio.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")
 
@@ -262,7 +270,7 @@ def threaded(
 
     @wraps(func)
     def wrap(
-        *args: Any, **kwargs: Any,
+        *args: P.args, **kwargs: P.kwargs,
     ) -> Awaitable[T]:
         return run_in_executor(func=func, args=args, kwargs=kwargs)
 
