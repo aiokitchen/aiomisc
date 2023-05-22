@@ -48,7 +48,7 @@ class WorkerPool:
     initializer_kwargs: Mapping[str, Any]
 
     _supervisor: Popen
-    worker_ids: Tuple[bytes, ...]
+    worker_ids: Tuple[str, ...]
     pids: Set[int]
 
     if hasattr(socket, "AF_UNIX"):
@@ -266,7 +266,7 @@ class WorkerPool:
         del self.socket
 
         self.worker_ids = tuple(
-            fast_uuid4().bytes for _ in range(self.workers)
+            str(fast_uuid4()) for _ in range(self.workers)
         )
         self._supervisor = await self.__create_supervisor(*self.worker_ids)
 
