@@ -24,6 +24,7 @@ from .iterator_wrapper import IteratorWrapper
 P = ParamSpec("P")
 T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
+
 log = logging.getLogger(__name__)
 
 
