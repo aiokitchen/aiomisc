@@ -4,11 +4,11 @@ import math
 import platform
 import time
 from asyncio import Event, wait
+from contextvars import ContextVar
 from typing import Any, List, Sequence
 
 import pytest
 
-from contextvars import ContextVar
 from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
 
 
@@ -203,7 +203,7 @@ async def test_leeway_cancel(event_loop, leeway):
     delay_exec = 0.1
     event = Event()
     executions = 0
-    arg = ContextVar("arg")
+    arg: ContextVar = ContextVar("arg")
     tasks: List[asyncio.Task] = []
     executing_task: asyncio.Task
 
@@ -262,7 +262,7 @@ async def test_max_count_cancel(event_loop):
     executions = 0
     leeway = 100
     max_count = 5
-    arg = ContextVar("arg")
+    arg: ContextVar = ContextVar("arg")
     tasks: List[asyncio.Task] = []
     executing_task: asyncio.Task
 
@@ -321,7 +321,7 @@ async def test_max_count_multiple_batches_cancel(event_loop, leeway):
     event = Event()
     executions = 0
     max_count = 5
-    arg = ContextVar("arg")
+    arg: ContextVar = ContextVar("arg")
     tasks: List[asyncio.Task] = []
     executing_task: asyncio.Task
 
