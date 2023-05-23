@@ -23,8 +23,6 @@ from .signal import Signal
 from .utils import cancel_tasks, create_default_event_loop
 
 
-MAIN_THREAD_INDENT = threading.get_ident()
-
 ExecutorType = Executor
 T = TypeVar("T")
 log = logging.getLogger(__name__)
@@ -35,7 +33,7 @@ asyncio_current_task = asyncio.current_task
 
 
 def is_main_thread() -> bool:
-    return threading.current_thread().ident == MAIN_THREAD_INDENT
+    return threading.current_thread() == threading.main_thread()
 
 
 def _get_env_bool(name: str, default: str) -> bool:
