@@ -3,6 +3,7 @@ import logging
 import os
 import signal
 import sys
+import threading
 from concurrent.futures import Executor
 from typing import (
     Any, Callable, Coroutine, FrozenSet, MutableSet, Optional, Set, Tuple,
@@ -22,6 +23,8 @@ from .signal import Signal
 from .utils import cancel_tasks, create_default_event_loop
 
 
+MAIN_THREAD_INDENT = threading.get_ident()
+
 ExecutorType = Executor
 T = TypeVar("T")
 log = logging.getLogger(__name__)
@@ -29,6 +32,10 @@ log = logging.getLogger(__name__)
 
 asyncio_all_tasks = asyncio.all_tasks
 asyncio_current_task = asyncio.current_task
+
+
+def is_main_thread() -> bool:
+    return threading.current_thread().ident == MAIN_THREAD_INDENT
 
 
 def _get_env_bool(name: str, default: str) -> bool:
@@ -143,10 +150,9 @@ class Entrypoint:
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
         debug: bool = DEFAULT_AIOMISC_DEBUG,
-        catch_signals: Tuple[int, ...] = (signal.SIGINT, signal.SIGTERM),
+        catch_signals: Optional[Tuple[int, ...]] = None,
         shutdown_timeout: Union[int, float] = AIOMISC_SHUTDOWN_TIMEOUT,
     ):
-
         """ Creates a new Entrypoint
 
         :param debug: set debug to event-loop
@@ -173,9 +179,14 @@ class Entrypoint:
         self._thread_pool: Optional[ExecutorType] = None
         self._closing: Optional[asyncio.Event] = None
 
+        if catch_signals is None and is_main_thread():
+            # Apply default catch signals only if the entrypoint is creating
+            # in only in main thread
+            catch_signals = (signal.SIGINT, signal.SIGTERM)
+
         self._signal_handlers = [
             OSSignalHandler(sig, self._on_interrupt_callback)
-            for sig in catch_signals
+            for sig in catch_signals or ()
         ]
 
         self.catch_signals = catch_signals
