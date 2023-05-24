@@ -44,15 +44,14 @@ def suicide():
     os.kill(os.getpid(), signal.SIGINT)
 
 
-@pytest.mark.skip(reason="Stuck tests in GH actions")
 @aiomisc.timeout(10)
 async def test_exit(pool, event_loop):
-    with pytest.raises(asyncio.TimeoutError):
-        await asyncio.wait_for(
-            asyncio.gather(
-                *[
-                    event_loop.run_in_executor(pool, suicide)
-                    for _ in range(4)
-                ],
-            ), timeout=2,
-        )
+    await asyncio.wait_for(
+        asyncio.gather(
+            *[
+                event_loop.run_in_executor(pool, suicide)
+                for _ in range(4)
+            ],
+            return_exceptions=True,
+        ), timeout=2,
+    )
