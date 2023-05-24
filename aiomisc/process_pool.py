@@ -35,14 +35,17 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         self._statistic.processes = max_workers
 
     def _statistic_callback(
-        self, future: Future, execution_time: float,
+        self,
+        future: Future,
+        start_time: float,
+        loop: asyncio.AbstractEventLoop,
     ) -> None:
         if future.exception():
             self._statistic.error += 1
         else:
             self._statistic.success += 1
         self._statistic.done += 1
-        self._statistic.sum_time += execution_time
+        self._statistic.sum_time += loop.time() - start_time
 
     def submit(self, *args: Any, **kwargs: Any) -> Future:
         """
@@ -53,7 +56,7 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         future = super().submit(*args, **kwargs)
         self._statistic.submitted += 1
         future.add_done_callback(
-            lambda f: self._statistic_callback(f, loop.time() - start_time),
+            lambda f: self._statistic_callback(f, start_time, loop),
         )
         return future
 
