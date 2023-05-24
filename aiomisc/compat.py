@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import socket
+import sys
 from typing import Optional
 
 from ._context_vars import EVENT_LOOP
@@ -17,11 +18,15 @@ except ImportError:
     def time_ns() -> int:
         return int(time() * 1000000000)
 
-
 try:
     from typing import final
 except ImportError:
     from typing_extensions import final  # type: ignore
+
+if sys.version_info >= (3, 10):
+    from typing import ParamSpec
+else:
+    from typing_extensions import ParamSpec
 
 
 class EventLoopMixin:
@@ -77,6 +82,7 @@ get_current_loop = EVENT_LOOP.get
 
 __all__ = (
     "EventLoopMixin",
+    "ParamSpec",
     "event_loop_policy",
     "final",
     "get_current_loop",

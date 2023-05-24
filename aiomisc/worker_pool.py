@@ -80,7 +80,7 @@ class WorkerPool:
         process.kill()
 
     @threaded
-    def __create_supervisor(self, *identity: str) -> Popen:
+    def __create_supervisor(self, *identity: bytes) -> Popen:
         if self.__closing:
             raise RuntimeError("Pool closed")
 
