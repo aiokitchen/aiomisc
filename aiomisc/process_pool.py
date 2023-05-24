@@ -1,11 +1,11 @@
 import asyncio
-from concurrent.futures import Executor
-from multiprocessing import Pool, cpu_count
+from concurrent.futures import Future
+from concurrent.futures import ProcessPoolExecutor as ProcessPoolExecutorBase
+from multiprocessing import cpu_count
 from typing import Any, Callable, Set, Tuple, TypeVar
 
 from .compat import EventLoopMixin
 from .counters import Statistic
-from .utils import set_exception
 
 
 T = TypeVar("T")
@@ -26,81 +26,39 @@ class ProcessPoolStatistic(Statistic):
     sum_time: float
 
 
-class ProcessPoolExecutor(Executor, EventLoopMixin):
-    __slots__ = (
-        "__futures", "__pool", "_statistic",
-    ) + EventLoopMixin.__slots__
-
+class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
     DEFAULT_MAX_WORKERS = max((cpu_count(), 4))
 
     def __init__(self, max_workers: int = DEFAULT_MAX_WORKERS, **kwargs: Any):
-        self.__futures: FuturesSet = set()
-        self.__pool = Pool(processes=max_workers, **kwargs)
+        super().__init__(max_workers=max_workers, **kwargs)
         self._statistic = ProcessPoolStatistic()
         self._statistic.processes = max_workers
 
-    def _create_future(self) -> _CreateFutureType:
-        future = self.loop.create_future()  # type: asyncio.Future
-
-        self.__futures.add(future)
-        future.add_done_callback(self.__futures.discard)
-
-        start_time = self.loop.time()
-
-        def callback(result: T) -> None:
-            self._statistic.success += 1
-            self._statistic.done += 1
-            self._statistic.sum_time += self.loop.time() - start_time
-            self.loop.call_soon_threadsafe(future.set_result, result)
-
-        def errorback(exc: T) -> None:
+    def _statistic_callback(
+        self,
+        future: Future,
+        start_time: float,
+        loop: asyncio.AbstractEventLoop,
+    ) -> None:
+        if future.exception():
             self._statistic.error += 1
-            self._statistic.done += 1
-            self._statistic.sum_time += self.loop.time() - start_time
-            self.loop.call_soon_threadsafe(future.set_exception, exc)
+        else:
+            self._statistic.success += 1
+        self._statistic.done += 1
+        self._statistic.sum_time += loop.time() - start_time
 
-        return callback, errorback, future
-
-    def submit(           # type: ignore
-        self, fn: Callable[..., T],
-        *args: Any, **kwargs: Any,
-    ) -> asyncio.Future:
+    def submit(self, *args: Any, **kwargs: Any) -> Future:
         """
         Submit blocking function to the pool
         """
-        if fn is None or not callable(fn):
-            raise ValueError("First argument must be callable")
-
-        callback, errorback, future = self._create_future()
-
-        self.__pool.apply_async(
-            fn,
-            args=args,
-            kwds=kwargs,
-            callback=callback,
-            error_callback=errorback,
-        )
-
+        loop = asyncio.get_running_loop()
+        start_time = loop.time()
+        future = super().submit(*args, **kwargs)
         self._statistic.submitted += 1
+        future.add_done_callback(
+            lambda f: self._statistic_callback(f, start_time, loop),
+        )
         return future
-
-    # noinspection PyMethodOverriding
-    def shutdown(
-        self, wait: bool = True, cancel_futures: bool = False,
-    ) -> None:
-
-        if not self.__pool:
-            return
-
-        self.__pool.terminate()
-
-        if cancel_futures:
-            set_exception(self.__futures, asyncio.CancelledError())
-
-        self.__pool.close()
-
-        if wait:
-            self.__pool.join()
 
     def __del__(self) -> None:
         self.shutdown()
