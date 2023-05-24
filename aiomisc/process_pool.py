@@ -2,19 +2,10 @@ import asyncio
 from concurrent.futures import Future
 from concurrent.futures import ProcessPoolExecutor as ProcessPoolExecutorBase
 from multiprocessing import cpu_count
-from typing import Any, Callable, Set, Tuple, TypeVar
+from typing import Any
 
 from .compat import EventLoopMixin
 from .counters import Statistic
-
-
-T = TypeVar("T")
-FuturesSet = Set[asyncio.Future]
-_CreateFutureType = Tuple[
-    Callable[[T], None],
-    Callable[[T], None],
-    asyncio.Future,
-]
 
 
 class ProcessPoolStatistic(Statistic):
