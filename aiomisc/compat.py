@@ -23,6 +23,7 @@ try:
 except ImportError:
     from typing_extensions import final  # type: ignore
 
+
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
