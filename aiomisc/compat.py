@@ -36,7 +36,9 @@ else:
 
 
 class EntrypointProtocol(Protocol):
-    name: str
+    @property
+    def name(self) -> str:
+        ...
 
     def load(self) -> Any:
         ...
@@ -51,7 +53,7 @@ try:
         for dist in Distribution.discover():
             for ep in dist.entry_points:
                 if ep.group == entry_point:
-                    yield ep        # type: ignore
+                    yield ep
 except ImportError:
     import pkg_resources
 
