@@ -3,7 +3,7 @@ import logging
 import os
 import socket
 import sys
-from typing import Optional
+from typing import Any, Iterator, Optional
 
 from ._context_vars import EVENT_LOOP
 
@@ -27,6 +27,36 @@ if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
     from typing_extensions import ParamSpec
+
+
+if sys.version_info >= (3, 8):
+    from typing import Protocol
+else:
+    from typing_extensions import Protocol
+
+
+class EntrypointProtocol(Protocol):
+    name: str
+
+    def load(self) -> Any:
+        ...
+
+
+# noinspection PyUnresolvedReferences
+try:
+    from importlib.metadata import Distribution, EntryPoint
+
+    def entry_pont_iterator(entry_point: str) -> Iterator[EntrypointProtocol]:
+        ep: EntryPoint
+        for dist in Distribution.discover():
+            for ep in dist.entry_points:
+                if ep.group == entry_point:
+                    yield ep        # type: ignore
+except ImportError:
+    import pkg_resources
+
+    def entry_pont_iterator(entry_point: str) -> Iterator[EntrypointProtocol]:
+        yield from pkg_resources.iter_entry_points(entry_point)
 
 
 class EventLoopMixin:
@@ -81,8 +111,11 @@ set_current_loop = EVENT_LOOP.set
 get_current_loop = EVENT_LOOP.get
 
 __all__ = (
+    "EntrypointProtocol",
     "EventLoopMixin",
     "ParamSpec",
+    "Protocol",
+    "entry_pont_iterator",
     "event_loop_policy",
     "final",
     "get_current_loop",
