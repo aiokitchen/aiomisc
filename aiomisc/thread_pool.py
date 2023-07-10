@@ -75,7 +75,7 @@ class WorkItem(WorkItemBase):
 
         result, exception = None, None
 
-        delta = -self.loop.time()
+        delta = -time.monotonic()
         try:
             result = self.func(*self.args, **self.kwargs)
             statistic.success += 1
