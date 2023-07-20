@@ -35,13 +35,14 @@ def leeway() -> float:
         return await asyncio.gather(*tasks)
 
     ts: Sequence[float] = asyncio.run(run())
-    estimated = max(ts) * 3
+    estimated = max(ts) * 5
     default = 0.1
+    result = max(estimated, default)
 
     if estimated > default:
-        log.warning("Slow system: leeway increased to %.2f s", leeway)
+        log.warning("Slow system: leeway increased to %.2f s", result)
 
-    return max(estimated, default)
+    return result
 
 
 async def test_invalid_func():

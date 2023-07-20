@@ -2,15 +2,18 @@ import asyncio
 import os
 import pickle
 import socket
+import uuid
 from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
 from contextlib import ExitStack, suppress
 from tempfile import mktemp
+from types import ModuleType
 from typing import Any, Optional, Set, Tuple
 from unittest import mock
 
 import aiohttp.web
 import fastapi
+import grpc.aio
 import pytest
 
 import aiomisc
@@ -18,6 +21,7 @@ from aiomisc.entrypoint import Entrypoint, entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
+from aiomisc.service.grpc_server import GRPCService
 from aiomisc.service.tcp import RobustTCPClient, TCPClient
 from aiomisc.service.tls import RobustTLSClient, TLSClient
 from aiomisc_log import LogFormat
@@ -924,3 +928,40 @@ def test_entrypoint_log_params(entrypoint_logging_kwargs, basic_config_kwargs):
         for call_args, call_kwargs in basic_config_mock.call_args_list:
             for key, value in basic_config_kwargs.items():
                 assert call_kwargs[key] == value
+
+
+@pytest.fixture(scope="session")
+def grpc_hello() -> Tuple[ModuleType, ModuleType]:
+    return grpc.protos_and_services("tests/hello.proto")
+
+
+def test_grpc_service(localhost, grpc_hello):
+    protos, services = grpc_hello
+    token = uuid.uuid4().hex
+
+    class Greeter(services.GreeterServicer):        # type: ignore
+        async def SayHello(self, request, context):
+            return protos.HelloReply(message="%s" % request.name)
+
+    grpc_service = GRPCService(compression=grpc.Compression.Gzip)
+    services.add_GreeterServicer_to_server(
+        Greeter(), grpc_service,
+    )
+
+    port_future = grpc_service.add_insecure_port(f"{localhost}:0")
+
+    async def go():
+        port: int = await port_future
+
+        async with grpc.aio.insecure_channel(f"{localhost}:{port}") as channel:
+            stub = services.GreeterStub(channel)
+            response = await stub.SayHello(
+                protos.HelloRequest(name=token),
+            )
+
+        return response.message
+
+    with aiomisc.entrypoint(grpc_service) as loop:
+        result = loop.run_until_complete(go())
+
+    assert result == token
