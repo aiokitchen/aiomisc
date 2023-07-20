@@ -384,9 +384,13 @@ class Entrypoint:
             await self.post_stop.call(entrypoint=self, services=svc)
 
     async def _cancel_background_tasks(self) -> None:
-        tasks = asyncio_all_tasks(self._loop)
         current_task = asyncio_current_task(self.loop)
-        await cancel_tasks(task for task in tasks if task is not current_task)
+        await cancel_tasks(
+            filter(
+                lambda x: x is not current_task,
+                asyncio_all_tasks(self._loop),
+            ),
+        )
 
     async def graceful_shutdown(self, exception: Exception) -> None:
         if self._closing:
@@ -407,22 +411,27 @@ class Entrypoint:
     def _on_interrupt(self, loop: asyncio.AbstractEventLoop) -> None:
         async def shutdown() -> None:
             log.warning("Interrupt signal received, shutting down...")
-            try:
-                await asyncio.wait_for(
-                    self._stop(RuntimeError("Interrupt signal received")),
-                    timeout=self.shutdown_timeout,
-                )
-            except asyncio.TimeoutError as e:
+            await self._stop(RuntimeError("Interrupt signal received"))
+
+        task = loop.create_task(shutdown())
+        handle = loop.call_later(self.shutdown_timeout, task.cancel)
+
+        def on_shutdown_finish(task: asyncio.Future) -> None:
+            nonlocal handle, loop
+
+            if task.cancelled():
                 log.warning(
                     "Shutdown did not happen in %s seconds, aborting.",
                     self.shutdown_timeout,
                 )
-                # 70 from sysexits.h means "internal software error"
-                raise SystemExit(70) from e
+            handle.cancel()
+            loop.stop()
 
-        self.loop.create_task(shutdown()).add_done_callback(
-            lambda _: loop.stop(),
-        )
+            if task.cancelled():
+                # 70 from sysexits.h means "internal software error"
+                raise SystemExit(70)
+
+        task.add_done_callback(on_shutdown_finish)
 
 
 CURRENT_ENTRYPOINT: StrictContextVar[Entrypoint] = StrictContextVar(
