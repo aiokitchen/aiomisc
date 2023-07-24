@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-24 11:18+0300\n"
+"POT-Creation-Date: 2023-07-24 13:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,12 +27,14 @@ msgstr "Модуль ``aiomisc.aggregate``"
 msgid "Create new instance of Arg(value, future)"
 msgstr ""
 
-#: aiomisc.aggregate.Arg.future:1 aiomisc.counters.StatisticResult.name:1
+#: ../../docstring aiomisc.aggregate.Arg.future:1
+#: aiomisc.counters.StatisticResult.name:1
 #: aiomisc.thread_pool.WorkItemBase.args:1 of
 msgid "Alias for field number 1"
 msgstr ""
 
-#: aiomisc.aggregate.Arg.value:1 aiomisc.counters.StatisticResult.kind:1
+#: ../../docstring aiomisc.aggregate.Arg.value:1
+#: aiomisc.counters.StatisticResult.kind:1
 #: aiomisc.thread_pool.WorkItemBase.func:1 of
 msgid "Alias for field number 0"
 msgstr ""
@@ -221,53 +223,163 @@ msgstr ""
 msgid "minimum time in passing state (seconds)"
 msgstr ""
 
-#: aiomisc.circuit_breaker.CircuitBreakerStates:1
-#: aiomisc.circuit_breaker.CounterKey:1 aiomisc.io.Compression:1
-#: aiomisc_log.enum.LogFormat:1 aiomisc_log.enum.LogLevel:1 of
-msgid "An enumeration."
-msgstr ""
-
 #: ../../source/api/aiomisc.rst:26
 msgid "``aiomisc.compat`` module"
 msgstr "Модуль ``aiomisc.compat``"
 
-#: of typing_extensions.final:1
-msgid ""
-"This decorator can be used to indicate to type checkers that the "
-"decorated method cannot be overridden, and decorated class cannot be "
-"subclassed. For example:"
+#: of typing.ParamSpec:1
+msgid "Parameter specification variable."
 msgstr ""
 
-#: of typing_extensions.final:7
+#: of typing.ParamSpec:3
+msgid "Usage::"
+msgstr ""
+
+#: of typing.ParamSpec:5
+msgid "P = ParamSpec('P')"
+msgstr ""
+
+#: of typing.ParamSpec:7
+msgid ""
+"Parameter specification variables exist primarily for the benefit of "
+"static type checkers.  They are used to forward the parameter types of "
+"one callable to another callable, a pattern commonly found in higher "
+"order functions and decorators.  They are only valid when used in "
+"``Concatenate``, or as the first argument to ``Callable``, or as "
+"parameters for user-defined Generics.  See class Generic for more "
+"information on generic types.  An example for annotating a decorator::"
+msgstr ""
+
+#: of typing.ParamSpec:15
+msgid ""
+"T = TypeVar('T')\n"
+"P = ParamSpec('P')\n"
+"\n"
+"def add_logging(f: Callable[P, T]) -> Callable[P, T]:\n"
+"    '''A type-safe decorator to add logging to a function.'''\n"
+"    def inner(*args: P.args, **kwargs: P.kwargs) -> T:\n"
+"        logging.info(f'{f.__name__} was called')\n"
+"        return f(*args, **kwargs)\n"
+"    return inner\n"
+"\n"
+"@add_logging\n"
+"def add_two(x: float, y: float) -> float:\n"
+"    '''Add two numbers together.'''\n"
+"    return x + y"
+msgstr ""
+
+#: of typing.ParamSpec:30
+msgid ""
+"Parameter specification variables defined with covariant=True or "
+"contravariant=True can be used to declare covariant or contravariant "
+"generic types.  These keyword arguments are valid, but their actual "
+"semantics are yet to be decided.  See PEP 612 for details."
+msgstr ""
+
+#: of typing.ParamSpec:35
+msgid "Parameter specification variables can be introspected. e.g.:"
+msgstr ""
+
+#: of typing.ParamSpec:37
+msgid ""
+"P.__name__ == 'P' P.__bound__ == None P.__covariant__ == False "
+"P.__contravariant__ == False"
+msgstr ""
+
+#: of typing.ParamSpec:42
+msgid ""
+"Note that only parameter specification variables defined in global scope "
+"can be pickled."
+msgstr ""
+
+#: of typing.Protocol:1
+msgid "Base class for protocol classes."
+msgstr ""
+
+#: of typing.Protocol:3
+msgid "Protocol classes are defined as::"
+msgstr ""
+
+#: of typing.Protocol:5
+msgid ""
+"class Proto(Protocol):\n"
+"    def meth(self) -> int:\n"
+"        ..."
+msgstr ""
+
+#: of typing.Protocol:9
+msgid ""
+"Such classes are primarily used with static type checkers that recognize "
+"structural subtyping (static duck-typing), for example::"
+msgstr ""
+
+#: of typing.Protocol:12
+msgid ""
+"class C:\n"
+"    def meth(self) -> int:\n"
+"        return 0\n"
+"\n"
+"def func(x: Proto) -> int:\n"
+"    return x.meth()\n"
+"\n"
+"func(C())  # Passes static type check"
+msgstr ""
+
+#: of typing.Protocol:21
+msgid ""
+"See PEP 544 for details. Protocol classes decorated with "
+"@typing.runtime_checkable act as simple-minded runtime protocols that "
+"check only the presence of given attributes, ignoring their type "
+"signatures. Protocol classes can be generic, they are defined as::"
+msgstr ""
+
+#: of typing.Protocol:26
+msgid ""
+"class GenProto(Protocol[T]):\n"
+"    def meth(self) -> T:\n"
+"        ..."
+msgstr ""
+
+#: of typing.final:1
+msgid "A decorator to indicate final methods and final classes."
+msgstr ""
+
+#: of typing.final:3
+msgid ""
+"Use this decorator to indicate to type checkers that the decorated method"
+" cannot be overridden, and decorated class cannot be subclassed. For "
+"example:"
+msgstr ""
+
+#: of typing.final:9
 msgid "class Base:"
 msgstr ""
 
-#: of typing_extensions.final:6
+#: of typing.final:8
 msgid "@final def done(self) -> None:"
 msgstr ""
 
-#: of typing_extensions.final:8 typing_extensions.final:11
-#: typing_extensions.final:14 typing_extensions.final:16
+#: of typing.final:10 typing.final:13 typing.final:17 typing.final:19
 msgid "..."
 msgstr ""
 
-#: of typing_extensions.final:10
+#: of typing.final:13
 msgid "class Sub(Base):"
 msgstr ""
 
-#: of typing_extensions.final:10
+#: of typing.final:13
 msgid "def done(self) -> None:  # Error reported by type checker"
 msgstr ""
 
-#: of typing_extensions.final:12
+#: of typing.final:15
 msgid "@final class Leaf:"
 msgstr ""
 
-#: of typing_extensions.final:16
+#: of typing.final:19
 msgid "class Other(Leaf):  # Error reported by type checker"
 msgstr ""
 
-#: of typing_extensions.final:18
+#: of typing.final:21
 msgid ""
 "There is no runtime checking of these properties. The decorator sets the "
 "``__final__`` attribute to ``True`` on the decorated object to allow "
@@ -290,12 +402,12 @@ msgstr "Модуль ``aiomisc.counters``"
 msgid "Create new instance of StatisticResult(kind, name, metric, value)"
 msgstr ""
 
-#: aiomisc.counters.StatisticResult.metric:1
+#: ../../docstring aiomisc.counters.StatisticResult.metric:1
 #: aiomisc.thread_pool.WorkItemBase.kwargs:1 of
 msgid "Alias for field number 2"
 msgstr ""
 
-#: aiomisc.counters.StatisticResult.value:1
+#: ../../docstring aiomisc.counters.StatisticResult.value:1
 #: aiomisc.thread_pool.WorkItemBase.future:1 of
 msgid "Alias for field number 3"
 msgstr ""
@@ -396,33 +508,48 @@ msgstr "Модуль ``aiomisc.pool``"
 msgid "``aiomisc.process_pool`` module"
 msgstr "Модуль ``aiomisc.process_pool``"
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:1
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
-msgid "Clean-up the resources associated with the Executor."
+#: aiomisc.process_pool.ProcessPoolExecutor:1 of
+msgid "Initializes a new ProcessPoolExecutor instance."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:3
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:3 of
-msgid ""
-"It is safe to call this method several times. Otherwise, no other methods"
-" can be called after this one."
-msgstr ""
-
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+#: aiomisc.process_pool.ProcessPoolExecutor:18
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "Args:"
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
-msgid "wait: If True then shutdown will not return until all running"
+#: aiomisc.process_pool.ProcessPoolExecutor:5 of
+msgid "max_workers: The maximum number of processes that can be used to"
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor.shutdown:8
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+#: aiomisc.process_pool.ProcessPoolExecutor:5 of
 msgid ""
-"futures have finished executing and the resources used by the executor "
-"have been reclaimed."
+"execute the given calls. If None or not given then as many worker "
+"processes will be created as the machine has processors."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:8 of
+msgid "mp_context: A multiprocessing context to launch the workers. This"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:8 of
+msgid ""
+"object should provide SimpleQueue, Queue and Process. Useful to allow "
+"specific multiprocessing start methods."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:10 of
+msgid ""
+"initializer: A callable used to initialize worker processes. initargs: A "
+"tuple of arguments to pass to the initializer. max_tasks_per_child: The "
+"maximum number of tasks a worker process"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:13 of
+msgid ""
+"can complete before it will exit and be replaced with a fresh worker "
+"process. The default of None means worker process will live as long as "
+"the executor. Requires a non-'fork' mp_context start method. When given, "
+"we default to using 'spawn' if no mp_context is supplied."
 msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor.submit:1
@@ -450,11 +577,39 @@ msgstr "Модуль ``aiomisc.signal``"
 msgid "``aiomisc.thread_pool`` module"
 msgstr "Модуль ``aiomisc.thread_pool``"
 
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
+msgid "Clean-up the resources associated with the Executor."
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:3 of
+msgid ""
+"It is safe to call this method several times. Otherwise, no other methods"
+" can be called after this one."
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+msgid "wait: If True then shutdown will not return until all running"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+msgid ""
+"futures have finished executing and the resources used by the executor "
+"have been reclaimed."
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "cancel_futures: If True then shutdown will cancel all pending"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "futures. Futures that are completed or running will not be cancelled."
+msgstr ""
+
 #: aiomisc.thread_pool.WorkItem:1 aiomisc.thread_pool.WorkItemBase:1 of
 msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
 msgstr ""
 
-#: aiomisc.thread_pool.WorkItemBase.loop:1 of
+#: ../../docstring aiomisc.thread_pool.WorkItemBase.loop:1 of
 msgid "Alias for field number 4"
 msgstr ""
 
@@ -502,7 +657,7 @@ msgid ""
 "object. In case than a function returns a future, the original future "
 "will be returned. In case then the function returns a coroutine, the "
 "original coroutine will be returned. In case than function returns non-"
-"awaitable object, it's will be wrapped to a new coroutine which just "
+"awaitable object, it will be wrapped to a new coroutine which just "
 "returns this object. It's useful when you don't want to check function "
 "result before use it in ``await`` expression."
 msgstr ""
@@ -603,4 +758,32 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ msgstr ""
 
 #~ msgid "futures. Futures that are completed or running will not be cancelled."
+#~ msgstr ""
+
+#~ msgid "An enumeration."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "This decorator can be used to "
+#~ "indicate to type checkers that the "
+#~ "decorated method cannot be overridden, "
+#~ "and decorated class cannot be "
+#~ "subclassed. For example:"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Decorator wraps function and returns a"
+#~ " function which returns awaitable object."
+#~ " In case than a function returns "
+#~ "a future, the original future will "
+#~ "be returned. In case then the "
+#~ "function returns a coroutine, the "
+#~ "original coroutine will be returned. In"
+#~ " case than function returns non-"
+#~ "awaitable object, it's will be wrapped"
+#~ " to a new coroutine which just "
+#~ "returns this object. It's useful when"
+#~ " you don't want to check function "
+#~ "result before use it in ``await`` "
+#~ "expression."
 #~ msgstr ""

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-04-24 11:18+0300\n"
+"POT-Creation-Date: 2023-07-24 13:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -884,10 +884,114 @@ msgstr ""
 "``TLSServer``)."
 
 #: ../../source/services.rst:672
+#, fuzzy
+msgid "GRPC service"
+msgstr "GRPC сервис"
+
+#: ../../source/services.rst:674
+msgid ""
+"This is an example of a GRPC service which is defined in a file and loads"
+" a `hello.proto` file without code generation, this example is one of the"
+" examples from `grpcio`, the other examples will work as expected."
+msgstr ""
+"Это пример GRPC-сервиса, который определяется в файле и загружает "
+"файл `hello.proto` без кодогенерации, этот пример является одним "
+"из примеров из `grpcio`, остальные примеры будут работать как ожидается."
+
+#: ../../source/services.rst:678
+msgid "Proto definition:"
+msgstr "Определение proto файла"
+
+#: ../../source/services.rst:680
+msgid ""
+"syntax = \"proto3\";\n"
+"\n"
+"package helloworld;\n"
+"\n"
+"// The greeting service definition.\n"
+"service Greeter {\n"
+"  // Sends a greeting\n"
+"  rpc SayHello (HelloRequest) returns (HelloReply) {}\n"
+"}\n"
+"\n"
+"// The request message containing the user's name.\n"
+"message HelloRequest {\n"
+"  string name = 1;\n"
+"}\n"
+"\n"
+"// The response message containing the greetings\n"
+"message HelloReply {\n"
+"  string message = 1;\n"
+"}"
+msgstr ""
+"syntax = \"proto3\";\n"
+"\n"
+"package helloworld;\n"
+"\n"
+"// Определение сервиса приветствия.\n"
+"service Greeter {\n"
+"  // Сказать привет\n"
+"  rpc SayHello (HelloRequest) returns (HelloReply) {}\n"
+"}\n"
+"\n"
+"// Сообщение запроса, содержащее имя пользователя.\n"
+"message HelloRequest {\n"
+"  string name = 1;\n"
+"}\n"
+"\n"
+"// Ответное сообщение, содержащее приветствие\n"
+"message HelloReply {\n"
+"  string message = 1;\n"
+"}"
+
+#: ../../source/services.rst:703
+msgid "Service initialization example:"
+msgstr "Пример инициализации сервиса:"
+
+#: ../../source/services.rst:706
+#, python-format
+msgid ""
+"import grpc\n"
+"\n"
+"import aiomisc\n"
+"from aiomisc.service.grpc_server import GRPCService\n"
+"\n"
+"\n"
+"protos, services = grpc.protos_and_services(\"hello.proto\")\n"
+"\n"
+"\n"
+"class Greeter(services.GreeterServicer):\n"
+"    async def SayHello(self, request, context):\n"
+"        return protos.HelloReply(message='Hello, %s!' % request.name)\n"
+"\n"
+"\n"
+"def main():\n"
+"    grpc_service = GRPCService(compression=grpc.Compression.Gzip)\n"
+"    services.add_GreeterServicer_to_server(\n"
+"        Greeter(), grpc_service,\n"
+"    )\n"
+"    grpc_service.add_insecure_port('[::]:0')\n"
+"    grpc_service.add_insecure_port('[::1]:0')\n"
+"    grpc_service.add_insecure_port('127.0.0.1:0')\n"
+"    grpc_service.add_insecure_port('localhost:0')\n"
+"    grpc_service.add_secure_port('localhost:0', "
+"grpc.local_server_credentials())\n"
+"    grpc_service.add_secure_port('[::]:0', "
+"grpc.local_server_credentials())\n"
+"\n"
+"    with aiomisc.entrypoint(grpc_service) as loop:\n"
+"        loop.run_forever()\n"
+"\n"
+"\n"
+"if __name__ == '__main__':\n"
+"    main()"
+msgstr ""
+
+#: ../../source/services.rst:745
 msgid "Memory Tracer"
 msgstr "Трассировщик памяти"
 
-#: ../../source/services.rst:674
+#: ../../source/services.rst:747
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
@@ -895,7 +999,7 @@ msgstr ""
 "Простой и полезный сервис для логирования больших объектов Python, "
 "размещенных в памяти."
 
-#: ../../source/services.rst:678
+#: ../../source/services.rst:751
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -915,11 +1019,11 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:698 ../../source/services.rst:747
+#: ../../source/services.rst:771 ../../source/services.rst:820
 msgid "Output example:"
 msgstr "Пример вывода:"
 
-#: ../../source/services.rst:700
+#: ../../source/services.rst:773
 msgid ""
 "[T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:\n"
 " Objects | Obj.Diff |   Memory | Mem.Diff | Traceback\n"
@@ -941,11 +1045,11 @@ msgid ""
 "      14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40"
 msgstr ""
 
-#: ../../source/services.rst:722
+#: ../../source/services.rst:795
 msgid "Profiler"
 msgstr "``Profiler`` - профилировщик"
 
-#: ../../source/services.rst:724
+#: ../../source/services.rst:797
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "
@@ -957,7 +1061,7 @@ msgstr ""
 "позже могут быть использованы, например, snakeviz. Также можно изменить "
 "порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
 
-#: ../../source/services.rst:730
+#: ../../source/services.rst:803
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -974,7 +1078,7 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:749
+#: ../../source/services.rst:822
 msgid ""
 "108 function calls in 1.117 seconds\n"
 "\n"
@@ -992,21 +1096,21 @@ msgid ""
 "<...>/lib/python3.7/cProfile.py:50(create_stats)"
 msgstr ""
 
-#: ../../source/services.rst:766
+#: ../../source/services.rst:839
 msgid "Raven service"
 msgstr "Raven сервис"
 
-#: ../../source/services.rst:768
+#: ../../source/services.rst:841
 msgid ""
 "Simple service for sending unhandled exceptions to the `sentry`_ service "
 "instance."
 msgstr "Простой сервис для отправки необработанных исключений в сервис `sentry`_."
 
-#: ../../source/services.rst:773
+#: ../../source/services.rst:846
 msgid "Simple example:"
 msgstr "Простой пример:"
 
-#: ../../source/services.rst:775
+#: ../../source/services.rst:848
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1088,11 +1192,11 @@ msgstr ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:815
+#: ../../source/services.rst:888
 msgid "Full configuration:"
 msgstr "Все опции для клиента:"
 
-#: ../../source/services.rst:817
+#: ../../source/services.rst:890
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1210,17 +1314,17 @@ msgstr ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:875
+#: ../../source/services.rst:948
 msgid ""
 "You will find the full specification of options in the `Raven "
 "documentation`_."
 msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
 
-#: ../../source/services.rst:881
+#: ../../source/services.rst:954
 msgid "``SDWatchdogService``"
 msgstr "``SDWatchdogService``"
 
-#: ../../source/services.rst:883
+#: ../../source/services.rst:956
 msgid ""
 "Ready to use service just adding to your entrypoint and notifying SystemD"
 " service watchdog timer."
@@ -1228,7 +1332,7 @@ msgstr ""
 "Готовый к использованию сервис, просто добавьте его в entrypoint и он "
 "будет отправлять уведомления сторожевому таймеру SystemD."
 
-#: ../../source/services.rst:886
+#: ../../source/services.rst:959
 msgid ""
 "This can be safely added at any time, since if the service does not "
 "detect systemd-related environment variables, then its initialization is "
@@ -1238,11 +1342,11 @@ msgstr ""
 "найдет переменных окружения, которые устанавливает systemd, Сервис просто"
 " не запустится, однако выполнение приложения продолжится."
 
-#: ../../source/services.rst:889
+#: ../../source/services.rst:962
 msgid "Example of python file:"
 msgstr "Пример python файла:"
 
-#: ../../source/services.rst:891
+#: ../../source/services.rst:964
 msgid ""
 "import logging\n"
 "from time import sleep\n"
@@ -1256,11 +1360,11 @@ msgid ""
 "        pass"
 msgstr ""
 
-#: ../../source/services.rst:906
+#: ../../source/services.rst:979
 msgid "Example of systemd service file:"
 msgstr "Пример systemd сервис-файла:"
 
-#: ../../source/services.rst:908
+#: ../../source/services.rst:981
 msgid ""
 "[Service]\n"
 "# Activating the notification mechanism\n"
@@ -1323,11 +1427,11 @@ msgstr ""
 "FinalKillSignal=SIGKILL\n"
 "SendSIGKILL=yes"
 
-#: ../../source/services.rst:943
+#: ../../source/services.rst:1016
 msgid "``ProcessService``"
 msgstr "Класс ``ProcessService``"
 
-#: ../../source/services.rst:945
+#: ../../source/services.rst:1018
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped."
@@ -1335,7 +1439,7 @@ msgstr ""
 "Базовый класс для запуска функции отдельным системным процессом и "
 "завершения при остановке родительского процесса."
 
-#: ../../source/services.rst:948
+#: ../../source/services.rst:1021
 msgid ""
 "from typing import Dict, Any\n"
 "\n"
@@ -1411,11 +1515,11 @@ msgstr ""
 "    with aiomisc.entrypoint(*services) as loop:\n"
 "        loop.run_forever()"
 
-#: ../../source/services.rst:989
+#: ../../source/services.rst:1062
 msgid "``RespawningProcessService``"
 msgstr "Класс ``RespawningProcessService``"
 
-#: ../../source/services.rst:991
+#: ../../source/services.rst:1064
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped, It's pretty like "
@@ -1427,7 +1531,7 @@ msgstr ""
 "`ProcessService` с одним отличием - если дочерний процесс неожиданно "
 "завершится, то он будет перезапущен."
 
-#: ../../source/services.rst:996
+#: ../../source/services.rst:1069
 msgid ""
 "import logging\n"
 "from typing import Any\n"
