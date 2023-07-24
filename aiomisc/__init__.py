@@ -1,4 +1,5 @@
 from . import io, log
+from ._context_vars import StrictContextVar
 from .aggregate import aggregate, aggregate_async
 from .backoff import asyncbackoff, asyncretry
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
@@ -48,6 +49,7 @@ __all__ = (
     "StrategyException",
     "StrategySkip",
     "StrategyStop",
+    "StrictContextVar",
     "ThreadPoolExecutor",
     "WorkerPool",
     "__version__",
