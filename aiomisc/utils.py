@@ -388,7 +388,7 @@ def awaitable(
     awaitable object. In case than a function returns a future,
     the original future will be returned. In case then the function
     returns a coroutine, the original coroutine will be returned.
-    In case than function returns non-awaitable object, it's will
+    In case than function returns non-awaitable object, it will
     be wrapped to a new coroutine which just returns this object.
     It's useful when you don't want to check function result before
     use it in ``await`` expression.
