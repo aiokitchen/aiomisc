@@ -450,4 +450,6 @@ def run(
         return loop.run_until_complete(coro)
 
 
-__all__ = ("entrypoint", "Entrypoint", "get_context", "run")
+__all__ = (
+    "CURRENT_ENTRYPOINT", "Entrypoint", "entrypoint", "get_context", "run",
+)
