@@ -56,7 +56,7 @@ class CircuitBroken(Exception):
         self.last_exception = last_exception
 
     def __repr__(self) -> str:
-        return f"<{self!r}: {self.last_exception!r}>"
+        return f"<CircuitBroken: {self.last_exception!r}>"
 
 
 class CircuitBreaker(EventLoopMixin):
