@@ -81,10 +81,12 @@ class UvicornService(Service, abc.ABC):
     ):
         self.sock = sock
 
-        config_kwargs = cast(ConfigKwargs, config_kwargs or dict())
+        config_kwargs = cast(ConfigKwargs, dict(config_kwargs or dict()))
         config_kwargs.setdefault("access_log", True)
-        self.config_kwargs = config_kwargs
+        config_kwargs.setdefault("host", "127.0.0.1")
+        config_kwargs.setdefault("port", 8080)
 
+        self.config_kwargs = config_kwargs
         super().__init__(**kwargs)
 
     @abc.abstractmethod
