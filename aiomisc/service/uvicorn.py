@@ -24,7 +24,6 @@ log = logging.getLogger(__name__)
 UvicornApplication = Union[ASGIApplication, Callable]
 
 
-
 class ConfigKwargs(TypedDict, total=False):
     host: str
     port: int
