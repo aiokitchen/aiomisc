@@ -665,6 +665,67 @@ Any ASGI-like application can be started as a service:
 Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but creates
 HTTPS server. You must pass SSL-required options (see ``TLSServer`` class).
 
+.. uvicorn-service:
+
+uvicorn service
+++++++++++++
+
+.. warning::
+
+   requires installed uvicorn:
+
+   .. code-block::
+
+       pip install uvicorn
+
+   or using extras:
+
+   .. code-block::
+
+       pip install aiomisc[uvicorn]
+
+
+Any ASGI-like application can be started via uvicorn as a service:
+
+.. code-block:: python
+
+   import argparse
+
+   from fastapi import FastAPI
+
+   from aiomisc import entrypoint
+   from aiomisc.service.uvicorn import UvicornApplication, UvicornService
+
+   parser = argparse.ArgumentParser()
+   group = parser.add_argument_group('HTTP options')
+
+   group.add_argument("-l", "--host", default="::",
+                      help="Listen HTTP host")
+   group.add_argument("-p", "--port", type=int, default=8080,
+                      help="Listen HTTP port")
+
+
+   app = FastAPI()
+
+
+   @app.get("/")
+   async def root():
+       return {"message": "Hello World"}
+
+
+   class REST(UvicornService):
+       async def create_application(self) -> UvicornApplication:
+           return app
+
+
+   arguments = parser.parse_args()
+   service = REST(config_kwargs=dict(host=arguments.host, port=arguments.port))
+
+   with entrypoint(service) as loop:
+       loop.run_forever()
+
+
+
 
 .. _grpc-service::
 
