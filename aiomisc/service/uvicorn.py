@@ -24,8 +24,6 @@ log = logging.getLogger(__name__)
 UvicornApplication = Union[ASGIApplication, Callable]
 
 
-log = logging.getLogger(__name__)
-
 
 class ConfigKwargs(TypedDict, total=False):
     host: str
@@ -74,7 +72,6 @@ class UvicornService(Service, abc.ABC):
     sock: Optional[socket.socket] = None
 
     server: Server
-    config_kwargs: Optional[ConfigKwargs] = None
     runner: Optional[asyncio.Task] = None
 
     def __init__(
@@ -90,7 +87,6 @@ class UvicornService(Service, abc.ABC):
         self.config_kwargs = config_kwargs
 
         super().__init__(**kwargs)
-
 
     @abc.abstractmethod
     async def create_application(self) -> UvicornApplication:
@@ -108,7 +104,9 @@ class UvicornService(Service, abc.ABC):
         if not self.sock:
             self.sock = config.bind_socket()
         self.server = Server(config)
-        self.runner = asyncio.create_task(self.server.serve(sockets=[self.sock]))
+        self.runner = asyncio.create_task(
+            self.server.serve(sockets=[self.sock])
+        )
         return None
 
     async def stop(self, exception: Optional[Exception] = None) -> Any:
