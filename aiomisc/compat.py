@@ -35,11 +35,6 @@ if sys.version_info >= (3, 8):
 else:
     from typing_extensions import Protocol
 
-if sys.version_info >= (3, 8):
-    from typing import TypedDict
-else:
-    from typing_extensions import TypedDict
-
 
 class EntrypointProtocol(Protocol):
     @property
@@ -123,7 +118,6 @@ __all__ = (
     "EventLoopMixin",
     "ParamSpec",
     "Protocol",
-    "TypedDict",
     "entry_pont_iterator",
     "event_loop_policy",
     "final",

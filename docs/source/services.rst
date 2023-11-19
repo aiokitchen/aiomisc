@@ -719,7 +719,7 @@ Any ASGI-like application can be started via uvicorn as a service:
 
 
    arguments = parser.parse_args()
-   service = REST(config_kwargs=dict(host=arguments.host, port=arguments.port))
+   service = REST(host=arguments.host, port=arguments.port)
 
    with entrypoint(service) as loop:
        loop.run_forever()

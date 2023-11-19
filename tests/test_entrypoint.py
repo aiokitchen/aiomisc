@@ -20,11 +20,11 @@ import aiomisc
 from aiomisc.entrypoint import Entrypoint, entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
-from aiomisc.service.uvicorn import UvicornApplication, UvicornService
 from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from aiomisc.service.grpc_server import GRPCService
 from aiomisc.service.tcp import RobustTCPClient, TCPClient
 from aiomisc.service.tls import RobustTLSClient, TLSClient
+from aiomisc.service.uvicorn import UvicornApplication, UvicornService
 from aiomisc_log import LogFormat
 from aiomisc_log.enum import DateFormat, LogLevel
 from tests import unix_only
@@ -708,7 +708,7 @@ def test_uvicorn_service(aiomisc_unused_port):
                 return response.status, await response.json()
 
     service = UvicornTestService(
-        config_kwargs=dict(host="127.0.0.1", port=aiomisc_unused_port),
+        host="127.0.0.1", port=aiomisc_unused_port,
     )
 
     with aiomisc.entrypoint(service) as loop:
