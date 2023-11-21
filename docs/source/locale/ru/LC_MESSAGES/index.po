@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-02-02 17:01+0300\n"
+"POT-Creation-Date: 2023-11-21 11:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.13.1\n"
 
 #: ../../source/index.rst:2
 msgid "aiomisc - miscellaneous utils for asyncio"
@@ -197,26 +197,35 @@ msgid "You might using rich_ for logging"
 msgstr "Можете использовать rich_ для логирования"
 
 #: ../../source/index.rst:101
-msgid "``pip install aiomisc[uvloop]``"
+msgid "``pip install aiomisc[uvicorn]``"
 msgstr ""
 
 #: ../../source/index.rst:101
+#, fuzzy
+msgid "For running ASGI_ application using uvicorn_"
+msgstr "Для запуска ASGI_ приложений через uvicorn_"
+
+#: ../../source/index.rst:103
+msgid "``pip install aiomisc[uvloop]``"
+msgstr ""
+
+#: ../../source/index.rst:103
 msgid "use uvloop_ as a default event loop"
 msgstr "используйте uvloop_ как основной event-loop"
 
-#: ../../source/index.rst:115
+#: ../../source/index.rst:118
 msgid "You can combine extras values by separating them with commas, for example:"
 msgstr "Вы можете комбинировать эти значения разделяя их запятыми, пример:"
 
-#: ../../source/index.rst:117
+#: ../../source/index.rst:120
 msgid "pip3 install \"aiomisc[aiohttp,cron,rich,uvloop]\""
 msgstr ""
 
-#: ../../source/index.rst:123
+#: ../../source/index.rst:126
 msgid "Quick Start"
 msgstr "Быстрый старт"
 
-#: ../../source/index.rst:125
+#: ../../source/index.rst:128
 msgid ""
 "This section will cover how this library creates and uses the event loop "
 "and creates services. For more details see :doc:`/tutorial` section, and "
@@ -229,15 +238,15 @@ msgstr ""
 "всегда можно обратиться к разделу :doc:`/modules` и разделу "
 ":doc:`/api/index` для справки."
 
-#: ../../source/index.rst:130
+#: ../../source/index.rst:133
 msgid "Event-loop and entrypoint"
 msgstr "Eventloop и entrypoint"
 
-#: ../../source/index.rst:132
+#: ../../source/index.rst:135
 msgid "Let's look at this simple example first:"
 msgstr "Сначала рассмотрим этот простой пример:"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:137
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -258,7 +267,7 @@ msgid ""
 "        loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/index.rst:154
+#: ../../source/index.rst:157
 msgid ""
 "This code declares an asynchronous ``main()`` function that exits for 3 "
 "seconds. It would seem nothing interesting, but the whole point is in the"
@@ -268,7 +277,7 @@ msgstr ""
 "через 3 секунды. Казалось бы, ничего интересного, но все дело в "
 "``entrypoint``."
 
-#: ../../source/index.rst:158
+#: ../../source/index.rst:161
 msgid ""
 "At the first glance the ``entrypoint`` did not do much, just creates an "
 "event-loop and transfers control to the user. However, under the hood, "
@@ -281,7 +290,7 @@ msgstr ""
 "настраивается журналирование в отдельном потоке, создается пул потоков, "
 "запускаются сервисы, но об этом позже и сервисов в данном примере нет."
 
-#: ../../source/index.rst:164
+#: ../../source/index.rst:167
 msgid ""
 "Alternatively, you can choose not to use an ``entrypoint``, just create "
 "an event-loop and set it as a default for current thread:"
@@ -289,7 +298,7 @@ msgstr ""
 "В принципе вы можете не использовать точку входа, а просто создать "
 "eventloop и установите его по умолчанию для текущего потока:"
 
-#: ../../source/index.rst:167
+#: ../../source/index.rst:170
 msgid ""
 "import asyncio\n"
 "import aiomisc\n"
@@ -309,7 +318,7 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/index.rst:186
+#: ../../source/index.rst:189
 msgid ""
 "The example above is useful if your code is already using an implicitly "
 "created event loop, you will have to modify less code, just add "
@@ -321,7 +330,7 @@ msgstr ""
 "кода, просто добавьте ``aiomisc.new_event_loop()`` и все вызовы "
 "``asyncio.get_event_loop()`` вернет созданный экземпляр."
 
-#: ../../source/index.rst:191
+#: ../../source/index.rst:194
 msgid ""
 "However, you can do with one call. Following example closes implicitly "
 "created asyncio event loop and install a new one:"
@@ -329,7 +338,7 @@ msgstr ""
 "Однако можно обойтись и одним вызовом. Следующий пример закрывает неявно "
 "созданный eventloop asyncio и устанавливает новый:"
 
-#: ../../source/index.rst:194
+#: ../../source/index.rst:197
 msgid ""
 "import asyncio\n"
 "import aiomisc\n"
@@ -342,11 +351,11 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/index.rst:208
+#: ../../source/index.rst:211
 msgid "Services"
 msgstr "Сервисы"
 
-#: ../../source/index.rst:210
+#: ../../source/index.rst:213
 msgid ""
 "The main thing that an ``entrypoint`` does is start and gracefully stop "
 "services."
@@ -354,7 +363,7 @@ msgstr ""
 "Главное, что делает точка входа, — это запускает и корректно "
 "останавливает «Сервисы»."
 
-#: ../../source/index.rst:213
+#: ../../source/index.rst:216
 msgid ""
 "The service concept within this library means a class derived from the "
 "``aiosmic.Service`` class and implementing the ``async def start(self) ->"
@@ -366,7 +375,7 @@ msgstr ""
 " None`` и, опционально, метод ``async def stop(self, exc: Optional[ "
 "Exception]) -> None``."
 
-#: ../../source/index.rst:218
+#: ../../source/index.rst:221
 msgid ""
 "The concept of stopping a service is not necessarily is pressing "
 "``Ctrl+C`` keys by user, it's actually just exiting the ``entrypoint`` "
@@ -376,11 +385,11 @@ msgstr ""
 "пользователем клавиш ``Ctrl+C``, на самом деле это просто выход из "
 "контекстного менеджера ``entrypoint``."
 
-#: ../../source/index.rst:221
+#: ../../source/index.rst:224
 msgid "The example below shows what your service might look like:"
 msgstr "Пример ниже иллюстрирует, как может выглядеть ваш сервис:"
 
-#: ../../source/index.rst:223
+#: ../../source/index.rst:226
 msgid ""
 "from aiomisc import entrypoint, Service\n"
 "\n"
@@ -396,7 +405,7 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/index.rst:238
+#: ../../source/index.rst:241
 msgid ""
 "The entry point can start as many instances of the service as it likes, "
 "and all of them will start concurrently."
@@ -404,7 +413,7 @@ msgstr ""
 "Точка входа может запускать любое количество экземпляров службы, и все "
 "они будут запускаться конкурентно."
 
-#: ../../source/index.rst:241
+#: ../../source/index.rst:244
 msgid ""
 "There is also a way if the ``start`` method is a payload for a service, "
 "and then there is no need to implement the stop method, since the running"
@@ -418,11 +427,11 @@ msgstr ""
 " Но в этом случае вам придется уведомить ``entrypoint`` о том, что "
 "инициализация экземпляра службы завершена и ее можно продолжить."
 
-#: ../../source/index.rst:247
+#: ../../source/index.rst:250
 msgid "Like this:"
 msgstr "Примерно так:"
 
-#: ../../source/index.rst:249
+#: ../../source/index.rst:252
 msgid ""
 "import asyncio\n"
 "from threading import Event\n"
@@ -441,7 +450,7 @@ msgid ""
 "    assert event.is_set()"
 msgstr ""
 
-#: ../../source/index.rst:269
+#: ../../source/index.rst:272
 msgid ""
 "The ``entrypoint`` passes control to the body of the context manager only"
 " after all service instances have started. As mentioned above, a start is"
@@ -453,7 +462,7 @@ msgstr ""
 "стартом считается завершение метода ``start`` или установка стартового "
 "события с помощью ``self.start_event.set()``."
 
-#: ../../source/index.rst:274
+#: ../../source/index.rst:277
 msgid ""
 "The whole power of this library is in the set of already implemented or "
 "abstract services. Such as: :ref:`AIOHTTPService <aiohttp-service>`, "
@@ -469,7 +478,7 @@ msgstr ""
 ":ref:`PeriodicService <periodic-service>`, :ref:`CronService <cron-"
 "service>` и так далее."
 
-#: ../../source/index.rst:282
+#: ../../source/index.rst:285
 msgid ""
 "Unfortunately in this section it is not possible to pay more attention to"
 " this, please pay attention to the :doc:`/tutorial` section section, "
@@ -485,35 +494,35 @@ msgstr ""
 "исходный код максимально понятным и простым, поэтому не стесняйтесь "
 "исследовать его."
 
-#: ../../source/index.rst:290
+#: ../../source/index.rst:293
 msgid "Versioning"
 msgstr "Версионирование"
 
-#: ../../source/index.rst:292
+#: ../../source/index.rst:295
 msgid "This software follows `Semantic Versioning`_"
 msgstr ""
 "Это программное обеспечение следует методологиии `Семантического "
 "Версионирования`_"
 
-#: ../../source/index.rst:295
+#: ../../source/index.rst:298
 msgid "Summary: it's given a version number MAJOR.MINOR.PATCH, increment the:"
 msgstr "Кратко: учитывая номер версии МАЖОРНАЯ.МИНОРНАЯ.ПАТЧ, следует увеличивать:"
 
-#: ../../source/index.rst:297
+#: ../../source/index.rst:300
 msgid "MAJOR version when you make incompatible API changes"
 msgstr "МАЖОРНУЮ версию, когда сделаны обратно несовместимые изменения API."
 
-#: ../../source/index.rst:298
+#: ../../source/index.rst:301
 msgid "MINOR version when you add functionality in a backwards compatible manner"
 msgstr ""
 "МИНОРНУЮ версию, когда вы добавляете новую функциональность, не нарушая "
 "обратной совместимости."
 
-#: ../../source/index.rst:299
+#: ../../source/index.rst:302
 msgid "PATCH version when you make backwards compatible bug fixes"
 msgstr "ПАТЧ-версию, когда вы делаете обратно совместимые исправления."
 
-#: ../../source/index.rst:300
+#: ../../source/index.rst:303
 msgid ""
 "Additional labels for pre-release and build metadata are available as "
 "extensions to the MAJOR.MINOR.PATCH format."
@@ -521,7 +530,7 @@ msgstr ""
 "Дополнительные обозначения для предрелизных и билд-метаданных возможны "
 "как дополнения к МАЖОРНАЯ.МИНОРНАЯ.ПАТЧ формату."
 
-#: ../../source/index.rst:303
+#: ../../source/index.rst:306
 msgid ""
 "In this case, the package version is assigned automatically with poem-"
 "plugins_, it using on the tag in the repository as a major and minor and "
@@ -532,11 +541,11 @@ msgstr ""
 "plugins_, он использует тег в репозитории как МАЖОР и МИНОР, а также "
 "счетчик, который берет количество коммитов между тегом и головой ветки."
 
-#: ../../source/index.rst:311
+#: ../../source/index.rst:314
 msgid "How to develop?"
 msgstr "Как разрабатывать этот проект?"
 
-#: ../../source/index.rst:313
+#: ../../source/index.rst:316
 msgid ""
 "This project, like most open source projects, is developed by "
 "enthusiasts, you can join the development, submit issues, or send your "
@@ -546,7 +555,7 @@ msgstr ""
 "энтузиастами, и вы можете присоединиться к разработке, создавайте issues "
 "в github или присылайте свои правки как merge request."
 
-#: ../../source/index.rst:316
+#: ../../source/index.rst:319
 msgid ""
 "In order to start developing in this repository, you need to do the "
 "following things."
@@ -554,23 +563,23 @@ msgstr ""
 "Чтобы начать разработку в этом репозитории, вам необходимо сделать "
 "следующее:"
 
-#: ../../source/index.rst:319
+#: ../../source/index.rst:322
 msgid "Should be installed:"
 msgstr "Должно быть установлено"
 
-#: ../../source/index.rst:321
+#: ../../source/index.rst:324
 msgid "Python 3.7+ as ``python3``"
 msgstr "Python 3.7+ как ``python3``"
 
-#: ../../source/index.rst:322
+#: ../../source/index.rst:325
 msgid "Installed Poetry_ as ``poetry``"
 msgstr "Установлен Poetry_ как ``poetry``"
 
-#: ../../source/index.rst:326
+#: ../../source/index.rst:329
 msgid "For setting up developer environment just execute:"
 msgstr "Для настройки окружения разработчика выполните:"
 
-#: ../../source/index.rst:328
+#: ../../source/index.rst:331
 msgid ""
 "# installing all dependencies\n"
 "poetry install\n"
@@ -581,3 +590,4 @@ msgid ""
 "# adding poem-plugins to the poetry\n"
 "poetry self add poem-plugins"
 msgstr ""
+
