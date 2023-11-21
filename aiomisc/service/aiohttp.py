@@ -25,10 +25,12 @@ class AIOHTTPService(Service):
 
     site: SockSite
     runner: BaseRunner
+    handler_cancellation: bool = True
 
     def __init__(
         self, address: Optional[str] = "localhost", port: Optional[int] = None,
         sock: Optional[socket.socket] = None, shutdown_timeout: int = 5,
+        handler_cancellation: bool = handler_cancellation,
         runner_kwargs: Optional[RunnerKwargsType] = None,
         **kwds: Any,
     ):
@@ -57,6 +59,9 @@ class AIOHTTPService(Service):
         self.runner_kwargs.setdefault("access_log_class", AccessLogger)
         self.runner_kwargs.setdefault(
             "access_log_format", AccessLogger.LOG_FORMAT,
+        )
+        self.runner_kwargs.setdefault(
+            "handler_cancellation", handler_cancellation,
         )
 
         super().__init__(**kwds)
