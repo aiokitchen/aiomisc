@@ -668,7 +668,7 @@ HTTPS server. You must pass SSL-required options (see ``TLSServer`` class).
 .. uvicorn-service:
 
 uvicorn service
-++++++++++++
++++++++++++++++
 
 .. warning::
 
