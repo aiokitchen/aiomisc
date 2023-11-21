@@ -119,4 +119,3 @@ class UvicornService(Service, abc.ABC):
         self.start_event.set()
 
         await server.serve(sockets=[self.sock])
-        return None
