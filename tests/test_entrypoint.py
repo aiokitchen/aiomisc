@@ -24,6 +24,7 @@ from aiomisc.service.asgi import ASGIApplicationType, ASGIHTTPService
 from aiomisc.service.grpc_server import GRPCService
 from aiomisc.service.tcp import RobustTCPClient, TCPClient
 from aiomisc.service.tls import RobustTLSClient, TLSClient
+from aiomisc.service.uvicorn import UvicornApplication, UvicornService
 from aiomisc_log import LogFormat
 from aiomisc_log.enum import DateFormat, LogLevel
 from tests import unix_only
@@ -676,6 +677,60 @@ def test_asgi_service_sock(unix_socket_tcp):
                 return response.status, await response.json()
 
     service = ASGIHTTPTestApp(sock=unix_socket_tcp)
+
+    with aiomisc.entrypoint(service) as loop:
+        response, body = loop.run_until_complete(
+            asyncio.wait_for(http_client(), timeout=10000),
+        )
+
+    assert body == {"message": "Hello World"}
+    assert response == 200
+
+
+class UvicornTestService(UvicornService):
+    async def create_application(self) -> UvicornApplication:
+        app = fastapi.FastAPI()
+
+        @app.get("/")
+        async def root():
+            return {"message": "Hello World"}
+
+        return app
+
+
+def test_uvicorn_service(aiomisc_unused_port):
+    async def http_client():
+        session = aiohttp.ClientSession()
+        url = "http://localhost:{}".format(aiomisc_unused_port)
+
+        async with session:
+            async with session.get(url) as response:
+                return response.status, await response.json()
+
+    service = UvicornTestService(
+        host="127.0.0.1", port=aiomisc_unused_port,
+    )
+
+    with aiomisc.entrypoint(service) as loop:
+        response, body = loop.run_until_complete(
+            asyncio.wait_for(http_client(), timeout=10),
+        )
+
+    assert body == {"message": "Hello World"}
+    assert response == 200
+
+
+@unix_only
+def test_uvicorn_service_sock(unix_socket_tcp):
+    async def http_client():
+        conn = aiohttp.UnixConnector(path=unix_socket_tcp.getsockname())
+        session = aiohttp.ClientSession(connector=conn)
+
+        async with session:
+            async with session.get("http://unix/") as response:
+                return response.status, await response.json()
+
+    service = UvicornTestService(sock=unix_socket_tcp)
 
     with aiomisc.entrypoint(service) as loop:
         response, body = loop.run_until_complete(

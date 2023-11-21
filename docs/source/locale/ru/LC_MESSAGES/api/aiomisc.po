@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-24 13:24+0300\n"
+"POT-Creation-Date: 2023-11-21 11:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.13.1\n"
 
 #: ../../source/api/aiomisc.rst:2
 msgid "``aiomisc`` module"
@@ -22,6 +22,30 @@ msgstr "Модуль ``aiomisc``"
 #: ../../source/api/aiomisc.rst:5
 msgid "``aiomisc.aggregate`` module"
 msgstr "Модуль ``aiomisc.aggregate``"
+
+#: aiomisc.aggregate.AggregateStatistic:1 aiomisc.backoff.BackoffStatistic:1
+#: aiomisc.circuit_breaker.CircuitBreakerStatistic:1
+#: aiomisc.iterator_wrapper.IteratorWrapperStatistic:1
+#: aiomisc.process_pool.ProcessPoolStatistic:1
+#: aiomisc.recurring.RecurringCallbackStatistic:1
+#: aiomisc.thread_pool.ThreadPoolStatistic:1
+#: aiomisc.worker_pool.WorkerPoolStatistic:1 of
+msgid "Bases: :py:class:`~aiomisc.counters.Statistic`"
+msgstr ""
+
+#: aiomisc.aggregate.Aggregator:1 aiomisc.circuit_breaker.CircuitBreaker:1
+#: aiomisc.cron.CronCallback:1 aiomisc.periodic.PeriodicCallback:1 of
+msgid "Bases: :py:class:`~aiomisc.compat.EventLoopMixin`"
+msgstr ""
+
+#: aiomisc.aggregate.AggregatorAsync:1 of
+msgid "Bases: :py:class:`~aiomisc.aggregate.Aggregator`"
+msgstr ""
+
+#: aiomisc.aggregate.Arg:1 aiomisc.counters.StatisticResult:1
+#: aiomisc.thread_pool.WorkItemBase:1 of
+msgid "Bases: :py:class:`~typing.NamedTuple`"
+msgstr ""
 
 #: aiomisc.aggregate.Arg:1 of
 msgid "Create new instance of Arg(value, future)"
@@ -37,6 +61,12 @@ msgstr ""
 #: aiomisc.counters.StatisticResult.kind:1
 #: aiomisc.thread_pool.WorkItemBase.func:1 of
 msgid "Alias for field number 0"
+msgstr ""
+
+#: aiomisc.aggregate.ResultNotSetError:1
+#: aiomisc.circuit_breaker.CircuitBroken:1
+#: aiomisc.recurring.StrategyException:1 of
+msgid "Bases: :py:class:`Exception`"
 msgstr ""
 
 #: aiomisc.aggregate.aggregate:1 of
@@ -98,9 +128,13 @@ msgid ""
 "future, then, ``ResultNotSetError`` exception is set."
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:12
+#: ../../source/api/aiomisc.rst:13
 msgid "``aiomisc.backoff`` module"
 msgstr "Модуль ``aiomisc.backoff``"
+
+#: aiomisc.backoff.RetryStatistic:1 of
+msgid "Bases: :py:class:`~aiomisc.backoff.BackoffStatistic`"
+msgstr ""
 
 #: aiomisc.backoff.asyncbackoff:1 of
 msgid ""
@@ -158,7 +192,7 @@ msgstr ""
 msgid "is maximum count of execution attempts (>= 1 or ``None`` means infinity)."
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:19
+#: ../../source/api/aiomisc.rst:21
 msgid "``aiomisc.circuit_breaker`` module"
 msgstr "Модуль ``aiomisc.circuit_breaker``"
 
@@ -223,9 +257,41 @@ msgstr ""
 msgid "minimum time in passing state (seconds)"
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:26
+#: aiomisc.circuit_breaker.CircuitBreakerStates:1
+#: aiomisc.circuit_breaker.CounterKey:1 aiomisc_log.enum.LogFormat:1
+#: aiomisc_log.enum.LogLevel:1 of
+msgid "Bases: :py:class:`~enum.IntEnum`"
+msgstr ""
+
+#: aiomisc.circuit_breaker.CircuitBreakerStates:1
+#: aiomisc.circuit_breaker.CounterKey:1 aiomisc.io.Compression:1
+#: aiomisc_log.enum.LogFormat:1 aiomisc_log.enum.LogLevel:1 of
+msgid "An enumeration."
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:29
 msgid "``aiomisc.compat`` module"
 msgstr "Модуль ``aiomisc.compat``"
+
+#: aiomisc.compat.EntrypointProtocol:1 of
+msgid "Bases: :py:class:`~typing.Protocol`"
+msgstr ""
+
+#: aiomisc.compat.EventLoopMixin:1 aiomisc.context.Context:1
+#: aiomisc.counters.AbstractStatistic:1 aiomisc.counters.Metric:1
+#: aiomisc.entrypoint.Entrypoint:1 aiomisc.iterator_wrapper.FromThreadChannel:1
+#: aiomisc.iterator_wrapper.QueueWrapperBase:1
+#: aiomisc.recurring.RecurringCallback:1 aiomisc.signal.Signal:1
+#: aiomisc.thread_pool.CoroutineWaiter:1 aiomisc.utils.SelectAwaitable:1
+#: aiomisc.worker_pool.WorkerPool:1 of
+msgid "Bases: :py:class:`object`"
+msgstr ""
+
+#: of typing.ParamSpec:1
+msgid ""
+"Bases: :py:class:`~typing._Final`, :py:class:`~typing._Immutable`, "
+":py:class:`~typing._TypeVarLike`"
+msgstr ""
 
 #: of typing.ParamSpec:1
 msgid "Parameter specification variable."
@@ -290,6 +356,10 @@ msgstr ""
 msgid ""
 "Note that only parameter specification variables defined in global scope "
 "can be pickled."
+msgstr ""
+
+#: of typing.Protocol:1
+msgid "Bases: :py:class:`~typing.Generic`"
 msgstr ""
 
 #: of typing.Protocol:1
@@ -380,23 +450,28 @@ msgid "class Other(Leaf):  # Error reported by type checker"
 msgstr ""
 
 #: of typing.final:21
-msgid ""
-"There is no runtime checking of these properties. The decorator sets the "
-"``__final__`` attribute to ``True`` on the decorated object to allow "
-"runtime introspection."
+msgid "There is no runtime checking of these properties."
 msgstr ""
 
 #: of time.time_ns:1
 msgid "Return the current time in nanoseconds since the Epoch."
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:33
+#: ../../source/api/aiomisc.rst:37
 msgid "``aiomisc.context`` module"
 msgstr "Модуль ``aiomisc.context``"
 
-#: ../../source/api/aiomisc.rst:40
+#: ../../source/api/aiomisc.rst:45
 msgid "``aiomisc.counters`` module"
 msgstr "Модуль ``aiomisc.counters``"
+
+#: aiomisc.counters.MetaStatistic:1 of
+msgid "Bases: :py:class:`type`"
+msgstr ""
+
+#: aiomisc.counters.Statistic:1 of
+msgid "Bases: :py:class:`~aiomisc.counters.AbstractStatistic`"
+msgstr ""
 
 #: aiomisc.counters.StatisticResult:1 of
 msgid "Create new instance of StatisticResult(kind, name, metric, value)"
@@ -412,7 +487,7 @@ msgstr ""
 msgid "Alias for field number 3"
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:47
+#: ../../source/api/aiomisc.rst:53
 msgid "``aiomisc.cron`` module"
 msgstr "Модуль ``aiomisc.cron``"
 
@@ -422,7 +497,7 @@ msgid ""
 "call will be skipping and warning will be logged."
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:54
+#: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.entrypoint`` module"
 msgstr "Модуль ``aiomisc.entrypoint``"
 
@@ -474,19 +549,67 @@ msgstr ""
 msgid "Timeout in seconds for graceful shutdown"
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:61
+#: ../../source/api/aiomisc.rst:69
 msgid "``aiomisc.io`` module"
 msgstr "Модуль ``aiomisc.io``"
 
-#: ../../source/api/aiomisc.rst:68
+#: aiomisc.io.AsyncBinaryIO:1 of
+msgid "Bases: :py:class:`~aiomisc.io.AsyncFileIO`\\ [:py:class:`bytes`]"
+msgstr ""
+
+#: aiomisc.io.AsyncBz2BinaryIO:1 aiomisc.io.AsyncGzipBinaryIO:1
+#: aiomisc.io.AsyncLzmaBinaryIO:1 of
+msgid "Bases: :py:class:`~aiomisc.io.AsyncBinaryIO`"
+msgstr ""
+
+#: aiomisc.io.AsyncBz2TextIO:1 aiomisc.io.AsyncGzipTextIO:1
+#: aiomisc.io.AsyncLzmaTextIO:1 of
+msgid "Bases: :py:class:`~aiomisc.io.AsyncTextIO`"
+msgstr ""
+
+#: aiomisc.io.AsyncFileIO:1 of
+msgid ""
+"Bases: :py:class:`~aiomisc.compat.EventLoopMixin`, "
+":py:class:`~typing.Generic`"
+msgstr ""
+
+#: aiomisc.io.AsyncTextIO:1 of
+msgid "Bases: :py:class:`~aiomisc.io.AsyncFileIO`\\ [:py:class:`str`]"
+msgstr ""
+
+#: aiomisc.io.Compression:1 of
+msgid "Bases: :py:class:`~enum.Enum`"
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:77
 msgid "``aiomisc.iterator_wrapper`` module"
 msgstr "Модуль ``aiomisc.iterator_wrapper``"
 
-#: ../../source/api/aiomisc.rst:75
+#: aiomisc.iterator_wrapper.ChannelClosed:1
+#: aiomisc.thread_pool.ThreadPoolException:1 of
+msgid "Bases: :py:class:`RuntimeError`"
+msgstr ""
+
+#: aiomisc.iterator_wrapper.DequeWrapper:1
+#: aiomisc.iterator_wrapper.QueueWrapper:1 of
+msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.QueueWrapperBase`"
+msgstr ""
+
+#: aiomisc.iterator_wrapper.IteratorProxy:1 of
+msgid "Bases: :py:class:`~typing.AsyncIterator`"
+msgstr ""
+
+#: aiomisc.iterator_wrapper.IteratorWrapper:1 of
+msgid ""
+"Bases: :py:class:`~typing.AsyncIterator`, "
+":py:class:`~aiomisc.compat.EventLoopMixin`"
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:85
 msgid "``aiomisc.log`` module"
 msgstr "Модуль ``aiomisc.log``"
 
-#: ../../source/api/aiomisc.rst:82
+#: ../../source/api/aiomisc.rst:93
 msgid "``aiomisc.periodic`` module"
 msgstr "Модуль ``aiomisc.periodic``"
 
@@ -496,23 +619,39 @@ msgid ""
 " call would be skipped and warning would be logged."
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:89
+#: ../../source/api/aiomisc.rst:101
 msgid "``aiomisc.plugins`` module"
 msgstr "Модуль ``aiomisc.plugins``"
 
-#: ../../source/api/aiomisc.rst:96
+#: ../../source/api/aiomisc.rst:109
 msgid "``aiomisc.pool`` module"
 msgstr "Модуль ``aiomisc.pool``"
 
-#: ../../source/api/aiomisc.rst:103
+#: aiomisc.pool.ContextManager:1 of
+msgid "Bases: :py:class:`~typing.AsyncContextManager`"
+msgstr ""
+
+#: aiomisc.pool.PoolBase:1 of
+msgid ""
+"Bases: :py:class:`~abc.ABC`, :py:class:`~aiomisc.compat.EventLoopMixin`, "
+":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.pool.T`]"
+msgstr ""
+
+#: ../../source/api/aiomisc.rst:117
 msgid "``aiomisc.process_pool`` module"
 msgstr "Модуль ``aiomisc.process_pool``"
+
+#: aiomisc.process_pool.ProcessPoolExecutor:1 of
+msgid ""
+"Bases: :py:class:`~concurrent.futures.process.ProcessPoolExecutor`, "
+":py:class:`~aiomisc.compat.EventLoopMixin`"
+msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor:1 of
 msgid "Initializes a new ProcessPoolExecutor instance."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:18
+#: aiomisc.process_pool.ProcessPoolExecutor:11
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "Args:"
 msgstr ""
@@ -527,29 +666,18 @@ msgid ""
 "processes will be created as the machine has processors."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:8 of
+#: aiomisc.process_pool.ProcessPoolExecutor:7 of
 msgid "mp_context: A multiprocessing context to launch the workers. This"
 msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor:8 of
-msgid ""
-"object should provide SimpleQueue, Queue and Process. Useful to allow "
-"specific multiprocessing start methods."
+msgid "object should provide SimpleQueue, Queue and Process."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:10 of
+#: aiomisc.process_pool.ProcessPoolExecutor:9 of
 msgid ""
 "initializer: A callable used to initialize worker processes. initargs: A "
-"tuple of arguments to pass to the initializer. max_tasks_per_child: The "
-"maximum number of tasks a worker process"
-msgstr ""
-
-#: aiomisc.process_pool.ProcessPoolExecutor:13 of
-msgid ""
-"can complete before it will exit and be replaced with a fresh worker "
-"process. The default of None means worker process will live as long as "
-"the executor. Requires a non-'fork' mp_context start method. When given, "
-"we default to using 'spawn' if no mp_context is supplied."
+"tuple of arguments to pass to the initializer."
 msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor.submit:1
@@ -557,9 +685,13 @@ msgstr ""
 msgid "Submit blocking function to the pool"
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:110
+#: ../../source/api/aiomisc.rst:125
 msgid "``aiomisc.recurring`` module"
 msgstr "Модуль ``aiomisc.recurring``"
+
+#: aiomisc.recurring.StrategySkip:1 aiomisc.recurring.StrategyStop:1 of
+msgid "Bases: :py:class:`~aiomisc.recurring.StrategyException`"
+msgstr ""
 
 #: aiomisc.recurring.StrategySkip:1 of
 msgid "Strategy function might raise this exception as way to skip current call"
@@ -569,13 +701,21 @@ msgstr ""
 msgid "Strategy function might raise this exception as way to  stop recurring"
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:117
+#: ../../source/api/aiomisc.rst:133
 msgid "``aiomisc.signal`` module"
 msgstr "Модуль ``aiomisc.signal``"
 
-#: ../../source/api/aiomisc.rst:124
+#: ../../source/api/aiomisc.rst:141
 msgid "``aiomisc.thread_pool`` module"
 msgstr "Модуль ``aiomisc.thread_pool``"
+
+#: aiomisc.thread_pool.IteratorWrapperSeparate:1 of
+msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.IteratorWrapper`"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor:1 of
+msgid "Bases: :py:class:`~concurrent.futures.thread.ThreadPoolExecutor`"
+msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
 msgid "Clean-up the resources associated with the Executor."
@@ -605,6 +745,10 @@ msgstr ""
 msgid "futures. Futures that are completed or running will not be cancelled."
 msgstr ""
 
+#: aiomisc.thread_pool.WorkItem:1 of
+msgid "Bases: :py:class:`~aiomisc.thread_pool.WorkItemBase`"
+msgstr ""
+
 #: aiomisc.thread_pool.WorkItem:1 aiomisc.thread_pool.WorkItemBase:1 of
 msgid "Create new instance of WorkItemBase(func, args, kwargs, future, loop)"
 msgstr ""
@@ -613,11 +757,11 @@ msgstr ""
 msgid "Alias for field number 4"
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:131
+#: ../../source/api/aiomisc.rst:149
 msgid "``aiomisc.timeout`` module"
 msgstr "Модуль ``aiomisc.timeout``"
 
-#: ../../source/api/aiomisc.rst:138
+#: ../../source/api/aiomisc.rst:157
 msgid "``aiomisc.utils`` module"
 msgstr "Модуль ``aiomisc.utils``"
 
@@ -649,6 +793,10 @@ msgstr ""
 
 #: aiomisc.utils.SelectAwaitable:10 of
 msgid "event loop"
+msgstr ""
+
+#: aiomisc.utils.SelectResult:1 of
+msgid "Bases: :py:class:`~typing.Collection`"
 msgstr ""
 
 #: aiomisc.utils.awaitable:1 of
@@ -740,7 +888,7 @@ msgstr ""
 msgid "Simple and useful decorator for wrap the coroutine to `asyncio.shield`."
 msgstr ""
 
-#: ../../source/api/aiomisc.rst:145
+#: ../../source/api/aiomisc.rst:165
 msgid "``aiomisc.worker_pool`` module"
 msgstr "Модуль ``aiomisc.worker_pool``"
 
@@ -787,3 +935,37 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "result before use it in ``await`` "
 #~ "expression."
 #~ msgstr ""
+
+#~ msgid ""
+#~ "There is no runtime checking of "
+#~ "these properties. The decorator sets the"
+#~ " ``__final__`` attribute to ``True`` on "
+#~ "the decorated object to allow runtime"
+#~ " introspection."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "object should provide SimpleQueue, Queue "
+#~ "and Process. Useful to allow specific"
+#~ " multiprocessing start methods."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "initializer: A callable used to "
+#~ "initialize worker processes. initargs: A "
+#~ "tuple of arguments to pass to the"
+#~ " initializer. max_tasks_per_child: The maximum"
+#~ " number of tasks a worker process"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "can complete before it will exit "
+#~ "and be replaced with a fresh "
+#~ "worker process. The default of None "
+#~ "means worker process will live as "
+#~ "long as the executor. Requires a "
+#~ "non-'fork' mp_context start method. When "
+#~ "given, we default to using 'spawn' "
+#~ "if no mp_context is supplied."
+#~ msgstr ""
+

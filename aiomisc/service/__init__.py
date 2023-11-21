@@ -5,7 +5,7 @@ from .tcp import RobustTCPClient, TCPClient, TCPServer
 from .tls import RobustTLSClient, TLSClient, TLSServer
 from .tracer import MemoryTracer
 from .udp import UDPServer
-
+from .uvicorn import UvicornApplication, UvicornService
 
 __all__ = (
     "MemoryTracer",
@@ -22,4 +22,6 @@ __all__ = (
     "TLSClient",
     "TLSServer",
     "UDPServer",
+    "UvicornApplication",
+    "UvicornService",
 )

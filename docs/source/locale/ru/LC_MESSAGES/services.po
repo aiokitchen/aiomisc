@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-07-24 13:24+0300\n"
+"POT-Creation-Date: 2023-11-21 11:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
+"Last-Translator: Sitkin Ivan <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.13.1\n"
 
 #: ../../source/services.rst:2
 msgid "Services"
@@ -550,7 +550,7 @@ msgid "pip install croniter"
 msgstr ""
 
 #: ../../source/services.rst:410 ../../source/services.rst:552
-#: ../../source/services.rst:618
+#: ../../source/services.rst:618 ../../source/services.rst:681
 msgid "or using extras:"
 msgstr "или как дополнительную зависимость"
 
@@ -883,26 +883,87 @@ msgstr ""
 "HTTPS сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
 "``TLSServer``)."
 
-#: ../../source/services.rst:672
+#: ../../source/services.rst:671
+#, fuzzy
+msgid "uvicorn service"
+msgstr "Uvicorn сервис"
+
+#: ../../source/services.rst:675
+#, fuzzy
+msgid "requires installed uvicorn:"
+msgstr "необходимо установить библиотеку uvicorn_:"
+
+#: ../../source/services.rst:677
+msgid "pip install uvicorn"
+msgstr ""
+
+#: ../../source/services.rst:683
+msgid "pip install aiomisc[uvicorn]"
+msgstr ""
+
+#: ../../source/services.rst:688
+#, fuzzy
+msgid "Any ASGI-like application can be started via uvicorn as a service:"
+msgstr "Любое ASGI совместимое приложение может быть запущено через uvicorn как сервис:"
+
+#: ../../source/services.rst:690
+msgid ""
+"import argparse\n"
+"\n"
+"from fastapi import FastAPI\n"
+"\n"
+"from aiomisc import entrypoint\n"
+"from aiomisc.service.uvicorn import UvicornApplication, UvicornService\n"
+"\n"
+"parser = argparse.ArgumentParser()\n"
+"group = parser.add_argument_group('HTTP options')\n"
+"\n"
+"group.add_argument(\"-l\", \"--host\", default=\"::\",\n"
+"                   help=\"Listen HTTP host\")\n"
+"group.add_argument(\"-p\", \"--port\", type=int, default=8080,\n"
+"                   help=\"Listen HTTP port\")\n"
+"\n"
+"\n"
+"app = FastAPI()\n"
+"\n"
+"\n"
+"@app.get(\"/\")\n"
+"async def root():\n"
+"    return {\"message\": \"Hello World\"}\n"
+"\n"
+"\n"
+"class REST(UvicornService):\n"
+"    async def create_application(self) -> UvicornApplication:\n"
+"        return app\n"
+"\n"
+"\n"
+"arguments = parser.parse_args()\n"
+"service = REST(host=arguments.host, port=arguments.port)\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+
+#: ../../source/services.rst:733
 #, fuzzy
 msgid "GRPC service"
 msgstr "GRPC сервис"
 
-#: ../../source/services.rst:674
+#: ../../source/services.rst:735
 msgid ""
 "This is an example of a GRPC service which is defined in a file and loads"
 " a `hello.proto` file without code generation, this example is one of the"
 " examples from `grpcio`, the other examples will work as expected."
 msgstr ""
-"Это пример GRPC-сервиса, который определяется в файле и загружает "
-"файл `hello.proto` без кодогенерации, этот пример является одним "
-"из примеров из `grpcio`, остальные примеры будут работать как ожидается."
+"Это пример GRPC-сервиса, который определяется в файле и загружает файл "
+"`hello.proto` без кодогенерации, этот пример является одним из примеров "
+"из `grpcio`, остальные примеры будут работать как ожидается."
 
-#: ../../source/services.rst:678
+#: ../../source/services.rst:739
 msgid "Proto definition:"
 msgstr "Определение proto файла"
 
-#: ../../source/services.rst:680
+#: ../../source/services.rst:741
 msgid ""
 "syntax = \"proto3\";\n"
 "\n"
@@ -944,11 +1005,11 @@ msgstr ""
 "  string message = 1;\n"
 "}"
 
-#: ../../source/services.rst:703
+#: ../../source/services.rst:764
 msgid "Service initialization example:"
 msgstr "Пример инициализации сервиса:"
 
-#: ../../source/services.rst:706
+#: ../../source/services.rst:767
 #, python-format
 msgid ""
 "import grpc\n"
@@ -987,11 +1048,11 @@ msgid ""
 "    main()"
 msgstr ""
 
-#: ../../source/services.rst:745
+#: ../../source/services.rst:806
 msgid "Memory Tracer"
 msgstr "Трассировщик памяти"
 
-#: ../../source/services.rst:747
+#: ../../source/services.rst:808
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
@@ -999,7 +1060,7 @@ msgstr ""
 "Простой и полезный сервис для логирования больших объектов Python, "
 "размещенных в памяти."
 
-#: ../../source/services.rst:751
+#: ../../source/services.rst:812
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -1019,11 +1080,11 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:771 ../../source/services.rst:820
+#: ../../source/services.rst:832 ../../source/services.rst:881
 msgid "Output example:"
 msgstr "Пример вывода:"
 
-#: ../../source/services.rst:773
+#: ../../source/services.rst:834
 msgid ""
 "[T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:\n"
 " Objects | Obj.Diff |   Memory | Mem.Diff | Traceback\n"
@@ -1045,11 +1106,11 @@ msgid ""
 "      14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40"
 msgstr ""
 
-#: ../../source/services.rst:795
+#: ../../source/services.rst:856
 msgid "Profiler"
 msgstr "``Profiler`` - профилировщик"
 
-#: ../../source/services.rst:797
+#: ../../source/services.rst:858
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "
@@ -1061,7 +1122,7 @@ msgstr ""
 "позже могут быть использованы, например, snakeviz. Также можно изменить "
 "порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
 
-#: ../../source/services.rst:803
+#: ../../source/services.rst:864
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -1078,7 +1139,7 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:822
+#: ../../source/services.rst:883
 msgid ""
 "108 function calls in 1.117 seconds\n"
 "\n"
@@ -1096,21 +1157,21 @@ msgid ""
 "<...>/lib/python3.7/cProfile.py:50(create_stats)"
 msgstr ""
 
-#: ../../source/services.rst:839
+#: ../../source/services.rst:900
 msgid "Raven service"
 msgstr "Raven сервис"
 
-#: ../../source/services.rst:841
+#: ../../source/services.rst:902
 msgid ""
 "Simple service for sending unhandled exceptions to the `sentry`_ service "
 "instance."
 msgstr "Простой сервис для отправки необработанных исключений в сервис `sentry`_."
 
-#: ../../source/services.rst:846
+#: ../../source/services.rst:907
 msgid "Simple example:"
 msgstr "Простой пример:"
 
-#: ../../source/services.rst:848
+#: ../../source/services.rst:909
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1192,11 +1253,11 @@ msgstr ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:888
+#: ../../source/services.rst:949
 msgid "Full configuration:"
 msgstr "Все опции для клиента:"
 
-#: ../../source/services.rst:890
+#: ../../source/services.rst:951
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1314,17 +1375,17 @@ msgstr ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:948
+#: ../../source/services.rst:1009
 msgid ""
 "You will find the full specification of options in the `Raven "
 "documentation`_."
 msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
 
-#: ../../source/services.rst:954
+#: ../../source/services.rst:1015
 msgid "``SDWatchdogService``"
 msgstr "``SDWatchdogService``"
 
-#: ../../source/services.rst:956
+#: ../../source/services.rst:1017
 msgid ""
 "Ready to use service just adding to your entrypoint and notifying SystemD"
 " service watchdog timer."
@@ -1332,7 +1393,7 @@ msgstr ""
 "Готовый к использованию сервис, просто добавьте его в entrypoint и он "
 "будет отправлять уведомления сторожевому таймеру SystemD."
 
-#: ../../source/services.rst:959
+#: ../../source/services.rst:1020
 msgid ""
 "This can be safely added at any time, since if the service does not "
 "detect systemd-related environment variables, then its initialization is "
@@ -1342,11 +1403,11 @@ msgstr ""
 "найдет переменных окружения, которые устанавливает systemd, Сервис просто"
 " не запустится, однако выполнение приложения продолжится."
 
-#: ../../source/services.rst:962
+#: ../../source/services.rst:1023
 msgid "Example of python file:"
 msgstr "Пример python файла:"
 
-#: ../../source/services.rst:964
+#: ../../source/services.rst:1025
 msgid ""
 "import logging\n"
 "from time import sleep\n"
@@ -1360,11 +1421,11 @@ msgid ""
 "        pass"
 msgstr ""
 
-#: ../../source/services.rst:979
+#: ../../source/services.rst:1040
 msgid "Example of systemd service file:"
 msgstr "Пример systemd сервис-файла:"
 
-#: ../../source/services.rst:981
+#: ../../source/services.rst:1042
 msgid ""
 "[Service]\n"
 "# Activating the notification mechanism\n"
@@ -1427,11 +1488,11 @@ msgstr ""
 "FinalKillSignal=SIGKILL\n"
 "SendSIGKILL=yes"
 
-#: ../../source/services.rst:1016
+#: ../../source/services.rst:1077
 msgid "``ProcessService``"
 msgstr "Класс ``ProcessService``"
 
-#: ../../source/services.rst:1018
+#: ../../source/services.rst:1079
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped."
@@ -1439,7 +1500,7 @@ msgstr ""
 "Базовый класс для запуска функции отдельным системным процессом и "
 "завершения при остановке родительского процесса."
 
-#: ../../source/services.rst:1021
+#: ../../source/services.rst:1082
 msgid ""
 "from typing import Dict, Any\n"
 "\n"
@@ -1515,11 +1576,11 @@ msgstr ""
 "    with aiomisc.entrypoint(*services) as loop:\n"
 "        loop.run_forever()"
 
-#: ../../source/services.rst:1062
+#: ../../source/services.rst:1123
 msgid "``RespawningProcessService``"
 msgstr "Класс ``RespawningProcessService``"
 
-#: ../../source/services.rst:1064
+#: ../../source/services.rst:1125
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped, It's pretty like "
@@ -1531,7 +1592,7 @@ msgstr ""
 "`ProcessService` с одним отличием - если дочерний процесс неожиданно "
 "завершится, то он будет перезапущен."
 
-#: ../../source/services.rst:1069
+#: ../../source/services.rst:1130
 msgid ""
 "import logging\n"
 "from typing import Any\n"
@@ -1552,3 +1613,4 @@ msgid ""
 "    with aiomisc.entrypoint(SuicideService()) as loop:\n"
 "        loop.run_forever()"
 msgstr ""
+
