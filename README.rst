@@ -98,6 +98,8 @@ Complete table of extras bellow:
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[rich]``     | You might using rich_ for logging              |
 +-----------------------------------+------------------------------------------------+
+| ``pip install aiomisc[uvicorn]``  | For running ASGI_ application using uvicorn_   |
++-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[uvloop]``   | use uvloop_ as a default event loop            |
 +-----------------------------------+------------------------------------------------+
 
@@ -111,6 +113,7 @@ Complete table of extras bellow:
 .. _rich: https://pypi.org/project/rich
 .. _sentry: https://sentry.io/
 .. _uvloop: https://pypi.org/project/uvloop
+.. _uvicorn: https://pypi.org/project/uvicorn
 
 You can combine extras values by separating them with commas, for example:
 
