@@ -40,7 +40,7 @@ class GRPCService(Service):
     def __init__(
         self, *,
         migration_thread_pool: Optional[Executor] = None,
-        handlers: Optional[Sequence[grpc.GenericRpcHandler]] = None,
+        handlers: Optional[Sequence[grpc.ServiceRpcHandler]] = None,
         interceptors: Optional[Sequence[Any]] = None,
         options: Optional[Sequence[Tuple[str, Any]]] = None,
         maximum_concurrent_rpcs: Optional[int] = None,
@@ -56,7 +56,7 @@ class GRPCService(Service):
             "migration_thread_pool": migration_thread_pool,
             "options": options,
         })
-        self._services: Set[grpc.GenericRpcHandler] = set()
+        self._services: Set[grpc.ServiceRpcHandler] = set()
         self._insecure_ports = set()
         self._secure_ports = set()
         self._reflection = reflection
@@ -97,7 +97,7 @@ class GRPCService(Service):
         await self._server.stop(self.GRACEFUL_STOP_TIME)
 
     def add_generic_rpc_handlers(
-        self, generic_rpc_handlers: Sequence[grpc.GenericRpcHandler],
+        self, generic_rpc_handlers: Sequence[grpc.ServiceRpcHandler],
     ) -> None:
         for service in generic_rpc_handlers:
             self._services.add(service)
