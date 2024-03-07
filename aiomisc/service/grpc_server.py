@@ -11,6 +11,7 @@ from .base import Service
 
 try:
     import grpc.aio
+    from grpc_reflection.v1alpha import reflection
 except ImportError as e:
     raise ImportError(
         "You must install 'grpcio' manually or using extras 'aiomisc[grpc]'",
@@ -44,6 +45,7 @@ class GRPCService(Service):
         options: Optional[Sequence[Tuple[str, Any]]] = None,
         maximum_concurrent_rpcs: Optional[int] = None,
         compression: Optional[grpc.Compression] = None,
+        reflection: bool = False,
         **kwds: Any,
     ):
         self._server_args = MappingProxyType({
@@ -57,6 +59,7 @@ class GRPCService(Service):
         self._services: Set[grpc.GenericRpcHandler] = set()
         self._insecure_ports = set()
         self._secure_ports = set()
+        self._reflection = reflection
         super().__init__(**kwds)
 
     @classmethod
@@ -81,6 +84,11 @@ class GRPCService(Service):
             port = self._server.add_secure_port(address, credentials)
             future.set_result(port)
             self._log_port("Listening secure address", address, port)
+
+        if self._reflection:
+            service_names = [x.service_name() for x in self._services]
+            service_names.append(reflection.SERVICE_NAME)
+            reflection.enable_server_reflection(service_names, self._server)
 
         self._server.add_generic_rpc_handlers(tuple(self._services))
         await self._server.start()
