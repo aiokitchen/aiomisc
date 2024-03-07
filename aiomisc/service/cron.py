@@ -1,7 +1,8 @@
 import asyncio
 import logging
 from asyncio import iscoroutinefunction
-from typing import Any, Callable, NamedTuple, Optional, Set, Tuple, Type
+from dataclasses import dataclass
+from typing import Any, Callable, Optional, Set, Tuple, Type
 
 from croniter import croniter
 
@@ -13,7 +14,8 @@ log = logging.getLogger(__name__)
 ExceptionsType = Tuple[Type[Exception], ...]
 
 
-class StoreItem(NamedTuple):
+@dataclass(frozen=True)
+class StoreItem:
     callback: CronCallback
     spec: str
     shield: bool

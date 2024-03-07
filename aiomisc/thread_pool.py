@@ -6,13 +6,14 @@ import threading
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
+from dataclasses import dataclass
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from queue import SimpleQueue
 from types import MappingProxyType
 from typing import (
-    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, NamedTuple, Optional,
-    Set, Tuple, TypeVar,
+    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, Optional, Set, Tuple,
+    TypeVar,
 )
 
 from ._context_vars import EVENT_LOOP
@@ -39,7 +40,8 @@ class ThreadPoolException(RuntimeError):
     pass
 
 
-class WorkItemBase(NamedTuple):
+@dataclass(frozen=True)
+class WorkItemBase:
     func: Callable[..., Any]
     args: Tuple[Any, ...]
     kwargs: Dict[str, Any]

@@ -2,10 +2,9 @@ import asyncio
 import inspect
 import logging
 from asyncio import CancelledError, Event, Future, Lock, wait_for
+from dataclasses import dataclass
 from inspect import Parameter
-from typing import (
-    Any, Awaitable, Callable, Iterable, List, NamedTuple, Optional, Union,
-)
+from typing import Any, Awaitable, Callable, Iterable, List, Optional, Union
 
 from .compat import EventLoopMixin
 from .counters import Statistic
@@ -14,7 +13,8 @@ from .counters import Statistic
 log = logging.getLogger(__name__)
 
 
-class Arg(NamedTuple):
+@dataclass(frozen=True)
+class Arg:
     value: Any
     future: Future
 
