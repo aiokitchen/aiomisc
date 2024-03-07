@@ -881,7 +881,7 @@ protobuf = ["grpcio-tools (>=1.62.0)"]
 name = "grpcio-reflection"
 version = "1.62.0"
 description = "Standard Protobuf Reflection Service for gRPC"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "grpcio-reflection-1.62.0.tar.gz", hash = "sha256:af1707399ef2821c795ecb379550bf5a76fb6409b149ebb346310cfd01da298a"},
@@ -2546,4 +2546,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "8da41e334090ee3eea3f078d6308acac60bf08c1e82c6210d845b61186c27840"
+content-hash = "bed40e00b3f00ac2741e01297883734ee30f0342afdc2c29bd9f8f72f3558a74"
