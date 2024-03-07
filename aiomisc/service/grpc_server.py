@@ -11,6 +11,7 @@ from .base import Service
 
 try:
     import grpc.aio
+    from grpc_reflection.v1alpha import reflection
 except ImportError as e:
     raise ImportError(
         "You must install 'grpcio' manually or using extras 'aiomisc[grpc]'",
@@ -39,11 +40,12 @@ class GRPCService(Service):
     def __init__(
         self, *,
         migration_thread_pool: Optional[Executor] = None,
-        handlers: Optional[Sequence[grpc.GenericRpcHandler]] = None,
+        handlers: Optional[Sequence[grpc.ServiceRpcHandler]] = None,
         interceptors: Optional[Sequence[Any]] = None,
         options: Optional[Sequence[Tuple[str, Any]]] = None,
         maximum_concurrent_rpcs: Optional[int] = None,
         compression: Optional[grpc.Compression] = None,
+        reflection: bool = False,
         **kwds: Any,
     ):
         self._server_args = MappingProxyType({
@@ -54,9 +56,10 @@ class GRPCService(Service):
             "migration_thread_pool": migration_thread_pool,
             "options": options,
         })
-        self._services: Set[grpc.GenericRpcHandler] = set()
+        self._services: Set[grpc.ServiceRpcHandler] = set()
         self._insecure_ports = set()
         self._secure_ports = set()
+        self._reflection = reflection
         super().__init__(**kwds)
 
     @classmethod
@@ -82,6 +85,11 @@ class GRPCService(Service):
             future.set_result(port)
             self._log_port("Listening secure address", address, port)
 
+        if self._reflection:
+            service_names = [x.service_name() for x in self._services]
+            service_names.append(reflection.SERVICE_NAME)
+            reflection.enable_server_reflection(service_names, self._server)
+
         self._server.add_generic_rpc_handlers(tuple(self._services))
         await self._server.start()
 
@@ -89,7 +97,7 @@ class GRPCService(Service):
         await self._server.stop(self.GRACEFUL_STOP_TIME)
 
     def add_generic_rpc_handlers(
-        self, generic_rpc_handlers: Sequence[grpc.GenericRpcHandler],
+        self, generic_rpc_handlers: Sequence[grpc.ServiceRpcHandler],
     ) -> None:
         for service in generic_rpc_handlers:
             self._services.add(service)

@@ -800,6 +800,13 @@ Service initialization example:
         main()
 
 
+To enable reflection for the service you use reflection flag:
+
+.. code-block:: python
+
+    GRPCService(reflection=True)
+
+
 .. _memory-tracer:
 
 Memory Tracer
