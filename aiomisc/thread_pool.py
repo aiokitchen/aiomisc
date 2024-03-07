@@ -6,13 +6,14 @@ import threading
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
+from dataclasses import dataclass
 from functools import partial, wraps
 from multiprocessing import cpu_count
 from queue import SimpleQueue
 from types import MappingProxyType
 from typing import (
-    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, NamedTuple, Optional,
-    Set, Tuple, TypeVar,
+    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, Optional, Set, Tuple,
+    TypeVar,
 )
 
 from ._context_vars import EVENT_LOOP
@@ -31,6 +32,10 @@ def context_partial(
     func: F, *args: Any,
     **kwargs: Any,
 ) -> Any:
+    warnings.warn(
+        "context_partial has been deprecated and will be removed",
+        DeprecationWarning,
+    )
     context = contextvars.copy_context()
     return partial(context.run, func, *args, **kwargs)
 
@@ -39,12 +44,14 @@ class ThreadPoolException(RuntimeError):
     pass
 
 
-class WorkItemBase(NamedTuple):
+@dataclass(frozen=True)
+class WorkItemBase:
     func: Callable[..., Any]
     args: Tuple[Any, ...]
     kwargs: Dict[str, Any]
     future: asyncio.Future
     loop: asyncio.AbstractEventLoop
+    context: contextvars.Context
 
 
 class ThreadPoolStatistic(Statistic):
@@ -74,10 +81,11 @@ class WorkItem(WorkItemBase):
             return
 
         result, exception = None, None
-
         delta = -time.monotonic()
         try:
-            result = self.func(*self.args, **self.kwargs)
+            result = self.context.run(
+                self.func, *self.args, **self.kwargs,
+            )
             statistic.success += 1
         except BaseException as e:
             statistic.error += 1
@@ -193,6 +201,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
                     args=args,
                     kwargs=kwargs,
                     future=future,
+                    context=contextvars.copy_context(),
                     loop=loop,
                 ),
             )
@@ -230,7 +239,7 @@ def run_in_executor(
     try:
         loop = asyncio.get_running_loop()
         return loop.run_in_executor(
-            executor, context_partial(func, *args, **kwargs),
+            executor, partial(func, *args, **kwargs),
         )
     except RuntimeError:
         # In case the event loop is not running right now is

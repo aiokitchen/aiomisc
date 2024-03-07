@@ -1,6 +1,7 @@
 from collections import Counter
+from dataclasses import dataclass
 from typing import (
-    Any, Dict, FrozenSet, Generator, MutableMapping, MutableSet, NamedTuple,
+    Any, Dict, FrozenSet, Generator, Iterator, MutableMapping, MutableSet,
     Optional, Set, Tuple, Type, Union,
 )
 from weakref import WeakSet
@@ -107,11 +108,18 @@ class Statistic(AbstractStatistic, metaclass=MetaStatistic):
         self.__instances__.add(self)
 
 
-class StatisticResult(NamedTuple):
+@dataclass(frozen=True)
+class StatisticResult:
     kind: Type[AbstractStatistic]
     name: Optional[str]
     metric: str
     value: Union[int, float]
+
+    def __iter__(self) -> Iterator:
+        yield self.kind
+        yield self.name
+        yield self.metric
+        yield self.value
 
 
 # noinspection PyProtectedMember
