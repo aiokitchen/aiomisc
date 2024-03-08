@@ -8,8 +8,8 @@ from enum import Enum
 from functools import partial, total_ordering
 from pathlib import Path
 from typing import (
-    IO, Any, AnyStr, Awaitable, Callable, Generator, Generic, List, Optional,
-    TextIO, TypeVar, Union,
+    IO, Any, AnyStr, Awaitable, Callable, Generator, Generic, List, Literal,
+    Optional, TextIO, TypeVar, Union, overload,
 )
 
 from .compat import EventLoopMixin
@@ -312,10 +312,38 @@ class Compression(Enum):
     LZMA = (AsyncLzmaBinaryIO, AsyncLzmaTextIO)
 
 
-AsyncFileType = Union[AsyncFileIO[AnyStr], AsyncTextIO, AsyncBinaryIO]
+AsyncFileType = Union[AsyncTextIO, AsyncBinaryIO]
 
 # Deprecated excluded from __all__
 AsyncFileT = AsyncFileType
+
+BinaryModes = Literal[
+    "rb", "wb", "ab", "xb", "rb+", "wb+", "ab+", "xb+", "br", "br+",
+    "bw+", "ba+", "bx+",
+]
+
+TextModes = Literal["r", "w", "a", "x", "r+", "w+", "a+", "x+"]
+
+
+@overload
+def async_open(
+    fname: Union[str, Path],
+    mode: BinaryModes,
+    compression: Compression = Compression.NONE,
+    encoding: str = sys.getdefaultencoding(),
+    *args: Any, **kwargs: Any,
+) -> AsyncBinaryIO:
+    ...
+
+
+@overload
+def async_open(
+    fname: Union[str, Path], mode: Union[TextModes],
+    compression: Compression = Compression.NONE,
+    encoding: str = sys.getdefaultencoding(),
+    *args: Any, **kwargs: Any,
+) -> AsyncTextIO:
+    ...
 
 
 def async_open(

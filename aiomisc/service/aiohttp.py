@@ -1,9 +1,10 @@
 import socket
+import ssl
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 from aiohttp.web import Application, AppRunner, BaseRunner, SockSite  # noqa
 
-from aiomisc.service.tls import PathOrStr, get_ssl_context
+from aiomisc.service.tls import PathOrStr, SSLOptions
 
 from ..utils import bind_socket
 from .base import Service
@@ -118,7 +119,10 @@ class AIOHTTPSSLService(AIOHTTPService):
             shutdown_timeout=shutdown_timeout, **kwds,
         )
 
-        self.__ssl_options = cert, key, ca, verify, require_client_cert
+        self.__ssl_options = SSLOptions(
+            cert, key, ca, verify, require_client_cert,
+            ssl.Purpose.CLIENT_AUTH,
+        )
 
     async def create_site(self) -> SockSite:
         assert self.runner and self.socket
@@ -127,6 +131,6 @@ class AIOHTTPSSLService(AIOHTTPService):
             self.runner, self.socket,
             shutdown_timeout=self.shutdown_timeout,
             ssl_context=await self.loop.run_in_executor(
-                None, get_ssl_context, *self.__ssl_options,
+                None, self.__ssl_options.create_context,
             ),
         )

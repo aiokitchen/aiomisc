@@ -67,8 +67,9 @@ class WorkItemBase:
 
 
 def _set_workitem_result(
-    future: asyncio.Future, result: Any, exception: Exception,
-) -> None:
+    future: asyncio.Future, result: Optional[Any],
+    exception: Optional[BaseException],
+) -> Any:
     if future.done():
         return
 
@@ -423,7 +424,7 @@ def threaded_iterable(
     @wraps(func)
     def wrap(*args: Any, **kwargs: Any) -> Any:
         return IteratorWrapper(
-            partial(func, *args, **kwargs),  # type: ignore
+            partial(func, *args, **kwargs),
             max_size=max_size,
         )
 
@@ -447,7 +448,7 @@ def threaded_iterable_separate(
     @wraps(func)
     def wrap(*args: Any, **kwargs: Any) -> Any:
         return IteratorWrapperSeparate(
-            partial(func, *args, **kwargs),  # type: ignore
+            partial(func, *args, **kwargs),
             max_size=max_size,
         )
 
