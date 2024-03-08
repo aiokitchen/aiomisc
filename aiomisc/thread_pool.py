@@ -125,7 +125,7 @@ class TaskChannelCloseException(RuntimeError):
     pass
 
 
-class TaskChannel(SimpleQueue[Optional[WorkItem]]):
+class TaskChannel(SimpleQueue):
     closed_event: threading.Event
 
     def __init__(self) -> None:
