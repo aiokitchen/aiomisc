@@ -117,7 +117,7 @@ class TaskStoreBase(Service, ABC):
     def create_task(self, coro: CoroutineType) -> asyncio.Task:
         task: asyncio.Task = self.loop.create_task(coro)
         self.tasks.add(task)
-        task.add_done_callback(self.tasks.remove)
+        task.add_done_callback(self.tasks.discard)
         return task
 
     async def stop(self, exc: Optional[Exception] = None) -> None:

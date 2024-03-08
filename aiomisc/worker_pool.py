@@ -240,7 +240,7 @@ class WorkerPool:
                     raise
         finally:
             self._statistic.processes -= 1
-            self.pids.remove(pid)
+            self.pids.discard(pid)
 
     def __start_handler(
         self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
@@ -249,7 +249,7 @@ class WorkerPool:
 
     def __task_add(self, task: asyncio.Task) -> None:
         self._statistic.task_added += 1
-        task.add_done_callback(self.__task_store.remove)
+        task.add_done_callback(self.__task_store.discard)
         self.__task_store.add(task)
 
     def __task(self, coroutine: Coroutine) -> asyncio.Task:
@@ -273,7 +273,7 @@ class WorkerPool:
     def __create_future(self) -> asyncio.Future:
         future = self.loop.create_future()
         self.__futures.add(future)
-        future.add_done_callback(self.__futures.remove)
+        future.add_done_callback(self.__futures.discard)
         return future
 
     def __reject_futures(self) -> None:
