@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import gc
 import os
 import threading
@@ -20,6 +21,23 @@ except ImportError:
 
 
 pytestmark = pytest.mark.catch_loop_exceptions
+
+
+thread_pool_implementation = (
+    aiomisc.ThreadPoolExecutor,
+    concurrent.futures.ThreadPoolExecutor,
+)
+
+
+thread_pool_ids = (
+    "aiomisc pool",
+    "default pool",
+)
+
+
+@pytest.fixture(params=thread_pool_implementation, ids=thread_pool_ids)
+def thread_pool_executor(request):
+    return request.param
 
 
 @pytest.fixture(params=(aiomisc.threaded, aiomisc.threaded_separate))
