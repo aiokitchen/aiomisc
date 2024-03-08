@@ -409,11 +409,10 @@ class Entrypoint:
         self.loop.call_soon_threadsafe(self._on_interrupt, loop)
 
     def _on_interrupt(self, loop: asyncio.AbstractEventLoop) -> None:
-        async def shutdown() -> None:
-            log.warning("Interrupt signal received, shutting down...")
-            await self._stop(RuntimeError("Interrupt signal received"))
-
-        task = loop.create_task(shutdown())
+        log.warning("Interrupt signal received, shutting down...")
+        task = loop.create_task(
+            self._stop(RuntimeError("Interrupt signal received")),
+        )
         handle = loop.call_later(self.shutdown_timeout, task.cancel)
 
         def on_shutdown_finish(task: asyncio.Future) -> None:

@@ -521,3 +521,37 @@ async def test_wait_coroutine_sync_exc_noloop(threaded_decorator, event_loop):
         await test()
 
     assert result == 1
+
+
+def test_task_channel():
+    channel = aiomisc.thread_pool.TaskChannel()
+    events = []
+
+    def consumer(event: threading.Event):
+        try:
+            while True:
+                channel.get()(no_return=True)
+        except aiomisc.thread_pool.TaskChannelCloseException:
+            event.set()
+
+    for _ in range(500):
+        event = threading.Event()
+        threading.Thread(target=consumer, args=(event,)).start()
+        events.append(event)
+
+    loop = asyncio.get_event_loop()
+    future = loop.create_future()
+    item = aiomisc.thread_pool.WorkItem(
+        func=lambda x: None,
+        loop=loop,
+        future=future,
+        statistic=aiomisc.thread_pool.ThreadPoolStatistic(),
+    )
+
+    for _ in range(10000):
+        channel.put_nowait(item)
+
+    channel.close()
+
+    for event in events:
+        event.wait(timeout=1)

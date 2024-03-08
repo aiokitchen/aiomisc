@@ -89,6 +89,9 @@ currently starting or stopping will be in the ``services`` parameter.
 
     main()
 
+    # remove the plugin on when unneeded
+    aiomisc.entrypoint.PRE_START.disconnect(hello)
+
 
 The following signals are available in total:
 
