@@ -12,10 +12,11 @@ from typing import (
     Optional, TextIO, TypeVar, Union, overload,
 )
 
-from .compat import EventLoopMixin
+from .compat import EventLoopMixin, TypeAlias
 
 
 T = TypeVar("T", bound=Any)
+FilePath: TypeAlias = Union[str, Path]
 
 
 def proxy_method_async(
@@ -232,7 +233,7 @@ class AsyncFileIO(EventLoopMixin, Generic[AnyStr]):
         await self.__execute_in_thread(self.fp.writelines, lines)
 
 
-AsyncFileIOBase = AsyncFileIO
+AsyncFileIOBase: TypeAlias = AsyncFileIO
 
 
 class AsyncBinaryIO(AsyncFileIO[bytes]):
@@ -265,8 +266,8 @@ class AsyncTextIO(AsyncFileIO[str]):
 
 
 # Aliases
-AsyncBytesFileIO = AsyncBinaryIO
-AsyncTextFileIO = AsyncTextIO
+AsyncBytesFileIO: TypeAlias = AsyncBinaryIO
+AsyncTextFileIO: TypeAlias = AsyncTextIO
 
 
 class AsyncGzipBinaryIO(AsyncBytesFileIO):
@@ -312,22 +313,21 @@ class Compression(Enum):
     LZMA = (AsyncLzmaBinaryIO, AsyncLzmaTextIO)
 
 
-AsyncFileType = Union[AsyncTextIO, AsyncBinaryIO]
+AsyncFileType: TypeAlias = Union[
+    AsyncFileIO[AnyStr], AsyncTextIO, AsyncBinaryIO,
+]
 
-# Deprecated excluded from __all__
-AsyncFileT = AsyncFileType
-
-BinaryModes = Literal[
+BinaryModes: TypeAlias = Literal[
     "rb", "wb", "ab", "xb", "rb+", "wb+", "ab+", "xb+", "br", "br+",
     "bw+", "ba+", "bx+",
 ]
 
-TextModes = Literal["r", "w", "a", "x", "r+", "w+", "a+", "x+"]
+TextModes: TypeAlias = Literal["r", "w", "a", "x", "r+", "w+", "a+", "x+"]
 
 
 @overload
 def async_open(
-    fname: Union[str, Path],
+    fname: FilePath,
     mode: BinaryModes,
     compression: Compression = Compression.NONE,
     encoding: str = sys.getdefaultencoding(),
@@ -338,7 +338,8 @@ def async_open(
 
 @overload
 def async_open(
-    fname: Union[str, Path], mode: Union[TextModes],
+    fname: FilePath,
+    mode: TextModes,
     compression: Compression = Compression.NONE,
     encoding: str = sys.getdefaultencoding(),
     *args: Any, **kwargs: Any,
@@ -347,7 +348,7 @@ def async_open(
 
 
 def async_open(
-    fname: Union[str, Path], mode: str = "r",
+    fname: FilePath, mode: str = "r",
     compression: Compression = Compression.NONE,
     encoding: str = sys.getdefaultencoding(),
     *args: Any, **kwargs: Any,
