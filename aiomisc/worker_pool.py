@@ -51,6 +51,8 @@ class WorkerPool:
     worker_ids: Tuple[bytes, ...]
     pids: Set[int]
 
+    SERVER_CLOSE_TIMEOUT = 1
+
     if hasattr(socket, "AF_UNIX"):
         def _create_socket(self) -> None:
             path = mktemp(suffix=".sock", prefix="worker-")
@@ -281,15 +283,20 @@ class WorkerPool:
 
     @shield
     async def close(self) -> None:
-        async with self.__closing_lock:
+        async with (self.__closing_lock):
             if self.__closing:
                 return
 
             self._kill_supervisor()
             self.__closing = True
             self.server.close()
-            await self.server.wait_closed()
-
+            await asyncio.gather(
+                asyncio.wait_for(
+                    self.server.wait_closed(),
+                    timeout=self.SERVER_CLOSE_TIMEOUT,
+                ),
+                return_exceptions=True,
+            )
             await cancel_tasks(tuple(self.__task_store))
             await cancel_tasks(tuple(self.__futures))
 
