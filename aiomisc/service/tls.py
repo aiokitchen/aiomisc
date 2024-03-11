@@ -3,6 +3,7 @@ import logging
 import socket
 import ssl
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
@@ -16,30 +17,49 @@ PathOrStr = Union[Path, str]
 log = logging.getLogger(__name__)
 
 
-def get_ssl_context(
-    cert: str, key: str, ca: Optional[str], verify: bool,
-    require_client_cert: bool, purpose: ssl.Purpose,
-) -> ssl.SSLContext:
-    cert, key, ca = map(str, (cert, key, ca))
+@dataclass(frozen=True)
+class SSLOptionsBase:
+    cert: Optional[Path]
+    key: Optional[Path]
+    ca: Optional[Path]
+    verify: bool
+    require_client_cert: bool
+    purpose: ssl.Purpose
 
-    context = ssl.create_default_context(purpose=purpose, cafile=ca)
 
-    if ca and not Path(ca).exists():
-        raise FileNotFoundError("CA file doesn't exists")
-
-    if require_client_cert:
-        context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
-
-    if key:
-        context.load_cert_chain(
-            cert,
-            key,
+class SSLOptions(SSLOptionsBase):
+    def __init__(
+        self, cert: Optional[PathOrStr], key: Optional[PathOrStr],
+        ca: Optional[PathOrStr], verify: bool, require_client_cert: bool,
+        purpose: ssl.Purpose,
+    ) -> None:
+        super().__init__(
+            cert=Path(cert) if cert else None,
+            key=Path(key) if key else None,
+            ca=Path(ca) if ca else None,
+            verify=verify,
+            require_client_cert=require_client_cert,
+            purpose=purpose,
         )
 
-    if not verify:
-        context.check_hostname = False
+    def create_context(self) -> ssl.SSLContext:
+        context = ssl.create_default_context(
+            purpose=self.purpose, cafile=self.ca,
+        )
 
-    return context
+        if self.ca and not self.ca.exists():
+            raise FileNotFoundError("CA file doesn't exists")
+
+        if self.require_client_cert:
+            context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
+
+        if self.key and self.cert:
+            context.load_cert_chain(self.cert, self.key)
+
+        if not self.verify:
+            context.check_hostname = False
+
+        return context
 
 
 class TLSServer(SimpleServer):
@@ -53,7 +73,7 @@ class TLSServer(SimpleServer):
         **kwargs: Any,
     ):
 
-        self.__ssl_options = (
+        self.__ssl_options = SSLOptions(
             cert, key, ca, verify, require_client_cert,
             ssl.Purpose.CLIENT_AUTH,
         )
@@ -100,7 +120,7 @@ class TLSServer(SimpleServer):
 
     async def start(self) -> None:
         ssl_context = await self.loop.run_in_executor(
-            None, get_ssl_context, *self.__ssl_options,
+            None, self.__ssl_options.create_context,
         )
 
         self.socket = self.make_socket()
@@ -148,7 +168,7 @@ class TLSClient(TCPClient, ABC):
         ca: Optional[PathOrStr] = None, verify: bool = True,
         **kwargs: Any,
     ) -> None:
-        self.__ssl_options = (
+        self.__ssl_options = SSLOptions(
             cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
         )
 
@@ -160,11 +180,12 @@ class TLSClient(TCPClient, ABC):
         last_error: Optional[Exception] = None
         for _ in range(self.connect_attempts):
             try:
+                ssl_context: ssl.SSLContext = await self.loop.run_in_executor(
+                    None, self.__ssl_options.create_context,
+                )
                 reader, writer = await asyncio.open_connection(
                     self.address, self.port,
-                    ssl=await self.loop.run_in_executor(
-                        None, get_ssl_context, *self.__ssl_options,
-                    ),
+                    ssl=ssl_context,
                 )
                 log.info(
                     "Connected to %s://%s:%d",
@@ -190,7 +211,7 @@ class RobustTLSClient(RobustTCPClient, ABC):
         ca: Optional[PathOrStr] = None, verify: bool = True,
         **kwargs: Any,
     ):
-        self.__ssl_options = (
+        self.__ssl_options = SSLOptions(
             cert, key, ca, verify, False, ssl.Purpose.SERVER_AUTH,
         )
 
@@ -205,7 +226,7 @@ class RobustTLSClient(RobustTCPClient, ABC):
                 reader, writer = await asyncio.open_connection(
                     self.address, self.port,
                     ssl=await self.loop.run_in_executor(
-                        None, get_ssl_context, *self.__ssl_options,
+                        None, self.__ssl_options.create_context,
                     ),
                 )
                 log.info(

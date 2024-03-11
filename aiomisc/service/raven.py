@@ -209,7 +209,7 @@ class AioHttpTransport(AioHttpTransportBase):
 
         task = self._loop.create_task(coro)
         self._tasks.add(task)
-        task.add_done_callback(self._tasks.remove)
+        task.add_done_callback(self._tasks.discard)
 
     async def _close(self) -> None:
         await asyncio.gather(
@@ -234,7 +234,7 @@ class QueuedAioHttpTransport(AioHttpTransportBase):
         for _ in range(workers):
             worker: asyncio.Task = self._loop.create_task(self._worker())
             self._workers.add(worker)
-            worker.add_done_callback(self._workers.remove)
+            worker.add_done_callback(self._workers.discard)
 
     async def _worker(self) -> None:
         while True:

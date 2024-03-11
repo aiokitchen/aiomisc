@@ -89,7 +89,7 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
     def __create_task(self, coro: Coroutine[Any, Any, Any]) -> asyncio.Task:
         task = self.loop.create_task(coro)
         self._tasks.add(task)
-        task.add_done_callback(self._tasks.remove)
+        task.add_done_callback(self._tasks.discard)
         return task
 
     async def __recycler(self) -> NoReturn:
@@ -126,7 +126,7 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
             self._recycle_times.pop(instance)
 
         if instance in self._used:
-            self._used.remove(instance)
+            self._used.discard(instance)
 
         self._recycle_bin.put_nowait(instance)
 
@@ -162,7 +162,7 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
         return instance
 
     async def __release(self, instance: Any) -> None:
-        self._used.remove(instance)
+        self._used.discard(instance)
 
         if self._recycle and self._recycle_times[instance] < self.loop.time():
             self.__recycle_instance(instance)

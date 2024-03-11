@@ -175,8 +175,6 @@ async def test_object(event_loop):
 async def test_compression(compression: aiomisc.io.Compression, tmp_path):
     fname = Path(tmp_path) / "test.file"
 
-    afp: aiomisc.io.AsyncTextIO
-
     async with aiomisc.io.async_open(
         fname, "w", compression=compression,
     ) as afp:

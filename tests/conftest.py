@@ -1,5 +1,4 @@
 import asyncio
-import concurrent.futures
 import os
 import ssl
 import time
@@ -38,21 +37,8 @@ def timer():
     return timer
 
 
-thread_pool_implementation = (
-    aiomisc.ThreadPoolExecutor,
-    concurrent.futures.ThreadPoolExecutor,
-)
-
-
-thread_pool_ids = (
-    "aiomisc pool",
-    "default pool",
-)
-
-
-@pytest.fixture(params=thread_pool_implementation, ids=thread_pool_ids)
 def thread_pool_executor(request):
-    return request.param
+    return aiomisc.ThreadPoolExecutor
 
 
 policies = (asyncio.DefaultEventLoopPolicy(),)

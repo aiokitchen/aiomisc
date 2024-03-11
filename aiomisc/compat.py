@@ -24,6 +24,12 @@ except ImportError:
     from typing_extensions import final  # type: ignore
 
 
+try:
+    from typing import TypeAlias
+except ImportError:
+    from typing_extensions import TypeAlias
+
+
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
@@ -118,6 +124,7 @@ __all__ = (
     "EventLoopMixin",
     "ParamSpec",
     "Protocol",
+    "TypeAlias",
     "entry_pont_iterator",
     "event_loop_policy",
     "final",

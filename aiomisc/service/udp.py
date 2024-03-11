@@ -81,7 +81,7 @@ class UDPServer(SimpleServer):
             raise RuntimeError
 
         self._transport, self._protocol = (
-            await self.loop.create_datagram_endpoint(   # type: ignore
+            await self.loop.create_datagram_endpoint(
                 lambda: UDPServer.UDPSimpleProtocol(
                     self.handle_datagram,
                     self.create_task,

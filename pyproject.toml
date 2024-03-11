@@ -24,11 +24,11 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python",
     "Topic :: Internet :: WWW/HTTP",
@@ -55,23 +55,23 @@ packages = [
 "Documentation" = "https://aiomisc.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
+python = "^3.8"
 aiocarbon = { version = "^0.15", optional = true }
 aiohttp = { version = ">3", optional = true }
 aiohttp-asgi = { version = "^0.5.2", optional = true }
 colorlog = "^6.0"
-croniter = { version = "^1.3.8", optional = true }
+croniter = { version = "2.0", optional = true }
 grpcio = { version = "^1.56", optional = true }
 grpcio-tools = { version = "^1.56", optional = true }
 grpcio-reflection = { version = "^1.56", optional = true }
 logging-journald = [{ version = '*', platform = 'linux' }]
-python = "^3.8"
 raven = { version = "*", optional = true }
 rich = { version = "*", optional = true }
 setuptools = [{ version = '*', python = "< 3.8" }]
 typing_extensions = [{ version = '*', python = "< 3.10" }]
-uvloop = { version = ">=0.14, <1", optional = true }
-uvicorn = { version = ">=0.22,<1", optional = true }
-asgiref = { version = ">=3.7,<4", optional = true }
+uvloop = { version = ">=0.19, <1", optional = true }
+uvicorn = { version = "^0.27", optional = true }
+asgiref = { version = "^3.7", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 aiohttp = "^3.9"
@@ -82,13 +82,13 @@ autodoc = "^0.5.0"
 autoflake = "1.4"
 collective-checkdocs = "^0.2"
 coveralls = "^3.3.1"
-croniter = "^1.3.8"
-fastapi = "^0.95.0"
+croniter = "^2.0"
+fastapi = "^0.110"
 furo = "^2022"
 grpcio = "^1.56"
 grpcio-tools = "^1.56"
 grpcio-reflection = "^1.56"
-mypy = "^0.991"
+mypy = "^1.9"
 pre-commit = "^2.20.0"
 pylama = "^8.4.1"
 pytest = "^7.2.0"
@@ -106,11 +106,11 @@ timeout-decorator = "^0.5.0"
 types-croniter = "^1.3"
 types-setuptools = "^65.6.0.1"
 grpc-stubs = "^1.53.0.2"
-uvicorn = "^0.22"
+uvicorn = "^0.27"
 asgiref = "^3.7"
 
 [tool.poetry.group.uvloop.dependencies]
-uvloop = "^0.17.0"
+uvloop = "^0.19.0"
 
 [tool.poetry.extras]
 aiohttp = ["aiohttp"]
