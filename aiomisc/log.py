@@ -7,7 +7,9 @@ import traceback
 from contextlib import suppress
 from functools import partial
 from socket import socket
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import (
+    Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union,
+)
 from weakref import finalize
 
 import aiomisc_log
@@ -75,9 +77,7 @@ def wrap_logging_handler(
     return buffered_handler
 
 
-class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
-    LOGGER_NAME = "asyncio.unhandled"
-
+class UnhandledLoopHook(aiomisc_log.UnhandledHook):
     @staticmethod
     def _fill_transport_extra(
         transport: Optional[asyncio.Transport],
@@ -109,8 +109,8 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHookBase):
         protocol: Optional[asyncio.Protocol] = context.pop("protocol", None)
         transport: Optional[asyncio.Transport] = context.pop("transport", None)
         sock: Optional[socket] = context.pop("socket", None)
-        source_traceback: List[traceback.FrameSummary] = context.pop(
-            "source_traceback", None,
+        source_traceback: List[traceback.FrameSummary] = (
+            context.pop("source_traceback", None) or []
         )
 
         if exception is None:
@@ -141,15 +141,16 @@ def basic_config(
     buffered: bool = True, buffer_size: int = 1024,
     flush_interval: Union[int, float] = 0.2,
     loop: Optional[asyncio.AbstractEventLoop] = None,
+    handlers: Iterable[logging.Handler] = (),
     **kwargs: Any,
 ) -> None:
     loop = loop or asyncio.get_event_loop()
-    unhandled_hook = UnhandledLoopHook()
+    unhandled_hook = UnhandledLoopHook(logger_name="asyncio.unhandled")
 
     def wrap_handler(handler: logging.Handler) -> logging.Handler:
         nonlocal buffer_size, buffered, loop, unhandled_hook
 
-        unhandled_hook.set_handler(handler)
+        unhandled_hook.add_handler(handler)
 
         if buffered:
             return wrap_logging_handler(
@@ -164,6 +165,7 @@ def basic_config(
         level=level,
         log_format=log_format,
         handler_wrapper=wrap_handler,
+        handlers=handlers,
         **kwargs,
     )
 
