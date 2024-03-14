@@ -107,11 +107,35 @@ But it isn't dependency and you have to install `Rich`_ manually.
 
 .. _Rich: https://pypi.org/project/rich/
 
+Disabled
+++++++++
+
+Disable to configure logging handler. Useful when you want to configure your own logging handlers using
+`handlers=` argument.
+
+.. code-block:: python
+    :name: test_log_disabled
+
+    import logging
+    from aiomisc.log import basic_config
+
+    # Configure rich log handler
+    basic_config(
+        level=logging.INFO,
+        log_format='disabled',
+        handlers=[logging.StreamHandler()],
+        buffered=False,
+    )
+
+    logging.info("Use default python logger for example")
+
+
 
 Buffered log handler
 ++++++++++++++++++++
 
-Parameter `buffered=True` enables a memory buffer that flushes logs in a thread.
+Parameter `buffered=True` enables a memory buffer that flushes logs in a thread. In case the `handlers=`
+each will be buffered.
 
 .. code-block:: python
     :name: test_logging_buffered

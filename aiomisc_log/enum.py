@@ -12,15 +12,15 @@ except ImportError:
         return False
 
 try:
-    import rich
-
-    RICH_INSTALLED = bool(rich)
+    import rich as _  # noqa
+    RICH_INSTALLED = True
 except ImportError:
     RICH_INSTALLED = False
 
 
 @unique
 class LogFormat(IntEnum):
+    disabled = -1
     stream = 0
     color = 1
     json = 2

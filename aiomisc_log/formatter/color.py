@@ -11,11 +11,7 @@ def color_formatter(
     stream: Optional[IO[str]] = None,
     date_format: Optional[str] = None, **_: Any,
 ) -> logging.Handler:
-
-    date_format = (
-        date_format if date_format is not None else DateFormat.color.value
-    )
-
+    date_format = date_format or DateFormat.color.value
     stream = stream or sys.stderr
     handler = logging.StreamHandler(stream)
 
