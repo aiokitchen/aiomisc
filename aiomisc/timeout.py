@@ -1,22 +1,31 @@
 import asyncio
+import sys
 from functools import wraps
-from typing import Any, Awaitable, Callable, TypeVar, Union
+from typing import Awaitable, Callable, TypeVar, Union
+
+
+if sys.version_info >= (3, 10):
+    from typing import ParamSpec
+else:
+    from typing_extensions import ParamSpec
 
 
 T = TypeVar("T")
+P = ParamSpec("P")
 Number = Union[int, float]
-FuncType = Callable[..., Awaitable[T]]
 
 
-def timeout(value: Number) -> Callable[[FuncType], FuncType]:
+def timeout(
+    value: Number
+) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     def decorator(
-        func: FuncType,
-    ) -> FuncType:
+        func: Callable[P, Awaitable[T]],
+    ) -> Callable[P, Awaitable[T]]:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function is not a coroutine function")
 
         @wraps(func)
-        async def wrap(*args: Any, **kwargs: Any) -> T:
+        async def wrap(*args: P.args, **kwargs: P.kwargs) -> T:
             return await asyncio.wait_for(
                 func(*args, **kwargs),
                 timeout=value,

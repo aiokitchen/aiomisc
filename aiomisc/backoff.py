@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from functools import wraps
 from typing import (
     Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
@@ -8,12 +9,15 @@ from .counters import Statistic
 from .timeout import timeout
 
 
+if sys.version_info >= (3, 10):
+    from typing import ParamSpec
+else:
+    from typing_extensions import ParamSpec
+
+
 Number = Union[int, float]
 T = TypeVar("T")
-
-
-WrapReturnType = Callable[..., Awaitable[T]]
-ReturnType = Callable[..., WrapReturnType]
+P = ParamSpec("P")
 
 
 class BackoffStatistic(Statistic):
@@ -38,7 +42,7 @@ def asyncbackoff(
     giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
     statistic_class: Type[BackoffStatistic] = BackoffStatistic,
-) -> ReturnType:
+) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
     ``deadline`` time limits are met by decorated function.
@@ -81,12 +85,12 @@ def asyncbackoff(
     exceptions = tuple(exceptions) or ()
     exceptions += asyncio.TimeoutError,
 
-    def decorator(func: WrapReturnType) -> WrapReturnType:
+    def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         if attempt_timeout is not None:
             func = timeout(attempt_timeout)(func)
 
         @wraps(func)
-        async def wrap(*args: Any, **kwargs: Any) -> T:
+        async def wrap(*args: P.args, **kwargs: P.kwargs) -> T:
             last_exc = None
             tries = 0
 
@@ -141,7 +145,7 @@ def asyncretry(
     pause: Number = 0,
     giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
-) -> ReturnType:
+) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     """
     Shortcut of ``asyncbackoff(None, None, 0, Exception)``.
 
