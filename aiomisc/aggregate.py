@@ -4,7 +4,18 @@ import logging
 from asyncio import CancelledError, Event, Future, Lock, wait_for
 from dataclasses import dataclass
 from inspect import Parameter
-from typing import Any, Awaitable, Callable, Iterable, List, Optional, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    TypeVar,
+    Union,
+)
 
 from .compat import EventLoopMixin
 from .counters import Statistic
@@ -13,10 +24,14 @@ from .counters import Statistic
 log = logging.getLogger(__name__)
 
 
+V = TypeVar("V")
+R = TypeVar("R")
+
+
 @dataclass(frozen=True)
-class Arg:
-    value: Any
-    future: Future
+class Arg(Generic[V, R]):
+    value: V
+    future: "Future[R]"
 
 
 class ResultNotSetError(Exception):
@@ -191,7 +206,23 @@ class AggregatorAsync(Aggregator):
                 future.set_exception(ResultNotSetError)
 
 
-def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
+S = TypeVar("S", contravariant=True)
+T = TypeVar("T", covariant=True)
+
+
+class AggregateFunc(Protocol, Generic[S, T]):
+    async def __call__(self, *args: S) -> Iterable[T]:
+        ...
+
+
+class AggregateAsyncFunc(Protocol, Generic[V, R]):
+    async def __call__(self, *args: Arg[V, R]) -> None:
+        ...
+
+
+def aggregate(
+    leeway_ms: float, max_count: Optional[int] = None
+) -> Callable[[AggregateFunc[S, T]], Callable[[S], Awaitable[T]]]:
     """
     Parametric decorator that aggregates multiple
     (but no more than ``max_count`` defaulting to ``None``) single-argument
@@ -229,8 +260,8 @@ def aggregate(leeway_ms: float, max_count: Optional[int] = None) -> Callable:
 
 
 def aggregate_async(
-        leeway_ms: float, max_count: Optional[int] = None,
-) -> Callable:
+    leeway_ms: float, max_count: Optional[int] = None,
+) -> Callable[[AggregateAsyncFunc[V, R]], Callable[[V], Awaitable[R]]]:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
     containing ``value`` and ``future`` attributes instead. In this setting
