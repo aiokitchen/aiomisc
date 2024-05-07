@@ -2,7 +2,7 @@ import asyncio
 import sys
 from functools import wraps
 from typing import (
-    Any, Awaitable, Callable, Optional, Tuple, Type, TypeVar, Union,
+    Any, Callable, Coroutine, Optional, Tuple, Type, TypeVar, Union,
 )
 
 from .counters import Statistic
@@ -42,7 +42,10 @@ def asyncbackoff(
     giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
     statistic_class: Type[BackoffStatistic] = BackoffStatistic,
-) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
+) -> Callable[
+    [Callable[P, Coroutine[Any, Any, T]]],
+    Callable[P, Coroutine[Any, Any, T]],
+]:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
     ``deadline`` time limits are met by decorated function.
@@ -85,7 +88,9 @@ def asyncbackoff(
     exceptions = tuple(exceptions) or ()
     exceptions += asyncio.TimeoutError,
 
-    def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+    def decorator(
+        func: Callable[P, Coroutine[Any, Any, T]]
+    ) -> Callable[P, Coroutine[Any, Any, T]]:
         if attempt_timeout is not None:
             func = timeout(attempt_timeout)(func)
 
@@ -145,7 +150,10 @@ def asyncretry(
     pause: Number = 0,
     giveup: Optional[Callable[[Exception], bool]] = None,
     statistic_name: Optional[str] = None,
-) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
+) -> Callable[
+    [Callable[P, Coroutine[Any, Any, T]]],
+    Callable[P, Coroutine[Any, Any, T]],
+]:
     """
     Shortcut of ``asyncbackoff(None, None, 0, Exception)``.
 

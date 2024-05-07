@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from inspect import Parameter
 from typing import (
     Any,
-    Awaitable,
     Callable,
+    Coroutine,
     Generic,
     Iterable,
     List,
@@ -246,7 +246,7 @@ class Aggregator(AggregatorAsync[V, R], Generic[V, R]):
 
 def aggregate(
     leeway_ms: float, max_count: Optional[int] = None
-) -> Callable[[AggregateFunc[V, R]], Callable[[V], Awaitable[R]]]:
+) -> Callable[[AggregateFunc[V, R]], Callable[[V], Coroutine[Any, Any, R]]]:
     """
     Parametric decorator that aggregates multiple
     (but no more than ``max_count`` defaulting to ``None``) single-argument
@@ -275,7 +275,9 @@ def aggregate(
 
     :return:
     """
-    def decorator(func: AggregateFunc[V, R]) -> Callable[[V], Awaitable[R]]:
+    def decorator(
+        func: AggregateFunc[V, R]
+    ) -> Callable[[V], Coroutine[Any, Any, R]]:
         aggregator = Aggregator(
             func, max_count=max_count, leeway_ms=leeway_ms,
         )
@@ -285,7 +287,10 @@ def aggregate(
 
 def aggregate_async(
     leeway_ms: float, max_count: Optional[int] = None,
-) -> Callable[[AggregateAsyncFunc[V, R]], Callable[[V], Awaitable[R]]]:
+) -> Callable[
+    [AggregateAsyncFunc[V, R]],
+    Callable[[V], Coroutine[Any, Any, R]]
+]:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
     containing ``value`` and ``future`` attributes instead. In this setting
@@ -298,7 +303,7 @@ def aggregate_async(
     """
     def decorator(
         func: AggregateAsyncFunc[V, R]
-    ) -> Callable[[V], Awaitable[R]]:
+    ) -> Callable[[V], Coroutine[Any, Any, R]]:
         aggregator = AggregatorAsync(
             func, max_count=max_count, leeway_ms=leeway_ms,
         )
