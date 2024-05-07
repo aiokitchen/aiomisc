@@ -219,7 +219,7 @@ def test_values(event_loop):
         aiomisc.asyncbackoff(0, 0, -0.1)
 
     with pytest.raises(TypeError):
-        aiomisc.asyncbackoff(0, 0)(lambda x: None)
+        aiomisc.asyncbackoff(0, 0)(lambda x: None)  # type: ignore
 
 
 async def test_too_long_multiple(event_loop):
