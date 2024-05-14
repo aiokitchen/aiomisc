@@ -24,6 +24,7 @@ UvicornApplication = Union[ASGIApplication, Callable]
 class UvicornService(Service, abc.ABC):
     __async_required__: Tuple[str, ...] = (
         "start",
+        "stop",
         "create_application",
     )
 
@@ -114,8 +115,11 @@ class UvicornService(Service, abc.ABC):
         )
         if not self.sock:
             self.sock = config.bind_socket()
-        server = Server(config)
+        self.server = Server(config)
+        self.serve_task = asyncio.create_task(
+            self.server.serve(sockets=[self.sock])
+        )
 
-        self.start_event.set()
-
-        await server.serve(sockets=[self.sock])
+    async def stop(self, exception: Optional[Exception] = None) -> None:
+        self.server.should_exit = True
+        await self.serve_task
