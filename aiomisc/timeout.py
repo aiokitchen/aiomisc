@@ -1,7 +1,7 @@
 import asyncio
 import sys
 from functools import wraps
-from typing import Awaitable, Callable, TypeVar, Union
+from typing import Any, Callable, Coroutine, TypeVar, Union
 
 
 if sys.version_info >= (3, 10):
@@ -17,10 +17,13 @@ Number = Union[int, float]
 
 def timeout(
     value: Number
-) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
+) -> Callable[
+    [Callable[P, Coroutine[Any, Any, T]]],
+    Callable[P, Coroutine[Any, Any, T]],
+]:
     def decorator(
-        func: Callable[P, Awaitable[T]],
-    ) -> Callable[P, Awaitable[T]]:
+        func: Callable[P, Coroutine[Any, Any, T]],
+    ) -> Callable[P, Coroutine[Any, Any, T]]:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function is not a coroutine function")
 
