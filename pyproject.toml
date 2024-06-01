@@ -72,6 +72,7 @@ typing_extensions = [{ version = '*', python = "< 3.10" }]
 uvloop = { version = ">=0.19, <1", optional = true }
 uvicorn = { version = "^0.27", optional = true }
 asgiref = { version = "^3.7", optional = true }
+dnslib = { version = "^0.9", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 aiohttp = "^3.9"
@@ -117,11 +118,12 @@ aiohttp = ["aiohttp"]
 asgi = ["aiohttp-asgi"]
 carbon = ["aiocarbon"]
 cron = ["croniter"]
+dns = ["dnslib"]
 grpc = ["grpcio", "grpcio-tools", "grpcio-reflection"]
 raven = ["aiohttp", "raven"]
 rich = ["rich"]
-uvloop = ["uvloop"]
 uvicorn = ["uvicorn", "asgiref"]
+uvloop = ["uvloop"]
 
 [tool.poetry.plugins.aiomisc]
 systemd_watchdog = "aiomisc.service.sdwatchdog"
@@ -155,6 +157,11 @@ files = [
     "aiomisc_worker",
     "tests",
 ]
+
+[[tool.mypy.overrides]]
+module = "aiomisc.service.dns_server.records"
+check_untyped_defs = true
+disallow_subclassing_any = false
 
 [[tool.mypy.overrides]]
 module = ["tests.*"]
