@@ -1,12 +1,12 @@
 import dnslib  # type: ignore[import-untyped]
 import pytest
 
-from aiomisc.service.dns_server import DNSServer, DNSStore, DNSZone
-from aiomisc.service.dns_server.records import (
+from aiomisc.service.dns import DNSStore, DNSZone, UDPDNSServer
+from aiomisc.service.dns.records import (
     AAAA, CAA, CNAME, DNSKEY, DS, HTTPS, LOC, MX, NAPTR, NS, NSEC, PTR, RP,
     RRSIG, SOA, SRV, SSHFP, TLSA, TXT, A, RecordType,
 )
-from aiomisc.service.dns_server.tree import RadixTree
+from aiomisc.service.dns.tree import RadixTree
 
 
 def test_insert_and_search():
@@ -529,7 +529,7 @@ def dns_store_filled(dns_store):
 
 @pytest.fixture
 def dns_server(dns_store_filled):
-    server = DNSServer(dns_store_filled, binds=["127.0.0.1:53535"])
+    server = UDPDNSServer(dns_store_filled, binds=["127.0.0.1:53535"])
     return server
 
 

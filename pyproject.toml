@@ -162,7 +162,7 @@ files = [
 ]
 
 [[tool.mypy.overrides]]
-module = "aiomisc.service.dns_server.records"
+module = "aiomisc.service.dns.records"
 check_untyped_defs = true
 disallow_subclassing_any = false
 

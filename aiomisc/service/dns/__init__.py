@@ -1,12 +1,14 @@
 from . import records
-from .service import DNSServer
+from .service import DNSServer, TCPDNSServer, UDPDNSServer
 from .store import DNSStore
 from .zone import DNSZone
 
 
 __all__ = (
+    "DNSServer",
     "DNSStore",
     "DNSZone",
-    "DNSServer",
+    "TCPDNSServer",
+    "UDPDNSServer",
     "records",
 )
