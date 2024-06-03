@@ -122,15 +122,37 @@ class AAAA(dnslib.AAAA, RD):
         )
 
 
-class CNAME(dnslib.CNAME, RD):
+class RDLabel(RD):
+    label: bytes
+    __type__: RecordType
+
     @classmethod
-    def create(cls, name: str, alias: str, ttl: int = 3600) -> DNSRecord:
+    def create(cls, name: str, label: str, ttl: int = 3600) -> DNSRecord:
         return DNSRecord(
             name=name,
-            type=RecordType.CNAME,
-            data=cls(alias),
+            type=cls.__type__,
+            data=cls(label),
             ttl=ttl,
         )
+
+    def __hash__(self) -> int:
+        return hash(self.label)
+
+
+class CNAME(dnslib.CNAME, RDLabel):
+    __type__ = RecordType.CNAME
+
+
+class NS(dnslib.NS, RDLabel):
+    __type__ = RecordType.NS
+
+
+class PTR(dnslib.PTR, RDLabel):
+    __type__ = RecordType.PTR
+
+
+class DNAME(dnslib.DNAME, RDLabel):
+    __type__ = RecordType.DNAME
 
 
 class MX(dnslib.MX, RD):
@@ -171,31 +193,6 @@ class SOA(dnslib.SOA, RD):
                 mname, rname,
                 (serial, refresh, retry, expire, minimum),
             ),
-            ttl=ttl,
-        )
-
-
-class NS(dnslib.NS, RD):
-    @classmethod
-    def create(cls, name: str, nsdname: str, ttl: int = 3600) -> DNSRecord:
-        return DNSRecord(
-            name=name,
-            type=RecordType.NS,
-            data=cls(nsdname),
-            ttl=ttl,
-        )
-
-
-class PTR(dnslib.PTR, RD):
-    @classmethod
-    def create(
-        cls, name: str, ptrdname: str,
-        ttl: int = 3600,
-    ) -> DNSRecord:
-        return DNSRecord(
-            name=name,
-            type=RecordType.PTR,
-            data=cls(ptrdname),
             ttl=ttl,
         )
 
@@ -378,6 +375,7 @@ __all__ = (
     "AAAA",
     "CAA",
     "CNAME",
+    "DNAME",
     "DNSKEY",
     "DS",
     "HTTPS",

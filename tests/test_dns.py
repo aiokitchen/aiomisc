@@ -1,7 +1,7 @@
 import dnslib  # type: ignore[import-untyped]
 import pytest
 
-from aiomisc.service.dns import DNSStore, DNSZone, UDPDNSServer
+from aiomisc.service.dns import DNSStore, DNSZone
 from aiomisc.service.dns.records import (
     AAAA, CAA, CNAME, DNSKEY, DS, HTTPS, LOC, MX, NAPTR, NS, NSEC, PTR, RP,
     RRSIG, SOA, SRV, SSHFP, TLSA, TXT, A, RecordType,
@@ -219,7 +219,7 @@ def test_aaaa_create():
 def test_cname_create():
     record = CNAME.create(
         name="example.com.",
-        alias="alias.example.com.",
+        label="alias.example.com.",
         ttl=300,
     )
     assert record.name == "example.com."
@@ -276,7 +276,7 @@ def test_soa_create():
 
 def test_ns_create():
     record = NS.create(
-        name="example.com.", nsdname="ns1.example.com.", ttl=300,
+        name="example.com.", label="ns1.example.com.", ttl=300,
     )
     assert record.name == "example.com."
     assert record.type == RecordType.NS
@@ -287,7 +287,7 @@ def test_ns_create():
 
 def test_ptr_create():
     record = PTR.create(
-        name="1.2.3.4.in-addr.arpa.", ptrdname="example.com.", ttl=300,
+        name="1.2.3.4.in-addr.arpa.", label="example.com.", ttl=300,
     )
     assert record.name == "1.2.3.4.in-addr.arpa."
     assert record.type == RecordType.PTR
@@ -516,48 +516,3 @@ def test_sshfp_create():
     assert record.data.fp_type == 1
     assert record.data.fingerprint == b"abcdefg"
     assert record.ttl == 300
-
-
-@pytest.fixture
-def dns_store_filled(dns_store):
-    zone = DNSZone("example.com.")
-    a_record = A.create(name="sub.example.com.", ip="192.0.2.1", ttl=3600)
-    zone.add_record(a_record)
-    dns_store.add_zone(zone)
-    return dns_store
-
-
-@pytest.fixture
-def dns_server(dns_store_filled):
-    server = UDPDNSServer(dns_store_filled, binds=["127.0.0.1:53535"])
-    return server
-
-
-# @pytest.mark.asyncio
-# async def test_handle_datagram(dns_server):
-#     loop = asyncio.get_event_loop()
-#     transport, protocol = await loop.create_datagram_endpoint(
-#         lambda: dns_server, local_addr=("127.0.0.1", 53535)
-#     )
-#
-#     query = dnslib.DNSRecord.question("sub.example.com.", qtype="A")
-#     query_data = query.pack()
-#
-#     on_response = loop.create_future()
-#
-#     def handle_response(data, addr):
-#         response = dnslib.DNSRecord.parse(data)
-#         on_response.set_result(response)
-#
-#     transport.sendto(query_data, ("127.0.0.1", 53535))
-#     dns_server.sendto = handle_response
-#
-#     response = await on_response
-#
-#     assert response.header.rcode == dnslib.RCODE.NOERROR
-#     assert len(response.rr) == 1
-#     assert response.rr[0].rname == dnslib.DNSLabel("sub.example.com.")
-#     assert response.rr[0].rtype == dnslib.QTYPE.A
-#     assert response.rr[0].rdata == dnslib.A("192.0.2.1")
-#
-#     transport.close()

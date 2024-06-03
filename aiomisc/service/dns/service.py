@@ -46,6 +46,10 @@ class DNSServer:
             records = self.store.query(query_name, RecordType(query_type))
             for rec in records:
                 reply.add_answer(rec.rr(query_type))
+
+            if not records:
+                reply.header.rcode = dnslib.RCODE.NXDOMAIN
+
             log.debug(
                 "Sending %s answer to %r:\n%s\n",
                 self.__proto__, addr, reply,
