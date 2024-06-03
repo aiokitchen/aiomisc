@@ -2,9 +2,10 @@ import asyncio
 import logging
 import re
 import sys
+from collections import defaultdict
 from concurrent.futures import Executor
 from types import MappingProxyType
-from typing import Any, Optional, Sequence, Set, Tuple
+from typing import Any, DefaultDict, Dict, Optional, Sequence, Set, Tuple
 
 from .base import Service
 
@@ -36,6 +37,7 @@ class GRPCService(Service):
     _server_args: MappingProxyType
     _insecure_ports: Set[Tuple[str, PortFuture]]
     _secure_ports: Set[Tuple[str, grpc.ServerCredentials, PortFuture]]
+    _registered_services: DefaultDict[str, Dict[str, grpc.RpcMethodHandler]]
 
     def __init__(
         self, *,
@@ -57,6 +59,7 @@ class GRPCService(Service):
             "options": options,
         })
         self._services: Set[grpc.ServiceRpcHandler] = set()
+        self._registered_services = defaultdict(dict)
         self._insecure_ports = set()
         self._secure_ports = set()
         self._reflection = reflection
@@ -85,6 +88,11 @@ class GRPCService(Service):
             future.set_result(port)
             self._log_port("Listening secure address", address, port)
 
+        for name, methods in self._registered_services.items():
+            self._server.add_registered_method_handlers(    # type: ignore
+                name, methods,
+            )
+
         if self._reflection:
             service_names = [x.service_name() for x in self._services]
             service_names.append(reflection.SERVICE_NAME)
@@ -94,7 +102,15 @@ class GRPCService(Service):
         await self._server.start()
 
     async def stop(self, exception: Optional[Exception] = None) -> None:
-        await self._server.stop(self.GRACEFUL_STOP_TIME)
+        try:
+            await self._server.stop(self.GRACEFUL_STOP_TIME)
+        finally:
+            self._stop_event.set()
+
+    def add_registered_method_handlers(
+        self, name: str, methods: Dict[str, grpc.RpcMethodHandler],
+    ) -> None:
+        return self._registered_services[name].update(methods)
 
     def add_generic_rpc_handlers(
         self, generic_rpc_handlers: Sequence[grpc.ServiceRpcHandler],
