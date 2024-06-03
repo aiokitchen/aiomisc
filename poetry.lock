@@ -4,7 +4,7 @@
 name = "aiocarbon"
 version = "0.15.3"
 description = "Asynchronous client for carbon."
-optional = true
+optional = false
 python-versions = ">=3.5, <4"
 files = [
     {file = "aiocarbon-0.15.3-py3-none-any.whl", hash = "sha256:1b707cf07269fb131ec0bd1aca612d8c42bee7c58babafa59384cbb985b09ba2"},
@@ -314,13 +314,13 @@ lxml = ["lxml"]
 
 [[package]]
 name = "certifi"
-version = "2024.2.2"
+version = "2024.6.2"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.2.2-py3-none-any.whl", hash = "sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1"},
-    {file = "certifi-2024.2.2.tar.gz", hash = "sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"},
+    {file = "certifi-2024.6.2-py3-none-any.whl", hash = "sha256:ddc6c8ce995e6987e7faf5e3f1b02b302836a0e5d98ece18392cb1a36c72ad56"},
+    {file = "certifi-2024.6.2.tar.gz", hash = "sha256:3cd43f1c6fa7dedc5899d69d3ad0398fd018ad1a17fba83ddaf78aa46c747516"},
 ]
 
 [[package]]
@@ -627,7 +627,7 @@ files = [
 name = "dnslib"
 version = "0.9.24"
 description = "Simple library to encode/decode DNS wire-format packets"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "dnslib-0.9.24-py2-none-any.whl", hash = "sha256:4f26c55603ce9f961b84404f19ff03b3ca4a051eafb2b1e141ef9b96485467c6"},
@@ -1020,7 +1020,7 @@ files = [
 name = "immutables"
 version = "0.20"
 description = "Immutable Collections"
-optional = true
+optional = false
 python-versions = ">=3.8.0"
 files = [
     {file = "immutables-0.20-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:dea0ae4d7f31b145c18c16badeebc2f039d09411be4a8febb86e1244cf7f1ce0"},
@@ -2607,4 +2607,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "016e2e81ce3424e974b150c353faadea322ac7397adfdb7b908153ca35486efb"
+content-hash = "c5f30577f527301f356b36795cc119a29a52523728f0ec66e30797f79bf179e8"
