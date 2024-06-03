@@ -119,7 +119,7 @@ Disable to configure logging handler. Useful when you want to configure your own
     import logging
     from aiomisc.log import basic_config
 
-    # Configure rich log handler
+    # Configure your own log handlers
     basic_config(
         level=logging.INFO,
         log_format='disabled',

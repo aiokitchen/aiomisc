@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-04-24 12:31+0300\n"
+"POT-Creation-Date: 2024-06-03 23:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.15.0\n"
 
 #: ../../source/plugins.rst:2
 msgid "Plugins"
@@ -82,6 +82,7 @@ msgstr ""
 "параметре services."
 
 #: ../../source/plugins.rst:40
+#, fuzzy
 msgid ""
 "# Content of: ``aiomisc_myplugin/plugin.py``\n"
 "from typing import Tuple\n"
@@ -130,7 +131,10 @@ msgid ""
 "\n"
 "    assert event.is_set()\n"
 "\n"
-"main()"
+"main()\n"
+"\n"
+"# remove the plugin on when unneeded\n"
+"aiomisc.entrypoint.PRE_START.disconnect(hello)"
 msgstr ""
 "# Содержимое: ``aiomisc_myplugin/plugin.py``\n"
 "from typing import Tuple\n"
@@ -181,35 +185,35 @@ msgstr ""
 "\n"
 "main()"
 
-#: ../../source/plugins.rst:93
+#: ../../source/plugins.rst:96
 msgid "The following signals are available in total:"
 msgstr "Список доступных сигналов такой:"
 
-#: ../../source/plugins.rst:95
+#: ../../source/plugins.rst:98
 msgid "``Entrypoint.PRE_START`` - Will be called before `starting` services."
 msgstr "``Entrypoint.PRE_START`` - Запускается перед `стартом` сервисов."
 
-#: ../../source/plugins.rst:96
+#: ../../source/plugins.rst:99
 msgid "``Entrypoint.PRE_STOP`` - Will be called before `stopping` services."
 msgstr "``Entrypoint.PRE_STOP`` - Запускается перед `остановкой` сервисов."
 
-#: ../../source/plugins.rst:97
+#: ../../source/plugins.rst:100
 msgid ""
 "``Entrypoint.POST_START`` - Will be called after services has been "
 "`started`."
 msgstr "``Entrypoint.POST_START`` - Запускается после `старта` сервисов."
 
-#: ../../source/plugins.rst:98
+#: ../../source/plugins.rst:101
 msgid ""
 "``Entrypoint.POST_STOP`` - Will be called after services has been "
 "`stopped`."
 msgstr "``Entrypoint.POST_STOP`` - Запускается после `остановки` сервисов"
 
-#: ../../source/plugins.rst:102
+#: ../../source/plugins.rst:105
 msgid "List available plugins"
 msgstr "Список доступный плагинов"
 
-#: ../../source/plugins.rst:104
+#: ../../source/plugins.rst:107
 msgid ""
 "To see a list of all available plugins, you can call from the command "
 "line ``python -m aiomisc.plugins``:"
@@ -217,7 +221,7 @@ msgstr ""
 "Чтобы просмотреть список всех доступных плагинов, вы можете вызвать из "
 "командной строки ``python -m aiomisc.plugins``:"
 
-#: ../../source/plugins.rst:107
+#: ../../source/plugins.rst:110
 msgid ""
 "$ python -m aiomisc.plugins\n"
 "[11:14:42] INFO     Available 1 plugins.\n"
@@ -226,15 +230,15 @@ msgid ""
 "systemd_watchdog"
 msgstr ""
 
-#: ../../source/plugins.rst:114
+#: ../../source/plugins.rst:117
 msgid ""
 "You can also change the behavior and output of the list of modules. To do"
 " this, there are the following flags:"
 msgstr ""
-"Вы также можете изменить поведение и вывод списка модулей. "
-"Для этого существуют следующие флаги:"
+"Вы также можете изменить поведение и вывод списка модулей. Для этого "
+"существуют следующие флаги:"
 
-#: ../../source/plugins.rst:117
+#: ../../source/plugins.rst:120
 msgid ""
 "$ python3 -m aiomisc.plugins -h\n"
 "usage: python3 -m aiomisc.plugins [-h] [-q] [-n]\n"
@@ -258,11 +262,11 @@ msgid ""
 "                        Logging format"
 msgstr ""
 
-#: ../../source/plugins.rst:135
+#: ../../source/plugins.rst:138
 msgid "Here are some run examples."
 msgstr "Вот несколько примеров запуска."
 
-#: ../../source/plugins.rst:137
+#: ../../source/plugins.rst:140
 msgid ""
 "$ python3 -m aiomisc.plugins -n\n"
 "[12:25:57] INFO     Available 1 plugins.\n"
@@ -270,26 +274,26 @@ msgid ""
 " the entrypoint."
 msgstr ""
 
-#: ../../source/plugins.rst:143
+#: ../../source/plugins.rst:146
 msgid "This prints human-readable list of plugins and its descriptions."
 msgstr "Этот пример, печатает удобочитаемый список плагинов и их описания."
 
-#: ../../source/plugins.rst:146
+#: ../../source/plugins.rst:149
 msgid ""
 "$ python3 -m aiomisc.plugins -s\n"
 "systemd_watchdog"
 msgstr ""
 
-#: ../../source/plugins.rst:151
+#: ../../source/plugins.rst:154
 msgid "This useful for ``grep`` or other pipelining tools."
 msgstr "Это полезно для ``grep`` или других утилит."
 
-#: ../../source/plugins.rst:153
+#: ../../source/plugins.rst:156
 msgid ""
 "The default prints both, the human-readable log to stderr and the list of"
 " plugins to stdout, so you can use this without options in a pipeline, "
 "and read the list to stderr."
 msgstr ""
-"По умолчанию печатается человекочитаемый лог в stderr, и список плагинов в "
-"stdout, поэтому можно использовать это без параметров в конвейере, "
-"и прочитать список в stderr."
+"По умолчанию печатается человекочитаемый лог в stderr, и список плагинов "
+"в stdout, поэтому можно использовать это без параметров в конвейере, и "
+"прочитать список в stderr."

@@ -392,14 +392,6 @@ optional ``delay`` argument - periodic execution delay in seconds (0 by default)
 DNS Server
 ++++++++++
 
-Setting up a reliable and efficient DNS server is crucial for managing domain name
-resolutions. This guide introduces you to setting up an asynchronous DNS server
-using the ``aiomisc`` library, designed to handle DNS queries over
-both UDP and TCP protocols.
-
-Overview
-~~~~~~~~
-
 The DNS server described here uses the ``aiomisc`` library, which provides
 utilities for asynchronous I/O operations, and the ``dnslib`` library for
 handling DNS records and packets. This setup is ideal for high-performance,
@@ -582,8 +574,6 @@ Handling Duplicate Zones
 Attempting to add a zone that already exists should raise an error,
 ensuring that each zone is unique within the ``DNSStore``.
 
-#### Example
-
 .. code-block:: python
 
     # Add the zone to the store
@@ -616,8 +606,6 @@ Querying Subdomains
 
 The ``DNSStore`` supports querying subdomains, allowing you to resolve
 records within subdomains of an existing zone.
-
-#### Example
 
 .. code-block:: python
 
@@ -661,7 +649,7 @@ inspect or manipulate it further.
 Handling Nonexistent Zones
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Retrieving a zone that does not exist should return `None`.
+Retrieving a zone that does not exist should return ``None``.
 
 .. code-block:: python
 
