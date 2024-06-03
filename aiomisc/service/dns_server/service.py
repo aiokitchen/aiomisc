@@ -15,29 +15,6 @@ from .store import DNSStore
 log = logging.getLogger(__name__)
 
 
-class DNSServer(UDPServer):
-    store: DNSStore
-
-    def __init__(
-        self, store: DNSStore, binds: Iterable[str] = (), **kwargs: Any,
-    ) -> None:
-        self.make_socket = partial(socket_factory, binds)
-        self.store = store
-        super().__init__(**kwargs)
-
-    async def handle_datagram(self, data: bytes, addr: tuple) -> None:
-        record = dnslib.DNSRecord.parse(data)
-        question: dnslib.DNSQuestion = record.get_q()
-        reply = record.reply()
-        query_name = str(question.get_qname())
-        query_type = question.qtype
-
-        records = self.store.query(query_name, RecordType(query_type))
-        for rec in records:
-            reply.add_answer(rec.rr(query_type))
-        self.sendto(reply.pack(), addr)
-
-
 def socket_factory(binds: Iterable[str]) -> socket.socket:
     sock = socket.socket(socket.AF_UNSPEC, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -60,3 +37,26 @@ def socket_factory(binds: Iterable[str]) -> socket.socket:
         sock.bind((address, port))
 
     return sock
+
+
+class DNSServer(UDPServer):
+    store: DNSStore
+
+    def __init__(
+        self, store: DNSStore, binds: Iterable[str] = (), **kwargs: Any,
+    ) -> None:
+        self.make_socket = partial(socket_factory, binds)
+        self.store = store
+        super().__init__(**kwargs)
+
+    async def handle_datagram(self, data: bytes, addr: tuple) -> None:
+        record = dnslib.DNSRecord.parse(data)
+        question: dnslib.DNSQuestion = record.get_q()
+        reply = record.reply()
+        query_name = str(question.get_qname())
+        query_type = question.qtype
+
+        records = self.store.query(query_name, RecordType(query_type))
+        for rec in records:
+            reply.add_answer(rec.rr(query_type))
+        self.sendto(reply.pack(), addr)
