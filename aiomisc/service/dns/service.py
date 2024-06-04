@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from asyncio import StreamReader, StreamWriter
 from struct import Struct
@@ -123,6 +124,8 @@ class TCPDNSServer(DNSServer, TCPServer):
                 writer.write(TCP_HEADER_STRUCT.pack(len(reply_body)))
                 writer.write(reply_body)
                 await writer.drain()
+        except asyncio.IncompleteReadError:
+            pass
         finally:
             writer.close()
             await writer.wait_closed()
