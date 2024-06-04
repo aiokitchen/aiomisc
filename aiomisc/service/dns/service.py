@@ -98,21 +98,22 @@ class TCPDNSServer(DNSServer, TCPServer):
         self, reader: StreamReader, writer: StreamWriter,
     ) -> None:
         addr = writer.get_extra_info("peername")
-        while True:
-            data = await reader.read(TCP_HEADER_STRUCT.size)
-            if not data:
-                break
-            length = TCP_HEADER_STRUCT.unpack(data)[0]
-            packet = await reader.read(length)
+        try:
+            while True:
+                data = await reader.readexactly(TCP_HEADER_STRUCT.size)
+                if not data:
+                    break
+                length = TCP_HEADER_STRUCT.unpack(data)[0]
+                packet = await reader.read(length)
 
-            if not data:
-                break
+                if not data:
+                    break
 
-            reply_body, _ = self.handle_request(data=packet, addr=addr)
+                reply_body, _ = self.handle_request(data=packet, addr=addr)
 
-            writer.write(TCP_HEADER_STRUCT.pack(len(reply_body)))
-            writer.write(reply_body)
-            await writer.drain()
-
-        writer.close()
-        await writer.wait_closed()
+                writer.write(TCP_HEADER_STRUCT.pack(len(reply_body)))
+                writer.write(reply_body)
+                await writer.drain()
+        finally:
+            writer.close()
+            await writer.wait_closed()
