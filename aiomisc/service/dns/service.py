@@ -27,7 +27,9 @@ class DNSServer:
             return rr.edns_len
         return None
 
-    def handle_request(self, addr: tuple, data: bytes) -> Tuple[bytes, tuple]:
+    def handle_request(
+        self, addr: tuple, data: bytes, should_truncate: bool = False,
+    ) -> Tuple[bytes, tuple]:
         record = dnslib.DNSRecord.parse(data)
         question: dnslib.DNSQuestion = record.get_q()
         reply = record.reply()
@@ -60,6 +62,9 @@ class DNSServer:
             if len(reply_body) > 512:
                 reply.header.tc = 1
                 reply_body = reply.pack()
+
+            if should_truncate:
+                reply_body = reply_body[:edns_max_size]
         except Exception as e:
             log.exception(
                 "Failed to process %s request from %r: %s",
@@ -81,7 +86,11 @@ class UDPDNSServer(DNSServer, UDPServer):
     __proto__ = "UDP"
 
     async def handle_datagram(self, data: bytes, addr: tuple) -> None:
-        self.sendto(*self.handle_request(data=data, addr=addr))
+        self.sendto(
+            *self.handle_request(
+                data=data, addr=addr, should_truncate=True,
+            ),
+        )
 
 
 TCP_HEADER_STRUCT: Struct = Struct("!H")
