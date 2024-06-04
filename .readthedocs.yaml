@@ -9,6 +9,7 @@ build:
     post_install:
       - pip install poetry
       - poetry config virtualenvs.create false
+      - poetry env info
       - poetry install --all-extras
 
 formats:
