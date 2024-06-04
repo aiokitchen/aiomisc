@@ -39,9 +39,7 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         self._statistic.sum_time += loop.time() - start_time
 
     def submit(self, *args: Any, **kwargs: Any) -> Future:
-        """
-        Submit blocking function to the pool
-        """
+        """Submit blocking function to the pool"""
         loop = asyncio.get_running_loop()
         start_time = loop.time()
         future = super().submit(*args, **kwargs)

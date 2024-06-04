@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-11-21 11:45+0100\n"
+"POT-Creation-Date: 2024-06-03 23:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Sitkin Ivan <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.13.1\n"
+"Generated-By: Babel 2.15.0\n"
 
 #: ../../source/services.rst:2
 msgid "Services"
@@ -522,10 +522,459 @@ msgstr ""
 "    loop.run_forever()"
 
 #: ../../source/services.rst:393
+#, fuzzy
+msgid "DNS Server"
+msgstr "asgi сервис"
+
+#: ../../source/services.rst:395
+msgid ""
+"The DNS server described here uses the ``aiomisc`` library, which "
+"provides utilities for asynchronous I/O operations, and the ``dnslib`` "
+"library for handling DNS records and packets. This setup is ideal for "
+"high-performance, non-blocking DNS query handling."
+msgstr ""
+"Описанный здесь DNS-сервер использует библиотеку «aiomisc», которая "
+"предоставляет утилиты для асинхронных операций ввода-вывода, и библиотеку"
+" «dnslib» для обработки DNS-записей и пакетов. Эта настройка идеально "
+"подходит для высокопроизводительной неблокирующей обработки DNS-запросов."
+
+#: ../../source/services.rst:401
+msgid "Key Features"
+msgstr "Ключевые Характеристики"
+
+#: ../../source/services.rst:403
+msgid ""
+"**Asynchronous I/O**: Utilizes asynchronous operations to handle multiple"
+" DNS queries concurrently, ensuring high performance and scalability."
+msgstr ""
+"**Асинхронный ввод-вывод**: использует асинхронные операции для "
+"одновременной обработки нескольких DNS-запросов, обеспечивая высокую "
+"производительность и масштабируемость."
+
+#: ../../source/services.rst:405
+msgid ""
+"**UDP and TCP Support**: Supports DNS queries over both UDP and TCP "
+"protocols, making it versatile for various network configurations."
+msgstr ""
+"**Поддержка UDP и TCP**: сервер поддерживает DNS-запросы по протоколам "
+"UDP и TCP, что делает его универсальным для различных сетевых "
+"конфигураций."
+
+#: ../../source/services.rst:407
+msgid ""
+"**``EDNS0`` Support**: Implements Extension Mechanisms for DNS "
+"(``EDNS0``) to handle larger DNS messages and extended functionalities."
+msgstr ""
+"**Поддержка ``EDNS0``**: реализует механизмы расширения DNS (``EDNS0``) "
+"для обработки более крупных сообщений DNS и расширенных функций."
+
+#: ../../source/services.rst:409
+msgid ""
+"**Customizable DNS Records**: Allows easy configuration of DNS zones and "
+"records, enabling you to define and manage your DNS entries efficiently."
+msgstr ""
+"**Настраиваемые записи DNS**: позволяет легко настраивать зоны и записи "
+"DNS, позволяя эффективно разрешать записи DNS и управлять ими."
+
+#: ../../source/services.rst:414
+msgid "Prerequisites"
+msgstr "Пререквизиты"
+
+#: ../../source/services.rst:416
+msgid "Install the required libraries using pip:"
+msgstr "Установите необходимые библиотеки с помощью pip:"
+
+#: ../../source/services.rst:418
+msgid "pip install aiomisc[dns]"
+msgstr ""
+
+#: ../../source/services.rst:424
+msgid "Setting Up the Server"
+msgstr "Настройка сервера"
+
+#: ../../source/services.rst:426
+msgid ""
+"from aiomisc import entrypoint\n"
+"from aiomisc.service.dns import (\n"
+"    DNSStore, DNSZone, TCPDNSServer, UDPDNSServer, records,\n"
+")\n"
+"\n"
+"zone = DNSZone(\"test.\")\n"
+"zone.add_record(records.A.create(\"test.\", \"10.10.10.10\"))\n"
+"zone.add_record(records.AAAA.create(\"test.\", \"fd10::10\"))\n"
+"\n"
+"store = DNSStore()\n"
+"store.add_zone(zone)\n"
+"services = [\n"
+"    UDPDNSServer(\n"
+"        store=store, address=\"::1\", port=5053,\n"
+"    ),\n"
+"    TCPDNSServer(\n"
+"        store=store, address=\"::1\", port=5053,\n"
+"    ),\n"
+"]\n"
+"\n"
+"if __name__ == \"__main__\":\n"
+"    with entrypoint(*services, log_level=\"debug\") as loop:\n"
+"        loop.run_forever()"
+msgstr ""
+
+#: ../../source/services.rst:454
+msgid "Testing the Server"
+msgstr "Тестирование сервера"
+
+#: ../../source/services.rst:456
+msgid ""
+"You can test the DNS server using tools like ``dig``. For example, to "
+"query the A and AAAA records for ``test.``, use the following commands:"
+msgstr ""
+"Вы можете протестировать DNS-сервер, используя такие инструменты, как "
+"«dig». Например, чтобы запросить записи A и AAAA для ``test.``, "
+"используйте следующие команды:"
+
+#: ../../source/services.rst:460
+msgid ""
+"dig @::1 -p 5053 test. A\n"
+"dig @::1 -p 5053 test. AAAA\n"
+"dig @::1 -p 5053 +tcp test. A\n"
+"dig @::1 -p 5053 +tcp test. AAAA"
+msgstr ""
+
+#: ../../source/services.rst:468
+msgid ""
+"These commands should return the IP addresses ``10.10.10.10`` and "
+"``fd10::10`` respectively, confirming that the DNS server is working "
+"correctly."
+msgstr ""
+"Эти команды должны вернуть IP-адреса ``10.10.10.10`` и ``fd10::10`` "
+"соответственно, значит DNS-сервер работает правильно."
+
+#: ../../source/services.rst:474
+msgid "Dynamic Store Management"
+msgstr "Динамическое управление хранилищем записей"
+
+#: ../../source/services.rst:476
+msgid ""
+"One of the powerful features of this DNS server setup is the ability to "
+"dynamically manage the DNS store. This allows you to add or remove zones "
+"and records at runtime, without needing to restart the server."
+msgstr ""
+"Одной из мощных функций этой реализации DNS-сервера является возможность "
+"динамического управления хранилищем записей DNS. Это позволяет добавлять "
+"или удалять зоны и записи во время выполнения без необходимости "
+"перезапуска сервера."
+
+#: ../../source/services.rst:481
+msgid ""
+"Managing DNS zones and records dynamically is essential for a flexible "
+"DNS server setup. This guide focuses on how to manipulate DNS zones and "
+"records using the ``DNSStore`` and ``DNSZone`` classes, providing "
+"practical examples for each operation."
+msgstr ""
+"Динамическое управление DNS-зонами и записями необходимо для гибкой "
+"настройки DNS-сервера. В этом руководстве основное внимание уделяется "
+"управлению зонами и записями DNS с помощью классов DNSStore и DNSZone, а "
+"также приведены практические примеры для каждой операции."
+
+#: ../../source/services.rst:488
+msgid "Adding a Zone"
+msgstr "Добавление зоны"
+
+#: ../../source/services.rst:490
+msgid ""
+"You can add a new zone to the ``DNSStore`` to manage its records. This "
+"operation ensures that the zone is available for DNS queries."
+msgstr ""
+"Вы можете добавить новую зону в DNSStore для управления ее записями. Эта "
+"операция гарантирует, что зона доступна для DNS-запросов."
+
+#: ../../source/services.rst:493
+msgid ""
+"from aiomisc.service.dns import DNSStore, DNSZone\n"
+"\n"
+"# Create a DNSStore instance\n"
+"dns_store = DNSStore()\n"
+"\n"
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Verify the zone is added\n"
+"assert dns_store.get_zone(\"example.com.\") is zone"
+msgstr ""
+
+#: ../../source/services.rst:511
+msgid "Removing a Zone"
+msgstr "Удаление зоны"
+
+#: ../../source/services.rst:513
+msgid ""
+"Removing a zone from the ``DNSStore`` ensures it is no longer available "
+"for DNS queries."
+msgstr ""
+"Удаление зоны из DNSStore гарантирует, что она больше не будет доступна "
+"для запросов DNS."
+
+#: ../../source/services.rst:515
+msgid ""
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Remove the zone from the store\n"
+"dns_store.remove_zone(\"example.com.\")\n"
+"\n"
+"# Verify the zone is removed\n"
+"assert dns_store.get_zone(\"example.com.\") is None"
+msgstr ""
+
+#: ../../source/services.rst:528
+msgid "Adding a Record to a Zone"
+msgstr "Добавление записей в зону"
+
+#: ../../source/services.rst:530
+msgid ""
+"To manage DNS entries, you can add records to a specific zone. This "
+"operation makes the record available for DNS resolution within that zone."
+msgstr ""
+"Для управления записями DNS вы можете добавлять записи в определенную "
+"зону. Эта операция делает запись доступной для разрешения DNS в этой "
+"зоне."
+
+#: ../../source/services.rst:533
+msgid ""
+"from aiomisc.service.dns.records import A, RecordType\n"
+"\n"
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Create an A record\n"
+"record = A.create(name=\"www.example.com.\", ip=\"192.0.2.1\")\n"
+"\n"
+"# Add the record to the zone\n"
+"zone.add_record(record)\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Query the store for the record\n"
+"records = dns_store.query(\"www.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify the record is added\n"
+"assert record in records"
+msgstr ""
+
+#: ../../source/services.rst:557
+msgid "Querying Records"
+msgstr "Запрос DNS записей"
+
+#: ../../source/services.rst:559
+msgid ""
+"You can query the ``DNSStore`` to retrieve records for a specific domain "
+"name. This is useful to verify if a record exists or to handle DNS "
+"queries."
+msgstr ""
+"Вы можете запросить DNSStore для получения записей для определенного "
+"доменного имени. Это полезно для проверки существования записи или для "
+"обработки DNS-запросов."
+
+#: ../../source/services.rst:562
+msgid ""
+"# Query the store for a nonexistent record\n"
+"records = dns_store.query(\"nonexistent.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify no records are found\n"
+"assert len(records) == 0"
+msgstr ""
+
+#: ../../source/services.rst:572
+msgid "Handling Duplicate Zones"
+msgstr "Обработка дубликатов зон"
+
+#: ../../source/services.rst:574
+msgid ""
+"Attempting to add a zone that already exists should raise an error, "
+"ensuring that each zone is unique within the ``DNSStore``."
+msgstr ""
+"Попытка добавить уже существующую зону должна вызвать ошибку, гарантируя "
+"уникальность каждой зоны в DNSStore."
+
+#: ../../source/services.rst:577
+msgid ""
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Attempt to add the same zone again\n"
+"try:\n"
+"    dns_store.add_zone(zone)\n"
+"except ValueError as e:\n"
+"    print(f\"Error: {e}\")"
+msgstr ""
+
+#: ../../source/services.rst:590
+msgid "Removing a Nonexistent Zone"
+msgstr "Удаление несуществующей зоны"
+
+#: ../../source/services.rst:592
+msgid ""
+"Removing a zone that does not exist should raise an error, indicating "
+"that the operation is invalid."
+msgstr ""
+"Удаление несуществующей зоны должно вызвать ошибку, "
+"указывающую на недопустимость операции."
+
+#: ../../source/services.rst:595
+msgid ""
+"# Attempt to remove a nonexistent zone\n"
+"try:\n"
+"    dns_store.remove_zone(\"nonexistent.com.\")\n"
+"except ValueError as e:\n"
+"    print(f\"Error: {e}\")"
+msgstr ""
+
+#: ../../source/services.rst:605
+msgid "Querying Subdomains"
+msgstr "Запросы поддоменов"
+
+#: ../../source/services.rst:607
+msgid ""
+"The ``DNSStore`` supports querying subdomains, allowing you to resolve "
+"records within subdomains of an existing zone."
+msgstr ""
+"``DNSStore`` поддерживает запросы к субдоменам, что позволяет вам разрешать "
+"записи внутри субдоменов существующей зоны."
+
+#: ../../source/services.rst:612
+msgid ""
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Create an A record for a subdomain\n"
+"record = A.create(name=\"sub.example.com.\", ip=\"192.0.2.2\")\n"
+"\n"
+"# Add the record to the zone\n"
+"zone.add_record(record)\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Query the store for the subdomain record\n"
+"records = dns_store.query(\"sub.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify the subdomain record is found\n"
+"assert record in records"
+msgstr ""
+
+#: ../../source/services.rst:634
+msgid "Retrieving a Zone"
+msgstr "Получение зоны"
+
+#: ../../source/services.rst:636
+msgid ""
+"You can retrieve a zone from the ``DNSStore`` to inspect or manipulate it"
+" further."
+msgstr ""
+"Вы можете получить зону из ``DNSStore``, чтобы проверить ее или управлять ею."
+
+#: ../../source/services.rst:639
+msgid ""
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Retrieve the zone from the store\n"
+"retrieved_zone = dns_store.get_zone(\"example.com.\")\n"
+"\n"
+"# Verify the zone is retrieved\n"
+"assert retrieved_zone is zone"
+msgstr ""
+
+#: ../../source/services.rst:652
+msgid "Handling Nonexistent Zones"
+msgstr "Обработка несуществующих зон"
+
+#: ../../source/services.rst:654
+msgid "Retrieving a zone that does not exist should return ``None``."
+msgstr "При получении несуществующей зоны должно возвращаться значение ``None``."
+
+#: ../../source/services.rst:656
+msgid ""
+"# Attempt to retrieve a nonexistent zone\n"
+"nonexistent_zone = dns_store.get_zone(\"nonexistent.com.\")\n"
+"\n"
+"# Verify no zone is retrieved\n"
+"assert nonexistent_zone is None"
+msgstr ""
+
+#: ../../source/services.rst:666
+msgid "Removing a Record from a Zone"
+msgstr "Удаление записи из зоны"
+
+#: ../../source/services.rst:668
+msgid ""
+"To remove a DNS record from a zone, you can use the ``remove_record`` "
+"method. This operation ensures the record is no longer available for DNS "
+"resolution."
+msgstr ""
+"Чтобы удалить запись DNS из зоны, вы можете использовать метод ``remove_record``"
+". Эта операция гарантирует, что запись больше не будет доступна для разрешения DNS."
+
+#: ../../source/services.rst:673
+msgid ""
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Create an A record\n"
+"record = A.create(name=\"www.example.com.\", ip=\"192.0.2.1\")\n"
+"\n"
+"# Add the record to the zone\n"
+"zone.add_record(record)\n"
+"\n"
+"# Remove the record from the zone\n"
+"zone.remove_record(record)\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Query the store for the record\n"
+"records = dns_store.query(\"www.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify the record is removed\n"
+"assert len(records) == 0"
+msgstr ""
+
+#: ../../source/services.rst:698
+msgid "Finding Zone by Prefix"
+msgstr "Поиск зоны по префиксу"
+
+#: ../../source/services.rst:700
+msgid ""
+"The ``DNSStore`` can find the appropriate zone for a given domain name, "
+"which is useful for handling queries with subdomains."
+msgstr ""
+"``DNSStore`` может найти подходящую зону для данного доменного имени, "
+"что полезно для обработки запросов с поддоменами."
+
+#: ../../source/services.rst:704
+msgid ""
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Find the zone for a subdomain\n"
+"zone_prefix = dns_store.get_zone_for_name(\"sub.example.com.\")\n"
+"\n"
+"# Verify the correct zone is found\n"
+"assert zone_prefix == (\"com\", \"example\")"
+msgstr ""
+
+#: ../../source/services.rst:721
 msgid "``CronService``"
 msgstr "Класс ``CronService``"
 
-#: ../../source/services.rst:395
+#: ../../source/services.rst:723
 msgid ""
 "``CronService`` runs ``CronCallback's`` as a service and waits for "
 "running callbacks to complete on the stop method."
@@ -533,7 +982,7 @@ msgstr ""
 "``CronService`` запускает ``CronCallback`` в качестве сервиса и ожидает "
 "завершения выполнения обратных вызовов при остановке."
 
-#: ../../source/services.rst:398
+#: ../../source/services.rst:726
 msgid ""
 "It's based on croniter_. You can register async coroutine method with "
 "``spec`` argument - cron like format:"
@@ -541,24 +990,24 @@ msgstr ""
 "Основан на croniter_. Вы можете зарегистрировать асинхронный метод с "
 "аргументом ``spec`` - формат, подобный cron:"
 
-#: ../../source/services.rst:404
+#: ../../source/services.rst:732
 msgid "requires installed croniter_:"
 msgstr "необходимо установить библиотеку croniter_:"
 
-#: ../../source/services.rst:406
+#: ../../source/services.rst:734
 msgid "pip install croniter"
 msgstr ""
 
-#: ../../source/services.rst:410 ../../source/services.rst:552
-#: ../../source/services.rst:618 ../../source/services.rst:681
+#: ../../source/services.rst:738 ../../source/services.rst:880
+#: ../../source/services.rst:946 ../../source/services.rst:1009
 msgid "or using extras:"
 msgstr "или как дополнительную зависимость"
 
-#: ../../source/services.rst:412
+#: ../../source/services.rst:740
 msgid "pip install aiomisc[cron]"
 msgstr ""
 
-#: ../../source/services.rst:417
+#: ../../source/services.rst:745
 msgid ""
 "import aiomisc\n"
 "from aiomisc.service.cron import CronService\n"
@@ -590,7 +1039,7 @@ msgstr ""
 "with entrypoint(service) as loop:\n"
 "    loop.run_forever()"
 
-#: ../../source/services.rst:434
+#: ../../source/services.rst:762
 msgid ""
 "You can also inherit from ``CronService``, but remember that callback "
 "registration should be proceeded before start"
@@ -598,7 +1047,7 @@ msgstr ""
 "Вы также можете наследовать от ``CronService``, но помните, что "
 "регистрация обратного вызова должна выполняться до запуска"
 
-#: ../../source/services.rst:437
+#: ../../source/services.rst:765
 msgid ""
 "import aiomisc\n"
 "from aiomisc.service.cron import CronService\n"
@@ -619,11 +1068,11 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:459
+#: ../../source/services.rst:787
 msgid "Multiple services"
 msgstr "Несколько сервисов"
 
-#: ../../source/services.rst:461
+#: ../../source/services.rst:789
 msgid ""
 "Pass several service instances to the ``entrypoint`` to run all of them. "
 "After exiting the entrypoint service instances will be gracefully shut "
@@ -634,7 +1083,7 @@ msgstr ""
 "корректно закрыты вызовом метода ``stop()`` или через отмену метода "
 "``start()``."
 
-#: ../../source/services.rst:464
+#: ../../source/services.rst:792
 msgid ""
 "import asyncio\n"
 "from aiomisc import entrypoint\n"
@@ -669,11 +1118,11 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:500
+#: ../../source/services.rst:828
 msgid "Configuration"
 msgstr "Конфигурация"
 
-#: ../../source/services.rst:502
+#: ../../source/services.rst:830
 msgid ""
 "``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
 "attributes."
@@ -681,7 +1130,7 @@ msgstr ""
 "Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
 "и устанавливает из как атрибуты в ``self``."
 
-#: ../../source/services.rst:505
+#: ../../source/services.rst:833
 msgid ""
 "import asyncio\n"
 "from aiomisc import entrypoint\n"
@@ -745,27 +1194,27 @@ msgstr ""
 "with entrypoint(*services) as loop:\n"
 "    loop.run_forever()"
 
-#: ../../source/services.rst:542
+#: ../../source/services.rst:870
 msgid "aiohttp service"
 msgstr "aiohttp сервис"
 
-#: ../../source/services.rst:546
+#: ../../source/services.rst:874
 msgid "requires installed aiohttp:"
 msgstr "требуется установленная библиотека aiohttp"
 
-#: ../../source/services.rst:548
+#: ../../source/services.rst:876
 msgid "pip install aiohttp"
 msgstr ""
 
-#: ../../source/services.rst:554
+#: ../../source/services.rst:882
 msgid "pip install aiomisc[aiohttp]"
 msgstr ""
 
-#: ../../source/services.rst:559
+#: ../../source/services.rst:887
 msgid "aiohttp application can be started as a service:"
 msgstr "Приложение aiohttp может быть запущено как сервис:"
 
-#: ../../source/services.rst:561
+#: ../../source/services.rst:889
 msgid ""
 "import aiohttp.web\n"
 "import argparse\n"
@@ -805,7 +1254,7 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:601
+#: ../../source/services.rst:929
 msgid ""
 "Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
 "an HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
@@ -815,27 +1264,27 @@ msgstr ""
 " сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
 "TLSServer)."
 
-#: ../../source/services.rst:608
+#: ../../source/services.rst:936
 msgid "asgi service"
 msgstr "asgi сервис"
 
-#: ../../source/services.rst:612
+#: ../../source/services.rst:940
 msgid "requires installed aiohttp-asgi:"
 msgstr "требуется установленная библиотека aiohttp-asgi:"
 
-#: ../../source/services.rst:614
+#: ../../source/services.rst:942
 msgid "pip install aiohttp-asgi"
 msgstr ""
 
-#: ../../source/services.rst:620
+#: ../../source/services.rst:948
 msgid "pip install aiomisc[asgi]"
 msgstr ""
 
-#: ../../source/services.rst:625
+#: ../../source/services.rst:953
 msgid "Any ASGI-like application can be started as a service:"
 msgstr "Любое ASGI совместимое приложение может быть запущено как сервис:"
 
-#: ../../source/services.rst:627
+#: ../../source/services.rst:955
 msgid ""
 "import argparse\n"
 "\n"
@@ -873,7 +1322,7 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:665
+#: ../../source/services.rst:993
 msgid ""
 "Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
 "creates HTTPS server. You must pass SSL-required options (see "
@@ -883,30 +1332,32 @@ msgstr ""
 "HTTPS сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
 "``TLSServer``)."
 
-#: ../../source/services.rst:671
+#: ../../source/services.rst:999
 #, fuzzy
 msgid "uvicorn service"
 msgstr "Uvicorn сервис"
 
-#: ../../source/services.rst:675
+#: ../../source/services.rst:1003
 #, fuzzy
 msgid "requires installed uvicorn:"
 msgstr "необходимо установить библиотеку uvicorn_:"
 
-#: ../../source/services.rst:677
+#: ../../source/services.rst:1005
 msgid "pip install uvicorn"
 msgstr ""
 
-#: ../../source/services.rst:683
+#: ../../source/services.rst:1011
 msgid "pip install aiomisc[uvicorn]"
 msgstr ""
 
-#: ../../source/services.rst:688
+#: ../../source/services.rst:1016
 #, fuzzy
 msgid "Any ASGI-like application can be started via uvicorn as a service:"
-msgstr "Любое ASGI совместимое приложение может быть запущено через uvicorn как сервис:"
+msgstr ""
+"Любое ASGI совместимое приложение может быть запущено через uvicorn как "
+"сервис:"
 
-#: ../../source/services.rst:690
+#: ../../source/services.rst:1018
 msgid ""
 "import argparse\n"
 "\n"
@@ -944,12 +1395,12 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:733
+#: ../../source/services.rst:1061
 #, fuzzy
 msgid "GRPC service"
 msgstr "GRPC сервис"
 
-#: ../../source/services.rst:735
+#: ../../source/services.rst:1063
 msgid ""
 "This is an example of a GRPC service which is defined in a file and loads"
 " a `hello.proto` file without code generation, this example is one of the"
@@ -959,11 +1410,11 @@ msgstr ""
 "`hello.proto` без кодогенерации, этот пример является одним из примеров "
 "из `grpcio`, остальные примеры будут работать как ожидается."
 
-#: ../../source/services.rst:739
+#: ../../source/services.rst:1067
 msgid "Proto definition:"
 msgstr "Определение proto файла"
 
-#: ../../source/services.rst:741
+#: ../../source/services.rst:1069
 msgid ""
 "syntax = \"proto3\";\n"
 "\n"
@@ -1005,11 +1456,11 @@ msgstr ""
 "  string message = 1;\n"
 "}"
 
-#: ../../source/services.rst:764
+#: ../../source/services.rst:1092
 msgid "Service initialization example:"
 msgstr "Пример инициализации сервиса:"
 
-#: ../../source/services.rst:767
+#: ../../source/services.rst:1095
 #, python-format
 msgid ""
 "import grpc\n"
@@ -1048,11 +1499,19 @@ msgid ""
 "    main()"
 msgstr ""
 
-#: ../../source/services.rst:806
+#: ../../source/services.rst:1131
+msgid "To enable reflection for the service you use reflection flag:"
+msgstr ""
+
+#: ../../source/services.rst:1133
+msgid "GRPCService(reflection=True)"
+msgstr ""
+
+#: ../../source/services.rst:1141
 msgid "Memory Tracer"
 msgstr "Трассировщик памяти"
 
-#: ../../source/services.rst:808
+#: ../../source/services.rst:1143
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
@@ -1060,7 +1519,7 @@ msgstr ""
 "Простой и полезный сервис для логирования больших объектов Python, "
 "размещенных в памяти."
 
-#: ../../source/services.rst:812
+#: ../../source/services.rst:1147
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -1080,11 +1539,11 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:832 ../../source/services.rst:881
+#: ../../source/services.rst:1167 ../../source/services.rst:1216
 msgid "Output example:"
 msgstr "Пример вывода:"
 
-#: ../../source/services.rst:834
+#: ../../source/services.rst:1169
 msgid ""
 "[T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:\n"
 " Objects | Obj.Diff |   Memory | Mem.Diff | Traceback\n"
@@ -1106,11 +1565,11 @@ msgid ""
 "      14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40"
 msgstr ""
 
-#: ../../source/services.rst:856
+#: ../../source/services.rst:1191
 msgid "Profiler"
 msgstr "``Profiler`` - профилировщик"
 
-#: ../../source/services.rst:858
+#: ../../source/services.rst:1193
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "
@@ -1122,7 +1581,7 @@ msgstr ""
 "позже могут быть использованы, например, snakeviz. Также можно изменить "
 "порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
 
-#: ../../source/services.rst:864
+#: ../../source/services.rst:1199
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -1139,7 +1598,7 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:883
+#: ../../source/services.rst:1218
 msgid ""
 "108 function calls in 1.117 seconds\n"
 "\n"
@@ -1157,21 +1616,21 @@ msgid ""
 "<...>/lib/python3.7/cProfile.py:50(create_stats)"
 msgstr ""
 
-#: ../../source/services.rst:900
+#: ../../source/services.rst:1235
 msgid "Raven service"
 msgstr "Raven сервис"
 
-#: ../../source/services.rst:902
+#: ../../source/services.rst:1237
 msgid ""
 "Simple service for sending unhandled exceptions to the `sentry`_ service "
 "instance."
 msgstr "Простой сервис для отправки необработанных исключений в сервис `sentry`_."
 
-#: ../../source/services.rst:907
+#: ../../source/services.rst:1242
 msgid "Simple example:"
 msgstr "Простой пример:"
 
-#: ../../source/services.rst:909
+#: ../../source/services.rst:1244
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1253,11 +1712,11 @@ msgstr ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:949
+#: ../../source/services.rst:1284
 msgid "Full configuration:"
 msgstr "Все опции для клиента:"
 
-#: ../../source/services.rst:951
+#: ../../source/services.rst:1286
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1375,17 +1834,17 @@ msgstr ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:1009
+#: ../../source/services.rst:1344
 msgid ""
 "You will find the full specification of options in the `Raven "
 "documentation`_."
 msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
 
-#: ../../source/services.rst:1015
+#: ../../source/services.rst:1350
 msgid "``SDWatchdogService``"
 msgstr "``SDWatchdogService``"
 
-#: ../../source/services.rst:1017
+#: ../../source/services.rst:1352
 msgid ""
 "Ready to use service just adding to your entrypoint and notifying SystemD"
 " service watchdog timer."
@@ -1393,7 +1852,7 @@ msgstr ""
 "Готовый к использованию сервис, просто добавьте его в entrypoint и он "
 "будет отправлять уведомления сторожевому таймеру SystemD."
 
-#: ../../source/services.rst:1020
+#: ../../source/services.rst:1355
 msgid ""
 "This can be safely added at any time, since if the service does not "
 "detect systemd-related environment variables, then its initialization is "
@@ -1403,11 +1862,11 @@ msgstr ""
 "найдет переменных окружения, которые устанавливает systemd, Сервис просто"
 " не запустится, однако выполнение приложения продолжится."
 
-#: ../../source/services.rst:1023
+#: ../../source/services.rst:1358
 msgid "Example of python file:"
 msgstr "Пример python файла:"
 
-#: ../../source/services.rst:1025
+#: ../../source/services.rst:1360
 msgid ""
 "import logging\n"
 "from time import sleep\n"
@@ -1421,11 +1880,11 @@ msgid ""
 "        pass"
 msgstr ""
 
-#: ../../source/services.rst:1040
+#: ../../source/services.rst:1375
 msgid "Example of systemd service file:"
 msgstr "Пример systemd сервис-файла:"
 
-#: ../../source/services.rst:1042
+#: ../../source/services.rst:1377
 msgid ""
 "[Service]\n"
 "# Activating the notification mechanism\n"
@@ -1488,11 +1947,11 @@ msgstr ""
 "FinalKillSignal=SIGKILL\n"
 "SendSIGKILL=yes"
 
-#: ../../source/services.rst:1077
+#: ../../source/services.rst:1412
 msgid "``ProcessService``"
 msgstr "Класс ``ProcessService``"
 
-#: ../../source/services.rst:1079
+#: ../../source/services.rst:1414
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped."
@@ -1500,7 +1959,7 @@ msgstr ""
 "Базовый класс для запуска функции отдельным системным процессом и "
 "завершения при остановке родительского процесса."
 
-#: ../../source/services.rst:1082
+#: ../../source/services.rst:1417
 msgid ""
 "from typing import Dict, Any\n"
 "\n"
@@ -1576,11 +2035,11 @@ msgstr ""
 "    with aiomisc.entrypoint(*services) as loop:\n"
 "        loop.run_forever()"
 
-#: ../../source/services.rst:1123
+#: ../../source/services.rst:1458
 msgid "``RespawningProcessService``"
 msgstr "Класс ``RespawningProcessService``"
 
-#: ../../source/services.rst:1125
+#: ../../source/services.rst:1460
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped, It's pretty like "
@@ -1592,7 +2051,7 @@ msgstr ""
 "`ProcessService` с одним отличием - если дочерний процесс неожиданно "
 "завершится, то он будет перезапущен."
 
-#: ../../source/services.rst:1130
+#: ../../source/services.rst:1465
 msgid ""
 "import logging\n"
 "from typing import Any\n"
@@ -1614,3 +2073,5 @@ msgid ""
 "        loop.run_forever()"
 msgstr ""
 
+#~ msgid "Overview"
+#~ msgstr "Сервисы"

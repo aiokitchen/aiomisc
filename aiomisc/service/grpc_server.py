@@ -2,9 +2,12 @@ import asyncio
 import logging
 import re
 import sys
+from collections import defaultdict
 from concurrent.futures import Executor
 from types import MappingProxyType
-from typing import Any, Optional, Sequence, Set, Tuple
+from typing import (
+    Any, DefaultDict, Dict, Mapping, Optional, Sequence, Set, Tuple,
+)
 
 from .base import Service
 
@@ -36,6 +39,7 @@ class GRPCService(Service):
     _server_args: MappingProxyType
     _insecure_ports: Set[Tuple[str, PortFuture]]
     _secure_ports: Set[Tuple[str, grpc.ServerCredentials, PortFuture]]
+    _registered_services: DefaultDict[str, Dict[str, grpc.RpcMethodHandler]]
 
     def __init__(
         self, *,
@@ -60,6 +64,7 @@ class GRPCService(Service):
         self._insecure_ports = set()
         self._secure_ports = set()
         self._reflection = reflection
+        self._registered_services = defaultdict(dict)
         super().__init__(**kwds)
 
     @classmethod
@@ -90,6 +95,12 @@ class GRPCService(Service):
             service_names.append(reflection.SERVICE_NAME)
             reflection.enable_server_reflection(service_names, self._server)
 
+        for name, handlers in self._registered_services.items():
+            # noinspection PyUnresolvedReferences
+            self._server.add_registered_method_handlers(   # type: ignore
+                name, handlers,
+            )
+
         self._server.add_generic_rpc_handlers(tuple(self._services))
         await self._server.start()
 
@@ -101,6 +112,11 @@ class GRPCService(Service):
     ) -> None:
         for service in generic_rpc_handlers:
             self._services.add(service)
+
+    def add_registered_method_handlers(
+        self, name: str, handlers: Mapping[str, grpc.RpcMethodHandler],
+    ) -> None:
+        self._registered_services[name].update(handlers)
 
     def add_insecure_port(self, address: str) -> PortFuture:
         future: PortFuture = asyncio.Future()

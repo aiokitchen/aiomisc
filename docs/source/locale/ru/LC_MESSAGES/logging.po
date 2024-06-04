@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-12-29 11:36+0300\n"
+"POT-Creation-Date: 2024-06-03 23:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.15.0\n"
 
 #: ../../source/logging.rst:2
 msgid "Logging configuration"
@@ -187,19 +187,49 @@ msgstr ""
 "except:\n"
 "    logging.exception(\"Rich traceback logger\")"
 
-#: ../../source/logging.rst:112
+#: ../../source/logging.rst:111
+msgid "Disabled"
+msgstr ""
+
+#: ../../source/logging.rst:113
+msgid ""
+"Disable to configure logging handler. Useful when you want to configure "
+"your own logging handlers using `handlers=` argument."
+msgstr ""
+"Отключает конфигурацию логов. Полезно когда вы сами хотите "
+"сконфигурировать свои собственные logging хендлеры передав их в аргумент "
+"`handlers=`."
+
+#: ../../source/logging.rst:116
+msgid ""
+"import logging\n"
+"from aiomisc.log import basic_config\n"
+"\n"
+"# Configure your own log handlers\n"
+"basic_config(\n"
+"    level=logging.INFO,\n"
+"    log_format='disabled',\n"
+"    handlers=[logging.StreamHandler()],\n"
+"    buffered=False,\n"
+")\n"
+"\n"
+"logging.info(\"Use default python logger for example\")"
+msgstr ""
+
+#: ../../source/logging.rst:135
 msgid "Buffered log handler"
 msgstr "Буфферизирующий лог-хендлер"
 
-#: ../../source/logging.rst:114
+#: ../../source/logging.rst:137
+#, fuzzy
 msgid ""
 "Parameter `buffered=True` enables a memory buffer that flushes logs in a "
-"thread."
+"thread. In case the `handlers=` each will be buffered."
 msgstr ""
 "Параметр `buffered=True` включает буферизацию логов в памяти, отдельный "
-"поток переодически сбрасывает логи в поток."
+"поток переодически сбрасывает логи в файловый дескриптор."
 
-#: ../../source/logging.rst:116
+#: ../../source/logging.rst:140
 #, python-format
 msgid ""
 "import asyncio\n"
@@ -262,13 +292,13 @@ msgstr ""
 "    # Ждем пока журналы не попадут в журнал\n"
 "    loop.run_until_complete(asyncio.sleep(1))"
 
-#: ../../source/logging.rst:152
+#: ../../source/logging.rst:176
 msgid "``entrypoint`` accepts ``log_format`` parameter for configure it."
 msgstr ""
 "``entrypoint`` принимает аргумент ``log_format`` через который можно это "
 "настроить."
 
-#: ../../source/logging.rst:154
+#: ../../source/logging.rst:178
 msgid ""
 "List of all supported log formats is available from "
 "``aiomisc.log.LogFormat.choices()``"

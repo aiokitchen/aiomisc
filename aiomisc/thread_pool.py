@@ -224,9 +224,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
     def submit(  # type: ignore
         self, fn: F, *args: Any, **kwargs: Any,
     ) -> asyncio.Future:
-        """
-        Submit blocking function to the pool
-        """
+        """Submit blocking function to the pool"""
         if fn is None or not callable(fn):
             raise ValueError("First argument must be callable")
 
