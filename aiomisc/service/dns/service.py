@@ -99,7 +99,7 @@ class TCPDNSServer(DNSServer, TCPServer):
     ) -> None:
         addr = writer.get_extra_info("peername")
         while True:
-            data = await reader.read(2)
+            data = await reader.read(TCP_HEADER_STRUCT.size)
             if not data:
                 break
             length = TCP_HEADER_STRUCT.unpack(data)[0]
