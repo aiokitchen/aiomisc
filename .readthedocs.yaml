@@ -7,10 +7,10 @@ build:
 
   jobs:
     post_install:
-      - $READTHEDOCS_VIRTUALENV_PATH/bin/pip install poetry
-      - $READTHEDOCS_VIRTUALENV_PATH/bin/poetry config virtualenvs.create false
-      - $READTHEDOCS_VIRTUALENV_PATH/bin/poetry env info
-      - $READTHEDOCS_VIRTUALENV_PATH/bin/poetry install --all-extras
+      - pip install poetry
+      - poetry config virtualenvs.create false
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry env info
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install --all-extras
 
 formats:
   - pdf
