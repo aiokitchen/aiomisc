@@ -1,3 +1,0 @@
-# ONLY FOR ReadTheDocs
-autodoc
-furo
