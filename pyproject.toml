@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "aiomisc"
 # This is a dummy version which will be rewritten with poem-plugins
-version = "17.3.0"
+version = "17.5.25"
 description = "aiomisc - miscellaneous utils for asyncio"
 authors = ["Dmitry Orlov <me@mosquito.su>"]
 readme = "README.rst"
