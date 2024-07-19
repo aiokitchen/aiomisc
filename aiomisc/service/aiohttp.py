@@ -74,14 +74,12 @@ class AIOHTTPService(Service):
         if getattr(self, "runner", None) is None:
             raise RuntimeError("runner already created")
 
-        return SockSite(
-            self.runner, self.socket,
-            shutdown_timeout=self.shutdown_timeout,
-        )
+        return SockSite(self.runner, self.socket)
 
     async def make_runner(self, application: Application) -> AppRunner:
         return AppRunner(
             application,
+            shutdown_timeout=self.shutdown_timeout,
             **self.runner_kwargs,
         )
 
@@ -129,7 +127,6 @@ class AIOHTTPSSLService(AIOHTTPService):
 
         return SockSite(
             self.runner, self.socket,
-            shutdown_timeout=self.shutdown_timeout,
             ssl_context=await self.loop.run_in_executor(
                 None, self.__ssl_options.create_context,
             ),

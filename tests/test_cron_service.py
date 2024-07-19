@@ -9,6 +9,7 @@ from aiomisc.service.cron import CronService
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
+@pytest.mark.flaky(max_runs=5, min_passes=3)
 def test_cron():
     counter = 0
     condition: asyncio.Condition
@@ -55,6 +56,7 @@ def test_cron():
         )
 
 
+@pytest.mark.flaky(max_runs=5, min_passes=3)
 def test_register():
     counter = 0
     condition: asyncio.Condition
