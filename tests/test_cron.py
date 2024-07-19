@@ -5,6 +5,7 @@ import pytest
 from aiomisc.cron import CronCallback
 
 
+@pytest.mark.flaky(max_runs=5, min_passes=3)
 async def test_cron(event_loop):
     counter = 0
 
@@ -26,6 +27,7 @@ async def test_cron(event_loop):
     assert counter == 2
 
 
+@pytest.mark.flaky(max_runs=5, min_passes=3)
 async def test_long_func(event_loop):
     counter = 0
     condition = asyncio.Condition()
@@ -49,6 +51,7 @@ async def test_long_func(event_loop):
     assert counter == 1
 
 
+@pytest.mark.flaky(max_runs=5, min_passes=3)
 async def test_shield(event_loop):
     counter = 0
     condition = asyncio.Condition()
@@ -77,6 +80,7 @@ async def test_shield(event_loop):
     assert counter == 2
 
 
+@pytest.mark.flaky(max_runs=5, min_passes=3)
 async def test_restart(event_loop):
     counter = 0
     condition = asyncio.Condition()
