@@ -76,7 +76,7 @@ dnslib = { version = "^0.9", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 aiocarbon = "^0.15.3"
-aiohttp = "^3.9.5"
+aiohttp = "^3.9"
 aiohttp-asgi = "~0.5.2"
 aiomisc-pytest = "^1.0.8"
 asgiref = "^3.7"
