@@ -54,8 +54,10 @@ translate: .venv
 	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
 
 
-docs: translate
+build-docs: translate
 	make -C docs/ -e BUILDDIR="build/en" html
 	make -C docs/ -e SPHINXOPTS="-D language='ru'" -e BUILDDIR="build/ru" html
+
+docs: build-docs
 	python -m webbrowser -t "file://$(shell pwd)/docs/build/en/html/index.html"
 	python -m webbrowser -t "file://$(shell pwd)/docs/build/ru/html/index.html"
