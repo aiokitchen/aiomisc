@@ -354,6 +354,6 @@ For setting up developer environment just execute:
 
 .. _Semantic Versioning: http://semver.org/
 
-.. _API reference: https://aiomisc.readthedocs.io/en/latest/api/index.html
-.. _Modules: https://aiomisc.readthedocs.io/en/latest/modules.html
-.. _Tutorial: https://aiomisc.readthedocs.io/en/latest/tutorial.html
+.. _API reference: https://docs.aiomisc.com/api/index.html
+.. _Modules: https://docs.aiomisc.com/modules.html
+.. _Tutorial: https://docs.aiomisc.com/tutorial.html
