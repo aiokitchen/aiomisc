@@ -2202,6 +2202,20 @@ lint = ["docutils-stubs", "flake8", "mypy"]
 test = ["pytest"]
 
 [[package]]
+name = "sphinxcontrib-googleanalytics"
+version = "0.4"
+description = "Sphinx extension googleanalytics"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sphinxcontrib-googleanalytics-0.4.tar.gz", hash = "sha256:4b19c1f0fce5df6c7da5633201b64a9e5b0cb3210a14fdb4134942ceee8c5d12"},
+    {file = "sphinxcontrib_googleanalytics-0.4-py3-none-any.whl", hash = "sha256:a6574983f9a58e5864ec10d34dc99914c4d647108b22c9249c8f0038b0cb18b3"},
+]
+
+[package.dependencies]
+Sphinx = ">=0.6"
+
+[[package]]
 name = "sphinxcontrib-htmlhelp"
 version = "2.0.1"
 description = "sphinxcontrib-htmlhelp is a sphinx extension which renders HTML help files"
@@ -2649,4 +2663,4 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "0f5a886b769e86bb9fb8041a96a6b65a40d5043456f46952a1f3e3968d04f832"
+content-hash = "6c7b7baa4deca2f81c2e3b03f76bb758e4ff2c6d3e9477d345d3f798041f6783"
