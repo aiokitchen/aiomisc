@@ -88,7 +88,7 @@ class DNSRecord:
     type: RecordType
     data: RD
     cls: DNSClass = field(default=DNSClass.IN)
-    ttl: int = field(default=3600)
+    ttl: int = field(default=3600, compare=False)
 
     def rr(self, query_type: int) -> dnslib.RR:
         return dnslib.RR(
