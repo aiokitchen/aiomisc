@@ -150,11 +150,11 @@ def test_wrong_subclass():
 
     with pytest.raises(TypeError):
         class NoAsyncStopServiceSubclass(MyService):
-            def stop(self):
+            def stop(self, *_) -> Any:  # type: ignore
                 return True
 
     class AsyncStopServiceSubclass(MyService):
-        async def stop(self):
+        async def stop(self, *_) -> Any:  # type: ignore
             return True
 
 

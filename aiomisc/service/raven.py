@@ -70,7 +70,7 @@ class AioHttpTransportBase(
     def __init__(
         self, parsed_url: Optional[str] = None, *, verify_ssl: bool = True,
         timeout: TimeoutType = defaults.TIMEOUT, keepalive: bool = True,
-        family: int = socket.AF_INET,
+        family: socket.AddressFamily = socket.AddressFamily.AF_INET,
     ):
         self._keepalive = keepalive
         self._family = family
@@ -92,7 +92,7 @@ class AioHttpTransportBase(
         return self._keepalive
 
     @property
-    def family(self) -> int:
+    def family(self) -> socket.AddressFamily:
         return self._family
 
     def _client_session_factory(self) -> aiohttp.ClientSession:
