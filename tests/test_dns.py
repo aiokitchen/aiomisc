@@ -516,3 +516,111 @@ def test_sshfp_create():
     assert record.data.fp_type == 1
     assert record.data.fingerprint == b"abcdefg"
     assert record.ttl == 300
+
+
+def test_zone_replace(dns_store):
+    zone = DNSZone("example.com.")
+    record1 = A.create(name="www.example.com.", ip="192.0.2.1")
+    record2 = A.create(name="api.example.com.", ip="192.0.2.2")
+    zone.add_record(record1)
+    dns_store.add_zone(zone)
+
+    zone.replace([record2])
+
+    records = dns_store.query("www.example.com.", RecordType.A)
+    assert len(records) == 0
+    records = dns_store.query("api.example.com.", RecordType.A)
+    assert len(records) == 1
+    assert record2 in records
+
+
+def test_zone_replace_multiple_records():
+    zone = DNSZone("example.com.")
+    record1 = A.create(name="www.example.com.", ip="192.0.2.1")
+    record2 = A.create(name="www.example.com.", ip="192.0.2.2")
+
+    zone.replace([record1, record2])
+    records = zone.get_records("www.example.com.", RecordType.A)
+    assert len(records) == 2
+    assert record1 in records
+    assert record2 in records
+
+
+def test_zone_replace_empty():
+    zone = DNSZone("example.com.")
+    record = A.create(name="www.example.com.", ip="192.0.2.1")
+    zone.add_record(record)
+
+    zone.replace([])
+    records = zone.get_records("www.example.com.", RecordType.A)
+    assert len(records) == 0
+
+
+def test_zone_replace_invalid_record():
+    zone = DNSZone("example.com.")
+    record = A.create(name="www.other.com.", ip="192.0.2.1")
+
+    with pytest.raises(ValueError, match="does not belong to zone"):
+        zone.replace([record])
+
+
+def test_store_replace_basic(dns_store):
+    zone1 = DNSZone("example.com.")
+    record1 = A.create(name="www.example.com.", ip="192.0.2.1")
+    zone1.add_record(record1)
+    dns_store.add_zone(zone1)
+
+    zone2 = DNSZone("test.com.")
+    record2 = A.create(name="www.test.com.", ip="192.0.2.2")
+    zone2.add_record(record2)
+    dns_store.add_zone(zone2)
+
+    # Replace with new data
+    new_record1 = A.create(name="api.example.com.", ip="192.0.2.3")
+    new_record2 = A.create(name="api.test.com.", ip="192.0.2.4")
+
+    dns_store.replace({
+        "example.com.": [new_record1],
+        "test.com.": [new_record2],
+    })
+
+    # Check old records are gone
+    records = dns_store.query("www.example.com.", RecordType.A)
+    assert len(records) == 0
+    records = dns_store.query("www.test.com.", RecordType.A)
+    assert len(records) == 0
+
+    # Check new records are present
+    records = dns_store.query("api.example.com.", RecordType.A)
+    assert len(records) == 1
+    assert new_record1 in records
+    records = dns_store.query("api.test.com.", RecordType.A)
+    assert len(records) == 1
+    assert new_record2 in records
+
+
+def test_store_replace_empty(dns_store):
+    zone = DNSZone("example.com.")
+    record = A.create(name="www.example.com.", ip="192.0.2.1")
+    zone.add_record(record)
+    dns_store.add_zone(zone)
+
+    dns_store.replace({})
+
+    assert dns_store.get_zone("example.com.") is None
+    records = dns_store.query("www.example.com.", RecordType.A)
+    assert len(records) == 0
+
+
+def test_store_replace_multiple_records_per_zone(dns_store):
+    new_record1 = A.create(name="www.example.com.", ip="192.0.2.1")
+    new_record2 = A.create(name="www.example.com.", ip="192.0.2.2")
+
+    dns_store.replace({
+        "example.com.": [new_record1, new_record2],
+    })
+
+    records = dns_store.query("www.example.com.", RecordType.A)
+    assert len(records) == 2
+    assert new_record1 in records
+    assert new_record2 in records
