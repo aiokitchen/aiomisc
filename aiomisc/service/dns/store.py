@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Tuple
+from typing import Iterable, Mapping, Optional, Sequence, Tuple
 
 from .records import DNSRecord, RecordType
 from .tree import RadixTree
@@ -49,3 +49,22 @@ class DNSStore:
     @staticmethod
     def get_reverse_tuple(zone_name: str) -> Tuple[str, ...]:
         return tuple(zone_name.strip(".").split("."))[::-1]
+
+    def replace(
+        self, zones_data: Mapping[str, Iterable[DNSRecord]],
+    ) -> None:
+        """
+        Atomically replace all zones with new ones this method is safe
+        because it replaces all zones at once. zone_data is a mapping
+        zone name and a sequence of DNSRecord objects.
+
+        If any of the zones or records is invalid, nothing will be replaced.
+
+        This method is useful for reload configuration from disk
+        or database or etc.
+        """
+        new_zones: RadixTree[DNSZone] = RadixTree()
+        for zone_name, records in zones_data.items():
+            zone = DNSZone(zone_name, *records)
+            new_zones.insert(self.get_reverse_tuple(zone.name), zone)
+        self.zones = new_zones
