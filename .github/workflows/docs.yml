@@ -43,8 +43,7 @@ jobs:
           poetry run make build-docs
       - name: Install AWS CLI
         run: |
-          sudo apt update
-          sudo apt install -y awscli
+          python -m pip install awscli
       - name: Configure AWS CLI for Cloudflare R2
         run: |
           aws configure set aws_access_key_id ${{ secrets.CF_R2_ACCESS_KEY_ID }}
