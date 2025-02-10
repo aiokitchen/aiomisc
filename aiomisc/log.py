@@ -33,7 +33,7 @@ class ThreadedHandler(logging.Handler):
         self._target = target
         self._flush_interval = flush_interval
         self._flush_event = threading.Event()
-        self._queue: Queue[logging.LogRecord] = Queue(queue_size)
+        self._queue: Queue[Optional[logging.LogRecord]] = Queue(queue_size)
         self._close_event = threading.Event()
         self._thread = threading.Thread(target=self._in_thread, daemon=True)
         self._statistic = ThreadedHandlerStatistic()
@@ -43,10 +43,10 @@ class ThreadedHandler(logging.Handler):
         self._thread.start()
 
     def close(self) -> None:
+        self._queue.put(None)
         del self._queue
         self.flush()
         self._close_event.set()
-        self._thread.join()
         super().close()
 
     def flush(self) -> None:
@@ -66,11 +66,12 @@ class ThreadedHandler(logging.Handler):
             self._flush_event.wait(self._flush_interval)
             try:
                 self.acquire()
-                record = queue.get(timeout=self._flush_interval)
-                while record:
+                while True:
+                    record = queue.get(timeout=self._flush_interval)
+                    if record is None:
+                        return
                     with suppress(Exception):
                         self._target.handle(record)
-                    record = queue.get(timeout=self._flush_interval)
             except Empty:
                 pass
             finally:
