@@ -140,7 +140,7 @@ def basic_config(
 
     logging_handlers = list(
         map(
-            lambda x: handler_wrapper(x),
+            handler_wrapper,
             filter(
                 None,
                 chain(
