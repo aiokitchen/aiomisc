@@ -16,7 +16,7 @@ Number = Union[int, float]
 
 
 def timeout(
-    value: Number
+    value: Number,
 ) -> Callable[
     [Callable[P, Coroutine[Any, Any, T]]],
     Callable[P, Coroutine[Any, Any, T]],

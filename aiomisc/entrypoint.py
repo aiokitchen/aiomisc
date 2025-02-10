@@ -6,8 +6,8 @@ import sys
 import threading
 from concurrent.futures import Executor
 from typing import (
-    Any, Callable, Coroutine, FrozenSet, MutableSet, Optional, Set, Tuple,
-    TypeVar, Union,
+    Any, Callable, Coroutine, FrozenSet, Iterable, MutableSet, Optional, Set,
+    Tuple, TypeVar, Union,
 )
 from weakref import WeakSet
 
@@ -115,6 +115,7 @@ class Entrypoint:
                 date_format=self.log_date_format,
                 buffered=self.log_buffering,
                 loop=self.loop,
+                handlers=self.log_handlers,
                 buffer_size=self.log_buffer_size,
                 flush_interval=self.log_flush_interval,
             )
@@ -146,6 +147,7 @@ class Entrypoint:
         log_date_format: Optional[str] = DEFAULT_LOG_DATE_FORMAT,
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
+        log_handlers: Iterable[logging.Handler] = (),
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
         debug: bool = DEFAULT_AIOMISC_DEBUG,
         catch_signals: Optional[Tuple[int, ...]] = None,
@@ -196,6 +198,7 @@ class Entrypoint:
         self.log_date_format = log_date_format
         self.log_flush_interval = log_flush_interval
         self.log_format = log_format
+        self.log_handlers = tuple(log_handlers)
         self.log_level = log_level
         self.policy = policy
 

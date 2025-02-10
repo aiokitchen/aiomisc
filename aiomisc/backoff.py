@@ -89,7 +89,7 @@ def asyncbackoff(
     exceptions += asyncio.TimeoutError,
 
     def decorator(
-        func: Callable[P, Coroutine[Any, Any, T]]
+        func: Callable[P, Coroutine[Any, Any, T]],
     ) -> Callable[P, Coroutine[Any, Any, T]]:
         if attempt_timeout is not None:
             func = timeout(attempt_timeout)(func)

@@ -125,7 +125,6 @@ def basic_config(
     handlers: Iterable[logging.Handler] = (),
     **kwargs: Any,
 ) -> None:
-
     if isinstance(level, str):
         level = LogLevel[level]
 
@@ -141,7 +140,7 @@ def basic_config(
 
     logging_handlers = list(
         map(
-            handler_wrapper,
+            lambda x: handler_wrapper(x),
             filter(
                 None,
                 chain(

@@ -117,7 +117,7 @@ class UvicornService(Service, abc.ABC):
             self.sock = config.bind_socket()
         self.server = Server(config)
         self.serve_task = asyncio.create_task(
-            self.server.serve(sockets=[self.sock])
+            self.server.serve(sockets=[self.sock]),
         )
 
     async def stop(self, exception: Optional[Exception] = None) -> None:
