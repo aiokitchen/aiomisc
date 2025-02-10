@@ -6,14 +6,7 @@ from asyncio import CancelledError, Event, Future, Lock, wait_for
 from dataclasses import dataclass
 from inspect import Parameter
 from typing import (
-    Any,
-    Callable,
-    Coroutine,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Protocol,
+    Any, Callable, Coroutine, Generic, Iterable, List, Optional, Protocol,
     TypeVar,
 )
 
@@ -245,7 +238,7 @@ class Aggregator(AggregatorAsync[V, R], Generic[V, R]):
 
 
 def aggregate(
-    leeway_ms: float, max_count: Optional[int] = None
+    leeway_ms: float, max_count: Optional[int] = None,
 ) -> Callable[[AggregateFunc[V, R]], Callable[[V], Coroutine[Any, Any, R]]]:
     """
     Parametric decorator that aggregates multiple
@@ -276,7 +269,7 @@ def aggregate(
     :return:
     """
     def decorator(
-        func: AggregateFunc[V, R]
+        func: AggregateFunc[V, R],
     ) -> Callable[[V], Coroutine[Any, Any, R]]:
         aggregator = Aggregator(
             func, max_count=max_count, leeway_ms=leeway_ms,
@@ -289,7 +282,7 @@ def aggregate_async(
     leeway_ms: float, max_count: Optional[int] = None,
 ) -> Callable[
     [AggregateAsyncFunc[V, R]],
-    Callable[[V], Coroutine[Any, Any, R]]
+    Callable[[V], Coroutine[Any, Any, R]],
 ]:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
@@ -302,7 +295,7 @@ def aggregate_async(
     :return:
     """
     def decorator(
-        func: AggregateAsyncFunc[V, R]
+        func: AggregateAsyncFunc[V, R],
     ) -> Callable[[V], Coroutine[Any, Any, R]]:
         aggregator = AggregatorAsync(
             func, max_count=max_count, leeway_ms=leeway_ms,

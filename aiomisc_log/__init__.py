@@ -125,7 +125,6 @@ def basic_config(
     handlers: Iterable[logging.Handler] = (),
     **kwargs: Any,
 ) -> None:
-
     if isinstance(level, str):
         level = LogLevel[level]
 
