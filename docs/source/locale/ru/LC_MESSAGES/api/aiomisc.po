@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 13:05+0100\n"
+"POT-Creation-Date: 2025-03-03 15:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -287,14 +287,8 @@ msgstr ""
 #: aiomisc.recurring.RecurringCallback:1 aiomisc.signal.Signal:1
 #: aiomisc.thread_pool.CoroutineWaiter:1 aiomisc.thread_pool.WorkItemBase:1
 #: aiomisc.utils.SelectAwaitable:1 aiomisc.worker_pool.WorkerPool:1 of
+#: typing.ParamSpec:1
 msgid "Bases: :py:class:`object`"
-msgstr ""
-
-#: of typing.ParamSpec:1
-msgid ""
-"Bases: :py:class:`~typing._Final`, :py:class:`~typing._Immutable`, "
-":py:class:`~typing._BoundVarianceMixin`, "
-":py:class:`~typing._PickleUsingNameMixin`"
 msgstr ""
 
 #: of typing.ParamSpec:1
@@ -302,31 +296,57 @@ msgid "Parameter specification variable."
 msgstr ""
 
 #: of typing.ParamSpec:3
-msgid "Usage::"
-msgstr ""
-
-#: of typing.ParamSpec:5
-msgid "P = ParamSpec('P')"
+msgid ""
+"The preferred way to construct a parameter specification is via the "
+"dedicated syntax for generic functions, classes, and type aliases, where "
+"the use of '**' creates a parameter specification::"
 msgstr ""
 
 #: of typing.ParamSpec:7
+msgid "type IntFunc[**P] = Callable[P, int]"
+msgstr ""
+
+#: of typing.ParamSpec:9
 msgid ""
-"Parameter specification variables exist primarily for the benefit of "
-"static type checkers.  They are used to forward the parameter types of "
-"one callable to another callable, a pattern commonly found in higher "
-"order functions and decorators.  They are only valid when used in "
-"``Concatenate``, or as the first argument to ``Callable``, or as "
-"parameters for user-defined Generics.  See class Generic for more "
-"information on generic types.  An example for annotating a decorator::"
+"The following syntax creates a parameter specification that defaults to a"
+" callable accepting two positional-only arguments of types int and str:"
+msgstr ""
+
+#: of typing.ParamSpec:13
+msgid "type IntFuncDefault[**P = (int, str)] = Callable[P, int]"
 msgstr ""
 
 #: of typing.ParamSpec:15
+msgid ""
+"For compatibility with Python 3.11 and earlier, ParamSpec objects can "
+"also be created as follows::"
+msgstr ""
+
+#: of typing.ParamSpec:18
+msgid ""
+"P = ParamSpec('P')\n"
+"DefaultP = ParamSpec('DefaultP', default=(int, str))"
+msgstr ""
+
+#: of typing.ParamSpec:21
+msgid ""
+"Parameter specification variables exist primarily for the benefit of "
+"static type checkers.  They are used to forward the parameter types of "
+"one callable to another callable, a pattern commonly found in higher-"
+"order functions and decorators.  They are only valid when used in "
+"``Concatenate``, or as the first argument to ``Callable``, or as "
+"parameters for user-defined Generics. See class Generic for more "
+"information on generic types."
+msgstr ""
+
+#: of typing.ParamSpec:29
+msgid "An example for annotating a decorator::"
+msgstr ""
+
+#: of typing.ParamSpec:31
 #, python-brace-format
 msgid ""
-"T = TypeVar('T')\n"
-"P = ParamSpec('P')\n"
-"\n"
-"def add_logging(f: Callable[P, T]) -> Callable[P, T]:\n"
+"def add_logging[**P, T](f: Callable[P, T]) -> Callable[P, T]:\n"
 "    '''A type-safe decorator to add logging to a function.'''\n"
 "    def inner(*args: P.args, **kwargs: P.kwargs) -> T:\n"
 "        logging.info(f'{f.__name__} was called')\n"
@@ -339,18 +359,29 @@ msgid ""
 "    return x + y"
 msgstr ""
 
-#: of typing.ParamSpec:30
-msgid "Parameter specification variables can be introspected. e.g.:"
+#: of typing.ParamSpec:43
+msgid "Parameter specification variables can be introspected. e.g.::"
 msgstr ""
 
-#: of typing.ParamSpec:32
-msgid "P.__name__ == 'P'"
-msgstr ""
-
-#: of typing.ParamSpec:34
+#: of typing.ParamSpec:45
 msgid ""
-"Note that only parameter specification variables defined in global scope "
-"can be pickled."
+">>> P = ParamSpec(\"P\")\n"
+">>> P.__name__\n"
+"'P'"
+msgstr ""
+
+#: of typing.ParamSpec:49
+msgid ""
+"Note that only parameter specification variables defined in the global "
+"scope can be pickled."
+msgstr ""
+
+#: ../../docstring aiomisc.compat.ParamSpec.args:1 of
+msgid "Represents positional arguments."
+msgstr ""
+
+#: ../../docstring aiomisc.compat.ParamSpec.kwargs:1 of
+msgid "Represents keyword arguments."
 msgstr ""
 
 #: of typing.Protocol:1
@@ -404,7 +435,7 @@ msgstr ""
 
 #: of typing.Protocol:28
 msgid ""
-"class GenProto(Protocol[T]):\n"
+"class GenProto[T](Protocol):\n"
 "    def meth(self) -> T:\n"
 "        ..."
 msgstr ""
@@ -664,45 +695,63 @@ msgid ""
 msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor:1 of
-msgid "Initializes a new ProcessPoolExecutor instance."
+msgid "Process pool executor with statistic"
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:18
-#: aiomisc.thread_pool.ThreadPoolExecutor:9
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
-msgid "Args:"
-msgstr ""
-
-#: aiomisc.process_pool.ProcessPoolExecutor:5 of
-msgid "max_workers: The maximum number of processes that can be used to"
+#: aiomisc.process_pool.ProcessPoolExecutor:3 of
+msgid "Usage:"
 msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor:5 of
 msgid ""
+"from time import sleep\n"
+"from aiomisc import ProcessPoolExecutor\n"
+"\n"
+"# NOTE: blocking function must be defined at the top level\n"
+"# of the module to be able to be pickled and sent to the\n"
+"# child processes.\n"
+"def blocking_fn():\n"
+"    sleep(1)\n"
+"    return 42\n"
+"\n"
+"async def main():\n"
+"    executor = ProcessPoolExecutor()\n"
+"    the_answer = await executor.submit(blocking_fn)\n"
+"    print(\"The answer is:\", the_answer)\n"
+"\n"
+"asyncio.run(main())"
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:24 of
+msgid "Initializes a new ProcessPoolExecutor instance."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:26 of
+msgid ""
+"``max_workers``: The maximum number of processes that can be used to "
 "execute the given calls. If None or not given then as many worker "
 "processes will be created as the machine has processors."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:8 of
-msgid "mp_context: A multiprocessing context to launch the workers. This"
-msgstr ""
-
-#: aiomisc.process_pool.ProcessPoolExecutor:8 of
+#: aiomisc.process_pool.ProcessPoolExecutor:31 of
 msgid ""
+"``mp_context``: A multiprocessing context to launch the workers. This "
 "object should provide SimpleQueue, Queue and Process. Useful to allow "
 "specific multiprocessing start methods."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:10 of
-msgid ""
-"initializer: A callable used to initialize worker processes. initargs: A "
-"tuple of arguments to pass to the initializer. max_tasks_per_child: The "
-"maximum number of tasks a worker process"
+#: aiomisc.process_pool.ProcessPoolExecutor:35 of
+msgid "``initializer``: A callable used to initialize worker processes."
 msgstr ""
 
-#: aiomisc.process_pool.ProcessPoolExecutor:13 of
+#: aiomisc.process_pool.ProcessPoolExecutor:37 of
+msgid "``initargs``: A tuple of arguments to pass to the initializer."
+msgstr ""
+
+#: aiomisc.process_pool.ProcessPoolExecutor:39 of
 msgid ""
-"can complete before it will exit and be replaced with a fresh worker "
+"``max_tasks_per_child``: The maximum number of tasks a worker process can"
+" complete before it will exit and be replaced with a fresh worker "
 "process. The default of None means worker process will live as long as "
 "the executor. Requires a non-'fork' mp_context start method. When given, "
 "we default to using 'spawn' if no mp_context is supplied."
@@ -765,6 +814,11 @@ msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor:1 of
 msgid "Initializes a new ThreadPoolExecutor instance."
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor:9
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+msgid "Args:"
 msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor:4 of
@@ -1116,4 +1170,116 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ msgstr ""
 
 #~ msgid "Alias for field number 4"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing._Final`, "
+#~ ":py:class:`~typing._Immutable`, "
+#~ ":py:class:`~typing._BoundVarianceMixin`, "
+#~ ":py:class:`~typing._PickleUsingNameMixin`"
+#~ msgstr ""
+
+#~ msgid "Usage::"
+#~ msgstr ""
+
+#~ msgid "P = ParamSpec('P')"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Parameter specification variables exist "
+#~ "primarily for the benefit of static "
+#~ "type checkers.  They are used to "
+#~ "forward the parameter types of one "
+#~ "callable to another callable, a pattern"
+#~ " commonly found in higher order "
+#~ "functions and decorators.  They are only"
+#~ " valid when used in ``Concatenate``, "
+#~ "or as the first argument to "
+#~ "``Callable``, or as parameters for "
+#~ "user-defined Generics.  See class Generic"
+#~ " for more information on generic "
+#~ "types.  An example for annotating a "
+#~ "decorator::"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "T = TypeVar('T')\n"
+#~ "P = ParamSpec('P')\n"
+#~ "\n"
+#~ "def add_logging(f: Callable[P, T]) -> Callable[P, T]:\n"
+#~ "    '''A type-safe decorator to add logging to a function.'''\n"
+#~ "    def inner(*args: P.args, **kwargs: P.kwargs) -> T:\n"
+#~ "        logging.info(f'{f.__name__} was called')\n"
+#~ "        return f(*args, **kwargs)\n"
+#~ "    return inner\n"
+#~ "\n"
+#~ "@add_logging\n"
+#~ "def add_two(x: float, y: float) -> float:\n"
+#~ "    '''Add two numbers together.'''\n"
+#~ "    return x + y"
+#~ msgstr ""
+
+#~ msgid "Parameter specification variables can be introspected. e.g.:"
+#~ msgstr ""
+
+#~ msgid "P.__name__ == 'P'"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Note that only parameter specification "
+#~ "variables defined in global scope can"
+#~ " be pickled."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "class GenProto(Protocol[T]):\n"
+#~ "    def meth(self) -> T:\n"
+#~ "        ..."
+#~ msgstr ""
+
+#~ msgid "mp_context: A multiprocessing context to launch the workers. This"
+#~ msgstr ""
+
+#~ msgid "Initializes a new ProcessPoolExecutor instance."
+#~ msgstr ""
+
+#~ msgid "max_workers: The maximum number of processes that can be used to"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "execute the given calls. If None "
+#~ "or not given then as many worker"
+#~ " processes will be created as the "
+#~ "machine has processors."
+#~ msgstr ""
+
+#~ msgid "mp_context: A multiprocessing context to launch the workers created"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "using the multiprocessing.get_context('start "
+#~ "method') API. This object should provide"
+#~ " SimpleQueue, Queue and Process."
+#~ msgstr ""
+
+#~ msgid "number of workers in the pool"
+#~ msgstr ""
+
+#~ msgid "additional arguments for ProcessPoolExecutor"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "from time import sleep\n"
+#~ "from aiomisc import ProcessPoolExecutor\n"
+#~ "\n"
+#~ "def blocking_fn():\n"
+#~ "    sleep(1)\n"
+#~ "\n"
+#~ "async def main():\n"
+#~ "    executor = ProcessPoolExecutor()\n"
+#~ "    future = executor.submit(blocking_fn)\n"
+#~ "    await future\n"
+#~ "    print(executor._statistic)\n"
+#~ "\n"
+#~ "asyncio.run(main())"
 #~ msgstr ""
