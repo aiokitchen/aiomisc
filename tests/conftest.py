@@ -65,9 +65,7 @@ def ssl_client_context(certs):
     key = str(certs / "client.key")
     cert = str(certs / "client.pem")
 
-    context = ssl.create_default_context(
-        ssl.Purpose.SERVER_AUTH, capath=ca,
-    )
+    context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, capath=ca)
 
     if key:
         context.load_cert_chain(
@@ -75,7 +73,8 @@ def ssl_client_context(certs):
             key,
         )
 
+    context.load_verify_locations(cafile=ca)
     context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE
+    context.verify_mode = ssl.VerifyMode.CERT_NONE
 
     return context

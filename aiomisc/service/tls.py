@@ -25,6 +25,16 @@ class SSLOptionsBase:
     verify: bool
     require_client_cert: bool
     purpose: ssl.Purpose
+    minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_3
+    maximum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_3
+    ciphers: Tuple[str, ...] = (
+        "ECDHE-RSA-AES256-GCM-SHA384",
+        "ECDHE-ECDSA-AES256-GCM-SHA384",
+        "ECDHE-RSA-CHACHA20-POLY1305",
+        "ECDHE-ECDSA-CHACHA20-POLY1305",
+        "ECDHE-RSA-AES128-GCM-SHA256",
+        "ECDHE-ECDSA-AES128-GCM-SHA256",
+    )
 
 
 class SSLOptions(SSLOptionsBase):
@@ -44,20 +54,40 @@ class SSLOptions(SSLOptionsBase):
 
     def create_context(self) -> ssl.SSLContext:
         context = ssl.create_default_context(
-            purpose=self.purpose, cafile=self.ca,
+            purpose=self.purpose,
         )
 
-        if self.ca and not self.ca.exists():
-            raise FileNotFoundError("CA file doesn't exists")
+        # Disable compression to prevent CRIME attacks
+        context.options |= ssl.OP_NO_COMPRESSION
 
-        if self.require_client_cert:
-            context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
-
-        if self.key and self.cert:
-            context.load_cert_chain(self.cert, self.key)
+        context.maximum_version = self.maximum_version
+        context.minimum_version = self.minimum_version
+        context.set_ciphers(":".join(self.ciphers))
 
         if not self.verify:
             context.check_hostname = False
+
+        if self.ca:
+            log.debug("Loading CA from %s", self.ca)
+            if not self.ca.exists():
+                raise FileNotFoundError(
+                    "CA file doesn't exists", str(self.ca.resolve()),
+                )
+            context.load_verify_locations(cafile=str(self.ca))
+
+        if self.require_client_cert:
+            log.debug("Set server-side cert verification")
+            context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
+            # Post-handshake authentication is required
+            context.post_handshake_auth = True
+        else:
+            # Disable server-side cert verification
+            context.check_hostname = False
+            context.verify_mode = ssl.VerifyMode.CERT_NONE
+
+        # Load server-side cert and key
+        if self.key and self.cert:
+            context.load_cert_chain(self.cert, self.key)
 
         return context
 
