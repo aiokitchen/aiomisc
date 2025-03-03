@@ -17,6 +17,19 @@ PathOrStr = Union[Path, str]
 log = logging.getLogger(__name__)
 
 
+DEFAULT_SSL_CIPHERS = (
+    "ECDHE-RSA-AES256-GCM-SHA384",
+    "ECDHE-ECDSA-AES256-GCM-SHA384",
+    "ECDHE-RSA-CHACHA20-POLY1305",
+    "ECDHE-ECDSA-CHACHA20-POLY1305",
+    "ECDHE-RSA-AES128-GCM-SHA256",
+    "ECDHE-ECDSA-AES128-GCM-SHA256",
+)
+
+DEFAULT_SSL_MIN_VERSION = ssl.TLSVersion.TLSv1_3
+DEFAULT_SSL_MAX_VERSION = ssl.TLSVersion.TLSv1_3
+
+
 @dataclass(frozen=True)
 class SSLOptionsBase:
     cert: Optional[Path]
@@ -25,6 +38,9 @@ class SSLOptionsBase:
     verify: bool
     require_client_cert: bool
     purpose: ssl.Purpose
+    minimum_version: ssl.TLSVersion = DEFAULT_SSL_MIN_VERSION
+    maximum_version: ssl.TLSVersion = DEFAULT_SSL_MAX_VERSION
+    ciphers: Tuple[str, ...] = DEFAULT_SSL_CIPHERS
 
 
 class SSLOptions(SSLOptionsBase):
@@ -32,6 +48,9 @@ class SSLOptions(SSLOptionsBase):
         self, cert: Optional[PathOrStr], key: Optional[PathOrStr],
         ca: Optional[PathOrStr], verify: bool, require_client_cert: bool,
         purpose: ssl.Purpose,
+        minimum_version: ssl.TLSVersion = DEFAULT_SSL_MIN_VERSION,
+        maximum_version: ssl.TLSVersion = DEFAULT_SSL_MAX_VERSION,
+        ciphers: Tuple[str, ...] = DEFAULT_SSL_CIPHERS,
     ) -> None:
         super().__init__(
             cert=Path(cert) if cert else None,
@@ -40,24 +59,47 @@ class SSLOptions(SSLOptionsBase):
             verify=verify,
             require_client_cert=require_client_cert,
             purpose=purpose,
+            minimum_version=minimum_version,
+            maximum_version=maximum_version,
+            ciphers=ciphers,
         )
 
     def create_context(self) -> ssl.SSLContext:
         context = ssl.create_default_context(
-            purpose=self.purpose, cafile=self.ca,
+            purpose=self.purpose,
         )
 
-        if self.ca and not self.ca.exists():
-            raise FileNotFoundError("CA file doesn't exists")
+        # Disable compression to prevent CRIME attacks
+        context.options |= ssl.OP_NO_COMPRESSION
 
-        if self.require_client_cert:
-            context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
-
-        if self.key and self.cert:
-            context.load_cert_chain(self.cert, self.key)
+        context.maximum_version = self.maximum_version
+        context.minimum_version = self.minimum_version
+        context.set_ciphers(":".join(self.ciphers))
 
         if not self.verify:
             context.check_hostname = False
+
+        if self.ca:
+            log.debug("Loading CA from %s", self.ca)
+            if not self.ca.exists():
+                raise FileNotFoundError(
+                    "CA file doesn't exists", str(self.ca.resolve()),
+                )
+            context.load_verify_locations(cafile=str(self.ca))
+
+        if self.require_client_cert:
+            log.debug("Set server-side cert verification")
+            context.verify_mode = ssl.VerifyMode.CERT_REQUIRED
+            # Post-handshake authentication is required
+            context.post_handshake_auth = True
+        else:
+            # Disable server-side cert verification
+            context.check_hostname = False
+            context.verify_mode = ssl.VerifyMode.CERT_NONE
+
+        # Load server-side cert and key
+        if self.key and self.cert:
+            context.load_cert_chain(self.cert, self.key)
 
         return context
 
@@ -69,13 +111,20 @@ class TLSServer(SimpleServer):
         self, *, address: Optional[str] = None, port: Optional[int] = None,
         cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
         require_client_cert: bool = False, verify: bool = True,
+        minimum_version: ssl.TLSVersion = DEFAULT_SSL_MIN_VERSION,
+        maximum_version: ssl.TLSVersion = DEFAULT_SSL_MAX_VERSION,
+        ciphers: Tuple[str, ...] = DEFAULT_SSL_CIPHERS,
         options: OptionsType = (), sock: Optional[socket.socket] = None,
         **kwargs: Any,
     ):
 
         self.__ssl_options = SSLOptions(
-            cert, key, ca, verify, require_client_cert,
-            ssl.Purpose.CLIENT_AUTH,
+            cert=cert, key=key, ca=ca, verify=verify,
+            require_client_cert=require_client_cert,
+            purpose=ssl.Purpose.CLIENT_AUTH,
+            minimum_version=minimum_version,
+            maximum_version=maximum_version,
+            ciphers=ciphers,
         )
 
         if not sock:

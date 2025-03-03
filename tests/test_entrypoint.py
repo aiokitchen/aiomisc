@@ -17,6 +17,7 @@ import grpc.aio
 import pytest
 
 import aiomisc
+from aiomisc import timeout
 from aiomisc.entrypoint import Entrypoint, entrypoint
 from aiomisc.service import TCPServer, TLSServer, UDPServer
 from aiomisc.service.aiohttp import AIOHTTPService
@@ -301,18 +302,22 @@ async def test_robust_tcp_client(
 def test_tls_server(
     client_cert_required, certs, ssl_client_context, localhost,
 ):
-    event = asyncio.Event()
-
     class TestService(TLSServer):
         DATA = []
+        event: asyncio.Event
+
+        async def start(self):
+            await super().start()
+            self.event = asyncio.Event()
 
         async def handle_client(
             self, reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter,
         ):
+            print("handle_client")
             self.DATA.append(await reader.readline())
             writer.close()
-            event.set()
+            self.event.set()
 
     service = TestService(
         address="127.0.0.1", port=0,
@@ -336,14 +341,17 @@ def test_tls_server(
             )
 
             ssock.connect(("127.0.0.1", port))
-            ssock.send(b"hello server\n")
+            count_bytes = ssock.send(b"hello server\n")
+            assert count_bytes == len(b"hello server\n")
+
+    @timeout(999)
+    async def go():
+        await asyncio.wait_for(writer(service.port), timeout=10)
+        await service.event.wait()
 
     with aiomisc.entrypoint(service) as loop:
         assert service.address == localhost
-        loop.run_until_complete(
-            asyncio.wait_for(writer(service.port), timeout=10),
-        )
-        loop.run_until_complete(event.wait())
+        loop.run_until_complete(go())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]

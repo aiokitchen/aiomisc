@@ -1,4 +1,0 @@
-cache-dir = ".cache"
-
-[virtualenvs]
-in-project = true
