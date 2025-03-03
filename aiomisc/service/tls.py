@@ -17,6 +17,19 @@ PathOrStr = Union[Path, str]
 log = logging.getLogger(__name__)
 
 
+DEFAULT_SSL_CIPHERS = (
+    "ECDHE-RSA-AES256-GCM-SHA384",
+    "ECDHE-ECDSA-AES256-GCM-SHA384",
+    "ECDHE-RSA-CHACHA20-POLY1305",
+    "ECDHE-ECDSA-CHACHA20-POLY1305",
+    "ECDHE-RSA-AES128-GCM-SHA256",
+    "ECDHE-ECDSA-AES128-GCM-SHA256",
+)
+
+DEFAULT_SSL_MIN_VERSION = ssl.TLSVersion.TLSv1_3
+DEFAULT_SSL_MAX_VERSION = ssl.TLSVersion.TLSv1_3
+
+
 @dataclass(frozen=True)
 class SSLOptionsBase:
     cert: Optional[Path]
@@ -25,16 +38,9 @@ class SSLOptionsBase:
     verify: bool
     require_client_cert: bool
     purpose: ssl.Purpose
-    minimum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_3
-    maximum_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_3
-    ciphers: Tuple[str, ...] = (
-        "ECDHE-RSA-AES256-GCM-SHA384",
-        "ECDHE-ECDSA-AES256-GCM-SHA384",
-        "ECDHE-RSA-CHACHA20-POLY1305",
-        "ECDHE-ECDSA-CHACHA20-POLY1305",
-        "ECDHE-RSA-AES128-GCM-SHA256",
-        "ECDHE-ECDSA-AES128-GCM-SHA256",
-    )
+    minimum_version: ssl.TLSVersion = DEFAULT_SSL_MIN_VERSION
+    maximum_version: ssl.TLSVersion = DEFAULT_SSL_MAX_VERSION
+    ciphers: Tuple[str, ...] = DEFAULT_SSL_CIPHERS
 
 
 class SSLOptions(SSLOptionsBase):
@@ -42,6 +48,9 @@ class SSLOptions(SSLOptionsBase):
         self, cert: Optional[PathOrStr], key: Optional[PathOrStr],
         ca: Optional[PathOrStr], verify: bool, require_client_cert: bool,
         purpose: ssl.Purpose,
+        minimum_version: ssl.TLSVersion = DEFAULT_SSL_MIN_VERSION,
+        maximum_version: ssl.TLSVersion = DEFAULT_SSL_MAX_VERSION,
+        ciphers: Tuple[str, ...] = DEFAULT_SSL_CIPHERS,
     ) -> None:
         super().__init__(
             cert=Path(cert) if cert else None,
@@ -50,6 +59,9 @@ class SSLOptions(SSLOptionsBase):
             verify=verify,
             require_client_cert=require_client_cert,
             purpose=purpose,
+            minimum_version=minimum_version,
+            maximum_version=maximum_version,
+            ciphers=ciphers,
         )
 
     def create_context(self) -> ssl.SSLContext:
@@ -99,13 +111,20 @@ class TLSServer(SimpleServer):
         self, *, address: Optional[str] = None, port: Optional[int] = None,
         cert: PathOrStr, key: PathOrStr, ca: Optional[PathOrStr] = None,
         require_client_cert: bool = False, verify: bool = True,
+        minimum_version: ssl.TLSVersion = DEFAULT_SSL_MIN_VERSION,
+        maximum_version: ssl.TLSVersion = DEFAULT_SSL_MAX_VERSION,
+        ciphers: Tuple[str, ...] = DEFAULT_SSL_CIPHERS,
         options: OptionsType = (), sock: Optional[socket.socket] = None,
         **kwargs: Any,
     ):
 
         self.__ssl_options = SSLOptions(
-            cert, key, ca, verify, require_client_cert,
-            ssl.Purpose.CLIENT_AUTH,
+            cert=cert, key=key, ca=ca, verify=verify,
+            require_client_cert=require_client_cert,
+            purpose=ssl.Purpose.CLIENT_AUTH,
+            minimum_version=minimum_version,
+            maximum_version=maximum_version,
+            ciphers=ciphers,
         )
 
         if not sock:
