@@ -5,8 +5,8 @@ aiomisc - miscellaneous utils for asyncio
    :target: https://coveralls.io/github/aiokitchen/aiomisc
    :alt: Coveralls
 
-.. image:: https://github.com/aiokitchen/aiomisc/workflows/tox/badge.svg
-   :target: https://github.com/aiokitchen/aiomisc/actions?query=workflow%3Atox
+.. image:: https://github.com/aiokitchen/aiomisc/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/aiokitchen/aiomisc/actions/workflows/tests.yml
    :alt: Actions
 
 .. image:: https://img.shields.io/pypi/v/aiomisc.svg

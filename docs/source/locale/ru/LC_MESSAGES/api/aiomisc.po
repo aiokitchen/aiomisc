@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-03 23:11+0200\n"
+"POT-Creation-Date: 2025-03-03 13:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.15.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/api/aiomisc.rst:2
 msgid "``aiomisc`` module"
@@ -321,6 +321,7 @@ msgid ""
 msgstr ""
 
 #: of typing.ParamSpec:15
+#, python-brace-format
 msgid ""
 "T = TypeVar('T')\n"
 "P = ParamSpec('P')\n"
@@ -584,6 +585,45 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:85
 msgid "``aiomisc.log`` module"
 msgstr "Модуль ``aiomisc.log``"
+
+#: aiomisc.log.ThreadedHandler:1 of
+msgid "Bases: :py:class:`~logging.Handler`"
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler:1 of
+msgid ""
+"Initializes the instance - basically setting the formatter to None and "
+"the filter list to empty."
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler.close:1 of
+msgid "Tidy up any resources used by the handler."
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler.close:3 of
+msgid ""
+"This version removes the handler from an internal map of handlers, "
+"_handlers, which is used for handler lookup by name. Subclasses should "
+"ensure that this gets called from overridden close() methods."
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler.emit:1 of
+msgid "Do whatever it takes to actually log the specified logging record."
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler.emit:3 of
+msgid ""
+"This version is intended to be implemented by subclasses and so raises a "
+"NotImplementedError."
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler.flush:1 of
+msgid "Ensure all logging output has been flushed."
+msgstr ""
+
+#: aiomisc.log.ThreadedHandler.flush:3 of
+msgid "This version does nothing and is intended to be implemented by subclasses."
+msgstr ""
 
 #: ../../source/api/aiomisc.rst:93
 msgid "``aiomisc.periodic`` module"
