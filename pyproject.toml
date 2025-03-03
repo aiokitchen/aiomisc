@@ -24,11 +24,11 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python",
     "Topic :: Internet :: WWW/HTTP",
@@ -55,7 +55,7 @@ packages = [
 "Documentation" = "https://docs.aiomisc.com/"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 aiocarbon = { version = "^0.15", optional = true }
 aiohttp = { version = ">3", optional = true }
 aiohttp-asgi = { version = "^0.5.2", optional = true }
@@ -76,7 +76,7 @@ dnslib = { version = "^0.9", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 aiocarbon = "^0.15.3"
-aiohttp = "^3.9"
+aiohttp = "^3.11"
 aiohttp-asgi = "~0.5.2"
 aiomisc-pytest = "^1.0.8"
 asgiref = "^3.7"
