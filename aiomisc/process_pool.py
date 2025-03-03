@@ -18,9 +18,59 @@ class ProcessPoolStatistic(Statistic):
 
 
 class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
+    """
+    Process pool executor with statistic
+
+    Usage:
+
+    .. code-block:: python
+
+        from time import sleep
+        from aiomisc import ProcessPoolExecutor
+
+        # NOTE: blocking function must be defined at the top level
+        # of the module to be able to be pickled and sent to the
+        # child processes.
+        def blocking_fn():
+            sleep(1)
+            return 42
+
+        async def main():
+            executor = ProcessPoolExecutor()
+            the_answer = await executor.submit(blocking_fn)
+            print("The answer is:", the_answer)
+
+        asyncio.run(main())
+    """
+
     DEFAULT_MAX_WORKERS = max((cpu_count(), 4))
 
     def __init__(self, max_workers: int = DEFAULT_MAX_WORKERS, **kwargs: Any):
+        """
+        Initializes a new ProcessPoolExecutor instance.
+
+        * ``max_workers``:
+          The maximum number of processes that can be used to
+          execute the given calls. If None or not given then
+          as many worker processes will be created as the
+          machine has processors.
+        * ``mp_context``:
+          A multiprocessing context to launch the workers. This
+          object should provide SimpleQueue, Queue and Process.
+          Useful to allow specific multiprocessing start methods.
+        * ``initializer``:
+          A callable used to initialize worker processes.
+        * ``initargs``:
+          A tuple of arguments to pass to the initializer.
+        * ``max_tasks_per_child``:
+          The maximum number of tasks a worker process
+          can complete before it will exit and be replaced
+          with a fresh worker process. The default of None
+          means worker process will live as long as the
+          executor. Requires a non-'fork' mp_context start
+          method. When given, we default to using 'spawn'
+          if no mp_context is supplied.
+        """
         super().__init__(max_workers=max_workers, **kwargs)
         self._statistic = ProcessPoolStatistic()
         self._statistic.processes = max_workers
@@ -31,6 +81,9 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         start_time: float,
         loop: asyncio.AbstractEventLoop,
     ) -> None:
+        """
+        Callback for statistic
+        """
         if future.exception():
             self._statistic.error += 1
         else:
@@ -52,4 +105,7 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         return future
 
     def __del__(self) -> None:
+        """
+        Cleanup resources
+        """
         self.shutdown()
