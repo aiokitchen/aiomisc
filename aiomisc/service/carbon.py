@@ -34,6 +34,7 @@ class CarbonSender(Service):
     protocol: str = "udp"
     namespace: Iterable[str] = ("",)
     storage = TotalStorage
+    name: str = "carbon-sender"
     _handle: PeriodicCallback
 
     async def start(self) -> None:
@@ -50,7 +51,7 @@ class CarbonSender(Service):
 
         set_client(client)
 
-        self._handle = PeriodicCallback(client.send, name="carbon-sender")
+        self._handle = PeriodicCallback(client.send, name=self.name)
         self._handle.start(self.send_interval, loop=self.loop)
         log.info(
             "Periodic carbon metrics sender started. Send to %s://%s:%d with "
