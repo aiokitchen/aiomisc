@@ -50,7 +50,7 @@ class CarbonSender(Service):
 
         set_client(client)
 
-        self._handle = PeriodicCallback(client.send)
+        self._handle = PeriodicCallback(client.send, name="carbon-sender")
         self._handle.start(self.send_interval, loop=self.loop)
         log.info(
             "Periodic carbon metrics sender started. Send to %s://%s:%d with "

@@ -28,6 +28,7 @@ class MemoryTracer(Service):
     top_results: int = 20
 
     group_by: GroupBy = GroupBy.lineno
+    name: str = "memory-tracer"
 
     STAT_FORMAT: str = (
         "%(count)8s | "
@@ -41,7 +42,7 @@ class MemoryTracer(Service):
         log.warning("Start memory tracer")
         tracemalloc.start()
 
-        self._tracer = PeriodicCallback(self.show_stats)
+        self._tracer = PeriodicCallback(self.show_stats, name=self.name)
         self._log = log.getChild(str(id(self)))
 
         self._snapshot_on_start = self.take_snapshot()

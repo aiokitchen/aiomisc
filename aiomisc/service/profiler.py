@@ -9,17 +9,19 @@ from .base import Service
 
 
 class Profiler(Service):
-    profiler = None        # type: cProfile.Profile
-    periodic = None        # type: PeriodicCallback
+    profiler: cProfile.Profile
+    periodic: PeriodicCallback
 
-    order = "cumulative"    # type: str
+    order: str = "cumulative"
 
-    path = None             # type: str
-    logger = None           # type: logging.Logger
+    path: Optional[str] = None
+    logger: logging.Logger
 
-    interval = 10           # type: int
-    top_results = 10        # type: int
-    log = logging.getLogger(__name__)   # type: logging.Logger
+    interval: int = 10
+    top_results: int = 10
+    log: logging.Logger = logging.getLogger(__name__)
+
+    name: str = "profiler"
 
     async def start(self) -> None:
         self.logger = self.log.getChild(str(id(self)))

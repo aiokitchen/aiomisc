@@ -37,6 +37,7 @@ class SDWatchdogService(Service):
     socket_addr: Optional[str]
     watchdog_interval: Optional[TimeoutType] = None
     watchdog_timer: PeriodicCallback
+    name: str = "systemd-watchdog"
 
     def __init__(
         self,
@@ -86,7 +87,9 @@ class SDWatchdogService(Service):
         sock.close()
 
     async def start(self) -> None:
-        self.watchdog_timer = PeriodicCallback(self.send, "WATCHDOG=1")
+        self.watchdog_timer = PeriodicCallback(
+            self.send, "WATCHDOG=1", name=self.name,
+        )
 
         if self.is_connected and self.watchdog_interval is not None:
             if self.watchdog_interval != WATCHDOG_INTERVAL:
