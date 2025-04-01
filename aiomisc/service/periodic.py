@@ -14,11 +14,10 @@ class PeriodicService(Service):
 
     interval: Union[int, float]
     delay: Union[int, float] = 0
-    name: str = "carbon-sender"
 
     def __init__(self, *, name: Optional[str] = None, **kwargs: Any):
         super().__init__(**kwargs)
-        self.periodic = PeriodicCallback(self.callback, name=self.name)
+        self.periodic = PeriodicCallback(self.callback, name=name)
 
     async def start(self) -> None:
         assert self.interval, f"Interval illegal interval {self.interval!r}"
