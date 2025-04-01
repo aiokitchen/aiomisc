@@ -48,14 +48,14 @@ class RecurringCallback:
 
     def __init__(
         self, coroutine_func: CallbackType,
-        *args: Any, **kwargs: Any,
+        *args: Any, name: Optional[str] = None, **kwargs: Any,
     ):
         self.func: Callable[..., Awaitable[Any]]
         self.args: Tuple[Any, ...]
         self.kwargs: Mapping[str, Any]
         self._statistic: RecurringCallbackStatistic
 
-        self.name: str = repr(coroutine_func)
+        self.name: str = name or repr(coroutine_func)
         self._statistic = RecurringCallbackStatistic(name=self.name)
         self.func = utils.awaitable(coroutine_func)
         self.args = args

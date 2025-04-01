@@ -15,9 +15,9 @@ class PeriodicService(Service):
     interval: Union[int, float]
     delay: Union[int, float] = 0
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, *, name: Optional[str] = None, **kwargs: Any):
         super().__init__(**kwargs)
-        self.periodic = PeriodicCallback(self.callback)
+        self.periodic = PeriodicCallback(self.callback, name=name)
 
     async def start(self) -> None:
         assert self.interval, f"Interval illegal interval {self.interval!r}"
