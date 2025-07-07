@@ -213,6 +213,12 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
 
     def close(self) -> Awaitable[None]:
         self.__channel.close()
+        # if the iterator inside thread is blocked on `.put()`
+        # we need to wake it up to signal that it is closed.
+        try:
+            self.__channel.queue.get()
+        except QueueEmpty:
+            pass
         return asyncio.ensure_future(self.wait_closed())
 
     async def wait_closed(self) -> None:

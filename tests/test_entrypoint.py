@@ -49,8 +49,6 @@ def unix_socket_udp():
 
     # Behaviour like in the bind_socket
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    if hasattr(socket, "SO_REUSEPORT"):
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
     try:
         sock.bind(socket_path)
@@ -959,10 +957,14 @@ async def test_add_remove_service(entrypoint: aiomisc.Entrypoint):
 @pytest.mark.parametrize(
     "entrypoint_logging_kwargs,basic_config_kwargs", [
         (
-            {},
+            {
+                "log_level": LogLevel.info.name,
+                "log_format": LogFormat.plain,
+                "log_date_format": None,
+            },
             {
                 "level": LogLevel.info.name,
-                "log_format": LogFormat.default(),
+                "log_format": LogFormat.plain,
                 "date_format": None,
             },
         ),
