@@ -38,6 +38,7 @@ def test_sdwatchdog_service(event_loop):
 
         with bind_socket(
             socket.AF_UNIX, socket.SOCK_DGRAM, address=sock_path,
+            reuse_port=False,
         ) as sock:
             try:
                 os.environ["NOTIFY_SOCKET"] = sock_path

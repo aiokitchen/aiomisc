@@ -60,6 +60,7 @@ class WorkerPool:
                 socket.AF_UNIX,
                 socket.SOCK_STREAM,
                 address=path,
+                reuse_port=False,
             )
             self.address = path
             chmod(path, 0o600)

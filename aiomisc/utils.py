@@ -88,6 +88,10 @@ def bind_socket(
     if not args and ":" in address:
         sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
 
+    unix_address_family = getattr(socket, "AF_UNIX", None)
+    if sock.family == unix_address_family:
+        reuse_port = False
+
     if reuse_addr:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -99,7 +103,6 @@ def bind_socket(
     for level, option, value in options:
         sock.setsockopt(level, option, value)
 
-    unix_address_family = getattr(socket, "AF_UNIX", None)
     if sock.family == unix_address_family:
         proto_name = proto_name or "unix"
         sock.bind(address)
