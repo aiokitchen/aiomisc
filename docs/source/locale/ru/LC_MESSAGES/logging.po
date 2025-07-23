@@ -221,13 +221,12 @@ msgid "Buffered log handler"
 msgstr "Буфферизирующий лог-хендлер"
 
 #: ../../source/logging.rst:137
-#, fuzzy
 msgid ""
 "Parameter `buffered=True` enables a memory buffer that flushes logs in a "
 "thread. In case the `handlers=` each will be buffered."
 msgstr ""
 "Параметр `buffered=True` включает буферизацию логов в памяти, отдельный "
-"поток переодически сбрасывает логи в файловый дескриптор."
+"поток переодически сбрасывает логи в файловый дескриптор. В случае `handlers=` все станут буферизированными."
 
 #: ../../source/logging.rst:140
 #, python-format

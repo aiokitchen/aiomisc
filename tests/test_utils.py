@@ -35,8 +35,6 @@ async def test_select_cancelling(event_loop: asyncio.AbstractEventLoop):
     results: List[Optional[bool]] = []
 
     async def good_coro(wait):
-        nonlocal results
-
         try:
             if wait:
                 await asyncio.sleep(10)
@@ -110,7 +108,6 @@ def test_shield():
 
     @aiomisc.shield
     async def coro():
-        nonlocal results
         await asyncio.sleep(0.5)
         results.append(True)
 

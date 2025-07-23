@@ -201,7 +201,6 @@ msgid "``pip install aiomisc[uvicorn]``"
 msgstr ""
 
 #: ../../source/index.rst:101
-#, fuzzy
 msgid "For running ASGI_ application using uvicorn_"
 msgstr "Для запуска ASGI_ приложений через uvicorn_"
 

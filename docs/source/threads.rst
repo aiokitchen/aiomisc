@@ -78,6 +78,11 @@ Example output:
 +++++++++++++++++++++
 
 Wraps blocking function and run it in the current thread pool.
+Decorator returns a :class:`aiomisc.thread_pool.Threaded` object.
+
+This you can call wrapped function as a coroutine using :func:`aiomisc.thread_pool.Threaded.__call__` method
+or :func:`aiomisc.thread_pool.Threaded.async_call` method, both returns a coroutine object.
+Also you can use it as synchronous function with :func:`aiomisc.thread_pool.Threaded.sync_call` method.
 
 
 .. code-block:: python
@@ -103,6 +108,9 @@ Wraps blocking function and run it in the current thread pool.
     if __name__ == '__main__':
         loop = new_event_loop()
         loop.run_until_complete(main())
+
+        # You can call it as synchronous function
+        blocking_function.sync_call()
 
 In case the function is a generator function ``@threaded`` decorator will return
 ``IteratorWrapper`` (see Threaded generator decorator).

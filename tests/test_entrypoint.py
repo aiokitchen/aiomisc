@@ -149,11 +149,11 @@ def test_wrong_subclass():
 
     with pytest.raises(TypeError):
         class NoAsyncStopServiceSubclass(MyService):
-            def stop(self, *_) -> Any:  # type: ignore
+            def stop(self, *_) -> Any:
                 return True
 
     class AsyncStopServiceSubclass(MyService):
-        async def stop(self, *_) -> Any:  # type: ignore
+        async def stop(self, *_) -> Any:
             return True
 
 
@@ -883,7 +883,7 @@ async def test_entrypoint_graceful_shutdown_loop_owner(event_loop):
     task: Task
 
     async def func():
-        nonlocal event
+        nonlocal event  # noqa
         await event.wait()
 
     async def pre_start(**_):
@@ -891,7 +891,7 @@ async def test_entrypoint_graceful_shutdown_loop_owner(event_loop):
         task = get_event_loop().create_task(func())
 
     async def post_stop(**_):
-        nonlocal event, task
+        nonlocal event, task  # noqa
         event.set()
         with suppress(asyncio.TimeoutError):
             await asyncio.wait_for(task, timeout=1.0)

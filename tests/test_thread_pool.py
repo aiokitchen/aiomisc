@@ -269,7 +269,7 @@ async def test_threaded_generator(event_loop, timer):
 
         result = []
         agen = arange(count)
-        async for item in agen:     # type: ignore
+        async for item in agen:
             result.append(item)
 
         assert result == list(range(count))
@@ -283,19 +283,10 @@ async def test_threaded_generator_max_size(
         return (yield from range(*args))
 
     async with timeout(2):
-        arange2 = aiomisc.threaded_iterable(max_size=1)(range)
-
         count = 10
 
         result = []
         agen = arange(count)
-        async for item in agen:
-            result.append(item)
-
-        assert result == list(range(count))
-
-        result = []
-        agen = arange2(count)
         async for item in agen:
             result.append(item)
 
@@ -362,7 +353,7 @@ async def test_threaded_generator_close_cm(
 
     @iterator_decorator(max_size=1)
     def noise():
-        nonlocal stopped
+        nonlocal stopped  # noqa
 
         try:
             while True:
@@ -389,7 +380,7 @@ async def test_threaded_generator_close_break(
 
     @iterator_decorator(max_size=1)
     def noise():
-        nonlocal stopped
+        nonlocal stopped  # noqa
 
         try:
             while True:

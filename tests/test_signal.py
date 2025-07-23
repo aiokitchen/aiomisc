@@ -168,7 +168,7 @@ async def test_add_remove_service_with_signals(
 
     class SimpleService(aiomisc.Service):
         async def start(self) -> None:
-            nonlocal pre_start_services
+            nonlocal pre_start_services     # noqa
             pre_start_services.append(self)
 
     entrypoint.pre_start = entrypoint.pre_start.copy()

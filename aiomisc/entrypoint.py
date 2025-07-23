@@ -419,7 +419,7 @@ class Entrypoint:
         handle = loop.call_later(self.shutdown_timeout, task.cancel)
 
         def on_shutdown_finish(task: asyncio.Future) -> None:
-            nonlocal handle, loop
+            nonlocal handle, loop   # noqa
 
             if task.cancelled():
                 log.warning(

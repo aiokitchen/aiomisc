@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-12-29 11:36+0300\n"
+"POT-Creation-Date: 2025-07-24 00:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/threads.rst:2
 msgid "Working with threads"
@@ -35,9 +35,9 @@ msgid ""
 "from PyPI for python earlier 3.7 and builtin a standard library for "
 "python 3.7."
 msgstr ""
-"Все нижеописанные декоратоы и функции поддерживают модуль "
-"``contextvars``, из PyPI для python моложе 3.7 так и встроенный в "
-"стандартную библиотеку модуль для python 3.7."
+"Все следующие декораторы и функции поддерживают модуль ``contextvars``, "
+"устанавливаемый из PyPI для Python версии ниже 3.7 и встроенный в стандартную библиотеку для "
+"Python 3.7."
 
 #: ../../source/threads.rst:13
 msgid ""
@@ -116,10 +116,28 @@ msgid "``@aiomisc.threaded``"
 msgstr ""
 
 #: ../../source/threads.rst:80
-msgid "Wraps blocking function and run it in the current thread pool."
-msgstr "Оборачивает блокирующую функцию и запускает ее в пуле потоков."
+msgid ""
+"Wraps blocking function and run it in the current thread pool. Decorator "
+"returns a :class:`aiomisc.thread_pool.Threaded` object."
+msgstr ""
+"Оборачивает блокирующую функцию-генератор и запусакет ее в текущем пуле "
+"потоков или новом отдельном потоке."
 
 #: ../../source/threads.rst:83
+msgid ""
+"This you can call wrapped function as a coroutine using "
+":func:`aiomisc.thread_pool.Threaded.__call__` method or "
+":func:`aiomisc.thread_pool.Threaded.async_call` method, both returns a "
+"coroutine object. Also you can use it as synchronous function with "
+":func:`aiomisc.thread_pool.Threaded.sync_call` method."
+msgstr ""
+"Таким образом, вы можете вызывать обёрнутую функцию как coroutine с помощью "
+":func:`aiomisc.thread_pool.Threaded.__call__` или "
+":func:`aiomisc.thread_pool.Threaded.async_call`, оба метода возвращают "
+"объект coroutine. Также можно использовать её как синхронную функцию через "
+":func:`aiomisc.thread_pool.Threaded.sync_call`."
+
+#: ../../source/threads.rst:88
 msgid ""
 "import asyncio\n"
 "import time\n"
@@ -141,7 +159,10 @@ msgid ""
 "\n"
 "if __name__ == '__main__':\n"
 "    loop = new_event_loop()\n"
-"    loop.run_until_complete(main())"
+"    loop.run_until_complete(main())\n"
+"\n"
+"    # You can call it as synchronous function\n"
+"    blocking_function.sync_call()"
 msgstr ""
 "import asyncio\n"
 "import time\n"
@@ -154,7 +175,7 @@ msgstr ""
 "\n"
 "\n"
 "async def main():\n"
-"    # Параллельный запуск\n"
+"    # Конкурентный запуск\n"
 "    await asyncio.gather(\n"
 "        blocking_function(),\n"
 "        blocking_function(),\n"
@@ -163,9 +184,12 @@ msgstr ""
 "\n"
 "if __name__ == '__main__':\n"
 "    loop = new_event_loop()\n"
-"    loop.run_until_complete(main())"
+"    loop.run_until_complete(main())\n"
+"\n"
+"    # Все еще можно вызвать блокирующую функцию\n"
+"    blocking_function.sync_call()"
 
-#: ../../source/threads.rst:107
+#: ../../source/threads.rst:115
 msgid ""
 "In case the function is a generator function ``@threaded`` decorator will"
 " return ``IteratorWrapper`` (see Threaded generator decorator)."
@@ -173,11 +197,11 @@ msgstr ""
 "В случае если функция это генератор тогда декоратор ``@threaded`` вернет "
 "``IteratorWrapper`` (см Threaded generator decorator)."
 
-#: ../../source/threads.rst:112
+#: ../../source/threads.rst:120
 msgid "``@aiomisc.threaded_separate``"
 msgstr ""
 
-#: ../../source/threads.rst:114
+#: ../../source/threads.rst:122
 msgid ""
 "Wraps blocking function and run it in a new separate thread. Highly "
 "recommended for long background tasks:"
@@ -185,7 +209,7 @@ msgstr ""
 "Оборачивает блокирующую функцию и запускает ее в отдельном новом "
 "потоке.Крайне рекомендовано для длительных фоновых задач:"
 
-#: ../../source/threads.rst:117
+#: ../../source/threads.rst:125
 msgid ""
 "import asyncio\n"
 "import time\n"
@@ -259,11 +283,11 @@ msgstr ""
 "with aiomisc.entrypoint() as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/threads.rst:157
+#: ../../source/threads.rst:165
 msgid "Threaded iterator decorator"
 msgstr "Threaded iterator decorator"
 
-#: ../../source/threads.rst:159
+#: ../../source/threads.rst:167
 msgid ""
 "Wraps blocking generator function and run it in the current thread pool "
 "or on a new separate thread."
@@ -271,7 +295,7 @@ msgstr ""
 "Оборачивает блокирующую функцию-генератор и запусакет ее в текущем пуле "
 "потоков или новом отдельном потоке."
 
-#: ../../source/threads.rst:162
+#: ../../source/threads.rst:170
 msgid ""
 "Following example reads itself file, chains hashes of every line with the"
 " hash of the previous line and sends hash and content via TCP:"
@@ -279,7 +303,7 @@ msgstr ""
 "Следующий пример читает свой собственный код, и обновляет хеш для каждой "
 "следующей строки от предидущих строк, и отправляет все это по TCP:"
 
-#: ../../source/threads.rst:165
+#: ../../source/threads.rst:173
 msgid ""
 "import asyncio\n"
 "import hashlib\n"
@@ -341,13 +365,13 @@ msgstr ""
 "with aiomisc.entrypoint() as loop\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/threads.rst:199
+#: ../../source/threads.rst:207
 msgid "Run ``netcat`` listener in the terminal and run this example"
 msgstr ""
 "Запустим TCP сервер с помощью ``netcat`` в терминале, и после запустим "
 "этот пример."
 
-#: ../../source/threads.rst:201
+#: ../../source/threads.rst:209
 msgid ""
 "$ netcat -v -l -p 2233\n"
 "Connection from 127.0.0.1:54734\n"
@@ -427,7 +451,7 @@ msgstr ""
 "8b04db9d80d8cda79c3b9c4640c08928       loop = aiomisc.new_event_loop()\n"
 "9cc5f29f81e15cb262a46cf96b8788ba       loop.run_until_complete(main())"
 
-#: ../../source/threads.rst:237
+#: ../../source/threads.rst:245
 msgid ""
 "You should use async context managers in the case when your generator "
 "works infinity, or you have to await the ``.close()`` method when you "
@@ -438,7 +462,7 @@ msgstr ""
 "``.close()`` если вы избегаете использование асинхронных "
 "контекст-менеджеров."
 
-#: ../../source/threads.rst:240
+#: ../../source/threads.rst:248
 msgid ""
 "import asyncio\n"
 "import aiomisc\n"
@@ -554,15 +578,15 @@ msgstr ""
 "with aiomisc.entrypoint() as loop:\n"
 "    loop.run_until_complete(main())"
 
-#: ../../source/threads.rst:300
+#: ../../source/threads.rst:308
 msgid "``aiomisc.IteratorWrapper``"
 msgstr ""
 
-#: ../../source/threads.rst:302
+#: ../../source/threads.rst:310
 msgid "Run iterables on dedicated thread pool:"
 msgstr "Запускает блокирующий итератор в пуле потоков:"
 
-#: ../../source/threads.rst:304
+#: ../../source/threads.rst:312
 msgid ""
 "import concurrent.futures\n"
 "import hashlib\n"
@@ -640,15 +664,15 @@ msgstr ""
 "    with aiomisc.entrypoint() as loop:\n"
 "        loop.run_until_complete(main())"
 
-#: ../../source/threads.rst:345
+#: ../../source/threads.rst:353
 msgid "``aiomisc.IteratorWrapperSeparate``"
 msgstr ""
 
-#: ../../source/threads.rst:347
+#: ../../source/threads.rst:355
 msgid "Run iterables on a separate thread:"
 msgstr "Запускает блокирующий итераторы в отдельном новом потоке:"
 
-#: ../../source/threads.rst:349
+#: ../../source/threads.rst:357
 msgid ""
 "import concurrent.futures\n"
 "import hashlib\n"
@@ -718,19 +742,19 @@ msgstr ""
 "    with aiomisc.entrypoint() as loop:\n"
 "        loop.run_until_complete(main())"
 
-#: ../../source/threads.rst:388
+#: ../../source/threads.rst:396
 msgid "``aiomisc.ThreadPoolExecutor``"
 msgstr ""
 
-#: ../../source/threads.rst:390
+#: ../../source/threads.rst:398
 msgid "This is a fast thread pool implementation."
 msgstr "Реализация быстрого и простого пула потоков."
 
-#: ../../source/threads.rst:392
+#: ../../source/threads.rst:400
 msgid "Setting as a default thread pool:"
 msgstr "Устанавливаем как пул потоков по умолчанию:"
 
-#: ../../source/threads.rst:394
+#: ../../source/threads.rst:402
 msgid ""
 "import asyncio\n"
 "from aiomisc import ThreadPoolExecutor\n"
@@ -740,21 +764,21 @@ msgid ""
 "loop.set_default_executor(thread_pool)"
 msgstr ""
 
-#: ../../source/threads.rst:406
+#: ../../source/threads.rst:414
 msgid "``entrypoint`` context manager will set it by default."
 msgstr "``entrypoint`` установит это по умолчанию."
 
-#: ../../source/threads.rst:408
+#: ../../source/threads.rst:416
 msgid "``entrypoint``'s argument ``pool_size`` limits thread pool size."
 msgstr ""
 "Аргумент ``pool_size`` в ``entrypoint`` ограничивает кол-во потоков п "
 "пуле."
 
-#: ../../source/threads.rst:412
+#: ../../source/threads.rst:420
 msgid "``aiomisc.sync_wait_coroutine``"
 msgstr ""
 
-#: ../../source/threads.rst:414
+#: ../../source/threads.rst:422
 msgid ""
 "Functions running in thread can't call and wait for a result from "
 "coroutines by default. This function is the helper for send coroutine to "
@@ -764,7 +788,7 @@ msgstr ""
 "умолчанию. Эта функция это хелпер позволяет отправить сопрограмму в event"
 " loop и дождаться ее результата из текущего потока."
 
-#: ../../source/threads.rst:418
+#: ../../source/threads.rst:426
 msgid ""
 "import asyncio\n"
 "import aiomisc\n"
@@ -786,3 +810,35 @@ msgid ""
 "with aiomisc.entrypoint() as loop:\n"
 "    loop.run_until_complete(in_thread(loop))"
 msgstr ""
+
+#~ msgid "Wraps blocking function and run it in the current thread pool."
+#~ msgstr "Оборачивает блокирующую функцию и запускает ее в пуле потоков."
+
+#~ msgid ""
+#~ "Wraps blocking function and run it "
+#~ "in the current thread pool. Decorator"
+#~ " returns a :class:`aiomisc.thread_pool.Threaded` "
+#~ "object. This you can call wrapped "
+#~ "function as a coroutine using "
+#~ ":method:`aiomisc.thread_pool.Threaded.__call__` method or"
+#~ " :method:`aiomisc.thread_pool.Threaded.async_call` method,"
+#~ " both returns a coroutine object. "
+#~ "Also you can use it as synchronous"
+#~ " function with "
+#~ ":method:`aiomisc.thread_pool.Threaded.sync_call` method."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Wraps blocking function and run it "
+#~ "in the current thread pool. Decorator"
+#~ " returns a :class:`aiomisc.thread_pool.Threaded` "
+#~ "object. This you can call wrapped "
+#~ "function as a coroutine using "
+#~ ":func:`aiomisc.thread_pool.Threaded.__call__` method or"
+#~ " :func:`aiomisc.thread_pool.Threaded.async_call` method, "
+#~ "both returns a coroutine object. Also"
+#~ " you can use it as synchronous "
+#~ "function with "
+#~ ":func:`aiomisc.thread_pool.Threaded.sync_call` method."
+#~ msgstr ""
+

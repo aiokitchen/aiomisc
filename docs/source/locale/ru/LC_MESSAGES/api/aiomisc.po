@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 15:03+0100\n"
+"POT-Creation-Date: 2025-07-24 00:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -604,12 +604,18 @@ msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.QueueWrapperBase`"
 msgstr ""
 
 #: aiomisc.iterator_wrapper.IteratorProxy:1 of
-msgid "Bases: :py:class:`~typing.AsyncIterator`"
+msgid ""
+"Bases: :py:class:`~typing.Generic`\\ "
+"[:py:obj:`~aiomisc.iterator_wrapper.T`], "
+":py:class:`~typing.AsyncIterator`"
 msgstr ""
 
 #: aiomisc.iterator_wrapper.IteratorWrapper:1 of
 msgid ""
-"Bases: :py:class:`~typing.AsyncIterator`, "
+"Bases: :py:class:`~typing.Generic`\\ "
+"[:py:obj:`~aiomisc.iterator_wrapper.P`, "
+":py:obj:`~aiomisc.iterator_wrapper.T`], "
+":py:class:`~typing.AsyncIterator`, "
 ":py:class:`~aiomisc.compat.EventLoopMixin`"
 msgstr ""
 
@@ -862,6 +868,30 @@ msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "futures. Futures that are completed or running will not be cancelled."
+msgstr ""
+
+#: aiomisc.thread_pool.Threaded:1 aiomisc.thread_pool.ThreadedIterable:1 of
+msgid ""
+"Bases: :py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.thread_pool.P`, "
+":py:obj:`~aiomisc.thread_pool.T`]"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadedIterableSeparate:1 of
+msgid ""
+"Bases: :py:class:`~aiomisc.thread_pool.ThreadedIterable`\\ "
+"[:py:obj:`~aiomisc.thread_pool.P`, :py:obj:`~aiomisc.thread_pool.T`]"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadedSeparate:1 of
+msgid ""
+"Bases: :py:class:`~aiomisc.thread_pool.Threaded`\\ "
+"[:py:obj:`~aiomisc.thread_pool.P`, :py:obj:`~aiomisc.thread_pool.T`]"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadedSeparate:1 of
+msgid ""
+"A decorator to run a function in a separate thread. It returns an "
+"`asyncio.Future` that can be awaited."
 msgstr ""
 
 #: aiomisc.thread_pool.WorkItem:1 of
@@ -1283,3 +1313,12 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "\n"
 #~ "asyncio.run(main())"
 #~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~typing.AsyncIterator`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.AsyncIterator`, "
+#~ ":py:class:`~aiomisc.compat.EventLoopMixin`"
+#~ msgstr ""
+

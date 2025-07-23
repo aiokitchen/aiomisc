@@ -86,7 +86,7 @@ def main() -> int:
     env["AIOMISC_NO_PLUGINS"] = ""
 
     def create_worker() -> Worker:
-        nonlocal env
+        nonlocal env        # noqa
         return Worker(
             log_level, log_format, address, cookie, worker_id, env,
             initializer, initializer_args, initializer_kwargs,
