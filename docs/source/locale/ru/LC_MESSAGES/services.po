@@ -522,9 +522,8 @@ msgstr ""
 "    loop.run_forever()"
 
 #: ../../source/services.rst:393
-#, fuzzy
 msgid "DNS Server"
-msgstr "asgi сервис"
+msgstr "DNS сервис"
 
 #: ../../source/services.rst:395
 msgid ""
@@ -1333,12 +1332,10 @@ msgstr ""
 "``TLSServer``)."
 
 #: ../../source/services.rst:999
-#, fuzzy
 msgid "uvicorn service"
-msgstr "Uvicorn сервис"
+msgstr "uvicorn сервис"
 
 #: ../../source/services.rst:1003
-#, fuzzy
 msgid "requires installed uvicorn:"
 msgstr "необходимо установить библиотеку uvicorn_:"
 
@@ -1351,7 +1348,6 @@ msgid "pip install aiomisc[uvicorn]"
 msgstr ""
 
 #: ../../source/services.rst:1016
-#, fuzzy
 msgid "Any ASGI-like application can be started via uvicorn as a service:"
 msgstr ""
 "Любое ASGI совместимое приложение может быть запущено через uvicorn как "
@@ -1396,7 +1392,6 @@ msgid ""
 msgstr ""
 
 #: ../../source/services.rst:1061
-#, fuzzy
 msgid "GRPC service"
 msgstr "GRPC сервис"
 
