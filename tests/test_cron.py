@@ -57,7 +57,7 @@ async def test_shield(event_loop):
     condition = asyncio.Condition()
 
     async def task():
-        nonlocal counter, condition
+        nonlocal counter, condition  # noqa
         counter += 1
         async with condition:
             condition.notify_all()
@@ -86,7 +86,7 @@ async def test_restart(event_loop):
     condition = asyncio.Condition()
 
     async def task():
-        nonlocal counter, condition
+        nonlocal counter, condition  # noqa
         counter += 1
         async with condition:
             condition.notify_all()

@@ -25,8 +25,8 @@ def test_periodic(event_loop):
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
-            nonlocal counter
-            nonlocal condition
+            nonlocal counter    # noqa
+            nonlocal condition  # noqa
 
             async with condition:
                 counter += 1
@@ -35,7 +35,7 @@ def test_periodic(event_loop):
     svc = CountPeriodicService(interval=0.1)
 
     async def assert_counter():
-        nonlocal counter, svc
+        nonlocal counter, svc  # noqa
 
         counter = 0
 
@@ -71,7 +71,7 @@ def test_delay(event_loop):
     svc = CountPeriodicService(interval=0.1, delay=0.5)
 
     async def assert_counter():
-        nonlocal counter, svc
+        nonlocal counter, svc  # noqa
 
         counter = 0
         await asyncio.sleep(0.25)

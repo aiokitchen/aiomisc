@@ -20,7 +20,7 @@ EXIT_LOCK = Lock()
 
 
 def at_exit() -> None:
-    global PROCESSES
+    global PROCESSES    # noqa
 
     with EXIT_LOCK:
         pids = tuple(PROCESSES.keys())
@@ -61,7 +61,7 @@ def fork(worker_id: bytes, cookie: bytes, address: AddressType) -> None:
 
 
 def main() -> int:
-    global STOPPING
+    global STOPPING     # noqa
 
     proto_stdin = FileIOProtocol(sys.stdin.buffer)
 

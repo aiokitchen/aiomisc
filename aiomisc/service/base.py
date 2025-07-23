@@ -1,8 +1,6 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
-from typing import (
-    Any, Coroutine, Dict, Generator, Optional, Set, Tuple, TypeVar, Union,
-)
+from typing import Any, Coroutine, Dict, Optional, Set, Tuple, TypeVar, Union
 
 from ..context import Context, get_context
 from ..utils import cancel_tasks

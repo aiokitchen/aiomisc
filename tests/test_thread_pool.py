@@ -6,13 +6,11 @@ import threading
 import time
 import weakref
 from contextlib import suppress
-from typing import Callable
 
 import pytest
 from async_timeout import timeout
 
 import aiomisc
-from aiomisc import IteratorWrapper
 from aiomisc.iterator_wrapper import ChannelClosed, FromThreadChannel
 
 
@@ -355,7 +353,7 @@ async def test_threaded_generator_close_cm(
 
     @iterator_decorator(max_size=1)
     def noise():
-        nonlocal stopped
+        nonlocal stopped  # noqa
 
         try:
             while True:
@@ -382,7 +380,7 @@ async def test_threaded_generator_close_break(
 
     @iterator_decorator(max_size=1)
     def noise():
-        nonlocal stopped
+        nonlocal stopped  # noqa
 
         try:
             while True:

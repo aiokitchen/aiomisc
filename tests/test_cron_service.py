@@ -15,7 +15,7 @@ def test_cron():
     condition: asyncio.Condition
 
     async def callback():
-        nonlocal counter
+        nonlocal counter  # noqa
         async with condition:
             counter += 1
             condition.notify_all()
@@ -25,7 +25,7 @@ def test_cron():
     svc.register(callback, spec="* * * * * *")
 
     async def assert_counter():
-        nonlocal counter, svc
+        nonlocal counter, svc  # noqa
 
         counter = 0
         async with condition:
@@ -74,7 +74,7 @@ def test_register():
     svc.register(callback, spec="* * * * * *")
 
     async def assert_counter():
-        nonlocal counter, svc
+        nonlocal counter, svc  # noqa
 
         counter = 0
         async with condition:

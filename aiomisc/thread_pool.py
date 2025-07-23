@@ -8,7 +8,7 @@ import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from dataclasses import dataclass, field
-from functools import partial, wraps
+from functools import partial
 from multiprocessing import cpu_count
 from queue import SimpleQueue
 from types import MappingProxyType
@@ -374,13 +374,15 @@ class Threaded(Generic[P, T]):
 
 
 @overload
-def threaded(func: Callable[P, T]) -> Threaded[P, T]: ...
+def threaded(func: Callable[P, T]) -> Threaded[P, T]:
+    ...
 
 
 @overload
 def threaded(
     func: Callable[P, Generator[T, None, None]]
-) -> Callable[P, IteratorWrapper[P, T]]: ...
+) -> Callable[P, IteratorWrapper[P, T]]:
+    ...
 
 
 def threaded(
@@ -505,7 +507,8 @@ def threaded_iterable(
     func: Callable[P, Generator[T, None, None]],
     *,
     max_size: int = 0,
-) -> "ThreadedIterable[P, T]": ...
+) -> "ThreadedIterable[P, T]":
+    ...
 
 
 @overload
@@ -513,7 +516,9 @@ def threaded_iterable(
     *,
     max_size: int = 0,
 ) -> Callable[
-    [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]]: ...
+    [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]
+]:
+    ...
 
 
 def threaded_iterable(
@@ -522,13 +527,15 @@ def threaded_iterable(
     max_size: int = 0,
 ) -> Union[
     ThreadedIterable[P, T],
-    Callable[[Callable[P, Generator[T, None, None]]],
-    ThreadedIterable[P, T]]
+    Callable[
+        [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]
+    ]
 ]:
     if func is None:
         return lambda f: ThreadedIterable(f, max_size=max_size)
 
     return ThreadedIterable(func, max_size=max_size)
+
 
 class IteratorWrapperSeparate(IteratorWrapper):
     def _run(self) -> Any:
@@ -550,7 +557,8 @@ def threaded_iterable_separate(
     func: Callable[P, Generator[T, None, None]],
     *,
     max_size: int = 0,
-) -> "ThreadedIterable[P, T]": ...
+) -> "ThreadedIterable[P, T]":
+    ...
 
 
 @overload
@@ -560,7 +568,8 @@ def threaded_iterable_separate(
 ) -> Callable[
     [Callable[P, Generator[T, None, None]]],
     ThreadedIterableSeparate[P, T]
-]: ...
+]:
+    ...
 
 
 def threaded_iterable_separate(
@@ -569,14 +578,14 @@ def threaded_iterable_separate(
     max_size: int = 0,
 ) -> Union[
     ThreadedIterable[P, T],
-    Callable[[Callable[P, Generator[T, None, None]]],
-    ThreadedIterableSeparate[P, T]]
+    Callable[
+        [Callable[P, Generator[T, None, None]]], ThreadedIterableSeparate[P, T]
+    ]
 ]:
     if func is None:
         return lambda f: ThreadedIterableSeparate(f, max_size=max_size)
 
     return ThreadedIterableSeparate(func, max_size=max_size)
-
 
 
 class CoroutineWaiter:

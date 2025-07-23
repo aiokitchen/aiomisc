@@ -9,11 +9,10 @@ from typing import Any, List, Sequence
 
 import pytest
 
-from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
-
+from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, \
+    aggregate_async
 
 log = logging.getLogger(__name__)
-
 
 pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
@@ -104,7 +103,7 @@ async def test_leeway_ok(event_loop, leeway):
 
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal t_exec
+        nonlocal t_exec  # noqa
         t_exec = time.time()
         event.set()
 
@@ -210,7 +209,7 @@ async def test_leeway_cancel(event_loop, leeway):
 
     @aggregate(leeway * 1000)
     async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal executions, executing_task, t_exec, delay_exec
+        nonlocal executions, executing_task, t_exec, delay_exec  # noqa
         t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
@@ -269,7 +268,7 @@ async def test_max_count_cancel(event_loop):
 
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal executions, executing_task, t_exec, delay_exec
+        nonlocal executions, executing_task, t_exec, delay_exec  # noqa
         t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
@@ -328,7 +327,7 @@ async def test_max_count_multiple_batches_cancel(event_loop, leeway):
 
     @aggregate(leeway * 1000, max_count)
     async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal executions, executing_task, delay_exec
+        nonlocal executions, executing_task, delay_exec  # noqa
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -404,7 +403,6 @@ async def test_low_level_sloppy(event_loop, leeway):
 
 
 async def test_low_level_ok(event_loop, leeway):
-
     @aggregate_async(leeway * 1000)
     async def pow(*args: Arg, power: float = 2):
         for arg in args:
@@ -421,7 +419,6 @@ async def test_low_level_ok(event_loop, leeway):
 
 
 async def test_low_level_error(event_loop, leeway):
-
     @aggregate_async(leeway * 1000)
     async def pho(*args: Arg):
         for arg in args:
