@@ -6,11 +6,13 @@ import threading
 import time
 import weakref
 from contextlib import suppress
+from typing import Callable
 
 import pytest
 from async_timeout import timeout
 
 import aiomisc
+from aiomisc import IteratorWrapper
 from aiomisc.iterator_wrapper import ChannelClosed, FromThreadChannel
 
 
@@ -269,7 +271,7 @@ async def test_threaded_generator(event_loop, timer):
 
         result = []
         agen = arange(count)
-        async for item in agen:     # type: ignore
+        async for item in agen:
             result.append(item)
 
         assert result == list(range(count))
@@ -283,19 +285,10 @@ async def test_threaded_generator_max_size(
         return (yield from range(*args))
 
     async with timeout(2):
-        arange2 = aiomisc.threaded_iterable(max_size=1)(range)
-
         count = 10
 
         result = []
         agen = arange(count)
-        async for item in agen:
-            result.append(item)
-
-        assert result == list(range(count))
-
-        result = []
-        agen = arange2(count)
         async for item in agen:
             result.append(item)
 

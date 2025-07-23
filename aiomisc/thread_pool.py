@@ -2,6 +2,7 @@ import asyncio
 import contextvars
 import inspect
 import logging
+import os
 import threading
 import time
 import warnings
@@ -12,8 +13,8 @@ from multiprocessing import cpu_count
 from queue import SimpleQueue
 from types import MappingProxyType
 from typing import (
-    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, Optional, Set, Tuple,
-    TypeVar,
+    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, Generic,
+    Optional, Set, Tuple, TypeVar, Generator, overload, Union
 )
 
 from ._context_vars import EVENT_LOOP
@@ -21,11 +22,14 @@ from .compat import ParamSpec
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
 
-
 P = ParamSpec("P")
 T = TypeVar("T")
 F = TypeVar("F", bound=Callable[..., Any])
 log = logging.getLogger(__name__)
+
+THREADED_ITERABLE_DEFAULT_MAX_SIZE = int(
+    os.getenv("THREADED_ITERABLE_DEFAULT_MAX_SIZE", 1024)
+)
 
 
 def context_partial(
@@ -327,6 +331,7 @@ def run_in_executor(
             return await loop.run_in_executor(
                 executor, partial(func, *args, **kwargs),
             )
+
         return lazy_wrapper()
 
 
@@ -340,22 +345,54 @@ async def _awaiter(future: asyncio.Future) -> T:
         raise
 
 
+class Threaded(Generic[P, T]):
+    __slots__ = ("func",)
+
+    def __init__(self, func: Callable[P, T]) -> None:
+        if asyncio.iscoroutinefunction(func):
+            raise TypeError("Can not wrap coroutine")
+        if inspect.isgeneratorfunction(func):
+            raise TypeError("Can not wrap generator function")
+        self.func = func
+
+    def sync_call(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        return self.func(*args, **kwargs)
+
+    def async_call(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+        return run_in_executor(func=self.func, args=args, kwargs=kwargs)
+
+    def __repr__(self) -> str:
+        return f"<Threaded {self.func.__name__} at {id(self):#x}>"
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+        return self.async_call(*args, **kwargs)
+
+    def __get__(self, instance: Any, owner: Optional[type] = None) -> Any:
+        if instance is None:
+            return self
+        return partial(self.async_call, instance)
+
+
+@overload
+def threaded(func: Callable[P, T]) -> Threaded[P, T]: ...
+
+
+@overload
 def threaded(
-    func: Callable[P, T],
-) -> Callable[P, Awaitable[T]]:
-    if asyncio.iscoroutinefunction(func):
-        raise TypeError("Can not wrap coroutine")
+    func: Callable[P, Generator[T, None, None]]
+) -> Callable[P, IteratorWrapper[P, T]]: ...
 
+
+def threaded(
+    func: Callable[P, T] | Callable[P, Generator[T, None, None]]
+) -> Threaded[P, T] | Callable[P, IteratorWrapper[P, T]]:
     if inspect.isgeneratorfunction(func):
-        return threaded_iterable(func)
+        return threaded_iterable(
+            func,
+            max_size=THREADED_ITERABLE_DEFAULT_MAX_SIZE
+        )
 
-    @wraps(func)
-    def wrap(
-        *args: P.args, **kwargs: P.kwargs,
-    ) -> Awaitable[T]:
-        return run_in_executor(func=func, args=args, kwargs=kwargs)
-
-    return wrap
+    return Threaded(func)   # type: ignore
 
 
 def run_in_new_thread(
@@ -390,67 +427,156 @@ def run_in_new_thread(
     return future
 
 
+class ThreadedSeparate(Threaded[P, T]):
+    """
+    A decorator to run a function in a separate thread.
+    It returns an `asyncio.Future` that can be awaited.
+    """
+
+    def __init__(self, func: Callable[P, T], detach: bool = True) -> None:
+        super().__init__(func)
+        self.detach = detach
+
+    def async_call(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+        return run_in_new_thread(
+            self.func, args=args, kwargs=kwargs, detach=self.detach,
+        )
+
+
 def threaded_separate(
-    func: F,
+    func: Callable[P, T],
     detach: bool = True,
-) -> Callable[..., Awaitable[Any]]:
+) -> ThreadedSeparate[P, T]:
     if isinstance(func, bool):
         return partial(threaded_separate, detach=detach)
 
     if asyncio.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")
 
-    @wraps(func)
-    def wrap(*args: Any, **kwargs: Any) -> Any:
-        future = run_in_new_thread(
-            func, args=args, kwargs=kwargs, detach=detach,
-        )
-        return future
+    return ThreadedSeparate(func, detach=detach)
 
-    return wrap
+
+class ThreadedIterable(Generic[P, T]):
+    def __init__(
+        self,
+        func: Callable[P, Generator[T, None, None]],
+        max_size: int = 0
+    ) -> None:
+        self.func = func
+        self.max_size = max_size
+
+    def sync_call(
+        self, *args: P.args, **kwargs: P.kwargs
+    ) -> Generator[T, None, None]:
+        return self.func(*args, **kwargs)
+
+    def async_call(
+        self, *args: P.args, **kwargs: P.kwargs
+    ) -> IteratorWrapper[P, T]:
+        return self.create_wrapper(*args, **kwargs)
+
+    def create_wrapper(
+        self, *args: P.args, **kwargs: P.kwargs
+    ) -> IteratorWrapper[P, T]:
+        return IteratorWrapper(
+            partial(self.func, *args, **kwargs),
+            max_size=self.max_size,
+        )
+
+    def __call__(
+        self,
+        *args: P.args,
+        **kwargs: P.kwargs
+    ) -> IteratorWrapper[P, T]:
+        return self.async_call(*args, **kwargs)
+
+    def __get__(
+        self,
+        instance: Any,
+        owner: Optional[type] = None
+    ) -> Any:
+        if instance is None:
+            return self
+        return partial(self.async_call, instance)
+
+
+@overload
+def threaded_iterable(
+    func: Callable[P, Generator[T, None, None]],
+    *,
+    max_size: int = 0,
+) -> "ThreadedIterable[P, T]": ...
+
+
+@overload
+def threaded_iterable(
+    *,
+    max_size: int = 0,
+) -> Callable[
+    [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]]: ...
 
 
 def threaded_iterable(
-    func: Optional[F] = None,
+    func: Optional[Callable[P, Generator[T, None, None]]] = None,
+    *,
     max_size: int = 0,
-) -> Any:
-    if isinstance(func, int):
-        return partial(threaded_iterable, max_size=func)
+) -> Union[
+    ThreadedIterable[P, T],
+    Callable[[Callable[P, Generator[T, None, None]]],
+    ThreadedIterable[P, T]]
+]:
     if func is None:
-        return partial(threaded_iterable, max_size=max_size)
+        return lambda f: ThreadedIterable(f, max_size=max_size)
 
-    @wraps(func)
-    def wrap(*args: Any, **kwargs: Any) -> Any:
-        return IteratorWrapper(
-            partial(func, *args, **kwargs),
-            max_size=max_size,
-        )
-
-    return wrap
-
+    return ThreadedIterable(func, max_size=max_size)
 
 class IteratorWrapperSeparate(IteratorWrapper):
     def _run(self) -> Any:
         return run_in_new_thread(self._in_thread)
 
 
-def threaded_iterable_separate(
-    func: Optional[F] = None,
-    max_size: int = 0,
-) -> Any:
-    if isinstance(func, int):
-        return partial(threaded_iterable_separate, max_size=func)
-    if func is None:
-        return partial(threaded_iterable_separate, max_size=max_size)
-
-    @wraps(func)
-    def wrap(*args: Any, **kwargs: Any) -> Any:
+class ThreadedIterableSeparate(ThreadedIterable[P, T]):
+    def create_wrapper(
+        self, *args: P.args, **kwargs: P.kwargs
+    ) -> IteratorWrapperSeparate:
         return IteratorWrapperSeparate(
-            partial(func, *args, **kwargs),
-            max_size=max_size,
+            partial(self.func, *args, **kwargs),
+            max_size=self.max_size,
         )
 
-    return wrap
+
+@overload
+def threaded_iterable_separate(
+    func: Callable[P, Generator[T, None, None]],
+    *,
+    max_size: int = 0,
+) -> "ThreadedIterable[P, T]": ...
+
+
+@overload
+def threaded_iterable_separate(
+    *,
+    max_size: int = 0,
+) -> Callable[
+    [Callable[P, Generator[T, None, None]]],
+    ThreadedIterableSeparate[P, T]
+]: ...
+
+
+def threaded_iterable_separate(
+    func: Optional[Callable[P, Generator[T, None, None]]] = None,
+    *,
+    max_size: int = 0,
+) -> Union[
+    ThreadedIterable[P, T],
+    Callable[[Callable[P, Generator[T, None, None]]],
+    ThreadedIterableSeparate[P, T]]
+]:
+    if func is None:
+        return lambda f: ThreadedIterableSeparate(f, max_size=max_size)
+
+    return ThreadedIterableSeparate(func, max_size=max_size)
+
 
 
 class CoroutineWaiter:
@@ -509,4 +635,5 @@ def sync_await(
 ) -> T:
     async def awaiter() -> T:
         return await func(*args, **kwargs)
+
     return wait_coroutine(awaiter())

@@ -9,7 +9,7 @@ from ..utils import cancel_tasks
 
 
 T = TypeVar("T")
-CoroutineType = Union[Coroutine[Any, Any, T], Generator[Any, None, T]]
+CoroutineType = Union[Coroutine[Any, Any, T]]
 
 
 class ServiceMeta(ABCMeta):

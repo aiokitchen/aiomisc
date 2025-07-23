@@ -9,7 +9,7 @@ from time import time
 from types import TracebackType
 from typing import (
     Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
-    Optional, Type, TypeVar, Union,
+    Optional, Type, TypeVar, Union, Generic, ParamSpec,
 )
 from weakref import finalize
 
@@ -19,8 +19,9 @@ from aiomisc.counters import Statistic
 
 T = TypeVar("T")
 R = TypeVar("R")
+P = ParamSpec("P")
 
-GenType = Generator[T, R, None]
+GenType = Generator[T, None, None]
 FuncType = Callable[[], GenType]
 
 
@@ -144,7 +145,7 @@ class IteratorWrapperStatistic(Statistic):
     enqueued: int
 
 
-class IteratorWrapper(AsyncIterator, EventLoopMixin):
+class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
     __slots__ = (
         "__channel",
         "__close_event",
@@ -155,9 +156,11 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
     ) + EventLoopMixin.__slots__
 
     def __init__(
-        self, gen_func: FuncType,
+        self,
+        gen_func: Callable[P, Generator[T, None, None]],
         loop: Optional[asyncio.AbstractEventLoop] = None,
-        max_size: int = 0, executor: Optional[Executor] = None,
+        max_size: int = 0,
+        executor: Optional[Executor] = None,
         statistic_name: Optional[str] = None,
     ):
 
@@ -227,11 +230,9 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
             await asyncio.gather(self.__gen_task, return_exceptions=True)
 
     def _run(self) -> Any:
-        return self.loop.run_in_executor(
-            self.executor, self._in_thread,
-        )
+        return self.loop.run_in_executor(self.executor, self._in_thread)
 
-    def __aiter__(self) -> AsyncIterator[Any]:
+    def __aiter__(self) -> AsyncIterator[T]:
         if not self.loop.is_running():
             raise RuntimeError("Event loop is not running")
 
@@ -242,7 +243,7 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
             self.__gen_task = gen_task
         return IteratorProxy(self, self.close)
 
-    async def __anext__(self) -> Awaitable[T]:
+    async def __anext__(self) -> T:
         try:
             item, is_exc = await self.__channel.get()
         except ChannelClosed:
@@ -269,13 +270,13 @@ class IteratorWrapper(AsyncIterator, EventLoopMixin):
         await self.close()
 
 
-class IteratorProxy(AsyncIterator):
+class IteratorProxy(Generic[T], AsyncIterator):
     def __init__(
-        self, iterator: AsyncIterator,
+        self, iterator: AsyncIterator[T],
         finalizer: Callable[[], Any],
     ):
         self.__iterator = iterator
         finalize(self, finalizer)
 
-    def __anext__(self) -> Awaitable[Any]:
+    def __anext__(self) -> Awaitable[T]:
         return self.__iterator.__anext__()
