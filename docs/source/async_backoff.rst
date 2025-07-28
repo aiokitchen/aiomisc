@@ -103,6 +103,21 @@ Keyword arguments notation:
         ...
 
 
+    # Class based example
+    backoff = aiomisc.Backoff(
+        attempt_timeout=0.5,
+        deadline=1,
+        pause=0.1,
+        exceptions=[OSError],
+        giveup=lambda e: e.errno != errno.ECONNABORTED
+    )
+
+    async def fetcher(data: dict):
+        items = await backoff.execute(db_fetch, data)
+        # wrap `db_save` with backoff with the same parameters
+        await asyncio.gather(*backoff.execute(db_save, item) for item in items)
+
+
 .. _asyncretry:
 
 ``asyncretry``
