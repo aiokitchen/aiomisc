@@ -2,11 +2,12 @@ import asyncio
 import logging
 import os
 import socket
-import sys
-from typing import Any, Iterator, Optional
+from typing import (
+    Any, Iterator, Optional, final, TypeAlias, ParamSpec,
+    Protocol
+)
 
 from ._context_vars import EVENT_LOOP
-
 
 log = logging.getLogger(__name__)
 
@@ -17,29 +18,6 @@ except ImportError:
 
     def time_ns() -> int:
         return int(time() * 1000000000)
-
-try:
-    from typing import final
-except ImportError:
-    from typing_extensions import final  # type: ignore
-
-
-try:
-    from typing import TypeAlias
-except ImportError:
-    from typing_extensions import TypeAlias
-
-
-if sys.version_info >= (3, 10):
-    from typing import ParamSpec
-else:
-    from typing_extensions import ParamSpec
-
-
-if sys.version_info >= (3, 8):
-    from typing import Protocol
-else:
-    from typing_extensions import Protocol
 
 
 class EntrypointProtocol(Protocol):
@@ -77,12 +55,13 @@ class EventLoopMixin:
     def loop(self) -> asyncio.AbstractEventLoop:
         if not getattr(self, "_loop", None):
             self._loop = asyncio.get_running_loop()
-        return self._loop   # type: ignore
+        return self._loop  # type: ignore
 
 
 event_loop_policy: asyncio.AbstractEventLoopPolicy
 try:
     import uvloop
+
     if (
         os.getenv("AIOMISC_USE_UVLOOP", "1").lower() in
         ("yes", "1", "enabled", "enable", "on", "true")
@@ -92,7 +71,6 @@ try:
         event_loop_policy = asyncio.DefaultEventLoopPolicy()
 except ImportError:
     event_loop_policy = asyncio.DefaultEventLoopPolicy()
-
 
 if hasattr(socket, "TCP_NODELAY"):
     def sock_set_nodelay(sock: socket.socket) -> None:

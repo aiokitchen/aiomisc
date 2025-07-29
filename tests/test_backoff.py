@@ -336,3 +336,21 @@ async def test_asyncretry(event_loop):
         await test()
 
     assert mana == 5
+
+
+async def test_asyncretry_class(event_loop):
+    mana = 0
+
+    class Foo:
+        @aiomisc.asyncretry(5)
+        async def test(self):
+            nonlocal mana
+            mana += 1
+            raise ValueError("RETRY")
+
+    foo = Foo()
+
+    with pytest.raises(ValueError, match="^RETRY$"):
+        await foo.test()
+
+    assert mana == 5
