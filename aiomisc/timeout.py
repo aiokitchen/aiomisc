@@ -1,6 +1,6 @@
 import asyncio
 from functools import wraps
-from typing import Any, Callable, Coroutine, TypeVar, Union, ParamSpec
+from typing import Any, Callable, Coroutine, ParamSpec, TypeVar, Union
 
 
 T = TypeVar("T")

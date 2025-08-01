@@ -3,13 +3,14 @@ import logging
 import os
 import socket
 from typing import (
-    Any, Iterator, Optional, final, TypeAlias, ParamSpec,
-    Protocol
+    Any, Iterator, Optional, ParamSpec, Protocol, TypeAlias, final,
 )
 
 from ._context_vars import EVENT_LOOP
 
+
 log = logging.getLogger(__name__)
+
 
 try:
     from time import time_ns
@@ -18,6 +19,12 @@ except ImportError:
 
     def time_ns() -> int:
         return int(time() * 1000000000)
+
+
+try:
+    from typing import Concatenate
+except ImportError:
+    from typing_extensions import Concatenate
 
 
 class EntrypointProtocol(Protocol):
@@ -98,6 +105,7 @@ set_current_loop = EVENT_LOOP.set
 get_current_loop = EVENT_LOOP.get
 
 __all__ = (
+    "Concatenate",
     "EntrypointProtocol",
     "EventLoopMixin",
     "ParamSpec",

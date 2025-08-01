@@ -9,8 +9,8 @@ from typing import Any, List, Sequence
 
 import pytest
 
-from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, \
-    aggregate_async
+from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
+
 
 log = logging.getLogger(__name__)
 
