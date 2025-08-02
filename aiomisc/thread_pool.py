@@ -419,9 +419,9 @@ class Threaded(ThreadedBase[P, T]):
         owner: Optional[type] = None,
     ) -> "Threaded[P, T] | BoundThreaded[Any, T]":
         key = instance
+        result: Any
         if key in self.__cache:
             return self.__cache[key]
-
         if self.func_type is staticmethod:
             result = self
         elif self.func_type is classmethod:
@@ -605,6 +605,7 @@ class ThreadedIterable(ThreadedIterableBase[P, T]):
         owner: Optional[type] = None,
     ) -> "ThreadedIterable[P, T] | BoundThreadedIterable[Any, T]":
         key = instance
+        result: Any
         if key in self.__cache:
             return self.__cache[key]
 
