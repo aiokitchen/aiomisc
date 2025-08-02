@@ -8,8 +8,8 @@ from queue import Queue
 from time import time
 from types import TracebackType
 from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, NoReturn,
-    Optional, Type, TypeVar, Union, Generic, ParamSpec,
+    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, Generic,
+    NoReturn, Optional, ParamSpec, Type, TypeVar, Union,
 )
 from weakref import finalize
 

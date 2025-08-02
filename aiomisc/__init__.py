@@ -1,7 +1,7 @@
 from . import io, log
 from ._context_vars import StrictContextVar
 from .aggregate import aggregate, aggregate_async
-from .backoff import asyncbackoff, asyncretry, Backoff, BackoffExecution
+from .backoff import Backoff, BackoffExecution, asyncbackoff, asyncretry
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
 from .context import Context, get_context
 from .counters import Statistic, get_statistics

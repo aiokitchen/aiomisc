@@ -11,6 +11,7 @@ import pytest
 from async_timeout import timeout
 
 import aiomisc
+from aiomisc import threaded, threaded_iterable
 from aiomisc.iterator_wrapper import ChannelClosed, FromThreadChannel
 
 
@@ -564,3 +565,99 @@ def test_task_channel():
 
     for event in events:
         event.wait(timeout=1)
+
+
+async def test_threaded_class_func():
+    @threaded
+    def foo():
+        return 42
+
+    assert foo.sync_call() == 42
+    assert await foo() == 42
+    assert await foo.async_call() == 42
+
+
+async def test_threaded_class_method():
+    class TestClass:
+        @threaded
+        def foo(self):
+            return 42
+
+    instance = TestClass()
+    assert instance.foo.sync_call() == 42
+    assert await instance.foo() == 42
+    assert await instance.foo.async_call() == 42
+
+
+async def test_threaded_class_staticmethod():
+    class TestClass:
+        @threaded
+        @staticmethod
+        def foo():
+            return 42
+
+    instance = TestClass()
+    assert instance.foo.sync_call() == 42
+    assert await instance.foo() == 42
+    assert await instance.foo.async_call() == 42
+
+
+async def test_threaded_class_classmethod():
+    class TestClass:
+        @threaded
+        @classmethod
+        def foo(cls):
+            return 42
+
+    instance = TestClass()
+    assert instance.foo.sync_call() == 42
+    assert await instance.foo() == 42
+    assert await instance.foo.async_call() == 42
+
+
+async def test_threaded_iterator_class_func():
+    @threaded_iterable
+    def foo():
+        yield 42
+
+    assert list(foo.sync_call()) == [42]
+    assert [x async for x in foo()] == [42]
+    assert [x async for x in foo.async_call()] == [42]
+
+
+async def test_threaded_iterator_class_method():
+    class TestClass:
+        @threaded_iterable
+        def foo(self):
+            yield 42
+
+    instance = TestClass()
+    assert list(instance.foo.sync_call()) == [42]
+    assert [x async for x in instance.foo()] == [42]
+    assert [x async for x in instance.foo.async_call()] == [42]
+
+
+async def test_threaded_iterator_class_staticmethod():
+    class TestClass:
+        @threaded_iterable
+        @staticmethod
+        def foo():
+            yield 42
+
+    instance = TestClass()
+    assert list(instance.foo.sync_call()) == [42]
+    assert [x async for x in instance.foo()] == [42]
+    assert [x async for x in instance.foo.async_call()] == [42]
+
+
+async def test_threaded_iterator_class_classmethod():
+    class TestClass:
+        @threaded_iterable
+        @classmethod
+        def foo(cls):
+            yield 42
+
+    instance = TestClass()
+    assert list(instance.foo.sync_call()) == [42]
+    assert [x async for x in instance.foo()] == [42]
+    assert [x async for x in instance.foo.async_call()] == [42]

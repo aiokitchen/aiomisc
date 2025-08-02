@@ -1,9 +1,8 @@
 import asyncio
-
 from functools import wraps
 from typing import (
-    Any, Callable, Coroutine, Optional, Tuple, Type, TypeVar, Union, Generic,
-    ParamSpec
+    Any, Callable, Coroutine, Generic, Optional, ParamSpec, Tuple, Type,
+    TypeVar, Union,
 )
 
 from .counters import Statistic
@@ -46,7 +45,7 @@ class Backoff:
         max_tries: Optional[int] = None,
         giveup: Optional[Callable[[Exception], bool]] = None,
         statistic_name: Optional[str] = None,
-        statistic_class: Type[BackoffStatistic] = BackoffStatistic
+        statistic_class: Type[BackoffStatistic] = BackoffStatistic,
     ):
         if not pause:
             pause = 0
@@ -78,7 +77,7 @@ class Backoff:
 
     def prepare(
         self,
-        func: Callable[P, Coroutine[Any, Any, T]]
+        func: Callable[P, Coroutine[Any, Any, T]],
     ) -> "BackoffExecution[P, T]":
         return BackoffExecution(
             function=func,
@@ -95,14 +94,14 @@ class Backoff:
         self,
         func: Callable[P, Coroutine[Any, Any, T]],
         *args: P.args,
-        **kwargs: P.kwargs
+        **kwargs: P.kwargs,
     ) -> T:
         execution = self.prepare(func)
         return await execution(*args, **kwargs)
 
     def __call__(
         self,
-        func: Callable[P, Coroutine[Any, Any, T]]
+        func: Callable[P, Coroutine[Any, Any, T]],
     ) -> Callable[P, Coroutine[Any, Any, T]]:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function must be a coroutine function")
