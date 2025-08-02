@@ -15,8 +15,9 @@ from queue import SimpleQueue
 from types import MappingProxyType
 from typing import (
     Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, Generator, Generic,
-    Optional, Set, Tuple, TypeVar, Union, overload,
+    Optional, Set, Tuple, TypeVar, Union, overload, MutableMapping,
 )
+from weakref import WeakKeyDictionary
 
 from ._context_vars import EVENT_LOOP
 from .compat import Concatenate, ParamSpec
@@ -379,6 +380,8 @@ class Threaded(ThreadedBase[P, T]):
     func_type: type
 
     def __init__(self, func: Callable[P, T]) -> None:
+        self.__cache: MutableMapping[Any, Any] = WeakKeyDictionary()
+
         if isinstance(func, staticmethod):
             self.func_type = staticmethod
             self.func = func.__func__
@@ -415,14 +418,22 @@ class Threaded(ThreadedBase[P, T]):
         instance: Any,
         owner: Optional[type] = None,
     ) -> "Threaded[P, T] | BoundThreaded[Any, T]":
+        key = instance
+        result: Any
+        if key in self.__cache:
+            return self.__cache[key]
         if self.func_type is staticmethod:
-            return self
+            result = self
         elif self.func_type is classmethod:
             cls = owner if instance is None else type(instance)
-            return BoundThreaded(self.func, cls)
+            result = BoundThreaded(self.func, cls)
         elif instance is not None:
-            return BoundThreaded(self.func, instance)
-        return self
+            result = BoundThreaded(self.func, instance)
+        else:
+            result = self
+
+        self.__cache[key] = result
+        return result
 
 
 class BoundThreaded(ThreadedBase[P, T]):
@@ -570,6 +581,7 @@ class ThreadedIterable(ThreadedIterableBase[P, T]):
 
         self.func = actual_func
         self.max_size = max_size
+        self.__cache: MutableMapping[Any, Any] = WeakKeyDictionary()
 
     @overload
     def __get__(
@@ -592,14 +604,23 @@ class ThreadedIterable(ThreadedIterableBase[P, T]):
         instance: Any,
         owner: Optional[type] = None,
     ) -> "ThreadedIterable[P, T] | BoundThreadedIterable[Any, T]":
+        key = instance
+        result: Any
+        if key in self.__cache:
+            return self.__cache[key]
+
         if self.func_type is staticmethod:
-            return self
+            result = self
         elif self.func_type is classmethod:
             cls = owner if instance is None else type(instance)
-            return BoundThreadedIterable(self.func, cls, self.max_size)
+            result = BoundThreadedIterable(self.func, cls, self.max_size)
         elif instance is not None:
-            return BoundThreadedIterable(self.func, instance, self.max_size)
-        return self
+            result = BoundThreadedIterable(self.func, instance, self.max_size)
+        else:
+            result = self
+
+        self.__cache[key] = result
+        return result
 
 
 class BoundThreadedIterable(ThreadedIterableBase[P, T]):

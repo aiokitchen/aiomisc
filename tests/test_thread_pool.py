@@ -584,6 +584,7 @@ async def test_threaded_class_method():
             return 42
 
     instance = TestClass()
+    assert instance.foo is instance.foo
     assert instance.foo.sync_call() == 42
     assert await instance.foo() == 42
     assert await instance.foo.async_call() == 42
@@ -597,6 +598,7 @@ async def test_threaded_class_staticmethod():
             return 42
 
     instance = TestClass()
+    assert instance.foo is instance.foo
     assert instance.foo.sync_call() == 42
     assert await instance.foo() == 42
     assert await instance.foo.async_call() == 42
@@ -610,6 +612,7 @@ async def test_threaded_class_classmethod():
             return 42
 
     instance = TestClass()
+    assert instance.foo is instance.foo
     assert instance.foo.sync_call() == 42
     assert await instance.foo() == 42
     assert await instance.foo.async_call() == 42
@@ -620,6 +623,7 @@ async def test_threaded_iterator_class_func():
     def foo():
         yield 42
 
+    assert foo is foo
     assert list(foo.sync_call()) == [42]
     assert [x async for x in foo()] == [42]
     assert [x async for x in foo.async_call()] == [42]
@@ -632,6 +636,7 @@ async def test_threaded_iterator_class_method():
             yield 42
 
     instance = TestClass()
+    assert instance.foo is instance.foo
     assert list(instance.foo.sync_call()) == [42]
     assert [x async for x in instance.foo()] == [42]
     assert [x async for x in instance.foo.async_call()] == [42]
@@ -645,6 +650,7 @@ async def test_threaded_iterator_class_staticmethod():
             yield 42
 
     instance = TestClass()
+    assert instance.foo is instance.foo
     assert list(instance.foo.sync_call()) == [42]
     assert [x async for x in instance.foo()] == [42]
     assert [x async for x in instance.foo.async_call()] == [42]
@@ -658,6 +664,7 @@ async def test_threaded_iterator_class_classmethod():
             yield 42
 
     instance = TestClass()
+    assert instance.foo is instance.foo
     assert list(instance.foo.sync_call()) == [42]
     assert [x async for x in instance.foo()] == [42]
     assert [x async for x in instance.foo.async_call()] == [42]
