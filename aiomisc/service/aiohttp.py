@@ -1,5 +1,7 @@
+import asyncio
 import socket
 import ssl
+from contextlib import suppress
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 from aiohttp.web import Application, AppRunner, BaseRunner, SockSite  # noqa
@@ -99,8 +101,12 @@ class AIOHTTPService(Service):
             if self.site:
                 await self.site.stop()
         finally:
+            # Ensure all handlers are finished
+            await asyncio.sleep(0)
             if hasattr(self, "runner"):
-                await self.runner.cleanup()
+                # Avoid AttributeError in case server already dereferenced
+                with suppress(AttributeError):
+                    await self.runner.cleanup()
 
 
 class AIOHTTPSSLService(AIOHTTPService):
