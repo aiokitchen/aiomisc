@@ -5,6 +5,7 @@ import signal
 import sys
 import threading
 from concurrent.futures import Executor
+from functools import cached_property
 from typing import (
     Any, Callable, Coroutine, FrozenSet, Iterable, MutableSet, Optional, Set,
     Tuple, TypeVar, Union,
@@ -177,7 +178,6 @@ class Entrypoint:
         self._loop_owner = False
         self._tasks: MutableSet[asyncio.Task] = WeakSet()
         self._thread_pool: Optional[ExecutorType] = None
-        self._closing: Optional[asyncio.Event] = None
 
         if catch_signals is None and is_main_thread():
             # Apply default catch signals only if the entrypoint is creating
@@ -225,11 +225,15 @@ class Entrypoint:
     def services(self) -> Tuple[Service, ...]:
         return tuple(self._services)
 
-    async def closing(self) -> None:
-        # Lazy initialization because event loop might be not exists
-        if self._closing is None:
-            self._closing = asyncio.Event()
+    @cached_property
+    def _closing(self) -> asyncio.Event:
+        return asyncio.Event()
 
+    @cached_property
+    def _shutdown_lock(self) -> asyncio.Lock:
+        return asyncio.Lock()
+
+    async def closing(self) -> None:
         await self._closing.wait()
 
     @property
@@ -288,18 +292,10 @@ class Entrypoint:
     ) -> None:
         await self._stop(exc_val)
 
-    if sys.version_info < (3, 9):
-        async def __shutdown_thread_pool(
-            self, loop: asyncio.AbstractEventLoop,
-        ) -> None:
-            result = self._thread_pool.shutdown()
-            if hasattr(result, "__await__"):
-                await result
-    else:
-        def __shutdown_thread_pool(
-            self, loop: asyncio.AbstractEventLoop,
-        ) -> Coroutine[Any, Any, None]:
-            return loop.shutdown_default_executor()
+    def __shutdown_thread_pool(
+        self, loop: asyncio.AbstractEventLoop,
+    ) -> Coroutine[Any, Any, None]:
+        return loop.shutdown_default_executor()
 
     async def _stop(self, exc: Exception) -> None:
         loop = self.loop
@@ -396,9 +392,10 @@ class Entrypoint:
         )
 
     async def graceful_shutdown(self, exception: Exception) -> None:
-        if self._closing:
+        async with self._shutdown_lock:
+            if self._closing.is_set():
+                return
             self._closing.set()
-
         await cancel_tasks(set(self._tasks))
         await self.stop_services(*self._services, exc=exception)
 
