@@ -5,10 +5,10 @@ import os
 import threading
 import time
 import weakref
+from asyncio import timeout
 from contextlib import suppress
 
 import pytest
-from async_timeout import timeout
 
 import aiomisc
 from aiomisc import threaded, threaded_iterable

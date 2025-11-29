@@ -54,7 +54,7 @@ packages = [
 "Documentation" = "https://docs.aiomisc.com/"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 aiocarbon = { version = "^0.15", optional = true }
 aiohttp = { version = ">3", optional = true }
 aiohttp-asgi = { version = "^0.5.2", optional = true }
@@ -79,7 +79,6 @@ aiohttp = "^3.11"
 aiohttp-asgi = "~0.5.2"
 aiomisc-pytest = "^1.0.8"
 asgiref = "^3.7"
-async-timeout = "^4.0.2"
 autodoc = "^0.5.0"
 autoflake = "1.4"
 certifi = "^2024.6.2"
