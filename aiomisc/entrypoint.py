@@ -68,9 +68,7 @@ class Entrypoint:
     DEFAULT_LOG_FORMAT: str = os.getenv(
         "AIOMISC_LOG_FORMAT", LogFormat.default()
     )
-    DEFAULT_LOG_DATE_FORMAT: str | None = os.getenv(
-        "AIOMISC_LOG_DATE_FORMAT"
-    )
+    DEFAULT_LOG_DATE_FORMAT: str | None = os.getenv("AIOMISC_LOG_DATE_FORMAT")
 
     DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
     DEFAULT_AIOMISC_LOG_CONFIG: bool = _get_env_bool("AIOMISC_LOG_CONFIG", "1")
