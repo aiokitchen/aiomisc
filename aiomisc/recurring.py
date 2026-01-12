@@ -1,19 +1,16 @@
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable, Mapping
 from types import MappingProxyType
-from typing import (
-    Any, Awaitable, Callable, Mapping, Optional, Tuple, Type, Union,
-)
+from typing import Any, Union
 
 from aiomisc import Statistic, utils
 
-
 log = logging.getLogger(__name__)
-ExceptionsType = Tuple[Type[Exception], ...]
-CallbackType = Callable[..., Union[Awaitable[Any], Any]]
+ExceptionsType = tuple[type[Exception], ...]
+CallbackType = Callable[..., Awaitable[Any] | Any]
 RecurringCallbackStrategy = Callable[
-    ["RecurringCallback"],
-    Union[int, float, Awaitable[int], Awaitable[float]],
+    ["RecurringCallback"], int | float | Awaitable[int] | Awaitable[float]
 ]
 
 
@@ -39,19 +36,22 @@ class StrategySkip(StrategyException):
     Strategy function might raise this exception as way to skip current call
     """
 
-    def __init__(self, next_attempt_delay: Union[int, float]):
+    def __init__(self, next_attempt_delay: int | float):
         self.delay = next_attempt_delay
 
 
 class RecurringCallback:
-    __slots__ = ("func", "args", "kwargs", "name", "_statistic")
+    __slots__ = ("_statistic", "args", "func", "kwargs", "name")
 
     def __init__(
-        self, coroutine_func: CallbackType,
-        *args: Any, name: Optional[str] = None, **kwargs: Any,
+        self,
+        coroutine_func: CallbackType,
+        *args: Any,
+        name: str | None = None,
+        **kwargs: Any,
     ):
         self.func: Callable[..., Awaitable[Any]]
-        self.args: Tuple[Any, ...]
+        self.args: tuple[Any, ...]
         self.kwargs: Mapping[str, Any]
         self._statistic: RecurringCallbackStatistic
 
@@ -67,7 +67,7 @@ class RecurringCallback:
         suppress_exceptions: ExceptionsType = (),
     ) -> None:
         self._statistic.call_count += 1
-        delta: float = - loop.time()
+        delta: float = -loop.time()
         try:
             await self.func(*self.args, **self.kwargs)
         except suppress_exceptions:
@@ -86,11 +86,10 @@ class RecurringCallback:
 
     async def _start(
         self,
-        strategy: Callable[
-            ["RecurringCallback"], Awaitable[Union[int, float]],
-        ],
+        strategy: Callable[["RecurringCallback"], Awaitable[int | float]],
         loop: asyncio.AbstractEventLoop,
-        *, shield: bool = False,
+        *,
+        shield: bool = False,
         suppress_exceptions: ExceptionsType = (),
     ) -> None:
         runner: Callable[..., Awaitable[Any]]
@@ -104,18 +103,20 @@ class RecurringCallback:
                 runner = utils.shield(self._exec)
 
             try:
-                delay: Union[int, float] = await strategy(self)
+                delay: int | float = await strategy(self)
                 if not isinstance(delay, (int, float)):
                     log.warning(
                         "Strategy %r returns wrong delay %r. Stopping.",
-                        strategy, delay,
+                        strategy,
+                        delay,
                     )
                     return
                 if delay < 0:
                     log.warning(
                         "Strategy %r returns negative delay %r. "
                         "Zero delay will be used.",
-                        strategy, delay,
+                        strategy,
+                        delay,
                     )
                     delay = 0
             except StrategySkip as e:
@@ -127,10 +128,7 @@ class RecurringCallback:
             await asyncio.sleep(delay)
             future = loop.create_future()
             task: asyncio.Task = asyncio.ensure_future(
-                runner(
-                    loop=loop,
-                    suppress_exceptions=suppress_exceptions,
-                ),
+                runner(loop=loop, suppress_exceptions=suppress_exceptions)
             )
 
             def on_done(task: asyncio.Task) -> None:
@@ -151,16 +149,19 @@ class RecurringCallback:
     def start(
         self,
         strategy: RecurringCallbackStrategy,
-        loop: Optional[asyncio.AbstractEventLoop] = None, *,
+        loop: asyncio.AbstractEventLoop | None = None,
+        *,
         shield: bool = False,
         suppress_exceptions: ExceptionsType = (),
     ) -> asyncio.Task:
         loop = loop or asyncio.get_event_loop()
         return loop.create_task(
             self._start(
-                strategy=utils.awaitable(strategy), loop=loop, shield=shield,
+                strategy=utils.awaitable(strategy),
+                loop=loop,
+                shield=shield,
                 suppress_exceptions=suppress_exceptions,
-            ),
+            )
         )
 
     def __repr__(self) -> str:

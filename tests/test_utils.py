@@ -5,12 +5,12 @@ import socket
 import time
 import uuid
 from random import shuffle
-from typing import List, Optional, Sequence
+from typing import List, Optional
+from collections.abc import Sequence
 
 import pytest
 
 import aiomisc
-
 
 pytestmark = pytest.mark.catch_loop_exceptions
 
@@ -32,7 +32,7 @@ async def test_select(event_loop: asyncio.AbstractEventLoop):
 
 
 async def test_select_cancelling(event_loop: asyncio.AbstractEventLoop):
-    results: List[Optional[bool]] = []
+    results: list[bool | None] = []
 
     async def good_coro(wait):
         try:
@@ -123,7 +123,7 @@ def test_shield():
 
     with aiomisc.entrypoint() as event_loop:
         event_loop.run_until_complete(
-            asyncio.wait_for(main(event_loop), timeout=10),
+            asyncio.wait_for(main(event_loop), timeout=10)
         )
 
     assert results == [True]
@@ -131,7 +131,7 @@ def test_shield():
 
 def test_chunk_list():
     data: Sequence[Sequence[int]] = tuple(
-        map(tuple, aiomisc.chunk_list(range(10), 3)),
+        map(tuple, aiomisc.chunk_list(range(10), 3))
     )
 
     assert data == ((0, 1, 2), (3, 4, 5), (6, 7, 8), (9,))
@@ -141,7 +141,7 @@ def test_configure_logging_json(capsys):
     data = str(uuid.uuid4())
 
     aiomisc.log.basic_config(
-        level=logging.DEBUG, log_format="json", buffered=False,
+        level=logging.DEBUG, log_format="json", buffered=False
     )
     logging.info(data)
 
@@ -161,8 +161,7 @@ def test_configure_logging_stderr(capsys):
 
     # logging.basicConfig(level=logging.INFO)
     aiomisc.log.basic_config(
-        level=logging.DEBUG,
-        log_format="stream", buffered=False,
+        level=logging.DEBUG, log_format="stream", buffered=False
     )
 
     logging.info(data)
@@ -193,9 +192,7 @@ def test_bind_address(address, family, aiomisc_unused_port):
 async def test_cancel_tasks(event_loop):
     semaphore = asyncio.Semaphore(10)
 
-    tasks = [
-        event_loop.create_task(semaphore.acquire()) for _ in range(20)
-    ]
+    tasks = [event_loop.create_task(semaphore.acquire()) for _ in range(20)]
 
     done, pending = await asyncio.wait(tasks, timeout=0.5)
 

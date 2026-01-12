@@ -10,10 +10,7 @@ async def test_kwargs(event_loop):
     mana = 0
 
     @aiomisc.asyncbackoff(
-        attempt_timeout=0.5,
-        deadline=0.5,
-        pause=0,
-        exceptions=(Exception,),
+        attempt_timeout=0.5, deadline=0.5, pause=0, exceptions=(Exception,)
     )
     async def test():
         nonlocal mana
@@ -147,10 +144,7 @@ async def test_pause(event_loop):
     task = event_loop.create_task(test())
 
     async with condition:
-        await asyncio.wait_for(
-            condition.wait_for(lambda: mana == 2),
-            timeout=5,
-        )
+        await asyncio.wait_for(condition.wait_for(lambda: mana == 2), timeout=5)
 
     with pytest.raises(asyncio.TimeoutError):
         await task
@@ -173,10 +167,7 @@ async def test_no_waterline(event_loop):
     task = event_loop.create_task(test())
 
     async with condition:
-        await asyncio.wait_for(
-            condition.wait_for(lambda: mana >= 5),
-            timeout=2,
-        )
+        await asyncio.wait_for(condition.wait_for(lambda: mana >= 5), timeout=2)
 
     with pytest.raises(ValueError, match="^RETRY$"):
         await task

@@ -1,6 +1,5 @@
 import platform
 
-
 if platform.system() == "Windows":
     from .process import main
 else:

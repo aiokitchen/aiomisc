@@ -21,8 +21,7 @@ async def test_profiler_start_stop():
 
 @unix_only
 @pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason="get_stats_profile available on 3.10+",
+    sys.version_info < (3, 10), reason="get_stats_profile available on 3.10+"
 )
 async def test_profiler_dump():
     profiler = None
@@ -30,10 +29,7 @@ async def test_profiler_dump():
     path = NamedTemporaryFile(delete=False).name
     fl.close()
     try:
-        profiler = Profiler(
-            interval=0.1, top_results=10,
-            path=path,
-        )
+        profiler = Profiler(interval=0.1, top_results=10, path=path)
         await profiler.start()
 
         # Get first update

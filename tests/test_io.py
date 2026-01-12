@@ -11,12 +11,12 @@ import aiomisc
 from aiomisc.io import AsyncFileIO
 from tests import unix_only
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
 compressors = pytest.mark.parametrize(
-    "compression", list(aiomisc.io.Compression),
+    "compression",
+    list(aiomisc.io.Compression),
     ids=list(map(lambda c: c.name.lower(), aiomisc.io.Compression)),
 )
 
@@ -25,7 +25,7 @@ async def test_simple(event_loop, tmp_path):
     tdir = Path(tmp_path)
 
     async with aiomisc.io.async_open(
-        tdir / "test", "w+", loop=event_loop,
+        tdir / "test", "w+", loop=event_loop
     ) as afp:
         await afp.open()
 
@@ -61,7 +61,7 @@ async def test_ordering(event_loop, tmp_path):
     tdir = Path(tmp_path)
 
     async with aiomisc.io.async_open(
-        tdir / "file", "wb+", loop=event_loop,
+        tdir / "file", "wb+", loop=event_loop
     ) as afp:
         await afp.seek(4)
         assert await afp.tell() == 4
@@ -72,7 +72,7 @@ async def test_ordering(event_loop, tmp_path):
     assert afp.closed()
 
     async with aiomisc.io.async_open(
-        tdir / "file", "rb+", loop=event_loop,
+        tdir / "file", "rb+", loop=event_loop
     ) as afp:
         assert (await afp.read(4)) == b"\0\0\0\0"
         assert await afp.tell() == 4
@@ -86,11 +86,11 @@ async def test_async_for(event_loop, tmp_path):
     afp: AsyncFileIO[str]
 
     async with aiomisc.io.async_open(
-        tdir / "path", "w", loop=event_loop,
+        tdir / "path", "w", loop=event_loop
     ) as afp:
         await afp.write("foo\nbar\nbaz\n")
 
-    with open(tdir / "path", "r") as fp:
+    with open(tdir / "path") as fp:
         expected = []
 
         for line in fp:
@@ -98,9 +98,9 @@ async def test_async_for(event_loop, tmp_path):
 
     assert expected
 
-    result: List[str] = []
+    result: list[str] = []
     async with aiomisc.io.async_open(
-        tdir / "path", "r", loop=event_loop,
+        tdir / "path", "r", loop=event_loop
     ) as afp:
         async for line in afp:
             result.append(line)
@@ -114,12 +114,12 @@ async def test_async_for_parallel(event_loop):
 
     with tmp:
         async with aiomisc.io.async_open(
-            tmp.name, "w+", loop=event_loop,
+            tmp.name, "w+", loop=event_loop
         ) as afp:
             for _ in range(1024):
-                await afp.write("{}\n".format(uuid.uuid4().hex))
+                await afp.write(f"{uuid.uuid4().hex}\n")
 
-        with open(tmp.name, "r") as fp:
+        with open(tmp.name) as fp:
             expected = set()
 
             for line in fp:
@@ -127,18 +127,14 @@ async def test_async_for_parallel(event_loop):
 
         assert expected
 
-        async with aiomisc.io.async_open(
-            tmp.name, "r", loop=event_loop,
-        ) as afp:
+        async with aiomisc.io.async_open(tmp.name, "r", loop=event_loop) as afp:
             result = set()
 
             async def reader():
                 async for line in afp:
                     result.add(line)
 
-            await asyncio.gather(
-                reader(), reader(), reader(), reader(),
-            )
+            await asyncio.gather(reader(), reader(), reader(), reader())
 
     assert result == expected
 
@@ -176,13 +172,13 @@ async def test_compression(compression: aiomisc.io.Compression, tmp_path):
     fname = Path(tmp_path) / "test.file"
 
     async with aiomisc.io.async_open(
-        fname, "w", compression=compression,
+        fname, "w", compression=compression
     ) as afp:
         for i in range(1000):
             await afp.write(f"{i}\n")
 
     async with aiomisc.io.async_open(
-        fname, "r", compression=compression,
+        fname, "r", compression=compression
     ) as afp:
         for i in range(1000):
             assert await afp.readline() == f"{i}\n"

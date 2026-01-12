@@ -4,7 +4,6 @@ import pytest
 
 import aiomisc
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -24,8 +23,7 @@ async def test_periodic(event_loop):
 
     async with condition:
         await asyncio.wait_for(
-            condition.wait_for(lambda: counter >= 5),
-            timeout=5,
+            condition.wait_for(lambda: counter >= 5), timeout=5
         )
 
     with pytest.raises(asyncio.CancelledError):
@@ -48,8 +46,7 @@ async def test_periodic_return_exceptions(event_loop):
 
     async with condition:
         await asyncio.wait_for(
-            condition.wait_for(lambda: counter >= 5),
-            timeout=5,
+            condition.wait_for(lambda: counter >= 5), timeout=5
         )
 
     await periodic.stop(return_exceptions=True)
@@ -75,8 +72,7 @@ async def test_long_func(event_loop):
 
     async with condition:
         await asyncio.wait_for(
-            condition.wait_for(lambda: counter == 2),
-            timeout=2,
+            condition.wait_for(lambda: counter == 2), timeout=2
         )
 
 
@@ -160,8 +156,7 @@ async def test_restart(event_loop):
 
         async with condition:
             await asyncio.wait_for(
-                condition.wait_for(lambda: counter == i),
-                timeout=5,
+                condition.wait_for(lambda: counter == i), timeout=5
             )
 
         with pytest.raises(asyncio.CancelledError):
@@ -189,8 +184,7 @@ async def test_cancelled_callback(event_loop):
 
         async with condition:
             await asyncio.wait_for(
-                condition.wait_for(lambda: counter == i),
-                timeout=5,
+                condition.wait_for(lambda: counter == i), timeout=5
             )
 
         with pytest.raises(asyncio.CancelledError):

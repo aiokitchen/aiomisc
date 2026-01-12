@@ -9,7 +9,6 @@ from aiomisc import bind_socket
 from aiomisc.service.aiohttp import AIOHTTPService
 from aiomisc.service.raven import RavenSender
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -28,17 +27,18 @@ class REST(AIOHTTPService):
 @pytest.fixture
 def mock_sentry(localhost, aiomisc_unused_port_factory):
     port = aiomisc_unused_port_factory()
-    with bind_socket(
-        address=localhost, port=port,
-    ) as sock:
+    with bind_socket(address=localhost, port=port) as sock:
         rest = REST(sock=sock)
-        yield rest, URL.build(
-            scheme="http",
-            user="test",
-            password="test",
-            port=port,
-            host=localhost,
-            path="/project-test",
+        yield (
+            rest,
+            URL.build(
+                scheme="http",
+                user="test",
+                password="test",
+                port=port,
+                host=localhost,
+                path="/project-test",
+            ),
         )
 
 

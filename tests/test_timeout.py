@@ -4,7 +4,6 @@ import pytest
 
 import aiomisc
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -31,6 +30,7 @@ async def test_already_done_2(event_loop):
 
 async def test_non_coroutine(event_loop):
     with pytest.raises(TypeError):
+
         @aiomisc.timeout(0)
         def test():
             return

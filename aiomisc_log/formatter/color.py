@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import IO, Any, Optional
+from typing import IO, Any
 
 from colorlog import ColoredFormatter
 
@@ -8,8 +8,7 @@ from ..enum import DateFormat
 
 
 def color_formatter(
-    stream: Optional[IO[str]] = None,
-    date_format: Optional[str] = None, **_: Any,
+    stream: IO[str] | None = None, date_format: str | None = None, **_: Any
 ) -> logging.Handler:
     date_format = date_format or DateFormat.color.value
     stream = stream or sys.stderr
@@ -39,12 +38,12 @@ def color_formatter(
                     "WARNING": "bold",
                     "ERROR": "bold",
                     "CRITICAL": "bold",
-                },
+                }
             },
             datefmt=date_format,
             reset=True,
             style="%",
-        ),
+        )
     )
 
     return handler

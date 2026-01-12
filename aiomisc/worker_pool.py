@@ -4,24 +4,34 @@ import hmac
 import os
 import socket
 import sys
+from collections.abc import Callable, Coroutine, Mapping
 from inspect import Traceback
 from multiprocessing import ProcessError
 from os import chmod, urandom
 from subprocess import PIPE, Popen
 from tempfile import mktemp
 from types import MappingProxyType
-from typing import (
-    Any, Callable, Coroutine, Dict, Mapping, Optional, Set, Tuple, Type,
-)
+from typing import Any
 
 from aiomisc.counters import Statistic
 from aiomisc.thread_pool import threaded
 from aiomisc.utils import (
-    bind_socket, cancel_tasks, fast_uuid4, set_exception, shield,
+    bind_socket,
+    cancel_tasks,
+    fast_uuid4,
+    set_exception,
+    shield,
 )
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL
 from aiomisc_worker import (
-    COOKIE_SIZE, INET_AF, INT_SIGNAL, SIGNAL, AddressType, PacketTypes, T, log,
+    COOKIE_SIZE,
+    INET_AF,
+    INT_SIGNAL,
+    SIGNAL,
+    AddressType,
+    PacketTypes,
+    T,
+    log,
 )
 from aiomisc_worker.protocol import AsyncProtocol, FileIOProtocol
 
@@ -43,17 +53,18 @@ class WorkerPool:
     tasks: asyncio.Queue
     server: asyncio.AbstractServer
     address: AddressType
-    initializer: Optional[Callable[[], Any]]
-    initializer_args: Tuple[Any, ...]
+    initializer: Callable[[], Any] | None
+    initializer_args: tuple[Any, ...]
     initializer_kwargs: Mapping[str, Any]
 
     _supervisor: Popen
-    worker_ids: Tuple[bytes, ...]
-    pids: Set[int]
+    worker_ids: tuple[bytes, ...]
+    pids: set[int]
 
     SERVER_CLOSE_TIMEOUT = 1
 
     if hasattr(socket, "AF_UNIX"):
+
         def _create_socket(self) -> None:
             path = mktemp(suffix=".sock", prefix="worker-")
             self.socket = bind_socket(
@@ -65,6 +76,7 @@ class WorkerPool:
             self.address = path
             chmod(path, 0o600)
     else:
+
         def _create_socket(self) -> None:
             self.socket = bind_socket(
                 INET_AF,
@@ -90,15 +102,13 @@ class WorkerPool:
         env = dict(os.environ)
         env["AIOMISC_NO_PLUGINS"] = ""
         process = Popen(
-            [sys.executable, "-m", "aiomisc_worker"], stdin=PIPE, env=env,
+            [sys.executable, "-m", "aiomisc_worker"], stdin=PIPE, env=env
         )
 
         assert process.stdin
 
         log_level = (
-            log.getEffectiveLevel()
-            if LOG_LEVEL is None
-            else LOG_LEVEL.get()
+            log.getEffectiveLevel() if LOG_LEVEL is None else LOG_LEVEL.get()
         )
 
         log_format = "color" if LOG_FORMAT is None else LOG_FORMAT.get()
@@ -109,26 +119,31 @@ class WorkerPool:
         proto_stdin.send(self.address)
         proto_stdin.send(self.__cookie)
         proto_stdin.send(identity)
-        proto_stdin.send((
-            self.initializer,
-            self.initializer_args,
-            dict(self.initializer_kwargs),
-        ))
+        proto_stdin.send(
+            (
+                self.initializer,
+                self.initializer_args,
+                dict(self.initializer_kwargs),
+            )
+        )
         process.stdin.close()
         return process
 
     def __init__(
-        self, workers: int, max_overflow: int = 0, *,
-        initializer: Optional[Callable[..., Any]] = None,
-        initializer_args: Tuple[Any, ...] = (),
+        self,
+        workers: int,
+        max_overflow: int = 0,
+        *,
+        initializer: Callable[..., Any] | None = None,
+        initializer_args: tuple[Any, ...] = (),
         initializer_kwargs: Mapping[str, Any] = MappingProxyType({}),
-        statistic_name: Optional[str] = None,
+        statistic_name: str | None = None,
     ):
         self._create_socket()
         self.__cookie = urandom(COOKIE_SIZE)
-        self.__loop: Optional[asyncio.AbstractEventLoop] = None
-        self.__futures: Set[asyncio.Future] = set()
-        self.__task_store: Set[asyncio.Task] = set()
+        self.__loop: asyncio.AbstractEventLoop | None = None
+        self.__futures: set[asyncio.Future] = set()
+        self.__task_store: set[asyncio.Task] = set()
         self.__closing = False
         self.__closing_lock = asyncio.Lock()
         self._statistic = WorkerPoolStatistic(name=statistic_name)
@@ -146,7 +161,7 @@ class WorkerPool:
         return self.__loop
 
     async def __handle_client(
-        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ) -> None:
         proto = AsyncProtocol(reader, writer)
         packet_type, worker_id, digest, pid = await proto.receive()
@@ -175,9 +190,7 @@ class WorkerPool:
             return
 
         expected_digest = hmac.HMAC(
-            self.__cookie,
-            worker_id,
-            digestmod=hashlib.sha256,
+            self.__cookie, worker_id, digestmod=hashlib.sha256
         ).digest()
 
         if expected_digest != digest:
@@ -195,13 +208,17 @@ class WorkerPool:
         try:
             while not reader.at_eof():
                 func: Callable
-                args: Tuple[Any, ...]
-                kwargs: Dict[str, Any]
+                args: tuple[Any, ...]
+                kwargs: dict[str, Any]
                 result_future: asyncio.Future
                 process_future: asyncio.Future
 
                 (
-                    func, args, kwargs, result_future, process_future,
+                    func,
+                    args,
+                    kwargs,
+                    result_future,
+                    process_future,
                 ) = await self.tasks.get()
 
                 if process_future.done() or result_future.done():
@@ -222,14 +239,15 @@ class WorkerPool:
                     if packet_type == PacketTypes.RESULT:
                         result_future.set_result(payload)
                     elif packet_type in (
-                        PacketTypes.EXCEPTION, PacketTypes.CANCELLED,
+                        PacketTypes.EXCEPTION,
+                        PacketTypes.CANCELLED,
                     ):
                         result_future.set_exception(payload)
                     del packet_type, payload
                 except (asyncio.IncompleteReadError, ConnectionError):
                     if not result_future.done():
                         result_future.set_exception(
-                            ProcessError(f"Process {pid!r} unexpected exited"),
+                            ProcessError(f"Process {pid!r} unexpected exited")
                         )
                     break
                 except Exception as e:
@@ -246,7 +264,7 @@ class WorkerPool:
             self.pids.discard(pid)
 
     def __start_handler(
-        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ) -> asyncio.Task:
         return self.__task(self.__handle_client(reader, writer))
 
@@ -263,14 +281,11 @@ class WorkerPool:
     async def start(self) -> None:
         self.tasks = asyncio.Queue(maxsize=self.__max_overflow)
         self.server = await asyncio.start_server(
-            self.__start_handler,
-            sock=self.socket,
+            self.__start_handler, sock=self.socket
         )
         del self.socket
 
-        self.worker_ids = tuple(
-            fast_uuid4().bytes for _ in range(self.workers)
-        )
+        self.worker_ids = tuple(fast_uuid4().bytes for _ in range(self.workers))
         self._supervisor = await self.__create_supervisor(*self.worker_ids)
 
     def __create_future(self) -> asyncio.Future:
@@ -284,7 +299,7 @@ class WorkerPool:
 
     @shield
     async def close(self) -> None:
-        async with (self.__closing_lock):
+        async with self.__closing_lock:
             if self.__closing:
                 return
 
@@ -293,8 +308,7 @@ class WorkerPool:
             self.server.close()
             await asyncio.gather(
                 asyncio.wait_for(
-                    self.server.wait_closed(),
-                    timeout=self.SERVER_CLOSE_TIMEOUT,
+                    self.server.wait_closed(), timeout=self.SERVER_CLOSE_TIMEOUT
                 ),
                 return_exceptions=True,
             )
@@ -302,13 +316,15 @@ class WorkerPool:
             await cancel_tasks(tuple(self.__futures))
 
     def _kill_supervisor(self) -> None:
-        supervisor: Optional[Popen] = getattr(self, "_supervisor", None)
+        supervisor: Popen | None = getattr(self, "_supervisor", None)
         if supervisor is None or supervisor.poll() is not None:
             return
 
         log.debug(
             "Sending %r to supervisor process PID: %d. Workers: %r",
-            INT_SIGNAL, supervisor.pid, self.pids,
+            INT_SIGNAL,
+            supervisor.pid,
+            self.pids,
         )
         os.kill(self._supervisor.pid, INT_SIGNAL)
 
@@ -316,15 +332,14 @@ class WorkerPool:
         self._kill_supervisor()
 
     async def create_task(
-        self, func: Callable[..., T],
-        *args: Any, **kwargs: Any,
+        self, func: Callable[..., T], *args: Any, **kwargs: Any
     ) -> T:
         result_future = self.__create_future()
         process_future = self.__create_future()
 
-        await self.tasks.put((
-            func, args, kwargs, result_future, process_future,
-        ))
+        await self.tasks.put(
+            (func, args, kwargs, result_future, process_future)
+        )
 
         pid: int = await process_future
 
@@ -340,7 +355,6 @@ class WorkerPool:
         return self
 
     async def __aexit__(
-        self, exc_type: Type[Exception],
-        exc_val: Exception, exc_tb: Traceback,
+        self, exc_type: type[Exception], exc_val: Exception, exc_tb: Traceback
     ) -> None:
         await self.close()

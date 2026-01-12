@@ -1,19 +1,26 @@
 import logging
 import struct
 from asyncio import (
-    Future, IncompleteReadError, Lock, Queue, StreamReader, StreamWriter,
+    Future,
+    IncompleteReadError,
+    Lock,
+    Queue,
+    StreamReader,
+    StreamWriter,
     iscoroutinefunction,
 )
 from io import BytesIO
 from typing import (
-    Any, AsyncIterable, Callable, Dict, Mapping, MutableMapping, Optional,
+    Any,
+    Dict,
+    Optional,
 )
+from collections.abc import AsyncIterable, Callable, Mapping, MutableMapping
 
 import msgspec
 
 from aiomisc import cancel_tasks
 from aiomisc.service.base import TaskStoreBase
-
 
 log = logging.getLogger()
 
@@ -21,7 +28,7 @@ log = logging.getLogger()
 class Request(msgspec.Struct):
     id: int
     method: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
 
 
 class Error(msgspec.Struct):
@@ -31,13 +38,13 @@ class Error(msgspec.Struct):
 
 class Response(msgspec.Struct):
     id: int
-    result: Optional[Any] = None
-    error: Optional[Error] = None
+    result: Any | None = None
+    error: Error | None = None
 
 
 class Payload(msgspec.Struct):
-    request: Optional[Request] = None
-    response: Optional[Response] = None
+    request: Request | None = None
+    response: Response | None = None
 
 
 class Protocol:
@@ -61,7 +68,7 @@ class Protocol:
 
         try:
             payload_size: int = self.PACKET_HEADER.unpack(
-                await self.reader.readexactly(self.PACKET_HEADER.size),
+                await self.reader.readexactly(self.PACKET_HEADER.size)
             )[0]
             payload_bytes: bytes = await self.reader.readexactly(payload_size)
             return self.decoder.decode(payload_bytes)
@@ -80,7 +87,7 @@ class Protocol:
 
 
 class RPCBase(TaskStoreBase):
-    __required__ = "handlers",
+    __required__ = ("handlers",)
 
     _futures: MutableMapping[int, Future]
     _serial: int
@@ -100,10 +107,7 @@ class RPCBase(TaskStoreBase):
 
         if response.error is not None:
             future.set_exception(
-                Exception(
-                    response.error.type,
-                    *response.error.args
-                ),
+                Exception(response.error.type, *response.error.args)
             )
             return
         future.set_result(response.result)
@@ -120,9 +124,8 @@ class RPCBase(TaskStoreBase):
             log.exception("Execution error:")
             payload = Payload(
                 response=Response(
-                    id=request.id,
-                    error=Error(type=str(type(e)), args=e.args),
-                ),
+                    id=request.id, error=Error(type=str(type(e)), args=e.args)
+                )
             )
         await protocol.send(payload)
 
@@ -137,16 +140,12 @@ class RPCBase(TaskStoreBase):
         self._futures[self._serial] = future
         self._request_queue.put_nowait(
             Payload(
-                request=Request(
-                    id=self._serial, method=method, params=kwargs,
-                ),
-            ),
+                request=Request(id=self._serial, method=method, params=kwargs)
+            )
         )
         return self._futures[self._serial]
 
-    async def communicate(
-        self, reader: StreamReader, writer: StreamWriter,
-    ):
+    async def communicate(self, reader: StreamReader, writer: StreamWriter):
         protocol = Protocol(reader, writer)
         request_writer_task = self.create_task(self._request_writer(protocol))
 
@@ -155,29 +154,29 @@ class RPCBase(TaskStoreBase):
             client_host = f"[{client_host}]"
 
         log.info(
-            "Start communication with tcp://%s:%d", client_host, client_port,
+            "Start communication with tcp://%s:%d", client_host, client_port
         )
 
         # noinspection PyBroadException
         try:
             async for payload in protocol:
                 if payload.request is not None:
-                    self.create_task(
-                        self.execute(protocol, payload.request),
-                    )
+                    self.create_task(self.execute(protocol, payload.request))
                 if payload.response is not None:
                     self._on_response(payload.response)
         except Exception:
             log.exception(
                 "Error when communication tcp://%s:%d/",
-                client_host, client_port,
+                client_host,
+                client_port,
             )
         finally:
             if writer.can_write_eof():
                 writer.write_eof()
             writer.close()
             log.info(
-                "Communication with tcp://%s:%d finished", client_host,
+                "Communication with tcp://%s:%d finished",
+                client_host,
                 client_port,
             )
 

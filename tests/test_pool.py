@@ -4,13 +4,12 @@ import pytest
 
 import aiomisc
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
 async def test_base_class(event_loop: asyncio.AbstractEventLoop):
     with pytest.raises(TypeError):
-        aiomisc.PoolBase()      # type: ignore
+        aiomisc.PoolBase()  # type: ignore
 
 
 class SimplePool(aiomisc.PoolBase):

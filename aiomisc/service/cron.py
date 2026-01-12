@@ -1,17 +1,17 @@
 import asyncio
 import logging
 from asyncio import iscoroutinefunction
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Set, Tuple, Type
+from typing import Any
 
 from croniter import croniter
 
 from aiomisc import Service
 from aiomisc.cron import CronCallback
 
-
 log = logging.getLogger(__name__)
-ExceptionsType = Tuple[Type[Exception], ...]
+ExceptionsType = tuple[type[Exception], ...]
 
 
 @dataclass(frozen=True)
@@ -23,7 +23,7 @@ class StoreItem:
 
 
 class CronService(Service):
-    _callbacks_storage: Set[StoreItem]
+    _callbacks_storage: set[StoreItem]
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
@@ -37,14 +37,12 @@ class CronService(Service):
         suppress_exceptions: ExceptionsType = (),
     ) -> None:
         if not iscoroutinefunction(function):
-            raise TypeError("function should be a coroutine %r" % function)
+            raise TypeError(f"function should be a coroutine {function!r}")
         if not croniter.is_valid(spec):
-            raise TypeError("Not valid cron spec %r" % spec)
+            raise TypeError(f"Not valid cron spec {spec!r}")
 
         self._callbacks_storage.add(
-            StoreItem(
-                CronCallback(function), spec, shield, suppress_exceptions,
-            ),
+            StoreItem(CronCallback(function), spec, shield, suppress_exceptions)
         )
 
     async def start(self) -> None:
@@ -57,7 +55,7 @@ class CronService(Service):
             )
         log.info("Cron service %s started", self)
 
-    async def stop(self, exception: Optional[Exception] = None) -> None:
+    async def stop(self, exception: Exception | None = None) -> None:
         async def _shutdown(item: StoreItem) -> None:
             await asyncio.gather(item.callback.stop(), return_exceptions=True)
 

@@ -2,22 +2,23 @@ import logging
 import logging.handlers
 import os
 import sys
+from collections.abc import Callable, Iterable
 from contextvars import ContextVar
 from dataclasses import dataclass
 from itertools import chain
 from types import TracebackType
-from typing import Any, Callable, Iterable, Optional, Type, Union
+from typing import Any
 
 from .enum import LogFormat, LogLevel
 from .formatter import (
-    color_formatter, journald_formatter, json_handler, rich_formatter,
+    color_formatter,
+    journald_formatter,
+    json_handler,
+    rich_formatter,
 )
-
 
 LOG_LEVEL: ContextVar = ContextVar("LOG_LEVEL", default=logging.INFO)
-LOG_FORMAT: ContextVar = ContextVar(
-    "LOG_FORMAT", default=LogFormat.default(),
-)
+LOG_FORMAT: ContextVar = ContextVar("LOG_FORMAT", default=LogFormat.default())
 
 
 DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"
@@ -25,9 +26,9 @@ DEFAULT_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
 def create_logging_handler(
     log_format: LogFormat = LogFormat.color,
-    date_format: Optional[str] = None, **kwargs: Any,
-) -> Optional[logging.Handler]:
-
+    date_format: str | None = None,
+    **kwargs: Any,
+) -> logging.Handler | None:
     LOG_FORMAT.set(log_format)
 
     if log_format == LogFormat.disabled:
@@ -36,7 +37,7 @@ def create_logging_handler(
         handler: logging.Handler = logging.StreamHandler()
         if date_format and date_format is not Ellipsis:
             formatter = logging.Formatter(
-                "%(asctime)s " + DEFAULT_FORMAT, datefmt=date_format,
+                "%(asctime)s " + DEFAULT_FORMAT, datefmt=date_format
             )
         else:
             formatter = logging.Formatter(DEFAULT_FORMAT)
@@ -53,13 +54,11 @@ def create_logging_handler(
         return rich_formatter(date_format=date_format, **kwargs)
     elif log_format == LogFormat.rich_tb:
         return rich_formatter(
-            date_format=date_format,
-            rich_tracebacks=True,
-            **kwargs,
+            date_format=date_format, rich_tracebacks=True, **kwargs
         )
     elif log_format == LogFormat.syslog:
         if date_format:
-            sys.stderr.write("Can not apply \"date_format\" for syslog\n")
+            sys.stderr.write('Can not apply "date_format" for syslog\n')
             sys.stderr.flush()
 
         formatter = logging.Formatter("%(message)s")
@@ -108,7 +107,7 @@ class UnhandledHook(UnhandledHookBase):
 class UnhandledPythonHook(UnhandledHook):
     def __call__(
         self,
-        exc_type: Type[BaseException],
+        exc_type: type[BaseException],
         exc_value: BaseException,
         exc_traceback: TracebackType,
     ) -> None:
@@ -119,8 +118,8 @@ class UnhandledPythonHook(UnhandledHook):
 
 
 def basic_config(
-    level: Union[int, str] = LogLevel.info,
-    log_format: Union[str, LogFormat] = LogFormat.color,
+    level: int | str = LogLevel.info,
+    log_format: str | LogFormat = LogFormat.color,
     handler_wrapper: HandlerWrapperType = pass_wrapper,
     handlers: Iterable[logging.Handler] = (),
     **kwargs: Any,
@@ -136,38 +135,32 @@ def basic_config(
         log_format = LogFormat[log_format]
 
     unhandled_hook = UnhandledPythonHook()
-    sys.excepthook = unhandled_hook     # type: ignore
+    sys.excepthook = unhandled_hook  # type: ignore
 
     logging_handlers = list(
         map(
             handler_wrapper,
             filter(
                 None,
-                chain(
-                    [create_logging_handler(log_format, **kwargs)],
-                    handlers,
-                ),
+                chain([create_logging_handler(log_format, **kwargs)], handlers),
             ),
-        ),
+        )
     )
 
     LOG_LEVEL.set(level)
 
     # noinspection PyArgumentList
-    logging.basicConfig(
-        level=int(level),
-        handlers=logging_handlers,
-    )
+    logging.basicConfig(level=int(level), handlers=logging_handlers)
 
     for handler in logging_handlers:
         unhandled_hook.add_handler(handler)
 
 
 __all__ = (
+    "LOG_FORMAT",
+    "LOG_LEVEL",
     "LogFormat",
     "LogLevel",
     "basic_config",
     "create_logging_handler",
-    "LOG_FORMAT",
-    "LOG_LEVEL",
 )

@@ -1,14 +1,11 @@
 import asyncio
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import (
-    Any, Callable, Coroutine, Generic, Optional, ParamSpec, Tuple, Type,
-    TypeVar, Union,
-)
+from typing import Any, Generic, ParamSpec, TypeVar
 
 from .counters import Statistic
 
-
-Number = Union[int, float]
+Number = int | float
 T = TypeVar("T")
 P = ParamSpec("P")
 
@@ -29,23 +26,23 @@ class Backoff:
     __slots__ = (
         "attempt_timeout",
         "deadline",
-        "pause",
-        "max_tries",
-        "giveup",
         "exceptions",
+        "giveup",
+        "max_tries",
+        "pause",
         "statistic",
     )
 
     def __init__(
         self,
-        attempt_timeout: Optional[Number],
-        deadline: Optional[Number],
+        attempt_timeout: Number | None,
+        deadline: Number | None,
         pause: Number = 0,
-        exceptions: Tuple[Type[Exception], ...] = (),
-        max_tries: Optional[int] = None,
-        giveup: Optional[Callable[[Exception], bool]] = None,
-        statistic_name: Optional[str] = None,
-        statistic_class: Type[BackoffStatistic] = BackoffStatistic,
+        exceptions: tuple[type[Exception], ...] = (),
+        max_tries: int | None = None,
+        giveup: Callable[[Exception], bool] | None = None,
+        statistic_name: str | None = None,
+        statistic_class: type[BackoffStatistic] = BackoffStatistic,
     ):
         if not pause:
             pause = 0
@@ -65,7 +62,7 @@ class Backoff:
             raise ValueError("'giveup' must be a callable or None")
 
         exceptions = tuple(exceptions) or ()
-        exceptions += asyncio.TimeoutError,
+        exceptions += (asyncio.TimeoutError,)
 
         self.attempt_timeout = attempt_timeout
         self.deadline = deadline
@@ -76,8 +73,7 @@ class Backoff:
         self.statistic = statistic_class(statistic_name)
 
     def prepare(
-        self,
-        func: Callable[P, Coroutine[Any, Any, T]],
+        self, func: Callable[P, Coroutine[Any, Any, T]]
     ) -> "BackoffExecution[P, T]":
         return BackoffExecution(
             function=func,
@@ -100,8 +96,7 @@ class Backoff:
         return await execution(*args, **kwargs)
 
     def __call__(
-        self,
-        func: Callable[P, Coroutine[Any, Any, T]],
+        self, func: Callable[P, Coroutine[Any, Any, T]]
     ) -> Callable[P, Coroutine[Any, Any, T]]:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError("Function must be a coroutine function")
@@ -131,12 +126,12 @@ class BackoffExecution(Generic[P, T]):
         self,
         function: Callable[P, Coroutine[Any, Any, T]],
         statistic: BackoffStatistic,
-        attempt_timeout: Optional[Number],
-        deadline: Optional[Number],
+        attempt_timeout: Number | None,
+        deadline: Number | None,
         pause: Number = 0,
-        exceptions: Tuple[Type[Exception], ...] = (),
-        max_tries: Optional[int] = None,
-        giveup: Optional[Callable[[Exception], bool]] = None,
+        exceptions: tuple[type[Exception], ...] = (),
+        max_tries: int | None = None,
+        giveup: Callable[[Exception], bool] | None = None,
     ):
         self.function = function
         self.statistic = statistic
@@ -147,7 +142,7 @@ class BackoffExecution(Generic[P, T]):
         self.giveup = giveup
         self.exceptions = exceptions
 
-        self.last_exception: Optional[Exception] = None
+        self.last_exception: Exception | None = None
         self.total_tries: int = 0
 
     async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
@@ -174,8 +169,8 @@ class BackoffExecution(Generic[P, T]):
                     self.statistic.errors += 1
                     self.last_exception = e
                     if (
-                        self.max_tries is not None and
-                        self.total_tries >= self.max_tries
+                        self.max_tries is not None
+                        and self.total_tries >= self.max_tries
                     ):
                         raise
 
@@ -200,17 +195,17 @@ class BackoffExecution(Generic[P, T]):
 
 # noinspection SpellCheckingInspection
 def asyncbackoff(
-    attempt_timeout: Optional[Number],
-    deadline: Optional[Number],
+    attempt_timeout: Number | None,
+    deadline: Number | None,
     pause: Number = 0,
-    *exc: Type[Exception], exceptions: Tuple[Type[Exception], ...] = (),
-    max_tries: Optional[int] = None,
-    giveup: Optional[Callable[[Exception], bool]] = None,
-    statistic_name: Optional[str] = None,
-    statistic_class: Type[BackoffStatistic] = BackoffStatistic,
+    *exc: type[Exception],
+    exceptions: tuple[type[Exception], ...] = (),
+    max_tries: int | None = None,
+    giveup: Callable[[Exception], bool] | None = None,
+    statistic_name: str | None = None,
+    statistic_class: type[BackoffStatistic] = BackoffStatistic,
 ) -> Callable[
-    [Callable[P, Coroutine[Any, Any, T]]],
-    Callable[P, Coroutine[Any, Any, T]],
+    [Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]
 ]:
     """
     Patametric decorator that ensures that ``attempt_timeout`` and
@@ -244,14 +239,13 @@ def asyncbackoff(
 
 
 def asyncretry(
-    max_tries: Optional[int],
-    exceptions: Tuple[Type[Exception], ...] = (Exception,),
+    max_tries: int | None,
+    exceptions: tuple[type[Exception], ...] = (Exception,),
     pause: Number = 0,
-    giveup: Optional[Callable[[Exception], bool]] = None,
-    statistic_name: Optional[str] = None,
+    giveup: Callable[[Exception], bool] | None = None,
+    statistic_name: str | None = None,
 ) -> Callable[
-    [Callable[P, Coroutine[Any, Any, T]]],
-    Callable[P, Coroutine[Any, Any, T]],
+    [Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]
 ]:
     """
     Shortcut of ``asyncbackoff(None, None, 0, Exception)``.

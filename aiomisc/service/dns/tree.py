@@ -1,7 +1,7 @@
-from typing import Any, Dict, Generic, Hashable, List, Optional, Tuple, TypeVar
+from collections.abc import Hashable
+from typing import Any, Generic, TypeVar
 
-
-K = Tuple[str, ...]
+K = tuple[str, ...]
 T = TypeVar("T", bound=Any)
 
 
@@ -9,8 +9,8 @@ class RadixNode(Generic[T]):
     __slots__ = ("children", "value")
 
     def __init__(self) -> None:
-        self.children: Dict[Hashable, RadixNode[T]] = {}
-        self.value: Optional[T] = None
+        self.children: dict[Hashable, RadixNode[T]] = {}
+        self.value: T | None = None
 
 
 class RadixTree(Generic[T]):
@@ -21,7 +21,7 @@ class RadixTree(Generic[T]):
     def __init__(self) -> None:
         self.root = RadixNode()
 
-    def insert(self, key: K, value: Optional[T]) -> None:
+    def insert(self, key: K, value: T | None) -> None:
         node = self.root
         for part in key:
             if part not in node.children:
@@ -29,7 +29,7 @@ class RadixTree(Generic[T]):
             node = node.children[part]
         node.value = value
 
-    def search(self, key: K) -> Optional[T]:
+    def search(self, key: K) -> T | None:
         node = self.root
         for part in key:
             if part not in node.children:
@@ -37,9 +37,9 @@ class RadixTree(Generic[T]):
             node = node.children[part]
         return node.value
 
-    def find_prefix(self, key: K) -> Optional[Tuple[K, T]]:
+    def find_prefix(self, key: K) -> tuple[K, T] | None:
         node = self.root
-        longest_prefix: List[str] = []
+        longest_prefix: list[str] = []
         value = None
         part: Hashable
         if node.value is not None:

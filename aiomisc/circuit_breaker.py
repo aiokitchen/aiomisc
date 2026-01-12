@@ -1,27 +1,23 @@
 import asyncio
 import logging
 import threading
-from collections import Counter, deque
+from collections import Counter, Counter as CounterType, deque
+from collections.abc import Awaitable, Callable, Generator, Iterable
 from contextlib import contextmanager
 from enum import IntEnum, unique
 from functools import wraps
 from random import random
-from typing import Any, Awaitable, Callable
-from typing import Counter as CounterType
-from typing import (
-    Deque, Generator, Iterable, Optional, Tuple, Type, TypeVar, Union,
-)
+from typing import Any, TypeVar
 
 from aiomisc.compat import EventLoopMixin
 from aiomisc.counters import Statistic
 from aiomisc.utils import awaitable
 
-
 log = logging.getLogger(__name__)
-Number = Union[int, float]
-StatisticType = Deque[Tuple[int, Counter]]
+Number = int | float
+StatisticType = deque[tuple[int, Counter]]
 T = TypeVar("T")
-ExceptionInspectorType = Optional[Callable[[Exception], bool]]
+ExceptionInspectorType = Callable[[Exception], bool] | None
 
 
 @unique
@@ -52,7 +48,7 @@ class CircuitBreakerStatistic(Statistic):
 class CircuitBroken(Exception):
     __slots__ = ("last_exception",)
 
-    def __init__(self, last_exception: Optional[Exception]):
+    def __init__(self, last_exception: Exception | None):
         self.last_exception = last_exception
 
     def __repr__(self) -> str:
@@ -92,18 +88,18 @@ class CircuitBreaker(EventLoopMixin):
 
     _stuck_until: Number
     _recovery_at: Number
-    _last_exception: Optional[Exception]
+    _last_exception: Exception | None
 
     def __init__(
         self,
         error_ratio: float,
         response_time: Number,
-        exceptions: Iterable[Type[Exception]] = (Exception,),
-        recovery_time: Optional[Number] = None,
-        broken_time: Optional[Number] = None,
-        passing_time: Optional[Number] = None,
-        exception_inspector: Optional[ExceptionInspectorType] = None,
-        statistic_name: Optional[str] = None,
+        exceptions: Iterable[type[Exception]] = (Exception,),
+        recovery_time: Number | None = None,
+        broken_time: Number | None = None,
+        passing_time: Number | None = None,
+        exception_inspector: ExceptionInspectorType | None = None,
+        statistic_name: str | None = None,
     ):
         """
         Circuit Breaker pattern implementation. The class instance collects
@@ -139,14 +135,12 @@ class CircuitBreaker(EventLoopMixin):
         if response_time <= 0:
             raise ValueError("Response time must be greater then zero")
 
-        if 0. > error_ratio >= 1.:
+        if 0.0 > error_ratio >= 1.0:
             raise ValueError(
-                "Error ratio must be between 0 and 1 not %r" % error_ratio,
+                f"Error ratio must be between 0 and 1 not {error_ratio!r}"
             )
 
-        self._statistic: StatisticType = deque(
-            maxlen=self.BUCKET_COUNT,
-        )
+        self._statistic: StatisticType = deque(maxlen=self.BUCKET_COUNT)
         self._lock = threading.RLock()
         self._error_ratio = error_ratio
         self._state = CircuitBreakerStates.PASSING
@@ -225,13 +219,12 @@ class CircuitBreaker(EventLoopMixin):
             return 1 if self._exception_inspector(e) else 0
         except Exception:
             log.exception(
-                "Unhandled exception in %r",
-                self._exception_inspector,
+                "Unhandled exception in %r", self._exception_inspector
             )
             return 1
 
     def _on_passing(
-        self, counter: CounterType[int],
+        self, counter: CounterType[int]
     ) -> Generator[Any, Any, Any]:
         try:
             yield
@@ -245,7 +238,7 @@ class CircuitBreaker(EventLoopMixin):
             counter[CounterKey.TOTAL] += 1
 
     def _on_recover(
-        self, counter: CounterType[int],
+        self, counter: CounterType[int]
     ) -> Generator[Any, Any, Any]:
         current_time = self._get_time()
         condition = (random() + 1) < (
@@ -347,33 +340,30 @@ class CircuitBreaker(EventLoopMixin):
 
         raise NotImplementedError(self._state)
 
-    def call(
-        self, func: Callable[..., T], *args: Any, **kwargs: Any,
-    ) -> T:
+    def call(self, func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
         with self.context():
             return func(*args, **kwargs)
 
     async def call_async(
-        self, func: Callable[..., Awaitable[T]],
-        *args: Any, **kwargs: Any,
+        self, func: Callable[..., Awaitable[T]], *args: Any, **kwargs: Any
     ) -> T:
         with self.context():
-            return await awaitable(func)(*args, **kwargs)   # type: ignore
+            return await awaitable(func)(*args, **kwargs)  # type: ignore
 
     def __repr__(self) -> str:
-        return "<{}: state={!r} recovery_ratio={!s}>".format(
-            self.__class__.__name__, self._state, self.recovery_ratio,
-        )
+        return f"<{self.__class__.__name__}: state={self._state!r} recovery_ratio={self.recovery_ratio!s}>"
 
 
-CutoutFuncType = Union[Callable[..., T], Callable[..., Awaitable[T]]]
-CutoutDecoratorReturnType = Callable[..., Union[T, Awaitable[T]]]
+CutoutFuncType = Callable[..., T] | Callable[..., Awaitable[T]]
+CutoutDecoratorReturnType = Callable[..., T | Awaitable[T]]
 CutoutReturnType = Callable[[CutoutFuncType], CutoutDecoratorReturnType]
 
 
 def cutout(
-    ratio: float, response_time: Union[int, float],
-    *exceptions: Type[Exception], **kwargs: Any,
+    ratio: float,
+    response_time: int | float,
+    *exceptions: type[Exception],
+    **kwargs: Any,
 ) -> CutoutReturnType:
     circuit_breaker = CircuitBreaker(
         error_ratio=ratio,
@@ -384,9 +374,7 @@ def cutout(
 
     def decorator(func: CutoutFuncType) -> CutoutDecoratorReturnType:
         @wraps(func)
-        async def async_wrapper(
-            *args: Any, **kw: Any,
-        ) -> T:
+        async def async_wrapper(*args: Any, **kw: Any) -> T:
             return await circuit_breaker.call_async(func, *args, **kw)
 
         @wraps(func)

@@ -7,7 +7,6 @@ import aiomisc
 from aiomisc.cron import CronCallback
 from aiomisc.service.cron import CronService
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -26,7 +25,7 @@ def test_cron():
     condition: asyncio.Condition
 
     async def callback():
-        nonlocal counter  # noqa
+        nonlocal counter
         async with condition:
             counter += 1
             condition.notify_all()
@@ -36,13 +35,12 @@ def test_cron():
     svc.register(callback, spec="* * * * * *")
 
     async def assert_counter():
-        nonlocal counter, svc  # noqa
+        nonlocal counter, svc
 
         counter = 0
         async with condition:
             await asyncio.wait_for(
-                condition.wait_for(lambda: counter == 1),
-                timeout=2,
+                condition.wait_for(lambda: counter == 1), timeout=2
             )
 
         await svc.stop()
@@ -50,8 +48,7 @@ def test_cron():
         await asyncio.sleep(TICK_DELAY * 2)
         async with condition:
             await asyncio.wait_for(
-                condition.wait_for(lambda: counter == 1),
-                timeout=2,
+                condition.wait_for(lambda: counter == 1), timeout=2
             )
 
         assert counter == 1
@@ -59,12 +56,7 @@ def test_cron():
     with aiomisc.entrypoint(svc) as loop:
         condition = asyncio.Condition()
 
-        loop.run_until_complete(
-            asyncio.wait_for(
-                assert_counter(),
-                timeout=10,
-            ),
-        )
+        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
 
 
 @patch.object(CronCallback, "get_next", mock_get_next)
@@ -85,15 +77,14 @@ def test_register():
     svc.register(callback, spec="* * * * * *")
 
     async def assert_counter():
-        nonlocal counter, svc  # noqa
+        nonlocal counter, svc
 
         counter = 0
         # With mocked timing, all 3 callbacks fire every TICK_DELAY
         # After ~2 ticks we expect 6 calls (3 callbacks * 2 ticks)
         async with condition:
             await asyncio.wait_for(
-                condition.wait_for(lambda: counter >= 5),
-                timeout=10,
+                condition.wait_for(lambda: counter >= 5), timeout=10
             )
 
         await svc.stop()

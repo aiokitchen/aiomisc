@@ -1,6 +1,8 @@
 import asyncio
-from concurrent.futures import Future
-from concurrent.futures import ProcessPoolExecutor as ProcessPoolExecutorBase
+from concurrent.futures import (
+    Future,
+    ProcessPoolExecutor as ProcessPoolExecutorBase,
+)
 from multiprocessing import cpu_count
 from typing import Any
 
@@ -76,10 +78,7 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         self._statistic.processes = max_workers
 
     def _statistic_callback(
-        self,
-        future: Future,
-        start_time: float,
-        loop: asyncio.AbstractEventLoop,
+        self, future: Future, start_time: float, loop: asyncio.AbstractEventLoop
     ) -> None:
         """
         Callback for statistic
@@ -100,7 +99,7 @@ class ProcessPoolExecutor(ProcessPoolExecutorBase, EventLoopMixin):
         future = super().submit(*args, **kwargs)
         self._statistic.submitted += 1
         future.add_done_callback(
-            lambda f: self._statistic_callback(f, start_time, loop),
+            lambda f: self._statistic_callback(f, start_time, loop)
         )
         return future
 

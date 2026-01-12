@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 from struct import Struct
 from typing import IO, Any, BinaryIO, Union
 
-
 ADDRESS_FAMILY = (
     socket.AF_INET6 if platform.system() == "Windows" else socket.AF_UNIX
 )
@@ -39,9 +38,9 @@ class Protocol(ABC):
 
 
 class FileIOProtocol(Protocol):
-    fd: Union[BinaryIO, IO[bytes]]
+    fd: BinaryIO | IO[bytes]
 
-    def __init__(self, fd: Union[BinaryIO, IO[bytes]]):
+    def __init__(self, fd: BinaryIO | IO[bytes]):
         self.fd = fd
 
     def _read(self, size: int) -> bytes:
@@ -74,7 +73,7 @@ class AsyncProtocol:
     PACKET_HEADER = Protocol.PACKET_HEADER
 
     def __init__(
-        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ):
         self.reader = reader
         self.writer = writer

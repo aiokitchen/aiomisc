@@ -1,18 +1,17 @@
 import asyncio
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, Callable, Coroutine, ParamSpec, TypeVar, Union
-
+from typing import Any, ParamSpec, TypeVar
 
 T = TypeVar("T")
 P = ParamSpec("P")
-Number = Union[int, float]
+Number = int | float
 
 
 def timeout(
     value: Number,
 ) -> Callable[
-    [Callable[P, Coroutine[Any, Any, T]]],
-    Callable[P, Coroutine[Any, Any, T]],
+    [Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]
 ]:
     def decorator(
         func: Callable[P, Coroutine[Any, Any, T]],
@@ -22,9 +21,8 @@ def timeout(
 
         @wraps(func)
         async def wrap(*args: P.args, **kwargs: P.kwargs) -> T:
-            return await asyncio.wait_for(
-                func(*args, **kwargs),
-                timeout=value,
-            )
+            return await asyncio.wait_for(func(*args, **kwargs), timeout=value)
+
         return wrap
+
     return decorator

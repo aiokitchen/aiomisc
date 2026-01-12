@@ -5,19 +5,19 @@ import platform
 import time
 from asyncio import Event, wait
 from contextvars import ContextVar
-from typing import Any, List, Sequence
+from typing import Any, List
+from collections.abc import Sequence
 
 import pytest
 
 from aiomisc.aggregate import Arg, ResultNotSetError, aggregate, aggregate_async
-
 
 log = logging.getLogger(__name__)
 
 pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
     reason="Skip flapping tests on windows because it "
-           "system timer hasn't enough resolution",
+    "system timer hasn't enough resolution",
 )
 
 
@@ -46,9 +46,11 @@ def leeway() -> float:
 
 async def test_invalid_func():
     with pytest.raises(ValueError) as excinfo:
+
         @aggregate(10)
         async def pho(a, b=1):
             pass
+
     assert str(excinfo.value) == (
         "Function must accept variadic positional arguments"
     )
@@ -57,6 +59,7 @@ async def test_invalid_func():
 @pytest.mark.parametrize("leeway_ms", (-1.0, 0.0))
 async def test_invalid_leeway(leeway_ms):
     with pytest.raises(ValueError) as excinfo:
+
         @aggregate(leeway_ms)
         async def pho(*args):
             pass
@@ -67,6 +70,7 @@ async def test_invalid_leeway(leeway_ms):
 @pytest.mark.parametrize("max_count", (-1, 0))
 async def test_invalid_max_count(max_count):
     with pytest.raises(ValueError) as excinfo:
+
         @aggregate(10, max_count)
         async def pho(*args):
             pass
@@ -98,12 +102,12 @@ async def test_error(event_loop, leeway):
 
 
 async def test_leeway_ok(event_loop, leeway):
-    t_exec: float = 0.
+    t_exec: float = 0.0
     event: Event = Event()
 
     @aggregate(leeway * 1000)
-    async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal t_exec  # noqa
+    async def pow(*args: float, power: float = 2) -> list[float]:
+        nonlocal t_exec
         t_exec = time.time()
         event.set()
 
@@ -129,12 +133,12 @@ async def test_leeway_ok(event_loop, leeway):
 
 
 async def test_max_count(event_loop, leeway):
-    t_exec: float = 0.
+    t_exec: float = 0.0
     event = Event()
     max_count = 5
 
     @aggregate(leeway * 1000, max_count)
-    async def pow(*args: float, power: float = 2) -> List[float]:
+    async def pow(*args: float, power: float = 2) -> list[float]:
         nonlocal t_exec
         t_exec = time.time()
         event.set()
@@ -158,12 +162,12 @@ async def test_max_count(event_loop, leeway):
 
 
 async def test_max_count_multiple_batches(event_loop, leeway):
-    t_exec: float = 0.
+    t_exec: float = 0.0
     event = Event()
     max_count = 5
 
     @aggregate(leeway * 1000, max_count)
-    async def pow(*args: float, power: float = 2) -> List[float]:
+    async def pow(*args: float, power: float = 2) -> list[float]:
         nonlocal t_exec
         t_exec = time.time()
         event.set()
@@ -199,17 +203,17 @@ async def test_max_count_multiple_batches(event_loop, leeway):
 
 
 async def test_leeway_cancel(event_loop, leeway):
-    t_exec: float = 0.
+    t_exec: float = 0.0
     delay_exec = 0.1
     event = Event()
     executions = 0
     arg: ContextVar = ContextVar("arg")
-    tasks: List[asyncio.Task] = []
+    tasks: list[asyncio.Task] = []
     executing_task: asyncio.Task
 
     @aggregate(leeway * 1000)
-    async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal executions, executing_task, t_exec, delay_exec  # noqa
+    async def pow(*args: float, power: float = 2) -> list[float]:
+        nonlocal executions, executing_task, t_exec, delay_exec
         t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
@@ -241,8 +245,7 @@ async def test_leeway_cancel(event_loop, leeway):
     assert executions == 2
     assert first_executing_task.cancelled()
     assert all(
-        not task.done() for task in tasks
-        if task is not first_executing_task
+        not task.done() for task in tasks if task is not first_executing_task
     )
 
     # Must have finished
@@ -256,19 +259,19 @@ async def test_leeway_cancel(event_loop, leeway):
 
 
 async def test_max_count_cancel(event_loop):
-    t_exec: float = 0.
+    t_exec: float = 0.0
     delay_exec = 0.1
     event = Event()
     executions = 0
     leeway = 100
     max_count = 5
     arg: ContextVar = ContextVar("arg")
-    tasks: List[asyncio.Task] = []
+    tasks: list[asyncio.Task] = []
     executing_task: asyncio.Task
 
     @aggregate(leeway * 1000, max_count)
-    async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal executions, executing_task, t_exec, delay_exec  # noqa
+    async def pow(*args: float, power: float = 2) -> list[float]:
+        nonlocal executions, executing_task, t_exec, delay_exec
         t_exec = time.time()
         executions += 1
         executing_task = tasks[arg.get()]
@@ -302,8 +305,7 @@ async def test_max_count_cancel(event_loop):
     assert executions == 2
     assert first_executing_task.cancelled()
     assert all(
-        not task.done() for task in tasks
-        if task is not first_executing_task
+        not task.done() for task in tasks if task is not first_executing_task
     )
 
     # Must have finished
@@ -322,12 +324,12 @@ async def test_max_count_multiple_batches_cancel(event_loop, leeway):
     executions = 0
     max_count = 5
     arg: ContextVar = ContextVar("arg")
-    tasks: List[asyncio.Task] = []
+    tasks: list[asyncio.Task] = []
     executing_task: asyncio.Task
 
     @aggregate(leeway * 1000, max_count)
-    async def pow(*args: float, power: float = 2) -> List[float]:
-        nonlocal executions, executing_task, delay_exec  # noqa
+    async def pow(*args: float, power: float = 2) -> list[float]:
+        nonlocal executions, executing_task, delay_exec
         executions += 1
         executing_task = tasks[arg.get()]
         event.set()
@@ -357,8 +359,7 @@ async def test_max_count_multiple_batches_cancel(event_loop, leeway):
     assert executions == 2
     assert first_executing_task.cancelled()
     assert all(
-        not task.done() for task in tasks
-        if task is not first_executing_task
+        not task.done() for task in tasks if task is not first_executing_task
     )
 
     await wait(tasks[:5])

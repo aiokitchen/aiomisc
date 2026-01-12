@@ -5,7 +5,6 @@ import pytest
 
 from aiomisc.cron import CronCallback
 
-
 # Fixed delay for deterministic testing
 TICK_DELAY = 0.1
 
@@ -69,7 +68,7 @@ async def test_shield(event_loop):
     condition = asyncio.Condition()
 
     async def task():
-        nonlocal counter, condition  # noqa
+        nonlocal counter, condition
         counter += 1
         async with condition:
             condition.notify_all()
@@ -98,7 +97,7 @@ async def test_restart(event_loop):
     condition = asyncio.Condition()
 
     async def task():
-        nonlocal counter, condition  # noqa
+        nonlocal counter, condition
         counter += 1
         async with condition:
             condition.notify_all()

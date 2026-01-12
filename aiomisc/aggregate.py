@@ -3,16 +3,13 @@ import functools
 import inspect
 import logging
 from asyncio import CancelledError, Event, Future, Lock, wait_for
+from collections.abc import Callable, Coroutine, Iterable
 from dataclasses import dataclass
 from inspect import Parameter
-from typing import (
-    Any, Callable, Coroutine, Generic, Iterable, List, Optional, Protocol,
-    TypeVar,
-)
+from typing import Any, Generic, Protocol, TypeVar
 
 from .compat import EventLoopMixin
 from .counters import Statistic
-
 
 log = logging.getLogger(__name__)
 
@@ -34,8 +31,7 @@ class ResultNotSetError(Exception):
 class AggregateAsyncFunc(Protocol, Generic[V, R]):
     __name__: str
 
-    async def __call__(self, *args: Arg[V, R]) -> None:
-        ...
+    async def __call__(self, *args: Arg[V, R]) -> None: ...
 
 
 class AggregateStatistic(Statistic):
@@ -54,24 +50,26 @@ def _has_variadic_positional(func: Callable[..., Any]) -> bool:
 
 
 class AggregatorAsync(EventLoopMixin, Generic[V, R]):
-
     _func: AggregateAsyncFunc[V, R]
-    _max_count: Optional[int]
+    _max_count: int | None
     _leeway: float
-    _first_call_at: Optional[float]
+    _first_call_at: float | None
     _args: list
-    _futures: "List[Future[R]]"
+    _futures: "list[Future[R]]"
     _event: Event
     _lock: Lock
 
     def __init__(
-        self, func: AggregateAsyncFunc[V, R], *, leeway_ms: float,
-        max_count: Optional[int] = None,
-        statistic_name: Optional[str] = None,
+        self,
+        func: AggregateAsyncFunc[V, R],
+        *,
+        leeway_ms: float,
+        max_count: int | None = None,
+        statistic_name: str | None = None,
     ):
         if not _has_variadic_positional(func):
             raise ValueError(
-                "Function must accept variadic positional arguments",
+                "Function must accept variadic positional arguments"
             )
 
         if max_count is not None and max_count <= 0:
@@ -96,7 +94,7 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
         self._lock = Lock()
 
     @property
-    def max_count(self) -> Optional[int]:
+    def max_count(self) -> int | None:
         return self._max_count
 
     @property
@@ -108,14 +106,10 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
         return len(self._args)
 
     async def _execute(
-        self,
-        *,
-        args: List[V],
-        futures: "List[Future[R]]",
+        self, *, args: list[V], futures: "list[Future[R]]"
     ) -> None:
         args_ = [
-            Arg(value=arg, future=future)
-            for arg, future in zip(args, futures)
+            Arg(value=arg, future=future) for arg, future in zip(args, futures)
         ]
         try:
             await self._func(*args_)
@@ -136,7 +130,7 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                 future.set_exception(ResultNotSetError)
 
     def _set_exception(
-            self, exc: Exception, futures: List["Future[R]"],
+        self, exc: Exception, futures: list["Future[R]"]
     ) -> None:
         for future in futures:
             if not future.done():
@@ -148,11 +142,11 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
         first_call_at = self._first_call_at
 
         args: list = self._args
-        futures: "List[Future[R]]" = self._futures
+        futures: list[Future[R]] = self._futures
         event: Event = self._event
         lock: Lock = self._lock
         args.append(arg)
-        future: "Future[R]" = Future()
+        future: Future[R] = Future()
         futures.append(future)
 
         if self.count == self.max_count:
@@ -169,7 +163,9 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                 log.debug(
                     "Aggregation timeout of %s for batch started at %.4f "
                     "with %d calls after %.2f ms",
-                    self._func.__name__, first_call_at, len(futures),
+                    self._func.__name__,
+                    first_call_at,
+                    len(futures),
                     (self.loop.time() - first_call_at) * 1000,
                 )
 
@@ -192,8 +188,7 @@ T = TypeVar("T", covariant=True)
 class AggregateFunc(Protocol, Generic[S, T]):
     __name__: str
 
-    async def __call__(self, *args: S) -> Iterable[T]:
-        ...
+    async def __call__(self, *args: S) -> Iterable[T]: ...
 
 
 def _to_async_aggregate(func: AggregateFunc[V, R]) -> AggregateAsyncFunc[V, R]:
@@ -221,12 +216,12 @@ class Aggregator(AggregatorAsync[V, R], Generic[V, R]):
         func: AggregateFunc[V, R],
         *,
         leeway_ms: float,
-        max_count: Optional[int] = None,
-        statistic_name: Optional[str] = None,
+        max_count: int | None = None,
+        statistic_name: str | None = None,
     ) -> None:
         if not _has_variadic_positional(func):
             raise ValueError(
-                "Function must accept variadic positional arguments",
+                "Function must accept variadic positional arguments"
             )
 
         super().__init__(
@@ -238,7 +233,7 @@ class Aggregator(AggregatorAsync[V, R], Generic[V, R]):
 
 
 def aggregate(
-    leeway_ms: float, max_count: Optional[int] = None,
+    leeway_ms: float, max_count: int | None = None
 ) -> Callable[[AggregateFunc[V, R]], Callable[[V], Coroutine[Any, Any, R]]]:
     """
     Parametric decorator that aggregates multiple
@@ -268,21 +263,20 @@ def aggregate(
 
     :return:
     """
+
     def decorator(
         func: AggregateFunc[V, R],
     ) -> Callable[[V], Coroutine[Any, Any, R]]:
-        aggregator = Aggregator(
-            func, max_count=max_count, leeway_ms=leeway_ms,
-        )
+        aggregator = Aggregator(func, max_count=max_count, leeway_ms=leeway_ms)
         return aggregator.aggregate
+
     return decorator
 
 
 def aggregate_async(
-    leeway_ms: float, max_count: Optional[int] = None,
+    leeway_ms: float, max_count: int | None = None
 ) -> Callable[
-    [AggregateAsyncFunc[V, R]],
-    Callable[[V], Coroutine[Any, Any, R]],
+    [AggregateAsyncFunc[V, R]], Callable[[V], Coroutine[Any, Any, R]]
 ]:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
@@ -294,11 +288,13 @@ def aggregate_async(
 
     :return:
     """
+
     def decorator(
         func: AggregateAsyncFunc[V, R],
     ) -> Callable[[V], Coroutine[Any, Any, R]]:
         aggregator = AggregatorAsync(
-            func, max_count=max_count, leeway_ms=leeway_ms,
+            func, max_count=max_count, leeway_ms=leeway_ms
         )
         return aggregator.aggregate
+
     return decorator

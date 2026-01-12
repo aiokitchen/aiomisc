@@ -13,15 +13,11 @@ from aiomisc.service.dns.service import TCP_HEADER_STRUCT
 def dns_store_filled():
     store = DNSStore()
     zone = DNSZone("example.com.")
-    a_record = A.create(
-        name="sub.example.com.", ip="192.0.2.1", ttl=3600,
-    )
+    a_record = A.create(name="sub.example.com.", ip="192.0.2.1", ttl=3600)
     aaaa_record = AAAA.create(
-        name="ipv6.example.com.", ipv6="2001:db8::1", ttl=3600,
+        name="ipv6.example.com.", ipv6="2001:db8::1", ttl=3600
     )
-    cname_record = CNAME.create(
-        name="alias.example.com.", label="example.com.",
-    )
+    cname_record = CNAME.create(name="alias.example.com.", label="example.com.")
     zone.add_record(a_record)
     zone.add_record(aaaa_record)
     zone.add_record(cname_record)
@@ -35,21 +31,17 @@ def dns_server_port(aiomisc_unused_port_factory) -> int:
 
 
 @pytest.fixture
-def dns_server_udp(
-    dns_store_filled: DNSStore, dns_server_port,
-) -> UDPDNSServer:
+def dns_server_udp(dns_store_filled: DNSStore, dns_server_port) -> UDPDNSServer:
     server = UDPDNSServer(
-        store=dns_store_filled, address="localhost", port=dns_server_port,
+        store=dns_store_filled, address="localhost", port=dns_server_port
     )
     return server
 
 
 @pytest.fixture
-def dns_server_tcp(
-    dns_store_filled: DNSStore, dns_server_port,
-) -> TCPDNSServer:
+def dns_server_tcp(dns_store_filled: DNSStore, dns_server_port) -> TCPDNSServer:
     server = TCPDNSServer(
-        store=dns_store_filled, address="localhost", port=dns_server_port,
+        store=dns_store_filled, address="localhost", port=dns_server_port
     )
     return server
 
@@ -101,9 +93,7 @@ async def test_handle_datagram_a_record(services, dns_server_port):
 
 async def test_handle_datagram_aaaa_record(services, dns_server_port):
     # Prepare a DNS query for AAAA record
-    query = dnslib.DNSRecord.question(
-        "ipv6.example.com.", qtype="AAAA",
-    )
+    query = dnslib.DNSRecord.question("ipv6.example.com.", qtype="AAAA")
     query_data = query.pack()
 
     response = await dns_send_receive_udp(query_data, dns_server_port)
@@ -117,9 +107,7 @@ async def test_handle_datagram_aaaa_record(services, dns_server_port):
 
 async def test_handle_datagram_cname_record(services, dns_server_port):
     # Prepare a DNS query for CNAME record
-    query = dnslib.DNSRecord.question(
-        "alias.example.com.", qtype="CNAME",
-    )
+    query = dnslib.DNSRecord.question("alias.example.com.", qtype="CNAME")
     query_data = query.pack()
 
     response = await dns_send_receive_udp(query_data, dns_server_port)
@@ -133,9 +121,7 @@ async def test_handle_datagram_cname_record(services, dns_server_port):
 
 async def test_handle_datagram_nonexistent_record(services, dns_server_port):
     # Prepare a DNS query for a nonexistent record
-    query = dnslib.DNSRecord.question(
-        "nonexistent.example.com.", qtype="A",
-    )
+    query = dnslib.DNSRecord.question("nonexistent.example.com.", qtype="A")
     query_data = query.pack()
 
     response = await dns_send_receive_udp(query_data, dns_server_port)
@@ -146,7 +132,7 @@ async def test_handle_datagram_nonexistent_record(services, dns_server_port):
 
 
 async def test_handle_datagram_remove_record(
-    services, dns_store_filled, dns_server_port,
+    services, dns_store_filled, dns_server_port
 ):
     # Remove an existing record from the zone
     zone = dns_store_filled.get_zone("example.com.")
@@ -182,7 +168,7 @@ async def test_handle_datagram_edns_record(services, dns_server_port):
 
 
 async def test_handle_large_datagram_truncated_udp(
-    services, dns_server_port, dns_store_filled,
+    services, dns_server_port, dns_store_filled
 ):
     # Add many A records to the store to exceed typical UDP packet size
     zone = dns_store_filled.get_zone("example.com.")
@@ -201,14 +187,12 @@ async def test_handle_large_datagram_truncated_udp(
 
 
 async def test_handle_large_tcp_request(
-    services, dns_server_port, dns_store_filled,
+    services, dns_server_port, dns_store_filled
 ):
     # Add many A records to the store to exceed typical UDP packet size
     zone = dns_store_filled.get_zone("example.com.")
     for i in range(1, 101):
-        a_record = A.create(
-            name="rr.example.com.", ip=f"192.0.2.{i}", ttl=3600,
-        )
+        a_record = A.create(name="rr.example.com.", ip=f"192.0.2.{i}", ttl=3600)
         zone.add_record(a_record)
 
     # Prepare a DNS query for TCP

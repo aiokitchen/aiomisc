@@ -6,7 +6,6 @@ import pytest
 import aiomisc
 from aiomisc.service.periodic import PeriodicService
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -25,8 +24,8 @@ def test_periodic(event_loop):
 
     class CountPeriodicService(PeriodicService):
         async def callback(self):
-            nonlocal counter    # noqa
-            nonlocal condition  # noqa
+            nonlocal counter
+            nonlocal condition
 
             async with condition:
                 counter += 1
@@ -35,25 +34,19 @@ def test_periodic(event_loop):
     svc = CountPeriodicService(interval=0.1)
 
     async def assert_counter():
-        nonlocal counter, svc  # noqa
+        nonlocal counter, svc
 
         counter = 0
 
         for i in (5, 10):
             async with condition:
                 await asyncio.wait_for(
-                    condition.wait_for(lambda: counter >= i),
-                    timeout=10,
+                    condition.wait_for(lambda: counter >= i), timeout=10
                 )
             assert counter == i
 
     with aiomisc.entrypoint(svc, loop=event_loop) as loop:
-        loop.run_until_complete(
-            asyncio.wait_for(
-                assert_counter(),
-                timeout=10,
-            ),
-        )
+        loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
 
 
 def test_delay(event_loop):
@@ -71,7 +64,7 @@ def test_delay(event_loop):
     svc = CountPeriodicService(interval=0.1, delay=0.5)
 
     async def assert_counter():
-        nonlocal counter, svc  # noqa
+        nonlocal counter, svc
 
         counter = 0
         await asyncio.sleep(0.25)
@@ -79,8 +72,7 @@ def test_delay(event_loop):
 
         async with condition:
             await asyncio.wait_for(
-                condition.wait_for(lambda: counter == 5),
-                timeout=5,
+                condition.wait_for(lambda: counter == 5), timeout=5
             )
 
         await svc.stop(None)

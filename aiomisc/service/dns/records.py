@@ -1,7 +1,8 @@
 import enum
 from abc import ABC, abstractmethod
+from collections.abc import Hashable, Iterable
 from dataclasses import dataclass, field
-from typing import Any, Hashable, Iterable, List
+from typing import Any
 
 import dnslib  # type: ignore[import-untyped]
 
@@ -103,22 +104,14 @@ class DNSRecord:
 class A(dnslib.A, RD):
     @classmethod
     def create(cls, name: str, ip: str, ttl: int = 3600) -> DNSRecord:
-        return DNSRecord(
-            name=name,
-            type=RecordType.A,
-            data=cls(ip),
-            ttl=ttl,
-        )
+        return DNSRecord(name=name, type=RecordType.A, data=cls(ip), ttl=ttl)
 
 
 class AAAA(dnslib.AAAA, RD):
     @classmethod
     def create(cls, name: str, ipv6: str, ttl: int = 3600) -> DNSRecord:
         return DNSRecord(
-            name=name,
-            type=RecordType.AAAA,
-            data=cls(ipv6),
-            ttl=ttl,
+            name=name, type=RecordType.AAAA, data=cls(ipv6), ttl=ttl
         )
 
 
@@ -128,12 +121,7 @@ class RDLabel(RD):
 
     @classmethod
     def create(cls, name: str, label: str, ttl: int = 3600) -> DNSRecord:
-        return DNSRecord(
-            name=name,
-            type=cls.__type__,
-            data=cls(label),
-            ttl=ttl,
-        )
+        return DNSRecord(name=name, type=cls.__type__, data=cls(label), ttl=ttl)
 
     def __hash__(self) -> int:
         return hash(self.label)
@@ -158,7 +146,7 @@ class DNAME(dnslib.DNAME, RDLabel):
 class MX(dnslib.MX, RD):
     @classmethod
     def create(
-        cls, name: str, exchange: str, preference: int, ttl: int = 3600,
+        cls, name: str, exchange: str, preference: int, ttl: int = 3600
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -172,27 +160,28 @@ class TXT(dnslib.TXT, RD):
     @classmethod
     def create(cls, name: str, text: str, ttl: int = 3600) -> DNSRecord:
         return DNSRecord(
-            name=name,
-            type=RecordType.TXT,
-            data=cls(text),
-            ttl=ttl,
+            name=name, type=RecordType.TXT, data=cls(text), ttl=ttl
         )
 
 
 class SOA(dnslib.SOA, RD):
     @classmethod
     def create(
-        cls, name: str, mname: str, rname: str, serial: int,
-        refresh: int, retry: int, expire: int, minimum: int,
+        cls,
+        name: str,
+        mname: str,
+        rname: str,
+        serial: int,
+        refresh: int,
+        retry: int,
+        expire: int,
+        minimum: int,
         ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
             type=RecordType.SOA,
-            data=cls(
-                mname, rname,
-                (serial, refresh, retry, expire, minimum),
-            ),
+            data=cls(mname, rname, (serial, refresh, retry, expire, minimum)),
             ttl=ttl,
         )
 
@@ -200,8 +189,13 @@ class SOA(dnslib.SOA, RD):
 class SRV(dnslib.SRV, RD):
     @classmethod
     def create(
-        cls, name: str, priority: int, weight: int, port: int,
-        target: str, ttl: int = 3600,
+        cls,
+        name: str,
+        priority: int,
+        weight: int,
+        port: int,
+        target: str,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -214,22 +208,25 @@ class SRV(dnslib.SRV, RD):
 class CAA(dnslib.CAA, RD):
     @classmethod
     def create(
-        cls, name: str, flags: int, tag: str, value: str,
-        ttl: int = 3600,
+        cls, name: str, flags: int, tag: str, value: str, ttl: int = 3600
     ) -> DNSRecord:
         return DNSRecord(
-            name=name,
-            type=RecordType.CAA,
-            data=cls(flags, tag, value),
-            ttl=ttl,
+            name=name, type=RecordType.CAA, data=cls(flags, tag, value), ttl=ttl
         )
 
 
 class NAPTR(dnslib.NAPTR, RD):
     @classmethod
     def create(
-        cls, name: str, order: int, preference: int, flags: str,
-        service: str, regexp: str, replacement: str, ttl: int = 3600,
+        cls,
+        name: str,
+        order: int,
+        preference: int,
+        flags: str,
+        service: str,
+        regexp: str,
+        replacement: str,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -242,8 +239,13 @@ class NAPTR(dnslib.NAPTR, RD):
 class DS(dnslib.DS, RD):
     @classmethod
     def create(
-        cls, name: str, key_tag: int, algorithm: int, digest_type: int,
-        digest: str, ttl: int = 3600,
+        cls,
+        name: str,
+        key_tag: int,
+        algorithm: int,
+        digest_type: int,
+        digest: str,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -256,8 +258,13 @@ class DS(dnslib.DS, RD):
 class DNSKEY(dnslib.DNSKEY, RD):
     @classmethod
     def create(
-        cls, name: str, flags: int, protocol: int, algorithm: int,
-        key: str, ttl: int = 3600,
+        cls,
+        name: str,
+        flags: int,
+        protocol: int,
+        algorithm: int,
+        key: str,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -270,16 +277,32 @@ class DNSKEY(dnslib.DNSKEY, RD):
 class RRSIG(dnslib.RRSIG, RD):
     @classmethod
     def create(
-        cls, name: str, type_covered: int, algorithm: int, labels: int,
-        original_ttl: int, expiration: int, inception: int, key_tag: int,
-        signer: str, signature: str, ttl: int = 3600,
+        cls,
+        name: str,
+        type_covered: int,
+        algorithm: int,
+        labels: int,
+        original_ttl: int,
+        expiration: int,
+        inception: int,
+        key_tag: int,
+        signer: str,
+        signature: str,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
             type=RecordType.RRSIG,
             data=cls(
-                type_covered, algorithm, labels, original_ttl, expiration,
-                inception, key_tag, signer, signature,
+                type_covered,
+                algorithm,
+                labels,
+                original_ttl,
+                expiration,
+                inception,
+                key_tag,
+                signer,
+                signature,
             ),
             ttl=ttl,
         )
@@ -288,8 +311,11 @@ class RRSIG(dnslib.RRSIG, RD):
 class NSEC(dnslib.NSEC, RD):
     @classmethod
     def create(
-        cls, name: str, next_domain: str,
-        rrtypes: Iterable[int], ttl: int = 3600,
+        cls,
+        name: str,
+        next_domain: str,
+        rrtypes: Iterable[int],
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -302,8 +328,12 @@ class NSEC(dnslib.NSEC, RD):
 class HTTPS(dnslib.HTTPS, RD):
     @classmethod
     def create(
-        cls, name: str, priority: int, target: str,
-        params: List[str], ttl: int = 3600,
+        cls,
+        name: str,
+        priority: int,
+        target: str,
+        params: list[str],
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -316,15 +346,21 @@ class HTTPS(dnslib.HTTPS, RD):
 class LOC(dnslib.LOC, RD):
     @classmethod
     def create(
-        cls, name: str, latitude: float, longitude: float,
-        altitude: float, size: float, h_precision: float,
-        v_precision: float, ttl: int = 3600,
+        cls,
+        name: str,
+        latitude: float,
+        longitude: float,
+        altitude: float,
+        size: float,
+        h_precision: float,
+        v_precision: float,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
             type=RecordType.LOC,
             data=cls(
-                latitude, longitude, altitude, size, h_precision, v_precision,
+                latitude, longitude, altitude, size, h_precision, v_precision
             ),
             ttl=ttl,
         )
@@ -333,20 +369,22 @@ class LOC(dnslib.LOC, RD):
 class RP(dnslib.RP, RD):
     @classmethod
     def create(
-        cls, name: str, mbox: str, txt: str, ttl: int = 3600,
+        cls, name: str, mbox: str, txt: str, ttl: int = 3600
     ) -> DNSRecord:
         return DNSRecord(
-            name=name,
-            type=RecordType.RP,
-            data=cls(mbox, txt),
-            ttl=ttl,
+            name=name, type=RecordType.RP, data=cls(mbox, txt), ttl=ttl
         )
 
 
 class TLSA(dnslib.TLSA, RD):
     @classmethod
     def create(
-        cls, name: str, usage: int, selector: int, mtype: int, cert: str,
+        cls,
+        name: str,
+        usage: int,
+        selector: int,
+        mtype: int,
+        cert: str,
         ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
@@ -360,8 +398,12 @@ class TLSA(dnslib.TLSA, RD):
 class SSHFP(dnslib.SSHFP, RD):
     @classmethod
     def create(
-        cls, name: str, algorithm: int, fptype: int,
-        fingerprint: str, ttl: int = 3600,
+        cls,
+        name: str,
+        algorithm: int,
+        fptype: int,
+        fingerprint: str,
+        ttl: int = 3600,
     ) -> DNSRecord:
         return DNSRecord(
             name=name,
@@ -394,7 +436,7 @@ __all__ = (
     "TLSA",
     "TXT",
     "A",
-    "DNSRecord",
     "DNSClass",
+    "DNSRecord",
     "RecordType",
 )

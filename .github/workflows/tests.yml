@@ -7,43 +7,59 @@ on:
     branches: [ master ]
 
 jobs:
-  pylama:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Setup python3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - run: python -m pip install poetry==1.4.0
-      - run: poetry install
-      - run: poetry run pylama
+      - run: uv sync --group dev
+      - name: Run ruff check
+        run: uv run ruff check .
         env:
           FORCE_COLOR: 1
+      - name: Run ruff format check
+        run: uv run ruff format --check .
+        env:
+          FORCE_COLOR: 1
+
   mypy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Setup python3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - run: python -m pip install poetry
-      - run: poetry install -vvvv
-      - run: poetry run mypy
+      - run: uv sync --group dev
+      - run: uv run mypy
         env:
           FORCE_COLOR: 1
+
   docs-examples:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Setup python3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - run: python -m pip install poetry
-      - run: poetry install -vvvv
-      - run: poetry run pytest -svv docs/source
+      - run: uv sync --group dev
+      - run: uv run pytest -svv docs/source
         env:
           FORCE_COLOR: 1
 
@@ -60,15 +76,18 @@ jobs:
           - '3.12'
           - '3.13'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Setup python${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python }}"
-      - run: python -m pip install poetry
-      - run: poetry install --with=uvloop -vvvv
+      - run: uv sync --group dev --group uvloop
       - run: >-
-          poetry run pytest \
+          uv run pytest \
             -vv \
             --cov=aiomisc \
             --cov=aiomisc_log \
@@ -80,7 +99,7 @@ jobs:
             tests
         env:
           FORCE_COLOR: 1
-      - run: poetry run coveralls
+      - run: uv run coveralls
         env:
           COVERALLS_PARALLEL: 'true'
           COVERALLS_SERVICE_NAME: github
@@ -97,14 +116,17 @@ jobs:
           - '3.10'
           - '3.11'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Setup python${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python }}"
-      - run: python -m pip install poetry
-      - run: poetry install --without=uvloop -vvvv
-      - run: poetry run pytest -vv --aiomisc-test-timeout=120 tests
+      - run: uv sync --group dev
+      - run: uv run pytest -vv --aiomisc-test-timeout=120 tests
         env:
           FORCE_COLOR: 1
 
@@ -119,14 +141,17 @@ jobs:
           - '3.10'
           - '3.11'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Setup python${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python }}"
-      - run: python -m pip install poetry
-      - run: poetry install --without=uvloop -vvvv
-      - run: poetry run pytest -vv --aiomisc-test-timeout=120 tests
+      - run: uv sync --group dev
+      - run: uv run pytest -vv --aiomisc-test-timeout=120 tests
         env:
           FORCE_COLOR: 1
 
@@ -141,17 +166,20 @@ jobs:
           - 'rpc'
           - 'rpc_udp'
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup python3.10
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Setup python3.11
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install poetry
-      - run: poetry install --with=uvloop -vvvv
-      - run: poetry run python -m pip install msgspec~=0.9.1
+      - run: uv sync --group dev --group uvloop
+      - run: uv pip install msgspec~=0.9.1
       - run: >-
           cd examples/${{ matrix.example }} &&
-          poetry run pytest -v --doctest-modules tests.py
+          uv run pytest -v --doctest-modules tests.py
         env:
           FORCE_COLOR: 1
 

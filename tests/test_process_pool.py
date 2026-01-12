@@ -8,7 +8,6 @@ import pytest
 import aiomisc
 from aiomisc.process_pool import ProcessPoolExecutor
 
-
 POOL_SIZE = 4
 
 
@@ -29,8 +28,9 @@ async def test_simple(pool, event_loop, timer):
                 *[
                     event_loop.run_in_executor(pool, sleep, 1)
                     for _ in range(POOL_SIZE)
-                ],
-            ), timeout=2,
+                ]
+            ),
+            timeout=2,
         )
 
 
@@ -48,10 +48,8 @@ def suicide():
 async def test_exit(pool, event_loop):
     await asyncio.wait_for(
         asyncio.gather(
-            *[
-                event_loop.run_in_executor(pool, suicide)
-                for _ in range(4)
-            ],
+            *[event_loop.run_in_executor(pool, suicide) for _ in range(4)],
             return_exceptions=True,
-        ), timeout=2,
+        ),
+        timeout=2,
     )

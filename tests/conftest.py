@@ -9,11 +9,10 @@ import pytest
 
 import aiomisc
 
-
 try:
     import uvloop
 except ImportError:
-    uvloop = None       # type: ignore
+    uvloop = None  # type: ignore
 
 
 @pytest.fixture
@@ -45,8 +44,8 @@ policies = (asyncio.DefaultEventLoopPolicy(),)
 policy_ids = ("asyncio",)
 
 if uvloop:
-    policies = (uvloop.EventLoopPolicy(),) + policies   # type: ignore
-    policy_ids = ("uvloop",) + policy_ids               # type: ignore
+    policies = (uvloop.EventLoopPolicy(),) + policies  # type: ignore
+    policy_ids = ("uvloop",) + policy_ids  # type: ignore
 
 
 @pytest.fixture(params=policies, ids=policy_ids)
@@ -68,10 +67,7 @@ def ssl_client_context(certs):
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, capath=ca)
 
     if key:
-        context.load_cert_chain(
-            cert,
-            key,
-        )
+        context.load_cert_chain(cert, key)
 
     context.load_verify_locations(cafile=ca)
     context.check_hostname = False

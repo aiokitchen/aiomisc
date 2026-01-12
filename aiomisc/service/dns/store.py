@@ -1,4 +1,4 @@
-from typing import Iterable, Mapping, Optional, Sequence, Tuple
+from collections.abc import Iterable, Mapping, Sequence
 
 from .records import DNSRecord, RecordType
 from .tree import RadixTree
@@ -22,13 +22,11 @@ class DNSStore:
     def remove_zone(self, zone_name: str) -> None:
         zone_tuple = self.get_reverse_tuple(zone_name)
         if not self.zones.search(zone_tuple):
-            raise ValueError(
-                f"Zone {zone_name} does not exist.",
-            )
+            raise ValueError(f"Zone {zone_name} does not exist.")
         # Clear zone from RadixTree
         self.zones.insert(zone_tuple, None)
 
-    def get_zone(self, zone_name: str) -> Optional[DNSZone]:
+    def get_zone(self, zone_name: str) -> DNSZone | None:
         zone_tuple = self.get_reverse_tuple(zone_name)
         return self.zones.search(zone_tuple)
 
@@ -41,18 +39,16 @@ class DNSStore:
         zone = self.zones.search(zone_tuple)
         return zone.get_records(name, record_type) if zone is not None else ()
 
-    def get_zone_for_name(self, name: str) -> Optional[Tuple[str, ...]]:
+    def get_zone_for_name(self, name: str) -> tuple[str, ...] | None:
         labels = self.get_reverse_tuple(name)
         result = self.zones.find_prefix(labels)
         return result[0] if result else None
 
     @staticmethod
-    def get_reverse_tuple(zone_name: str) -> Tuple[str, ...]:
+    def get_reverse_tuple(zone_name: str) -> tuple[str, ...]:
         return tuple(zone_name.strip(".").split("."))[::-1]
 
-    def replace(
-        self, zones_data: Mapping[str, Iterable[DNSRecord]],
-    ) -> None:
+    def replace(self, zones_data: Mapping[str, Iterable[DNSRecord]]) -> None:
         """
         Atomically replace all zones with new ones this method is safe
         because it replaces all zones at once. zone_data is a mapping

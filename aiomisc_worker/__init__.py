@@ -4,11 +4,10 @@ import signal
 import socket
 import sys
 from enum import IntEnum
-from typing import Tuple, TypeVar, Union
-
+from typing import TypeVar
 
 T = TypeVar("T")
-AddressType = Union[str, Tuple[str, int]]
+AddressType = str | tuple[str, int]
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ INET_AF = socket.AF_INET6
 
 
 if sys.platform in ("win32", "cygwin"):
-    SIGNAL = signal.SIGBREAK      # type: ignore
+    SIGNAL = signal.SIGBREAK  # type: ignore
     INT_SIGNAL = signal.SIGINT
 else:
     SIGNAL = signal.SIGUSR2

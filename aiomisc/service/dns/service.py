@@ -2,7 +2,6 @@ import asyncio
 import logging
 from asyncio import StreamReader, StreamWriter
 from struct import Struct
-from typing import Optional, Tuple
 
 import dnslib  # type: ignore[import-untyped]
 
@@ -10,7 +9,6 @@ from aiomisc.service import TCPServer, UDPServer
 
 from .records import RecordType
 from .store import DNSStore
-
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +19,7 @@ class DNSServer:
     __proto__: str
 
     @staticmethod
-    def get_edns_max_size(record: dnslib.DNSRecord) -> Optional[int]:
+    def get_edns_max_size(record: dnslib.DNSRecord) -> int | None:
         for rr in record.ar:
             if rr.rtype != dnslib.QTYPE.OPT:
                 continue
@@ -29,8 +27,8 @@ class DNSServer:
         return None
 
     def handle_request(
-        self, addr: tuple, data: bytes, should_truncate: bool = False,
-    ) -> Tuple[bytes, tuple]:
+        self, addr: tuple, data: bytes, should_truncate: bool = False
+    ) -> tuple[bytes, tuple]:
         record = dnslib.DNSRecord.parse(data)
         question: dnslib.DNSQuestion = record.get_q()
         reply = record.reply()
@@ -40,7 +38,9 @@ class DNSServer:
         try:
             log.debug(
                 "Processing %s request from %r:\n%s\n",
-                self.__proto__, addr, record,
+                self.__proto__,
+                addr,
+                record,
             )
             edns_max_size = self.get_edns_max_size(record)
             if edns_max_size is not None:
@@ -54,8 +54,7 @@ class DNSServer:
                 reply.header.rcode = dnslib.RCODE.NXDOMAIN
 
             log.debug(
-                "Sending %s answer to %r:\n%s\n",
-                self.__proto__, addr, reply,
+                "Sending %s answer to %r:\n%s\n", self.__proto__, addr, reply
             )
 
             reply_body = reply.pack()
@@ -69,7 +68,9 @@ class DNSServer:
         except Exception as e:
             log.exception(
                 "Failed to process %s request from %r: %s",
-                self.__proto__, addr, e,
+                self.__proto__,
+                addr,
+                e,
             )
             reply = record.reply()
             reply.header.set_rcode(dnslib.RCODE.SERVFAIL)
@@ -88,9 +89,7 @@ class UDPDNSServer(DNSServer, UDPServer):
 
     async def handle_datagram(self, data: bytes, addr: tuple) -> None:
         self.sendto(
-            *self.handle_request(
-                data=data, addr=addr, should_truncate=True,
-            ),
+            *self.handle_request(data=data, addr=addr, should_truncate=True)
         )
 
 
@@ -105,7 +104,7 @@ class TCPDNSServer(DNSServer, TCPServer):
     __proto__ = "TCP"
 
     async def handle_client(
-        self, reader: StreamReader, writer: StreamWriter,
+        self, reader: StreamReader, writer: StreamWriter
     ) -> None:
         addr = writer.get_extra_info("peername")
         try:

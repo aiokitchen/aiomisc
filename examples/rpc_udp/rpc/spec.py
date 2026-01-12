@@ -6,7 +6,7 @@ import msgspec
 class Request(msgspec.Struct):
     id: int
     method: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
 
 
 class Error(msgspec.Struct):
@@ -16,10 +16,10 @@ class Error(msgspec.Struct):
 
 class Response(msgspec.Struct):
     id: int
-    result: Optional[Any] = None
-    error: Optional[Error] = None
+    result: Any | None = None
+    error: Error | None = None
 
 
 class Payload(msgspec.Struct):
-    request: Optional[Request] = None
-    response: Optional[Response] = None
+    request: Request | None = None
+    response: Response | None = None
