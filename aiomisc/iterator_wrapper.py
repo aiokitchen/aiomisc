@@ -173,6 +173,7 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
         self.__gen_func: Callable = gen_func
         self._statistic = IteratorWrapperStatistic(statistic_name)
         self._statistic.queue_size = max_size
+        self._run_lock = threading.Lock()
 
     @property
     def closed(self) -> bool:
@@ -232,15 +233,20 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
     def _run(self) -> Any:
         return self.loop.run_in_executor(self.executor, self._in_thread)
 
-    def __aiter__(self) -> AsyncIterator[T]:
+    def __start_generator(self) -> None:
         if not self.loop.is_running():
             raise RuntimeError("Event loop is not running")
 
-        if self.__gen_task is None:
+        with self._run_lock:
+            if self.__gen_task is not None:
+                return
             gen_task = self._run()
             if gen_task is None:
                 raise RuntimeError("Iterator task was not created")
             self.__gen_task = gen_task
+
+    def __aiter__(self) -> AsyncIterator[T]:
+        self.__start_generator()
         return IteratorProxy(self, self.close)
 
     async def __anext__(self) -> T:
@@ -258,11 +264,11 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
         return item
 
     async def __aenter__(self) -> "IteratorWrapper":
+        self.__start_generator()
         return self
 
     async def __aexit__(
-        self, exc_type: Any, exc_val: Any,
-        exc_tb: Any,
+        self, exc_type: Any, exc_val: Any, exc_tb: Any
     ) -> None:
         if self.closed:
             return
@@ -272,8 +278,7 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
 
 class IteratorProxy(Generic[T], AsyncIterator):
     def __init__(
-        self, iterator: AsyncIterator[T],
-        finalizer: Callable[[], Any],
+        self, iterator: AsyncIterator[T], finalizer: Callable[[], Any]
     ):
         self.__iterator = iterator
         finalize(self, finalizer)
