@@ -10,11 +10,7 @@ from asyncio import (
     iscoroutinefunction,
 )
 from io import BytesIO
-from typing import (
-    Any,
-    Dict,
-    Optional,
-)
+from typing import Any, Dict, Optional
 from collections.abc import AsyncIterable, Callable, Mapping, MutableMapping
 
 import msgspec

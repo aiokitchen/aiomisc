@@ -595,7 +595,10 @@ def threaded_iterable(
     func: Callable[P, Generator[T, None, None]] | None = None,
     *,
     max_size: int = 0,
-) -> ThreadedIterable[P, T] | Callable[[Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]]:
+) -> (
+    ThreadedIterable[P, T]
+    | Callable[[Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]]
+):
     if func is None:
         return lambda f: ThreadedIterable(f, max_size=max_size)
 
@@ -634,7 +637,12 @@ def threaded_iterable_separate(
     func: Callable[P, Generator[T, None, None]] | None = None,
     *,
     max_size: int = 0,
-) -> ThreadedIterable[P, T] | Callable[[Callable[P, Generator[T, None, None]]], ThreadedIterableSeparate[P, T]]:
+) -> (
+    ThreadedIterable[P, T]
+    | Callable[
+        [Callable[P, Generator[T, None, None]]], ThreadedIterableSeparate[P, T]
+    ]
+):
     if func is None:
         return lambda f: ThreadedIterableSeparate(f, max_size=max_size)
 

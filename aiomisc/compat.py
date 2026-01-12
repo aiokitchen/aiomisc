@@ -12,7 +12,7 @@ from ._context_vars import EVENT_LOOP
 log = logging.getLogger(__name__)
 
 
-class  (Protocol):
+class EntrypointProtocol(Protocol):
     @property
     def name(self) -> str: ...
 

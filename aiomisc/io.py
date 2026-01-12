@@ -8,16 +8,7 @@ from concurrent.futures import Executor
 from enum import Enum
 from functools import partial, total_ordering
 from pathlib import Path
-from typing import (
-    IO,
-    Any,
-    AnyStr,
-    Generic,
-    Literal,
-    TextIO,
-    TypeVar,
-    overload,
-)
+from typing import IO, Any, AnyStr, Generic, Literal, TextIO, TypeVar, overload
 
 from .compat import EventLoopMixin, TypeAlias
 
@@ -326,9 +317,7 @@ class Compression(Enum):
     LZMA = (AsyncLzmaBinaryIO, AsyncLzmaTextIO)
 
 
-AsyncFileType: TypeAlias = (
-    AsyncFileIO[AnyStr] | AsyncTextIO | AsyncBinaryIO
-)
+AsyncFileType: TypeAlias = AsyncFileIO[AnyStr] | AsyncTextIO | AsyncBinaryIO
 
 BinaryModes: TypeAlias = Literal[
     "rb",
