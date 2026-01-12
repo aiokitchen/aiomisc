@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import threading
 from abc import abstractmethod
 from collections import deque
 from concurrent.futures import Executor
@@ -151,6 +152,7 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
         "__close_event",
         "__gen_func",
         "__gen_task",
+        "_run_lock",
         "_statistic",
         "executor",
     ) + EventLoopMixin.__slots__

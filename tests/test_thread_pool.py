@@ -661,3 +661,25 @@ async def test_threaded_iterator_class_classmethod():
     assert list(instance.foo.sync_call()) == [42]
     assert [x async for x in instance.foo()] == [42]
     assert [x async for x in instance.foo.async_call()] == [42]
+
+
+async def test_threaded_generator_starts_in_aenter():
+    """Test that the generator starts running when entering async context."""
+    generator_started = threading.Event()
+
+    @aiomisc.threaded_iterable(max_size=2)
+    def gen():
+        generator_started.set()
+        yield 1
+        yield 2
+        yield 3
+
+    async with timeout(2):
+        async with gen() as iterator:
+            # The generator should have started by now
+            generator_started.wait(timeout=1)
+            assert generator_started.is_set()
+
+            # Verify we can still iterate
+            result = [x async for x in iterator]
+            assert result == [1, 2, 3]
