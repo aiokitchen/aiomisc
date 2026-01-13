@@ -1,6 +1,6 @@
 [project]
 name = "aiomisc"
-version = "17.9.0"
+version = "17.10.0"
 description = "aiomisc - miscellaneous utils for asyncio"
 authors = [{ name = "Dmitry Orlov", email = "me@mosquito.su" }]
 readme = "README.rst"
