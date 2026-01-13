@@ -10,16 +10,14 @@ import aiomisc
 from aiomisc import threaded, timeout
 from aiomisc.service import ProcessService, RespawningProcessService
 
-
 pytestmark = pytest.mark.skipif(
-    platform.system() == "Windows",
-    reason="Temporary skip on windows",
+    platform.system() == "Windows", reason="Temporary skip on windows"
 )
 
 
 def test_abstractmethod_exception():
     with pytest.raises(TypeError):
-        ProcessService()        # type: ignore
+        ProcessService()  # type: ignore
 
 
 class SampleProcessService(ProcessService):
@@ -39,7 +37,7 @@ def test_process_service(tmpdir):
 
     with aiomisc.entrypoint(svc) as loop:
         loop.run_until_complete(
-            loop.run_in_executor(None, svc._process_stop_event.wait),
+            loop.run_in_executor(None, svc._process_stop_event.wait)
         )
 
     with open(test_file) as fp:
@@ -57,10 +55,7 @@ class SimpleRespawningProcessService(RespawningProcessService):
 
 def test_respawning_process_service():
     queue: Queue = Queue()
-    svc = SimpleRespawningProcessService(
-        queue=queue,
-        process_poll_timeout=0.5,
-    )
+    svc = SimpleRespawningProcessService(queue=queue, process_poll_timeout=0.5)
 
     @timeout(5)
     async def go():

@@ -7,29 +7,40 @@ from aiomisc_log import LogFormat, LogLevel, basic_config
 
 from . import plugins
 
-
 executable = Path(sys.executable)
 module_name = "aiomisc.plugins"
 parser = ArgumentParser(prog=f"{executable.name} -m {module_name}")
 parser.add_argument(
-    "-q", "-s", "--quiet", "--silent", action="store_true",
+    "-q",
+    "-s",
+    "--quiet",
+    "--silent",
+    action="store_true",
     help="Disable logs and just output plugin-list, alias for "
-         "--log-level=critical",
+    "--log-level=critical",
 )
 
 parser.add_argument(
-    "-n", "--no-output", action="store_true",
+    "-n",
+    "--no-output",
+    action="store_true",
     help="Disable output plugin-list to the stdout",
 )
 
 parser.add_argument(
-    "-l", "--log-level", choices=LogLevel.choices(),
-    default=LogLevel.default(), help="Logging level",
+    "-l",
+    "--log-level",
+    choices=LogLevel.choices(),
+    default=LogLevel.default(),
+    help="Logging level",
 )
 
 parser.add_argument(
-    "-F", "--log-format", choices=LogFormat.choices(),
-    default=LogFormat.default(), help="Logging format",
+    "-F",
+    "--log-format",
+    choices=LogFormat.choices(),
+    default=LogFormat.default(),
+    help="Logging format",
 )
 
 

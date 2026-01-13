@@ -9,8 +9,7 @@ from .spec import RPCBase
 
 class RPCServer(TCPServer, RPCBase):
     async def handle_client(
-        self, reader: asyncio.StreamReader,
-        writer: asyncio.StreamWriter,
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ):
         await self.communicate(reader, writer)
 
@@ -19,9 +18,7 @@ class RPCServer(TCPServer, RPCBase):
         await TCPServer.start(self)
 
 
-handlers = MappingProxyType({
-    "multiply": lambda x, y: x * y,
-})
+handlers = MappingProxyType({"multiply": lambda x, y: x * y})
 
 
 if __name__ == "__main__":

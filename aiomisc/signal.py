@@ -1,36 +1,33 @@
 import inspect
-from typing import Any, Callable, FrozenSet, Set, TypeVar, Union
-
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 ReceiverType = Callable[..., Any]
-_ReceiverSetType = Union[Set[ReceiverType], FrozenSet[ReceiverType]]
+_ReceiverSetType = set[ReceiverType] | frozenset[ReceiverType]
 
 
 class Signal:
-
-    __slots__ = ("_receivers", "_is_frozen")
+    __slots__ = ("_is_frozen", "_receivers")
 
     def __init__(self) -> None:
-        self._receivers = set()   # type: _ReceiverSetType
+        self._receivers = set()  # type: _ReceiverSetType
 
     def connect(self, receiver: ReceiverType) -> None:
         if self.is_frozen:
             raise RuntimeError(
-                "Can't connect receiver (%r) to the frozen signal",
-                receiver,
+                "Can't connect receiver (%r) to the frozen signal", receiver
             )
 
         if not inspect.iscoroutinefunction(receiver):
             raise RuntimeError("%r is not a coroutine function", receiver)
 
-        self._receivers.add(receiver)   # type: ignore
+        self._receivers.add(receiver)  # type: ignore
 
     def disconnect(self, receiver: ReceiverType) -> None:
         if self.is_frozen:
             raise RuntimeError(
-                "Can't connect receiver (%r) to the frozen signal",
-                receiver,
+                "Can't connect receiver (%r) to the frozen signal", receiver
             )
 
         self._receivers.discard(receiver)  # type: ignore

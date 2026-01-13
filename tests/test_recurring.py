@@ -4,7 +4,6 @@ import pytest
 
 import aiomisc
 
-
 pytestmark = pytest.mark.catch_loop_exceptions
 
 
@@ -24,8 +23,7 @@ async def test_recurring(event_loop):
 
     async with condition:
         await asyncio.wait_for(
-            condition.wait_for(lambda: counter >= 5),
-            timeout=5,
+            condition.wait_for(lambda: counter >= 5), timeout=5
         )
 
     await aiomisc.cancel_tasks([start_task])
@@ -50,8 +48,7 @@ async def test_long_func(event_loop):
 
     async with condition:
         await asyncio.wait_for(
-            condition.wait_for(lambda: counter >= 2),
-            timeout=2,
+            condition.wait_for(lambda: counter >= 2), timeout=2
         )
 
     assert counter == 2
@@ -72,7 +69,7 @@ async def test_shield(event_loop):
 
     recurring = aiomisc.RecurringCallback(task)
     start_task = recurring.start(
-        strategy=lambda _: 0, loop=event_loop, shield=True,
+        strategy=lambda _: 0, loop=event_loop, shield=True
     )
 
     await start_event.wait()

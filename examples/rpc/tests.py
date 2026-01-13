@@ -50,7 +50,7 @@ async def test_division(rpc_client: RPCClient):
     with pytest.raises(Exception):
         assert await rpc_client("div", a=1, b=0)
 
-    assert await rpc_client("div", a=10, b=5) == 2.
+    assert await rpc_client("div", a=10, b=5) == 2.0
 
 
 async def test_many(rpc_client: RPCClient):
@@ -69,9 +69,7 @@ async def test_many(rpc_client: RPCClient):
     assert results == expected
 
 
-async def test_two_way(rpc_client: RPCClient,
-                       rpc_server: RPCServer):
-    assert (
-        await rpc_server("div", a=100, b=10) ==
-        await rpc_client("div", a=100, b=10)
+async def test_two_way(rpc_client: RPCClient, rpc_server: RPCServer):
+    assert await rpc_server("div", a=100, b=10) == await rpc_client(
+        "div", a=100, b=10
     )

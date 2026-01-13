@@ -8,14 +8,12 @@ from aiomisc.service import RobustTCPClient
 
 from .spec import RPCBase
 
-
 log = logging.getLogger("client")
 
 
 class RPCClient(RobustTCPClient, RPCBase):
     async def handle_connection(
-        self, reader: asyncio.StreamReader,
-        writer: asyncio.StreamWriter,
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ) -> None:
         await self.communicate(reader, writer)
 
@@ -27,7 +25,7 @@ class RPCClient(RobustTCPClient, RPCBase):
 async def main(client: RPCClient):
     call_count = 1000
 
-    delta = - monotonic()
+    delta = -monotonic()
 
     for i in range(call_count):
         await asyncio.gather(
@@ -39,16 +37,14 @@ async def main(client: RPCClient):
 
     delta += monotonic()
 
-    total_request_sent = call_count ** 2
+    total_request_sent = call_count**2
 
     log.info("Total executed %d requests on %.3f", total_request_sent, delta)
     log.info("RPS: %.3f", total_request_sent / delta)
     log.info("Close connection")
 
 
-handlers = MappingProxyType({
-    "print": print,
-})
+handlers = MappingProxyType({"print": print})
 
 
 if __name__ == "__main__":

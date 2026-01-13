@@ -1,58 +1,46 @@
-all: bump clean sdist test upload
+all: clean build
 
-NAME:=$(shell poetry version -n | awk '{print $1}')
-VERSION:=$(shell poetry version -n | awk '{print $2}')
+NAME:=$(shell uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['name'])")
+VERSION:=$(shell uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
 
 clean:
 	rm -vrf *.egg-info dist build
 
-bump:
-	poetry build
-
+build:
+	uv build
 
 install:
-	poetry install
+	uv sync --group dev
 
-
-upload: clean sdist
-	poetry publish
-
-
-.venv/bin/python: install
-.venv: .venv/bin/python
-
+upload: clean build
+	uv publish
 
 uml:
 	docker run --rm -v $(shell pwd):/mnt -w /mnt hrektts/plantuml \
 		java -jar /usr/local/share/java/plantuml.jar \
 		-tsvg -o docs/source/_static 'resources/uml/*/**.puml'
 
-sdist: bump uml
-	rm -fr dist
-	python3 setup.py sdist bdist_wheel
+test:
+	uv run pytest -vv
 
+lint:
+	uv run ruff check .
+	uv run ruff format --check .
 
-test: .venv
-	poetry run pytest -vv
-
+format:
+	uv run ruff check --fix .
+	uv run ruff format .
 
 develop: clean
-	poetry install
-	poetry run pre-commit install
-
+	uv sync --group dev
+	uv run pre-commit install
 
 mypy:
-	poetry run mypy
+	uv run mypy
 
-
-reformat:
-	poetry run gray aiomisc*
-
-
-translate: .venv
+translate:
 	make -C docs/ gettext
-	sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
-
+	uv run sphinx-intl update -p docs/build/gettext -l ru -d docs/source/locale
 
 build-docs: translate
 	make -C docs/ -e BUILDDIR="build/en" html

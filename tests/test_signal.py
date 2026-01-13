@@ -18,9 +18,7 @@ def clear_entrypoint_signals():
 
 
 class FooService(Service):
-
-    async def start(self):
-        ...
+    async def start(self): ...
 
 
 def test_pre_start_signal(event_loop):
@@ -92,20 +90,13 @@ def test_entrypoint_class_post_stop_signal(event_loop):
 def test_connect_to_frozen_signal(signal):
     signal.freeze()
 
-    async def cb():
-        ...
+    async def cb(): ...
 
     with pytest.raises(RuntimeError):
         signal.connect(cb)
 
 
-@pytest.mark.parametrize(
-    "callback", [
-        None,
-        max,
-        lambda x: x,
-    ],
-)
+@pytest.mark.parametrize("callback", [None, max, lambda x: x])
 def test_wrong_callback(signal, callback):
     with pytest.raises(RuntimeError):
         signal.connect(callback)
@@ -155,9 +146,7 @@ async def multiple_receivers(signal):
     assert all((foo_called, bar_called))
 
 
-async def test_add_remove_service_with_signals(
-    entrypoint: aiomisc.Entrypoint,
-):
+async def test_add_remove_service_with_signals(entrypoint: aiomisc.Entrypoint):
     all_services = list()
 
     async def pre_start_hook(*, entrypoint, services):
@@ -168,7 +157,7 @@ async def test_add_remove_service_with_signals(
 
     class SimpleService(aiomisc.Service):
         async def start(self) -> None:
-            nonlocal pre_start_services     # noqa
+            nonlocal pre_start_services
             pre_start_services.append(self)
 
     entrypoint.pre_start = entrypoint.pre_start.copy()

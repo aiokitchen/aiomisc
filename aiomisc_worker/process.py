@@ -1,32 +1,39 @@
 import atexit
 import os
 import sys
+from collections.abc import Callable, Mapping, MutableMapping
 from contextlib import suppress
 from subprocess import PIPE, Popen
 from threading import Event
 from time import sleep
-from typing import Any, Callable, Mapping, MutableMapping, Tuple
+from typing import Any
 
 from aiomisc_log import basic_config
 
 from . import INT_SIGNAL, AddressType, log
 from .protocol import FileIOProtocol
 
-
 STOPPING = Event()
 
 
 class Worker:
     def __init__(
-        self, log_level: str, log_format: str, address: AddressType,
-        cookie: bytes, worker_id: bytes, env: Mapping[str, str],
+        self,
+        log_level: str,
+        log_format: str,
+        address: AddressType,
+        cookie: bytes,
+        worker_id: bytes,
+        env: Mapping[str, str],
         initializer: Callable[..., Any],
-        initializer_args: Any, initializer_kwargs: Any,
+        initializer_args: Any,
+        initializer_kwargs: Any,
     ):
         env = dict(env)
         self.process = Popen(
             [sys.executable, "-m", "aiomisc_worker.process_inner"],
-            stdin=PIPE, env=env,
+            stdin=PIPE,
+            env=env,
         )
 
         assert self.process.stdin
@@ -76,7 +83,7 @@ def main() -> int:
 
     address: AddressType = proto.receive()
     cookie: bytes = proto.receive()
-    worker_ids: Tuple[bytes, ...] = proto.receive()
+    worker_ids: tuple[bytes, ...] = proto.receive()
     initializer, initializer_args, initializer_kwargs = proto.receive()
 
     sys.stdin.close()
@@ -86,10 +93,17 @@ def main() -> int:
     env["AIOMISC_NO_PLUGINS"] = ""
 
     def create_worker() -> Worker:
-        nonlocal env        # noqa
+        nonlocal env
         return Worker(
-            log_level, log_format, address, cookie, worker_id, env,
-            initializer, initializer_args, initializer_kwargs,
+            log_level,
+            log_format,
+            address,
+            cookie,
+            worker_id,
+            env,
+            initializer,
+            initializer_args,
+            initializer_kwargs,
         )
 
     log.debug("Starting %d processes", len(worker_ids))
@@ -110,7 +124,8 @@ def main() -> int:
                 worker.close()
                 log.debug(
                     "Worker PID: %d exited with status %d",
-                    worker.process.pid, worker.process.returncode,
+                    worker.process.pid,
+                    worker.process.returncode,
                 )
                 worker_id = PROCESSES.pop(worker)
                 worker = create_worker()

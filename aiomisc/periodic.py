@@ -1,10 +1,9 @@
 import asyncio
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from .compat import EventLoopMixin
 from .recurring import CallbackType, ExceptionsType, RecurringCallback
-
 
 log = logging.getLogger(__name__)
 
@@ -20,20 +19,20 @@ class PeriodicCallback(EventLoopMixin):
 
     __slots__ = ("_recurring_callback", "_task") + EventLoopMixin.__slots__
 
-    _task: Optional[asyncio.Future]
+    _task: asyncio.Future | None
 
-    def __init__(
-        self, coroutine_func: CallbackType, *args: Any, **kwargs: Any,
-    ):
+    def __init__(self, coroutine_func: CallbackType, *args: Any, **kwargs: Any):
         self._recurring_callback: RecurringCallback = RecurringCallback(
-            coroutine_func, *args, **kwargs,
+            coroutine_func, *args, **kwargs
         )
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
 
     def start(
-        self, interval: Union[int, float],
-        loop: Optional[asyncio.AbstractEventLoop] = None, *,
-        delay: Union[int, float] = 0,
+        self,
+        interval: int | float,
+        loop: asyncio.AbstractEventLoop | None = None,
+        *,
+        delay: int | float = 0,
         shield: bool = False,
         suppress_exceptions: ExceptionsType = (),
     ) -> None:
@@ -44,7 +43,7 @@ class PeriodicCallback(EventLoopMixin):
 
         delayed = False
 
-        def strategy(_: Any) -> Union[int, float]:
+        def strategy(_: Any) -> int | float:
             nonlocal delayed
             if not delayed:
                 delayed = True

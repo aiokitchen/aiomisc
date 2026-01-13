@@ -1,10 +1,9 @@
 from collections import defaultdict
-from typing import DefaultDict, Iterable, Sequence, Set, Tuple
+from collections.abc import Iterable, Sequence
 
 from .records import DNSRecord, RecordType
 
-
-RecordsType = DefaultDict[Tuple[str, RecordType], Set[DNSRecord]]
+RecordsType = defaultdict[tuple[str, RecordType], set[DNSRecord]]
 
 
 class DNSZone:
@@ -25,7 +24,7 @@ class DNSZone:
     def add_record(self, record: DNSRecord) -> None:
         if not self.check_record(record):
             raise ValueError(
-                f"Record {record.name} does not belong to zone {self.name}",
+                f"Record {record.name} does not belong to zone {self.name}"
             )
         self.records[(record.name, record.type)].add(record)
 
@@ -38,7 +37,7 @@ class DNSZone:
             del self.records[key]
 
     def get_records(
-        self, name: str, record_type: RecordType,
+        self, name: str, record_type: RecordType
     ) -> Sequence[DNSRecord]:
         if not name.endswith("."):
             name += "."
@@ -60,8 +59,7 @@ class DNSZone:
         for record in records:
             if not self.check_record(record):
                 raise ValueError(
-                    f"Record {record.name} does not "
-                    f"belong to zone {self.name}",
+                    f"Record {record.name} does not belong to zone {self.name}"
                 )
             new_records[(record.name, record.type)].add(record)
         self.records = new_records

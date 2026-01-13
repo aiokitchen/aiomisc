@@ -9,7 +9,6 @@ import aiomisc
 from aiomisc.service.sdwatchdog import SDWatchdogService
 from aiomisc.service.udp import UDPServer
 
-
 log = logging.getLogger(__name__)
 
 
@@ -31,7 +30,7 @@ class DNSUDPService(UDPServer):
             headers={
                 aiohttp.hdrs.ACCEPT: "application/dns-message",
                 aiohttp.hdrs.CONTENT_TYPE: "application/dns-message",
-            }
+            },
         )
         async with request as response:
             log.debug("Handling request from %r", addr)
@@ -46,15 +45,13 @@ class DNSUDPService(UDPServer):
         await super().stop(exc)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = Parser(auto_env_var_prefix="DOH_")
     parser.parse_args()
 
     services = [
         DNSUDPService(
-            address=parser.address,
-            port=parser.port,
-            url=parser.doh_url
+            address=parser.address, port=parser.port, url=parser.doh_url
         ),
         SDWatchdogService(),
     ]

@@ -7,22 +7,19 @@ import threading
 import time
 import warnings
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable, Coroutine, Generator
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
 from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import cpu_count
 from queue import SimpleQueue
 from types import MappingProxyType
-from typing import (
-    Any, Awaitable, Callable, Coroutine, Dict, FrozenSet, Generator, Generic,
-    Optional, Set, Tuple, TypeVar, Union, overload,
-)
+from typing import Any, Generic, TypeVar, Union, overload
 
 from ._context_vars import EVENT_LOOP
 from .compat import Concatenate, ParamSpec
 from .counters import Statistic
 from .iterator_wrapper import IteratorWrapper
-
 
 # ParamSpec for functions
 P = ParamSpec("P")
@@ -35,14 +32,11 @@ F = TypeVar("F", bound=Callable[..., Any])
 log = logging.getLogger(__name__)
 
 THREADED_ITERABLE_DEFAULT_MAX_SIZE = int(
-    os.getenv("THREADED_ITERABLE_DEFAULT_MAX_SIZE", 1024),
+    os.getenv("THREADED_ITERABLE_DEFAULT_MAX_SIZE", 1024)
 )
 
 
-def context_partial(
-    func: F, *args: Any,
-    **kwargs: Any,
-) -> Any:
+def context_partial(func: F, *args: Any, **kwargs: Any) -> Any:
     warnings.warn(
         "context_partial has been deprecated and will be removed",
         DeprecationWarning,
@@ -70,16 +64,15 @@ class WorkItemBase:
     statistic: ThreadPoolStatistic
     future: asyncio.Future
     loop: asyncio.AbstractEventLoop
-    args: Tuple[Any, ...] = field(default_factory=tuple)
-    kwargs: Dict[str, Any] = field(default_factory=dict)
+    args: tuple[Any, ...] = field(default_factory=tuple)
+    kwargs: dict[str, Any] = field(default_factory=dict)
     context: contextvars.Context = field(
-        default_factory=contextvars.copy_context,
+        default_factory=contextvars.copy_context
     )
 
 
 def _set_workitem_result(
-    future: asyncio.Future, result: Optional[Any],
-    exception: Optional[BaseException],
+    future: asyncio.Future, result: Any | None, exception: BaseException | None
 ) -> Any:
     if future.done():
         return
@@ -91,7 +84,6 @@ def _set_workitem_result(
 
 
 class WorkItem(WorkItemBase):
-
     def __call__(self, no_return: bool = False) -> None:
         if self.future.done():
             return
@@ -103,9 +95,7 @@ class WorkItem(WorkItemBase):
         result, exception = None, None
         delta = -time.monotonic()
         try:
-            result = self.context.run(
-                self.func, *self.args, **self.kwargs,
-            )
+            result = self.context.run(self.func, *self.args, **self.kwargs)
             self.statistic.success += 1
         except BaseException as e:
             self.statistic.error += 1
@@ -126,10 +116,7 @@ class WorkItem(WorkItemBase):
             raise asyncio.CancelledError
 
         self.loop.call_soon_threadsafe(
-            _set_workitem_result,
-            self.future,
-            result,
-            exception,
+            _set_workitem_result, self.future, result, exception
         )
 
 
@@ -148,7 +135,7 @@ class TaskChannel(SimpleQueue):
         if self.closed_event.is_set():
             raise TaskChannelCloseException()
 
-        item: Optional[WorkItem] = super().get(*args, **kwargs)
+        item: WorkItem | None = super().get(*args, **kwargs)
         if item is None:
             self.put(None)
             raise TaskChannelCloseException()
@@ -179,19 +166,23 @@ def thread_pool_thread_loop(
 
 class ThreadPoolExecutor(ThreadPoolExecutorBase):
     __slots__ = (
-        "__futures", "__pool", "__tasks",
-        "__write_lock", "__thread_events",
+        "__futures",
+        "__pool",
+        "__tasks",
+        "__thread_events",
+        "__write_lock",
     )
 
     DEFAULT_POOL_SIZE = min((max((cpu_count() or 1, 4)), 32))
     SHUTDOWN_TIMEOUT = 10
 
     def __init__(
-        self, max_workers: int = DEFAULT_POOL_SIZE,
-        statistic_name: Optional[str] = None,
+        self,
+        max_workers: int = DEFAULT_POOL_SIZE,
+        statistic_name: str | None = None,
     ) -> None:
-        self.__futures: Set[asyncio.Future[Any]] = set()
-        self.__thread_events: Set[threading.Event] = set()
+        self.__futures: set[asyncio.Future[Any]] = set()
+        self.__thread_events: set[threading.Event] = set()
         self.__tasks = TaskChannel()
         self.__write_lock = threading.RLock()
         self.__max_workers = max_workers
@@ -203,7 +194,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
         for idx in range(2 if max_workers > 1 else 1):
             threads.add(self._start_thread(idx))
 
-        self.__pool: FrozenSet[threading.Thread] = frozenset(threads)
+        self.__pool: frozenset[threading.Thread] = frozenset(threads)
 
     def _start_thread(self, idx: int) -> threading.Thread:
         if self.__shutdown_event.is_set():
@@ -221,19 +212,14 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
             target=thread_pool_thread_loop,
             name=thread_name.strip(),
             daemon=True,
-            args=(
-                self.__tasks,
-                self._statistic,
-                event,
-                self.__shutdown_event,
-            ),
+            args=(self.__tasks, self._statistic, event, self.__shutdown_event),
         )
 
         thread.start()
         return thread
 
     def submit(  # type: ignore
-        self, fn: F, *args: Any, **kwargs: Any,
+        self, fn: F, *args: Any, **kwargs: Any
     ) -> asyncio.Future:
         """Submit blocking function to the pool"""
         if fn is None or not callable(fn):
@@ -243,10 +229,9 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
             if self.__shutdown_event.is_set():
                 raise RuntimeError("Pool is shutdown")
 
-            if (
-                len(self.__pool) < self.__max_workers and
-                len(self.__futures) >= len(self.__pool)
-            ):
+            if len(self.__pool) < self.__max_workers and len(
+                self.__futures
+            ) >= len(self.__pool):
                 self._adjust_thread_count()
 
             loop = asyncio.get_event_loop()
@@ -256,9 +241,13 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
             self.__tasks.put_nowait(
                 WorkItem(
-                    func=fn, args=args, kwargs=kwargs, loop=loop,
-                    future=future, statistic=self._statistic,
-                ),
+                    func=fn,
+                    args=args,
+                    kwargs=kwargs,
+                    loop=loop,
+                    future=future,
+                    statistic=self._statistic,
+                )
             )
 
             self._statistic.submitted += 1
@@ -304,9 +293,7 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
     def _adjust_thread_count(self) -> None:
         pool_size = len(self.__pool)
-        new_threads_count = (
-            min(pool_size * 2, self.__max_workers) - pool_size
-        )
+        new_threads_count = min(pool_size * 2, self.__max_workers) - pool_size
         if new_threads_count <= 0:
             return None
 
@@ -321,22 +308,20 @@ class ThreadPoolExecutor(ThreadPoolExecutorBase):
 
 def run_in_executor(
     func: Callable[..., T],
-    executor: Optional[ThreadPoolExecutorBase] = None,
+    executor: ThreadPoolExecutorBase | None = None,
     args: Any = (),
     kwargs: Any = MappingProxyType({}),
 ) -> Awaitable[T]:
     try:
         loop = asyncio.get_running_loop()
-        return loop.run_in_executor(
-            executor, partial(func, *args, **kwargs),
-        )
+        return loop.run_in_executor(executor, partial(func, *args, **kwargs))
     except RuntimeError:
         # In case the event loop is not running right now is
         # returning coroutine to avoid DeprecationWarning in Python 3.10
         async def lazy_wrapper() -> T:
             loop = asyncio.get_running_loop()
             return await loop.run_in_executor(
-                executor, partial(func, *args, **kwargs),
+                executor, partial(func, *args, **kwargs)
             )
 
         return lazy_wrapper()
@@ -353,12 +338,10 @@ async def _awaiter(future: asyncio.Future) -> T:
 
 
 class ThreadedBase(Generic[P, T], ABC):
-
     func: Callable[P, T]
 
     @abstractmethod
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     def sync_call(self, *args: P.args, **kwargs: P.kwargs) -> T:
         return self.func(*args, **kwargs)
@@ -398,22 +381,16 @@ class Threaded(ThreadedBase[P, T]):
     def __get__(
         self: "Threaded[Concatenate[S, BP], T]",
         instance: S,
-        owner: Optional[type] = ...,
-    ) -> "BoundThreaded[BP, T]":
-        ...
+        owner: type | None = ...,
+    ) -> "BoundThreaded[BP, T]": ...
 
     @overload
     def __get__(
-        self: "Threaded[P, T]",
-        instance: None,
-        owner: Optional[type] = ...,
-    ) -> "Threaded[P, T]":
-        ...
+        self: "Threaded[P, T]", instance: None, owner: type | None = ...
+    ) -> "Threaded[P, T]": ...
 
     def __get__(
-        self,
-        instance: Any,
-        owner: Optional[type] = None,
+        self, instance: Any, owner: type | None = None
     ) -> "Threaded[P, T] | BoundThreaded[Any, T]":
         if self.func_type is staticmethod:
             return self
@@ -434,15 +411,13 @@ class BoundThreaded(ThreadedBase[P, T]):
 
 
 @overload
-def threaded(func: Callable[P, T]) -> Threaded[P, T]:
-    ...
+def threaded(func: Callable[P, T]) -> Threaded[P, T]: ...
 
 
 @overload
 def threaded(
     func: Callable[P, Generator[T, None, None]],
-) -> Callable[P, IteratorWrapper[P, T]]:
-    ...
+) -> Callable[P, IteratorWrapper[P, T]]: ...
 
 
 def threaded(
@@ -450,11 +425,10 @@ def threaded(
 ) -> Threaded[P, T] | Callable[P, IteratorWrapper[P, T]]:
     if inspect.isgeneratorfunction(func):
         return threaded_iterable(
-            func,
-            max_size=THREADED_ITERABLE_DEFAULT_MAX_SIZE,
+            func, max_size=THREADED_ITERABLE_DEFAULT_MAX_SIZE
         )
 
-    return Threaded(func)   # type: ignore
+    return Threaded(func)  # type: ignore
 
 
 def run_in_new_thread(
@@ -463,7 +437,7 @@ def run_in_new_thread(
     kwargs: Any = MappingProxyType({}),
     detach: bool = True,
     no_return: bool = False,
-    statistic_name: Optional[str] = None,
+    statistic_name: str | None = None,
 ) -> asyncio.Future:
     loop = asyncio.get_event_loop()
     future = loop.create_future()
@@ -498,13 +472,12 @@ class ThreadedSeparate(Threaded[P, T]):
 
     def async_call(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
         return run_in_new_thread(
-            self.func, args=args, kwargs=kwargs, detach=self.detach,
+            self.func, args=args, kwargs=kwargs, detach=self.detach
         )
 
 
 def threaded_separate(
-    func: Callable[P, T],
-    detach: bool = True,
+    func: Callable[P, T], detach: bool = True
 ) -> ThreadedSeparate[P, T]:
     if isinstance(func, bool):
         # noinspection PyTypeChecker
@@ -521,31 +494,27 @@ class ThreadedIterableBase(Generic[P, T], ABC):
     max_size: int
 
     @abstractmethod
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     def sync_call(
-        self, *args: P.args, **kwargs: P.kwargs,
+        self, *args: P.args, **kwargs: P.kwargs
     ) -> Generator[T, None, None]:
         return self.func(*args, **kwargs)
 
     def async_call(
-        self, *args: P.args, **kwargs: P.kwargs,
+        self, *args: P.args, **kwargs: P.kwargs
     ) -> IteratorWrapper[P, T]:
         return self.create_wrapper(*args, **kwargs)
 
     def create_wrapper(
-        self, *args: P.args, **kwargs: P.kwargs,
+        self, *args: P.args, **kwargs: P.kwargs
     ) -> IteratorWrapper[P, T]:
         return IteratorWrapper(
-            partial(self.func, *args, **kwargs),
-            max_size=self.max_size,
+            partial(self.func, *args, **kwargs), max_size=self.max_size
         )
 
     def __call__(
-        self,
-        *args: P.args,
-        **kwargs: P.kwargs,
+        self, *args: P.args, **kwargs: P.kwargs
     ) -> IteratorWrapper[P, T]:
         return self.async_call(*args, **kwargs)
 
@@ -554,9 +523,7 @@ class ThreadedIterable(ThreadedIterableBase[P, T]):
     func_type: type
 
     def __init__(
-        self,
-        func: Callable[P, Generator[T, None, None]],
-        max_size: int = 0,
+        self, func: Callable[P, Generator[T, None, None]], max_size: int = 0
     ) -> None:
         if isinstance(func, staticmethod):
             self.func_type = staticmethod
@@ -575,22 +542,16 @@ class ThreadedIterable(ThreadedIterableBase[P, T]):
     def __get__(
         self: "ThreadedIterable[Concatenate[S, BP], T]",
         instance: S,
-        owner: Optional[type] = ...,
-    ) -> "BoundThreadedIterable[BP, T]":
-        ...
+        owner: type | None = ...,
+    ) -> "BoundThreadedIterable[BP, T]": ...
 
     @overload
     def __get__(
-        self: "ThreadedIterable[P, T]",
-        instance: None,
-        owner: Optional[type] = ...,
-    ) -> "ThreadedIterable[P, T]":
-        ...
+        self: "ThreadedIterable[P, T]", instance: None, owner: type | None = ...
+    ) -> "ThreadedIterable[P, T]": ...
 
     def __get__(
-        self,
-        instance: Any,
-        owner: Optional[type] = None,
+        self, instance: Any, owner: type | None = None
     ) -> "ThreadedIterable[P, T] | BoundThreadedIterable[Any, T]":
         if self.func_type is staticmethod:
             return self
@@ -618,33 +579,26 @@ class BoundThreadedIterable(ThreadedIterableBase[P, T]):
 
 @overload
 def threaded_iterable(
-    func: Callable[P, Generator[T, None, None]],
-    *,
-    max_size: int = 0,
-) -> "ThreadedIterable[P, T]":
-    ...
+    func: Callable[P, Generator[T, None, None]], *, max_size: int = 0
+) -> "ThreadedIterable[P, T]": ...
 
 
 @overload
 def threaded_iterable(
-    *,
-    max_size: int = 0,
+    *, max_size: int = 0
 ) -> Callable[
-    [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T],
-]:
-    ...
+    [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]
+]: ...
 
 
 def threaded_iterable(
-    func: Optional[Callable[P, Generator[T, None, None]]] = None,
+    func: Callable[P, Generator[T, None, None]] | None = None,
     *,
     max_size: int = 0,
-) -> Union[
-    ThreadedIterable[P, T],
-    Callable[
-        [Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T],
-    ],
-]:
+) -> (
+    ThreadedIterable[P, T]
+    | Callable[[Callable[P, Generator[T, None, None]]], ThreadedIterable[P, T]]
+):
     if func is None:
         return lambda f: ThreadedIterable(f, max_size=max_size)
 
@@ -658,44 +612,37 @@ class IteratorWrapperSeparate(IteratorWrapper):
 
 class ThreadedIterableSeparate(ThreadedIterable[P, T]):
     def create_wrapper(
-        self, *args: P.args, **kwargs: P.kwargs,
+        self, *args: P.args, **kwargs: P.kwargs
     ) -> IteratorWrapperSeparate:
         return IteratorWrapperSeparate(
-            partial(self.func, *args, **kwargs),
-            max_size=self.max_size,
+            partial(self.func, *args, **kwargs), max_size=self.max_size
         )
 
 
 @overload
 def threaded_iterable_separate(
-    func: Callable[P, Generator[T, None, None]],
-    *,
-    max_size: int = 0,
-) -> "ThreadedIterable[P, T]":
-    ...
+    func: Callable[P, Generator[T, None, None]], *, max_size: int = 0
+) -> "ThreadedIterable[P, T]": ...
 
 
 @overload
 def threaded_iterable_separate(
-    *,
-    max_size: int = 0,
+    *, max_size: int = 0
 ) -> Callable[
-    [Callable[P, Generator[T, None, None]]],
-    ThreadedIterableSeparate[P, T],
-]:
-    ...
+    [Callable[P, Generator[T, None, None]]], ThreadedIterableSeparate[P, T]
+]: ...
 
 
 def threaded_iterable_separate(
-    func: Optional[Callable[P, Generator[T, None, None]]] = None,
+    func: Callable[P, Generator[T, None, None]] | None = None,
     *,
     max_size: int = 0,
-) -> Union[
-    ThreadedIterable[P, T],
-    Callable[
-        [Callable[P, Generator[T, None, None]]], ThreadedIterableSeparate[P, T],
-    ],
-]:
+) -> (
+    ThreadedIterable[P, T]
+    | Callable[
+        [Callable[P, Generator[T, None, None]]], ThreadedIterableSeparate[P, T]
+    ]
+):
     if func is None:
         return lambda f: ThreadedIterableSeparate(f, max_size=max_size)
 
@@ -704,14 +651,15 @@ def threaded_iterable_separate(
 
 class CoroutineWaiter:
     def __init__(
-        self, coroutine: Coroutine[Any, Any, T],
-        loop: Optional[asyncio.AbstractEventLoop] = None,
+        self,
+        coroutine: Coroutine[Any, Any, T],
+        loop: asyncio.AbstractEventLoop | None = None,
     ):
         self.__coro: Coroutine[Any, Any, T] = coroutine
         self.__loop = loop or EVENT_LOOP.get()
         self.__event = threading.Event()
-        self.__result: Optional[T] = None
-        self.__exception: Optional[BaseException] = None
+        self.__result: T | None = None
+        self.__exception: BaseException | None = None
 
     def _on_result(self, task: asyncio.Future) -> None:
         self.__exception = task.exception()
@@ -734,8 +682,7 @@ class CoroutineWaiter:
 
 
 def wait_coroutine(
-    coro: Coroutine[Any, Any, T],
-    loop: Optional[asyncio.AbstractEventLoop] = None,
+    coro: Coroutine[Any, Any, T], loop: asyncio.AbstractEventLoop | None = None
 ) -> T:
     waiter = CoroutineWaiter(coro, loop)
     waiter.start()
@@ -743,7 +690,7 @@ def wait_coroutine(
 
 
 def sync_wait_coroutine(
-    loop: Optional[asyncio.AbstractEventLoop],
+    loop: asyncio.AbstractEventLoop | None,
     coro_func: Callable[..., Coroutine[Any, Any, T]],
     *args: Any,
     **kwargs: Any,
@@ -752,9 +699,7 @@ def sync_wait_coroutine(
 
 
 def sync_await(
-    func: Callable[..., Awaitable[T]],
-    *args: Any,
-    **kwargs: Any,
+    func: Callable[..., Awaitable[T]], *args: Any, **kwargs: Any
 ) -> T:
     async def awaiter() -> T:
         return await func(*args, **kwargs)

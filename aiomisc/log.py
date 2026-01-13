@@ -3,12 +3,11 @@ import logging.handlers
 import threading
 import traceback
 import warnings
+from collections.abc import Callable, Iterable
 from contextlib import suppress
 from queue import Empty, Queue
 from socket import socket
-from typing import (
-    Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union,
-)
+from typing import Any, Union
 
 import aiomisc_log
 from aiomisc_log.enum import LogFormat, LogLevel
@@ -25,15 +24,18 @@ class ThreadedHandlerStatistic(Statistic):
 
 class ThreadedHandler(logging.Handler):
     def __init__(
-        self, target: logging.Handler, flush_interval: float = 0.1,
-        buffered: bool = True, queue_size: int = 0,
+        self,
+        target: logging.Handler,
+        flush_interval: float = 0.1,
+        buffered: bool = True,
+        queue_size: int = 0,
     ):
         super().__init__()
         self._buffered = buffered
         self._target = target
         self._flush_interval = flush_interval
         self._flush_event = threading.Event()
-        self._queue: Queue[Optional[logging.LogRecord]] = Queue(queue_size)
+        self._queue: Queue[logging.LogRecord | None] = Queue(queue_size)
         self._close_event = threading.Event()
         self._thread = threading.Thread(target=self._in_thread, daemon=True)
         self._statistic = ThreadedHandlerStatistic()
@@ -81,25 +83,24 @@ class ThreadedHandler(logging.Handler):
 
 def suppressor(
     callback: Callable[..., None],
-    exceptions: Tuple[Type[BaseException], ...] = (Exception,),
+    exceptions: tuple[type[BaseException], ...] = (Exception,),
 ) -> Callable[..., None]:
     def wrapper() -> None:
         with suppress(*exceptions):
             callback()
+
     return wrapper
 
 
 def wrap_logging_handler(
     handler: logging.Handler,
     buffer_size: int = 1024,
-    flush_interval: Union[float, int] = 0.1,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
+    flush_interval: float | int = 0.1,
+    loop: asyncio.AbstractEventLoop | None = None,
 ) -> logging.Handler:
     warnings.warn("wrap_logging_handler is deprecated", DeprecationWarning)
     handler = ThreadedHandler(
-        target=handler,
-        queue_size=buffer_size,
-        flush_interval=flush_interval,
+        target=handler, queue_size=buffer_size, flush_interval=flush_interval
     )
     handler.start()
     return handler
@@ -108,8 +109,7 @@ def wrap_logging_handler(
 class UnhandledLoopHook(aiomisc_log.UnhandledHook):
     @staticmethod
     def _fill_transport_extra(
-        transport: Optional[asyncio.Transport],
-        extra: Dict[str, Any],
+        transport: asyncio.Transport | None, extra: dict[str, Any]
     ) -> None:
         if transport is None:
             return
@@ -117,27 +117,31 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHook):
         extra["transport"] = repr(transport)
 
         for key in (
-            "peername", "sockname", "compression",
-            "cipher", "peercert", "pipe", "subprocess",
+            "peername",
+            "sockname",
+            "compression",
+            "cipher",
+            "peercert",
+            "pipe",
+            "subprocess",
         ):
             value = transport.get_extra_info(key)
             if value:
                 extra[f"transport_{key}"] = value
 
     def __call__(
-        self, loop: asyncio.AbstractEventLoop,
-        context: Dict[str, Any],
+        self, loop: asyncio.AbstractEventLoop, context: dict[str, Any]
     ) -> None:
         context = dict(context)
         message: str = context.pop("message", "unhandled loop exception")
-        exception: Optional[BaseException] = context.pop("exception", None)
-        future: Optional[asyncio.Future] = context.pop("future", None)
-        task: Optional[asyncio.Task] = context.pop("task", None)
-        handle: Optional[asyncio.Handle] = context.pop("handle", None)
-        protocol: Optional[asyncio.Protocol] = context.pop("protocol", None)
-        transport: Optional[asyncio.Transport] = context.pop("transport", None)
-        sock: Optional[socket] = context.pop("socket", None)
-        source_tb: List[traceback.FrameSummary] = (
+        exception: BaseException | None = context.pop("exception", None)
+        future: asyncio.Future | None = context.pop("future", None)
+        task: asyncio.Task | None = context.pop("task", None)
+        handle: asyncio.Handle | None = context.pop("handle", None)
+        protocol: asyncio.Protocol | None = context.pop("protocol", None)
+        transport: asyncio.Transport | None = context.pop("transport", None)
+        sock: socket | None = context.pop("socket", None)
+        source_tb: list[traceback.FrameSummary] = (
             context.pop("source_traceback", None) or []
         )
 
@@ -162,12 +166,12 @@ class UnhandledLoopHook(aiomisc_log.UnhandledHook):
 
 
 def basic_config(
-    level: Union[int, str] = LogLevel.default(),
-    log_format: Union[str, LogFormat] = LogFormat.default(),
+    level: int | str = LogLevel.default(),
+    log_format: str | LogFormat = LogFormat.default(),
     buffered: bool = True,
     buffer_size: int = 0,
-    flush_interval: Union[int, float] = 0.2,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
+    flush_interval: int | float = 0.2,
+    loop: asyncio.AbstractEventLoop | None = None,
     handlers: Iterable[logging.Handler] = (),
     **kwargs: Any,
 ) -> None:
@@ -176,9 +180,7 @@ def basic_config(
     if loop is None:
         loop = asyncio.get_event_loop()
 
-    forever_task = asyncio.gather(
-        loop.create_future(), return_exceptions=True,
-    )
+    forever_task = asyncio.gather(loop.create_future(), return_exceptions=True)
     loop.set_exception_handler(unhandled_hook)
 
     log_handlers = []
@@ -196,13 +198,8 @@ def basic_config(
         handler.start()
 
     aiomisc_log.basic_config(
-        level=level, log_format=log_format, handlers=log_handlers, **kwargs,
+        level=level, log_format=log_format, handlers=log_handlers, **kwargs
     )
 
 
-__all__ = (
-    "LogFormat",
-    "LogLevel",
-    "basic_config",
-    "ThreadedHandler",
-)
+__all__ = ("LogFormat", "LogLevel", "ThreadedHandler", "basic_config")

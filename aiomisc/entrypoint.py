@@ -5,10 +5,8 @@ import signal
 import threading
 from concurrent.futures import Executor
 from functools import cached_property
-from typing import (
-    Any, Callable, Coroutine, FrozenSet, Iterable, MutableSet, Optional, Set,
-    Tuple, TypeVar, Union,
-)
+from typing import Any, TypeVar
+from collections.abc import Callable, Coroutine, Iterable, MutableSet
 from weakref import WeakSet
 
 import aiomisc_log
@@ -49,9 +47,7 @@ def _get_env_convert(name: str, converter: Callable[..., T], default: T) -> T:
 
 
 class OSSignalHandler:
-    def __init__(
-        self, sig: int, handler: Callable[[int], None],
-    ):
+    def __init__(self, sig: int, handler: Callable[[int], None]):
         self.default_handler = signal.getsignal(sig)
         self.signal = sig
         self.handler = handler
@@ -68,34 +64,28 @@ class OSSignalHandler:
 
 @final
 class Entrypoint:
-    DEFAULT_LOG_LEVEL: str = os.getenv(
-        "AIOMISC_LOG_LEVEL", LogLevel.default(),
-    )
+    DEFAULT_LOG_LEVEL: str = os.getenv("AIOMISC_LOG_LEVEL", LogLevel.default())
     DEFAULT_LOG_FORMAT: str = os.getenv(
-        "AIOMISC_LOG_FORMAT", LogFormat.default(),
+        "AIOMISC_LOG_FORMAT", LogFormat.default()
     )
-    DEFAULT_LOG_DATE_FORMAT: Optional[str] = os.getenv(
-        "AIOMISC_LOG_DATE_FORMAT",
-    )
+    DEFAULT_LOG_DATE_FORMAT: str | None = os.getenv("AIOMISC_LOG_DATE_FORMAT")
 
     DEFAULT_AIOMISC_DEBUG: bool = _get_env_bool("AIOMISC_DEBUG", "0")
-    DEFAULT_AIOMISC_LOG_CONFIG: bool = _get_env_bool(
-        "AIOMISC_LOG_CONFIG", "1",
-    )
+    DEFAULT_AIOMISC_LOG_CONFIG: bool = _get_env_bool("AIOMISC_LOG_CONFIG", "1")
     DEFAULT_AIOMISC_LOG_FLUSH: float = _get_env_convert(
-        "AIOMISC_LOG_FLUSH", float, 0.2,
+        "AIOMISC_LOG_FLUSH", float, 0.2
     )
     DEFAULT_AIOMISC_BUFFERING: bool = _get_env_bool(
-        "AIOMISC_LOG_BUFFERING", "1",
+        "AIOMISC_LOG_BUFFERING", "1"
     )
     DEFAULT_AIOMISC_BUFFER_SIZE: int = _get_env_convert(
-        "AIOMISC_LOG_BUFFER", int, 1024,
+        "AIOMISC_LOG_BUFFER", int, 1024
     )
-    DEFAULT_AIOMISC_POOL_SIZE: Optional[int] = _get_env_convert(
-        "AIOMISC_POOL_SIZE", int, None,
+    DEFAULT_AIOMISC_POOL_SIZE: int | None = _get_env_convert(
+        "AIOMISC_POOL_SIZE", int, None
     )
     AIOMISC_SHUTDOWN_TIMEOUT: float = _get_env_convert(
-        "AIOMISC_SHUTDOWN_TIMEOUT", float, 60.,
+        "AIOMISC_SHUTDOWN_TIMEOUT", float, 60.0
     )
 
     PRE_START = Signal()
@@ -124,7 +114,10 @@ class Entrypoint:
         EVENT_LOOP.set(self.loop)
 
         signals = (
-            self.pre_start, self.post_stop, self.pre_stop, self.post_start,
+            self.pre_start,
+            self.post_stop,
+            self.pre_stop,
+            self.post_start,
         )
 
         for sig in signals:
@@ -137,23 +130,24 @@ class Entrypoint:
             handler.apply()
 
     def __init__(
-        self, *services: Service,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-        pool_size: Optional[int] = DEFAULT_AIOMISC_POOL_SIZE,
-        log_level: Union[int, str] = DEFAULT_LOG_LEVEL,
-        log_format: Union[str, LogFormat] = DEFAULT_LOG_FORMAT,
+        self,
+        *services: Service,
+        loop: asyncio.AbstractEventLoop | None = None,
+        pool_size: int | None = DEFAULT_AIOMISC_POOL_SIZE,
+        log_level: int | str = DEFAULT_LOG_LEVEL,
+        log_format: str | LogFormat = DEFAULT_LOG_FORMAT,
         log_buffering: bool = DEFAULT_AIOMISC_BUFFERING,
         log_buffer_size: int = DEFAULT_AIOMISC_BUFFER_SIZE,
-        log_date_format: Optional[str] = DEFAULT_LOG_DATE_FORMAT,
+        log_date_format: str | None = DEFAULT_LOG_DATE_FORMAT,
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         log_handlers: Iterable[logging.Handler] = (),
         policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
         debug: bool = DEFAULT_AIOMISC_DEBUG,
-        catch_signals: Optional[Tuple[int, ...]] = None,
-        shutdown_timeout: Union[int, float] = AIOMISC_SHUTDOWN_TIMEOUT,
+        catch_signals: tuple[int, ...] | None = None,
+        shutdown_timeout: int | float = AIOMISC_SHUTDOWN_TIMEOUT,
     ):
-        """ Creates a new Entrypoint
+        """Creates a new Entrypoint
 
         :param debug: set debug to event-loop
         :param loop: loop
@@ -169,14 +163,14 @@ class Entrypoint:
         :param shutdown_timeout: Timeout in seconds for graceful shutdown
         """
 
-        self.__passed_services: FrozenSet[Service] = frozenset(services)
+        self.__passed_services: frozenset[Service] = frozenset(services)
 
-        self._services: Set[Service] = set()
+        self._services: set[Service] = set()
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
         self._tasks: MutableSet[asyncio.Task] = WeakSet()
-        self._thread_pool: Optional[ExecutorType] = None
+        self._thread_pool: ExecutorType | None = None
 
         if catch_signals is None and is_main_thread():
             # Apply default catch signals only if the entrypoint is creating
@@ -190,7 +184,7 @@ class Entrypoint:
 
         self.catch_signals = catch_signals
         self.shutdown_timeout = float(shutdown_timeout)
-        self.ctx: Optional[Context] = None
+        self.ctx: Context | None = None
         self.log_buffer_size = log_buffer_size
         self.log_buffering = log_buffering
         self.log_config = log_config
@@ -221,7 +215,7 @@ class Entrypoint:
         CURRENT_ENTRYPOINT.set(self)
 
     @property
-    def services(self) -> Tuple[Service, ...]:
+    def services(self) -> tuple[Service, ...]:
         return tuple(self._services)
 
     @cached_property
@@ -239,9 +233,7 @@ class Entrypoint:
     def loop(self) -> asyncio.AbstractEventLoop:
         if self._loop is None:
             self._loop, self._thread_pool = create_default_event_loop(
-                pool_size=self.pool_size,
-                policy=self.policy,
-                debug=self._debug,
+                pool_size=self.pool_size, policy=self.policy, debug=self._debug
             )
             self._loop_owner = True
             EVENT_LOOP.set(self._loop)
@@ -258,9 +250,7 @@ class Entrypoint:
         self.loop.run_until_complete(self.__aenter__())
         return self.loop
 
-    def __exit__(
-        self, exc_type: Any, exc_val: Any, exc_tb: Any,
-    ) -> None:
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         loop = self.loop
         if loop.is_closed():
             return
@@ -286,13 +276,11 @@ class Entrypoint:
         await self._start()
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_val: Any, exc_tb: Any,
-    ) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         await self._stop(exc_val)
 
     def __shutdown_thread_pool(
-        self, loop: asyncio.AbstractEventLoop,
+        self, loop: asyncio.AbstractEventLoop
     ) -> Coroutine[Any, Any, None]:
         return loop.shutdown_default_executor()
 
@@ -313,22 +301,17 @@ class Entrypoint:
             if self._thread_pool:
                 await self.__shutdown_thread_pool(loop)
 
-    async def _start_service(
-        self, svc: Service,
-    ) -> None:
+    async def _start_service(self, svc: Service) -> None:
         svc.set_loop(self.loop)
 
         start_task, ev_task = map(
-            asyncio.ensure_future, (
-                svc.start(), svc.start_event.wait(),
-            ),
+            asyncio.ensure_future, (svc.start(), svc.start_event.wait())
         )
 
         self._services.add(svc)
 
         await asyncio.wait(
-            (start_task, ev_task),
-            return_when=asyncio.FIRST_COMPLETED,
+            (start_task, ev_task), return_when=asyncio.FIRST_COMPLETED
         )
 
         self.loop.call_soon(svc.start_event.set)
@@ -351,7 +334,7 @@ class Entrypoint:
             await self.post_start.call(entrypoint=self, services=svc)
 
     async def stop_services(
-        self, *svc: Service, exc: Optional[Exception] = None,
+        self, *svc: Service, exc: Exception | None = None
     ) -> None:
         await self.pre_stop.call(entrypoint=self, services=svc)
 
@@ -385,9 +368,8 @@ class Entrypoint:
         current_task = asyncio_current_task(self.loop)
         await cancel_tasks(
             filter(
-                lambda x: x is not current_task,
-                asyncio_all_tasks(self._loop),
-            ),
+                lambda x: x is not current_task, asyncio_all_tasks(self._loop)
+            )
         )
 
     async def graceful_shutdown(self, exception: Exception) -> None:
@@ -410,12 +392,12 @@ class Entrypoint:
     def _on_interrupt(self, loop: asyncio.AbstractEventLoop) -> None:
         log.warning("Interrupt signal received, shutting down...")
         task = loop.create_task(
-            self._stop(RuntimeError("Interrupt signal received")),
+            self._stop(RuntimeError("Interrupt signal received"))
         )
         handle = loop.call_later(self.shutdown_timeout, task.cancel)
 
         def on_shutdown_finish(task: asyncio.Future) -> None:
-            nonlocal handle, loop   # noqa
+            nonlocal handle, loop  # noqa
 
             if task.cancelled():
                 log.warning(
@@ -433,21 +415,20 @@ class Entrypoint:
 
 
 CURRENT_ENTRYPOINT: StrictContextVar[Entrypoint] = StrictContextVar(
-    "CURRENT_ENTRYPOINT",
-    RuntimeError("no current entrypoint is set"),
+    "CURRENT_ENTRYPOINT", RuntimeError("no current entrypoint is set")
 )
 entrypoint = Entrypoint
 
 
-def run(
-    coro: Coroutine[None, Any, T],
-    *services: Service,
-    **kwargs: Any,
-) -> T:
+def run(coro: Coroutine[None, Any, T], *services: Service, **kwargs: Any) -> T:
     with entrypoint(*services, **kwargs) as loop:
         return loop.run_until_complete(coro)
 
 
 __all__ = (
-    "CURRENT_ENTRYPOINT", "Entrypoint", "entrypoint", "get_context", "run",
+    "CURRENT_ENTRYPOINT",
+    "Entrypoint",
+    "entrypoint",
+    "get_context",
+    "run",
 )

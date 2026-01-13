@@ -3,64 +3,62 @@ import logging
 import re
 import sys
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from concurrent.futures import Executor
 from types import MappingProxyType
-from typing import (
-    Any, DefaultDict, Dict, Mapping, Optional, Sequence, Set, Tuple,
-)
+from typing import Any
 
 from .base import Service
-
 
 try:
     import grpc.aio
     from grpc_reflection.v1alpha import reflection
 except ImportError as e:
     raise ImportError(
-        "You must install 'grpcio' manually or using extras 'aiomisc[grpc]'",
+        "You must install 'grpcio' manually or using extras 'aiomisc[grpc]'"
     ) from e
 
 log = logging.getLogger(__name__)
 
-if sys.version_info >= (3, 9):
-    PortFuture = asyncio.Future[int]
-else:
-    PortFuture = asyncio.Future
+PortFuture = asyncio.Future[int]
 
 
 class GRPCService(Service):
-    GRACEFUL_STOP_TIME: float = 60.
+    GRACEFUL_STOP_TIME: float = 60.0
 
     _ADDRESS_REGEXP = re.compile(
-        r"(?P<address>(\[((([([0-9a-fA-F:]*)+)])?|([\w.]+))):(\d+)",
+        r"(?P<address>(\[((([([0-9a-fA-F:]*)+)])?|([\w.]+))):(\d+)"
     )
 
     _server: grpc.aio.Server
     _server_args: MappingProxyType
-    _insecure_ports: Set[Tuple[str, PortFuture]]
-    _secure_ports: Set[Tuple[str, grpc.ServerCredentials, PortFuture]]
-    _registered_services: DefaultDict[str, Dict[str, grpc.RpcMethodHandler]]
+    _insecure_ports: set[tuple[str, PortFuture]]
+    _secure_ports: set[tuple[str, grpc.ServerCredentials, PortFuture]]
+    _registered_services: defaultdict[str, dict[str, grpc.RpcMethodHandler]]
 
     def __init__(
-        self, *,
-        migration_thread_pool: Optional[Executor] = None,
-        handlers: Optional[Sequence[grpc.ServiceRpcHandler]] = None,
-        interceptors: Optional[Sequence[Any]] = None,
-        options: Optional[Sequence[Tuple[str, Any]]] = None,
-        maximum_concurrent_rpcs: Optional[int] = None,
-        compression: Optional[grpc.Compression] = None,
+        self,
+        *,
+        migration_thread_pool: Executor | None = None,
+        handlers: Sequence[grpc.ServiceRpcHandler] | None = None,
+        interceptors: Sequence[Any] | None = None,
+        options: Sequence[tuple[str, Any]] | None = None,
+        maximum_concurrent_rpcs: int | None = None,
+        compression: grpc.Compression | None = None,
         reflection: bool = False,
         **kwds: Any,
     ):
-        self._server_args = MappingProxyType({
-            "compression": compression,
-            "handlers": handlers,
-            "interceptors": interceptors,
-            "maximum_concurrent_rpcs": maximum_concurrent_rpcs,
-            "migration_thread_pool": migration_thread_pool,
-            "options": options,
-        })
-        self._services: Set[grpc.ServiceRpcHandler] = set()
+        self._server_args = MappingProxyType(
+            {
+                "compression": compression,
+                "handlers": handlers,
+                "interceptors": interceptors,
+                "maximum_concurrent_rpcs": maximum_concurrent_rpcs,
+                "migration_thread_pool": migration_thread_pool,
+                "options": options,
+            }
+        )
+        self._services: set[grpc.ServiceRpcHandler] = set()
         self._insecure_ports = set()
         self._secure_ports = set()
         self._reflection = reflection
@@ -69,7 +67,7 @@ class GRPCService(Service):
 
     @classmethod
     def _log_port(cls, msg: str, address: str, bind_port: Any) -> None:
-        match: Optional[re.Match] = cls._ADDRESS_REGEXP.match(address)
+        match: re.Match | None = cls._ADDRESS_REGEXP.match(address)
 
         if match is not None:
             groups = match.groupdict()
@@ -97,24 +95,24 @@ class GRPCService(Service):
 
         for name, handlers in self._registered_services.items():
             # noinspection PyUnresolvedReferences
-            self._server.add_registered_method_handlers(   # type: ignore
-                name, handlers,
+            self._server.add_registered_method_handlers(  # type: ignore
+                name, handlers
             )
 
         self._server.add_generic_rpc_handlers(tuple(self._services))
         await self._server.start()
 
-    async def stop(self, exception: Optional[Exception] = None) -> None:
+    async def stop(self, exception: Exception | None = None) -> None:
         await self._server.stop(self.GRACEFUL_STOP_TIME)
 
     def add_generic_rpc_handlers(
-        self, generic_rpc_handlers: Sequence[grpc.ServiceRpcHandler],
+        self, generic_rpc_handlers: Sequence[grpc.ServiceRpcHandler]
     ) -> None:
         for service in generic_rpc_handlers:
             self._services.add(service)
 
     def add_registered_method_handlers(
-        self, name: str, handlers: Mapping[str, grpc.RpcMethodHandler],
+        self, name: str, handlers: Mapping[str, grpc.RpcMethodHandler]
     ) -> None:
         self._registered_services[name].update(handlers)
 
@@ -124,8 +122,7 @@ class GRPCService(Service):
         return future
 
     def add_secure_port(
-        self, address: str,
-        server_credentials: grpc.ServerCredentials,
+        self, address: str, server_credentials: grpc.ServerCredentials
     ) -> PortFuture:
         future: PortFuture = asyncio.Future()
         self._secure_ports.add((address, server_credentials, future))

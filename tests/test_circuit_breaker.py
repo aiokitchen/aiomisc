@@ -1,13 +1,15 @@
 import asyncio
 from collections import Counter
-from typing import MutableMapping, Type, Union
+from typing import Type, Union
+from collections.abc import MutableMapping
 
 import pytest
 
 import aiomisc
-from aiomisc.circuit_breaker import CircuitBreakerStates as States
-from aiomisc.circuit_breaker import CircuitBroken
-
+from aiomisc.circuit_breaker import (
+    CircuitBreakerStates as States,
+    CircuitBroken,
+)
 
 pytestmark = pytest.mark.catch_loop_exceptions
 
@@ -27,7 +29,8 @@ class PatchedCircuitBreaker(aiomisc.CircuitBreaker):
     """
     CircuitBreaker for young time travelers
     """
-    _TIME = 0.
+
+    _TIME = 0.0
 
     @classmethod
     def tick(cls, second=1.0):
@@ -42,11 +45,8 @@ class PatchedCircuitBreaker(aiomisc.CircuitBreaker):
 
 
 async def test_simple(event_loop):
-
     PatchedCircuitBreaker.reset()
-    circuit_breaker = PatchedCircuitBreaker(
-        error_ratio=0.5, response_time=10,
-    )
+    circuit_breaker = PatchedCircuitBreaker(error_ratio=0.5, response_time=10)
 
     ctx = CallContainer()
 
@@ -87,7 +87,7 @@ async def test_simple(event_loop):
         with pytest.raises(CircuitBroken):
             circuit_breaker.call(ctx)
 
-    responses: MutableMapping[Union[bool, Type[Exception]], int] = Counter()
+    responses: MutableMapping[bool | type[Exception], int] = Counter()
 
     # Delay is zero
     assert circuit_breaker.get_state_delay() == 0
@@ -168,9 +168,7 @@ def test_exception_inspector():
         return True
 
     cb = PatchedCircuitBreaker(
-        error_ratio=0.5,
-        response_time=5,
-        exception_inspector=inspector,
+        error_ratio=0.5, response_time=5, exception_inspector=inspector
     )
 
     PatchedCircuitBreaker.reset()

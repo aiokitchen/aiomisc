@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # aiomisc documentation build configuration file, created by
 # sphinx-quickstart on Fri Mar 31 17:03:20 2017.
@@ -21,8 +20,7 @@ import os
 import sys
 from datetime import datetime
 from importlib.machinery import SourceFileLoader
-from typing import Any, Dict, List
-
+from typing import Any
 
 sys.path.insert(0, os.path.abspath(os.path.dirname("__file__")))
 
@@ -75,7 +73,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "aiomisc"
-copyright = "{}, Dmitry Orlov".format(datetime.now().year)
+copyright = f"{datetime.now().year}, Dmitry Orlov"
 author = "Dmitry Orlov"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -97,7 +95,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns: List[Any] = []
+exclude_patterns: list[Any] = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -146,7 +144,7 @@ html_theme_options = {
                 """-8-8z"></path></svg>"""
             ),
             "class": "",
-        },
+        }
     ],
 }
 
@@ -167,7 +165,7 @@ htmlhelp_basename = "aiomiscdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements: Dict[str, Any] = {
+latex_elements: dict[str, Any] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'a4paper',
@@ -192,7 +190,7 @@ latex_documents = [
         "aiomisc Documentation",
         "Dmitry Orlov",
         "manual",
-    ),
+    )
 ]
 
 
@@ -217,7 +215,7 @@ texinfo_documents = [
         "aiomisc",
         "One line description of project.",
         "Miscellaneous",
-    ),
+    )
 ]
 
 
@@ -246,6 +244,6 @@ html_favicon = "_static/icon.png"
 
 # html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
-locale_dirs = ["locale/"]   # path is example but recommended.
-gettext_compact = False     # optional.
+locale_dirs = ["locale/"]  # path is example but recommended.
+gettext_compact = False  # optional.
 gettext_additional_targets = ["literal-block"]

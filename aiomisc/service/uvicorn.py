@@ -4,41 +4,45 @@ import logging
 import os
 import socket
 import ssl
-from typing import Any, Awaitable, Callable, List, Optional, Tuple, Type, Union
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from asgiref.typing import ASGIApplication
 from uvicorn.config import (
-    SSL_PROTOCOL_VERSION, Config, HTTPProtocolType, InterfaceType, LifespanType,
+    SSL_PROTOCOL_VERSION,
+    Config,
+    HTTPProtocolType,
+    InterfaceType,
+    LifespanType,
     WSProtocolType,
 )
 from uvicorn.server import Server
 
 from aiomisc.service import Service
 
-
 log = logging.getLogger(__name__)
 
-UvicornApplication = Union[ASGIApplication, Callable]
+UvicornApplication = ASGIApplication | Callable
 
 
 class UvicornService(Service, abc.ABC):
-    __async_required__: Tuple[str, ...] = (
+    __async_required__: tuple[str, ...] = (
         "start",
         "stop",
         "create_application",
     )
 
-    sock: Optional[socket.socket] = None
+    sock: socket.socket | None = None
 
     host: str = "127.0.0.1"
     port: int = 8080
-    uds: Optional[str] = None
-    fd: Optional[int] = None
-    http: Union[Type[asyncio.Protocol], HTTPProtocolType] = "auto"
-    ws: Union[Type[asyncio.Protocol], WSProtocolType] = "auto"
+    uds: str | None = None
+    fd: int | None = None
+    http: type[asyncio.Protocol] | HTTPProtocolType = "auto"
+    ws: type[asyncio.Protocol] | WSProtocolType = "auto"
     ws_max_size: int = 16 * 1024 * 1024
-    ws_ping_interval: Optional[float] = 20.0
-    ws_ping_timeout: Optional[float] = 20.0
+    ws_ping_interval: float | None = 20.0
+    ws_ping_timeout: float | None = 20.0
     ws_per_message_deflate: bool = True
     lifespan: LifespanType = "auto"
     access_log: bool = True
@@ -46,25 +50,25 @@ class UvicornService(Service, abc.ABC):
     proxy_headers: bool = True
     server_header: bool = True
     date_header: bool = True
-    forwarded_allow_ips: Optional[Union[List[str], str]] = None
+    forwarded_allow_ips: list[str] | str | None = None
     root_path: str = ""
-    limit_concurrency: Optional[int] = None
-    limit_max_requests: Optional[int] = None
+    limit_concurrency: int | None = None
+    limit_max_requests: int | None = None
     backlog: int = 2048
     timeout_keep_alive: int = 5
     timeout_notify: int = 30
-    timeout_graceful_shutdown: Optional[int] = None
-    callback_notify: Optional[Callable[..., Awaitable[None]]] = None
-    ssl_keyfile: Optional[str] = None
-    ssl_certfile: Optional[Union[str, os.PathLike]] = None
-    ssl_keyfile_password: Optional[str] = None
+    timeout_graceful_shutdown: int | None = None
+    callback_notify: Callable[..., Awaitable[None]] | None = None
+    ssl_keyfile: str | None = None
+    ssl_certfile: str | os.PathLike | None = None
+    ssl_keyfile_password: str | None = None
     ssl_version: int = SSL_PROTOCOL_VERSION
     ssl_cert_reqs: int = ssl.CERT_NONE
-    ssl_ca_certs: Optional[str] = None
+    ssl_ca_certs: str | None = None
     ssl_ciphers: str = "TLSv1"
-    headers: Optional[List[Tuple[str, str]]] = None
+    headers: list[tuple[str, str]] | None = None
     factory: bool = False
-    h11_max_incomplete_event_size: Optional[int] = None
+    h11_max_incomplete_event_size: int | None = None
 
     @abc.abstractmethod
     async def create_application(self) -> UvicornApplication:
@@ -117,9 +121,9 @@ class UvicornService(Service, abc.ABC):
             self.sock = config.bind_socket()
         self.server = Server(config)
         self.serve_task = asyncio.create_task(
-            self.server.serve(sockets=[self.sock]),
+            self.server.serve(sockets=[self.sock])
         )
 
-    async def stop(self, exception: Optional[Exception] = None) -> None:
+    async def stop(self, exception: Exception | None = None) -> None:
         self.server.should_exit = True
         await self.serve_task

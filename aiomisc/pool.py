@@ -2,29 +2,28 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from collections.abc import Awaitable, Callable, Coroutine
+from contextlib import AbstractAsyncContextManager
 from random import random
-from typing import (
-    Any, AsyncContextManager, Awaitable, Callable, Coroutine, DefaultDict,
-    Generic, NoReturn, Optional, Set, TypeVar, Union,
-)
+from typing import Any, Generic, NoReturn, TypeVar
 
 from .compat import EventLoopMixin
 from .utils import cancel_tasks
 
-
 T = TypeVar("T", bound=Any)
-Number = Union[int, float]
+Number = int | float
 
 log = logging.getLogger(__name__)
 
 
-class ContextManager(AsyncContextManager):
+class ContextManager(AbstractAsyncContextManager):
     __slots__ = "__aenter", "__aexit", "__instance"
 
     sentinel = object()
 
     def __init__(
-        self, aenter: Callable[..., Awaitable[T]],
+        self,
+        aenter: Callable[..., Awaitable[T]],
         aexit: Callable[..., Awaitable[T]],
     ):
         self.__aenter = aenter
@@ -39,8 +38,7 @@ class ContextManager(AsyncContextManager):
         return self.__instance
 
     async def __aexit__(
-        self, exc_type: Any, exc_value: Any,
-        traceback: Any,
+        self, exc_type: Any, exc_value: Any, traceback: Any
     ) -> Any:
         await self.__aexit(self.__instance)
 
@@ -58,15 +56,15 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
         "_used",
     ) + EventLoopMixin.__slots__
 
-    _tasks: Set[Any]
-    _used: Set[Any]
+    _tasks: set[Any]
+    _used: set[Any]
     _instances: asyncio.Queue
     _recycle_bin: asyncio.Queue
 
-    def __init__(self, maxsize: int = 10, recycle: Optional[int] = None):
-        assert (
-            recycle is None or recycle > 0
-        ), "recycle should be positive number or None"
+    def __init__(self, maxsize: int = 10, recycle: int | None = None):
+        assert recycle is None or recycle > 0, (
+            "recycle should be positive number or None"
+        )
 
         self._instances = asyncio.Queue()
         self._recycle_bin = asyncio.Queue()
@@ -80,8 +78,8 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
         self._used = set()
 
         self._create_lock = asyncio.Lock()
-        self._recycle_times: DefaultDict[float, Any] = defaultdict(
-            self.loop.time,
+        self._recycle_times: defaultdict[float, Any] = defaultdict(
+            self.loop.time
         )
 
         self.__create_task(self.__recycler())
@@ -170,10 +168,10 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
 
         self._instances.put_nowait(instance)
 
-    def acquire(self) -> AsyncContextManager[T]:
+    def acquire(self) -> AbstractAsyncContextManager[T]:
         return ContextManager(self.__acquire, self.__release)
 
-    async def close(self, timeout: Optional[Number] = None) -> None:
+    async def close(self, timeout: Number | None = None) -> None:
         instances = list(self._used)
         self._used.clear()
 
@@ -193,7 +191,7 @@ class PoolBase(ABC, EventLoopMixin, Generic[T]):
             asyncio.gather(
                 *[
                     self.__create_task(
-                        log_exception(self._destroy_instance(instance)),
+                        log_exception(self._destroy_instance(instance))
                     )
                     for instance in instances
                 ],

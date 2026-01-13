@@ -11,7 +11,6 @@ from aiomisc.service import UDPServer
 
 from .spec import Error, Payload, Request, Response
 
-
 log = logging.getLogger()
 
 
@@ -20,10 +19,10 @@ class RPCCallError(RuntimeError):
 
 
 class RPCServer(UDPServer):
-    __required__ = "handlers",
+    __required__ = ("handlers",)
 
     HEADER = struct.Struct(">I")
-    handlers: typing.Dict[str, typing.Callable]
+    handlers: dict[str, typing.Callable]
 
     _serial: int
     _encoder: msgspec.msgpack.Encoder
@@ -53,14 +52,10 @@ class RPCServer(UDPServer):
             )
         except Exception as e:
             response = Response(
-                id=request.id,
-                error=Error(type=str(type(e)), args=e.args),
+                id=request.id, error=Error(type=str(type(e)), args=e.args)
             )
 
-        self.sendto(
-            self._encoder.encode(Payload(response=response)),
-            addr,
-        )
+        self.sendto(self._encoder.encode(Payload(response=response)), addr)
 
     def _on_response(self, response: Response) -> typing.Any:
         future: asyncio.Future = self._futures.pop(response.id)
@@ -70,7 +65,7 @@ class RPCServer(UDPServer):
                 return
 
             future.set_exception(
-                RPCCallError(response.error.type, response.error.args),
+                RPCCallError(response.error.type, response.error.args)
             )
 
     async def handle_datagram(self, data: bytes, addr):
@@ -89,16 +84,14 @@ class RPCServer(UDPServer):
         serial = self._serial
         future = self.loop.create_future()
         request: bytes = self._encoder.encode(
-            Payload(request=Request(id=serial, method=method, params=params)),
+            Payload(request=Request(id=serial, method=method, params=params))
         )
         self._futures[serial] = future
         self.sendto(request, (host, port))
         return future
 
 
-handlers = MappingProxyType({
-    "multiply": lambda x, y: x * y,
-})
+handlers = MappingProxyType({"multiply": lambda x, y: x * y})
 
 
 if __name__ == "__main__":

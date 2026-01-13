@@ -2,7 +2,6 @@ import cProfile
 import io
 import logging
 from pstats import Stats
-from typing import Optional
 
 from ..periodic import PeriodicCallback
 from .base import Service
@@ -14,7 +13,7 @@ class Profiler(Service):
 
     order: str = "cumulative"
 
-    path: Optional[str] = None
+    path: str | None = None
     logger: logging.Logger
 
     interval: int = 10
@@ -34,9 +33,11 @@ class Profiler(Service):
 
     def save_stats(self) -> None:
         with io.StringIO() as stream:
-            stats = Stats(
-                self.profiler, stream=stream,
-            ).strip_dirs().sort_stats(self.order)
+            stats = (
+                Stats(self.profiler, stream=stream)
+                .strip_dirs()
+                .sort_stats(self.order)
+            )
 
             stats.print_stats(self.top_results)
             self.logger.info(stream.getvalue())
@@ -47,7 +48,7 @@ class Profiler(Service):
             finally:
                 self.profiler.enable()
 
-    async def stop(self, exception: Optional[Exception] = None) -> None:
+    async def stop(self, exception: Exception | None = None) -> None:
         self.logger.info("Stop profiler")
         await self.periodic.stop(return_exceptions=True)
         self.profiler.disable()

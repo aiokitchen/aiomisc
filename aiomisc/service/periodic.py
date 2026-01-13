@@ -1,21 +1,19 @@
 import logging
 from abc import abstractmethod
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from aiomisc import PeriodicCallback, Service
-
 
 log = logging.getLogger(__name__)
 
 
 class PeriodicService(Service):
-
     __required__ = ("interval",)
 
-    interval: Union[int, float]
-    delay: Union[int, float] = 0
+    interval: int | float
+    delay: int | float = 0
 
-    def __init__(self, *, name: Optional[str] = None, **kwargs: Any):
+    def __init__(self, *, name: str | None = None, **kwargs: Any):
         super().__init__(**kwargs)
         self.periodic = PeriodicCallback(self.callback, name=name)
 
@@ -28,7 +26,7 @@ class PeriodicService(Service):
         self.periodic.start(self.interval, delay=self.delay, loop=self.loop)
         log.info("Periodic service %s started", self)
 
-    async def stop(self, err: Optional[Exception] = None) -> None:
+    async def stop(self, err: Exception | None = None) -> None:
         await self.periodic.stop(return_exceptions=True)
         log.info("Periodic service %s is stopped", self)
 
@@ -37,8 +35,4 @@ class PeriodicService(Service):
         raise NotImplementedError
 
     def __str__(self) -> str:
-        return "{}(interval={},delay={})".format(
-            self.__class__.__name__,
-            self.interval,
-            self.delay,
-        )
+        return f"{self.__class__.__name__}(interval={self.interval},delay={self.delay})"

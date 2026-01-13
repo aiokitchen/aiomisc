@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 
-
 try:
     from logging_journald import JournaldLogHandler  # type: ignore
 
@@ -15,7 +14,8 @@ try:
         return handler
 
 except ImportError:
+
     def journald_formatter(**_: Any) -> logging.Handler:
         raise ImportError(
-            "You must install \"logging-journald\" library for use it",
+            'You must install "logging-journald" library for use it'
         )

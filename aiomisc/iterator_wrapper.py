@@ -1,21 +1,18 @@
 import asyncio
 import inspect
+import threading
 from abc import abstractmethod
 from collections import deque
+from collections.abc import AsyncIterator, Awaitable, Callable, Generator
 from concurrent.futures import Executor
-from queue import Empty as QueueEmpty
-from queue import Queue
+from queue import Empty as QueueEmpty, Queue
 from time import time
 from types import TracebackType
-from typing import (
-    Any, AsyncIterator, Awaitable, Callable, Deque, Generator, Generic,
-    NoReturn, Optional, ParamSpec, Type, TypeVar, Union,
-)
+from typing import Any, Generic, NoReturn, ParamSpec, TypeVar, Union
 from weakref import finalize
 
 from aiomisc.compat import EventLoopMixin
 from aiomisc.counters import Statistic
-
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -39,10 +36,10 @@ class QueueWrapperBase:
 
 
 class DequeWrapper(QueueWrapperBase):
-    __slots__ = "queue",
+    __slots__ = ("queue",)
 
     def __init__(self) -> None:
-        self.queue: Deque[Any] = deque()
+        self.queue: deque[Any] = deque()
 
     def get(self) -> Any:
         if not self.queue:
@@ -54,7 +51,7 @@ class DequeWrapper(QueueWrapperBase):
 
 
 class QueueWrapper(QueueWrapperBase):
-    __slots__ = "queue",
+    __slots__ = ("queue",)
 
     def __init__(self, max_size: int) -> None:
         self.queue: Queue = Queue(maxsize=max_size)
@@ -76,7 +73,7 @@ class FromThreadChannel:
     SLEEP_LOW_THRESHOLD = 0.0001
     SLEEP_DIFFERENCE_DIVIDER = 10
 
-    __slots__ = ("queue", "__closed", "__last_received_item")
+    __slots__ = ("__closed", "__last_received_item", "queue")
 
     def __init__(self, maxsize: int = 0):
         self.queue: QueueWrapperBase = make_queue(max_size=maxsize)
@@ -94,8 +91,10 @@ class FromThreadChannel:
         return self
 
     def __exit__(
-        self, exc_type: Type[Exception],
-        exc_val: Exception, exc_tb: TracebackType,
+        self,
+        exc_type: type[Exception],
+        exc_val: Exception,
+        exc_tb: TracebackType,
     ) -> None:
         self.close()
 
@@ -106,7 +105,7 @@ class FromThreadChannel:
         self.queue.put(item)
         self.__last_received_item = time()
 
-    def _compute_sleep_time(self) -> Union[float, int]:
+    def _compute_sleep_time(self) -> float | int:
         if self.__last_received_item < 0:
             return 0
 
@@ -151,6 +150,7 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
         "__close_event",
         "__gen_func",
         "__gen_task",
+        "_run_lock",
         "_statistic",
         "executor",
     ) + EventLoopMixin.__slots__
@@ -158,21 +158,21 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
     def __init__(
         self,
         gen_func: Callable[P, Generator[T, None, None]],
-        loop: Optional[asyncio.AbstractEventLoop] = None,
+        loop: asyncio.AbstractEventLoop | None = None,
         max_size: int = 0,
-        executor: Optional[Executor] = None,
-        statistic_name: Optional[str] = None,
+        executor: Executor | None = None,
+        statistic_name: str | None = None,
     ):
-
         self._loop = loop
         self.executor = executor
 
         self.__close_event = asyncio.Event()
         self.__channel: FromThreadChannel = FromThreadChannel(maxsize=max_size)
-        self.__gen_task: Optional[asyncio.Future] = None
+        self.__gen_task: asyncio.Future | None = None
         self.__gen_func: Callable = gen_func
         self._statistic = IteratorWrapperStatistic(statistic_name)
         self._statistic.queue_size = max_size
+        self._run_lock = threading.Lock()
 
     @property
     def closed(self) -> bool:
@@ -190,7 +190,7 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
 
                 throw = self.__throw
                 if inspect.isgenerator(gen):
-                    throw = gen.throw   # type: ignore
+                    throw = gen.throw  # type: ignore
 
                 while not self.closed:
                     item = next(gen)
@@ -232,15 +232,20 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
     def _run(self) -> Any:
         return self.loop.run_in_executor(self.executor, self._in_thread)
 
-    def __aiter__(self) -> AsyncIterator[T]:
+    def __start_generator(self) -> None:
         if not self.loop.is_running():
             raise RuntimeError("Event loop is not running")
 
-        if self.__gen_task is None:
+        with self._run_lock:
+            if self.__gen_task is not None:
+                return
             gen_task = self._run()
             if gen_task is None:
                 raise RuntimeError("Iterator task was not created")
             self.__gen_task = gen_task
+
+    def __aiter__(self) -> AsyncIterator[T]:
+        self.__start_generator()
         return IteratorProxy(self, self.close)
 
     async def __anext__(self) -> T:
@@ -258,12 +263,10 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
         return item
 
     async def __aenter__(self) -> "IteratorWrapper":
+        self.__start_generator()
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_val: Any,
-        exc_tb: Any,
-    ) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         if self.closed:
             return
 
@@ -272,8 +275,7 @@ class IteratorWrapper(Generic[P, T], AsyncIterator, EventLoopMixin):
 
 class IteratorProxy(Generic[T], AsyncIterator):
     def __init__(
-        self, iterator: AsyncIterator[T],
-        finalizer: Callable[[], Any],
+        self, iterator: AsyncIterator[T], finalizer: Callable[[], Any]
     ):
         self.__iterator = iterator
         finalize(self, finalizer)

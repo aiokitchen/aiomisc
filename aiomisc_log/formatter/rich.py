@@ -1,20 +1,20 @@
 import logging
-from typing import IO, Any, Optional
+from typing import IO, Any
 
 from aiomisc_log.enum import DateFormat
-
 
 try:
     from rich import reconfigure
     from rich.logging import RichHandler
 
     def rich_formatter(
-        date_format: Optional[str] = None, stream: Optional[IO[str]] = None,
+        date_format: str | None = None,
+        stream: IO[str] | None = None,
         **kwargs: Any,
     ) -> logging.Handler:
         kwargs.setdefault("rich_tracebacks", False)
         kwargs.setdefault(
-            "log_time_format", date_format or DateFormat.rich.value,
+            "log_time_format", date_format or DateFormat.rich.value
         )
 
         if "console" not in kwargs:
@@ -28,8 +28,10 @@ try:
         handler.setFormatter(formatter)
         return handler
 except ImportError:
+
     def rich_formatter(
-        date_format: Optional[str] = None, stream: Optional[IO[str]] = None,
+        date_format: str | None = None,
+        stream: IO[str] | None = None,
         **kwargs: Any,
     ) -> logging.Handler:
-        raise ImportError("You must install \"rich\" library for use it")
+        raise ImportError('You must install "rich" library for use it')

@@ -1,14 +1,14 @@
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Awaitable, Callable, Optional, Tuple, Type, Union
+from typing import Any, Union
 
 from croniter import croniter
 
 from .compat import EventLoopMixin
 from .recurring import RecurringCallback
-
 
 log = logging.getLogger(__name__)
 
@@ -26,13 +26,12 @@ class CronCallback(EventLoopMixin):
 
     def __init__(
         self,
-        coroutine_func: Callable[..., Union[Any, Awaitable[Any]]],
-        *args: Any, **kwargs: Any,
+        coroutine_func: Callable[..., Any | Awaitable[Any]],
+        *args: Any,
+        **kwargs: Any,
     ):
-        self._recurring_cb = RecurringCallback(
-            coroutine_func, *args, **kwargs,
-        )
-        self._task: Optional[asyncio.Task] = None
+        self._recurring_cb = RecurringCallback(coroutine_func, *args, **kwargs)
+        self._task: asyncio.Task | None = None
 
     @staticmethod
     def get_next(cron: croniter, _: RecurringCallback) -> float:
@@ -43,9 +42,10 @@ class CronCallback(EventLoopMixin):
     def start(
         self,
         spec: str,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-        *, shield: bool = False,
-        suppress_exceptions: Tuple[Type[Exception], ...] = (),
+        loop: asyncio.AbstractEventLoop | None = None,
+        *,
+        shield: bool = False,
+        suppress_exceptions: tuple[type[Exception], ...] = (),
     ) -> None:
         if self._task and not self._task.done():
             raise asyncio.InvalidStateError

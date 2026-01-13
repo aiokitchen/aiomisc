@@ -3,8 +3,27 @@ import pytest
 
 from aiomisc.service.dns import DNSStore, DNSZone
 from aiomisc.service.dns.records import (
-    AAAA, CAA, CNAME, DNSKEY, DS, HTTPS, LOC, MX, NAPTR, NS, NSEC, PTR, RP,
-    RRSIG, SOA, SRV, SSHFP, TLSA, TXT, A, RecordType,
+    AAAA,
+    CAA,
+    CNAME,
+    DNSKEY,
+    DS,
+    HTTPS,
+    LOC,
+    MX,
+    NAPTR,
+    NS,
+    NSEC,
+    PTR,
+    RP,
+    RRSIG,
+    SOA,
+    SRV,
+    SSHFP,
+    TLSA,
+    TXT,
+    A,
+    RecordType,
 )
 from aiomisc.service.dns.tree import RadixTree
 
@@ -28,11 +47,10 @@ def test_insert_multiple_and_search():
 def test_find_prefix_basic():
     tree: RadixTree[str] = RadixTree()
     tree.insert(("com", "example"), "Zone1")
-    assert tree.find_prefix(("com", "example")) == (
-        ("com", "example"), "Zone1",
-    )
+    assert tree.find_prefix(("com", "example")) == (("com", "example"), "Zone1")
     assert tree.find_prefix(("com", "example", "sub")) == (
-        ("com", "example"), "Zone1",
+        ("com", "example"),
+        "Zone1",
     )
 
 
@@ -41,10 +59,12 @@ def test_find_prefix_with_subdomain():
     tree.insert(("com", "example"), "Zone1")
     tree.insert(("com", "example", "sub"), "Zone2")
     assert tree.find_prefix(("com", "example", "sub", "test")) == (
-        ("com", "example", "sub"), "Zone2",
+        ("com", "example", "sub"),
+        "Zone2",
     )
     assert tree.find_prefix(("com", "example", "other")) == (
-        ("com", "example"), "Zone1",
+        ("com", "example"),
+        "Zone1",
     )
 
 
@@ -64,9 +84,7 @@ def test_insert_and_override():
 
 def test_deep_insert_and_search():
     tree: RadixTree[str] = RadixTree()
-    tree.insert(
-        ("com", "example", "sub", "deep", "deeper"), "Zone1",
-    )
+    tree.insert(("com", "example", "sub", "deep", "deeper"), "Zone1")
     assert tree.search(("com", "example", "sub", "deep", "deeper")) == "Zone1"
     assert tree.search(("com", "example", "sub", "deep")) is None
 
@@ -77,10 +95,12 @@ def test_find_prefix_with_partial_matches():
     tree.insert(("com", "example", "sub"), "Zone2")
     tree.insert(("com", "example", "sub", "subsub"), "Zone3")
     assert tree.find_prefix(("com", "example", "sub", "subsub", "deep")) == (
-        ("com", "example", "sub", "subsub"), "Zone3",
+        ("com", "example", "sub", "subsub"),
+        "Zone3",
     )
     assert tree.find_prefix(("com", "example", "sub", "other")) == (
-        ("com", "example", "sub"), "Zone2",
+        ("com", "example", "sub"),
+        "Zone2",
     )
 
 
@@ -106,9 +126,10 @@ def test_edge_cases_long_keys():
     long_key = tuple(str(i) for i in range(1000))
     tree.insert(long_key, "LongZone")
     assert tree.search(long_key) == "LongZone"
-    assert tree.find_prefix(
-        long_key + ("extra",),
-    ) == (tuple(long_key), "LongZone")
+    assert tree.find_prefix(long_key + ("extra",)) == (
+        tuple(long_key),
+        "LongZone",
+    )
 
 
 @pytest.fixture
@@ -191,9 +212,7 @@ def test_remove_record_from_zone(dns_store):
 def test_find_prefix(dns_store):
     zone = DNSZone("example.com.")
     dns_store.add_zone(zone)
-    assert dns_store.get_zone_for_name("sub.example.com.") == (
-        "com", "example",
-    )
+    assert dns_store.get_zone_for_name("sub.example.com.") == ("com", "example")
 
 
 def test_a_create():
@@ -211,16 +230,29 @@ def test_aaaa_create():
     assert record.type == RecordType.AAAA
     assert isinstance(record.data, dnslib.AAAA)
     assert record.data.data == (
-        32, 1, 13, 184, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        32,
+        1,
+        13,
+        184,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
     )
     assert record.ttl == 300
 
 
 def test_cname_create():
     record = CNAME.create(
-        name="example.com.",
-        label="alias.example.com.",
-        ttl=300,
+        name="example.com.", label="alias.example.com.", ttl=300
     )
     assert record.name == "example.com."
     assert record.type == RecordType.CNAME
@@ -275,9 +307,7 @@ def test_soa_create():
 
 
 def test_ns_create():
-    record = NS.create(
-        name="example.com.", label="ns1.example.com.", ttl=300,
-    )
+    record = NS.create(name="example.com.", label="ns1.example.com.", ttl=300)
     assert record.name == "example.com."
     assert record.type == RecordType.NS
     assert isinstance(record.data, dnslib.NS)
@@ -287,7 +317,7 @@ def test_ns_create():
 
 def test_ptr_create():
     record = PTR.create(
-        name="1.2.3.4.in-addr.arpa.", label="example.com.", ttl=300,
+        name="1.2.3.4.in-addr.arpa.", label="example.com.", ttl=300
     )
     assert record.name == "1.2.3.4.in-addr.arpa."
     assert record.type == RecordType.PTR
@@ -317,8 +347,10 @@ def test_srv_create():
 
 def test_caa_create():
     record = CAA.create(
-        name="example.com.", flags=0,
-        tag="issue", value="letsencrypt.org",
+        name="example.com.",
+        flags=0,
+        tag="issue",
+        value="letsencrypt.org",
         ttl=300,
     )
     assert record.name == "example.com."
@@ -332,9 +364,14 @@ def test_caa_create():
 
 def test_naptr_create():
     record = NAPTR.create(
-        name="example.com.", order=100,
-        preference=10, flags="S", service="SIP+D2U",
-        regexp="", replacement=".", ttl=300,
+        name="example.com.",
+        order=100,
+        preference=10,
+        flags="S",
+        service="SIP+D2U",
+        regexp="",
+        replacement=".",
+        ttl=300,
     )
     assert record.name == "example.com."
     assert record.type == RecordType.NAPTR
@@ -354,7 +391,8 @@ def test_ds_create():
         key_tag=12345,
         algorithm=5,
         digest_type=1,
-        digest="abc123", ttl=300,
+        digest="abc123",
+        ttl=300,
     )
     assert record.name == "example.com."
     assert record.type == RecordType.DS
@@ -369,7 +407,8 @@ def test_ds_create():
 def test_dnskey_create():
     record = DNSKEY.create(
         name="example.com.",
-        flags=256, protocol=3,
+        flags=256,
+        protocol=3,
         algorithm=5,
         key="abcdefg",
         ttl=300,
@@ -417,7 +456,8 @@ def test_nsec_create():
     record = NSEC.create(
         name="example.com.",
         next_domain="next.example.com.",
-        rrtypes=[RecordType.A, RecordType.AAAA], ttl=300,
+        rrtypes=[RecordType.A, RecordType.AAAA],
+        ttl=300,
     )
     assert record.name == "example.com."
     assert record.type == RecordType.NSEC
@@ -579,10 +619,9 @@ def test_store_replace_basic(dns_store):
     new_record1 = A.create(name="api.example.com.", ip="192.0.2.3")
     new_record2 = A.create(name="api.test.com.", ip="192.0.2.4")
 
-    dns_store.replace({
-        "example.com.": [new_record1],
-        "test.com.": [new_record2],
-    })
+    dns_store.replace(
+        {"example.com.": [new_record1], "test.com.": [new_record2]}
+    )
 
     # Check old records are gone
     records = dns_store.query("www.example.com.", RecordType.A)
@@ -616,9 +655,7 @@ def test_store_replace_multiple_records_per_zone(dns_store):
     new_record1 = A.create(name="www.example.com.", ip="192.0.2.1")
     new_record2 = A.create(name="www.example.com.", ip="192.0.2.2")
 
-    dns_store.replace({
-        "example.com.": [new_record1, new_record2],
-    })
+    dns_store.replace({"example.com.": [new_record1, new_record2]})
 
     records = dns_store.query("www.example.com.", RecordType.A)
     assert len(records) == 2

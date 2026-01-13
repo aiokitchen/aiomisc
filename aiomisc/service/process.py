@@ -2,14 +2,14 @@ import logging
 import os
 import signal
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from multiprocessing import Event, Process, synchronize
 from threading import Lock
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 from aiomisc.periodic import PeriodicCallback
 from aiomisc.service.base import Service
 from aiomisc_log import LOG_FORMAT, LOG_LEVEL, LogFormat, basic_config
-
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def _process_inner(
 
 
 class ProcessService(Service):
-    name: Optional[str] = None
+    name: str | None = None
     process: Process
     process_stop_timeout: int = 3
 
@@ -39,7 +39,7 @@ class ProcessService(Service):
     _process_stop_event: synchronize.Event
     _lock: Lock
 
-    def get_process_kwargs(self) -> Dict[str, Any]:
+    def get_process_kwargs(self) -> dict[str, Any]:
         return {}
 
     @abstractmethod
@@ -87,20 +87,18 @@ class ProcessService(Service):
             process.start()
 
             await self.loop.run_in_executor(
-                None, self._process_start_event.wait,
+                None, self._process_start_event.wait
             )
             self.process = process
 
     def __repr__(self) -> str:
-        pid: Optional[int] = None
+        pid: int | None = None
         if hasattr(self, "process"):
             pid = self.process.pid
 
-        return "<{} object at {}: name={!r}, pid={}>".format(
-            self.__class__.__name__, hex(id(self)), self.name, pid,
-        )
+        return f"<{self.__class__.__name__} object at {hex(id(self))}: name={self.name!r}, pid={pid}>"
 
-    async def stop(self, exception: Optional[Exception] = None) -> Any:
+    async def stop(self, exception: Exception | None = None) -> Any:
         if not self._is_alive():
             return
 
@@ -112,12 +110,12 @@ class ProcessService(Service):
 
         os.kill(process.pid, signal.SIGINT)
         stop_result: bool = await self.loop.run_in_executor(
-            None, self._process_stop_event.wait, self.process_stop_timeout,
+            None, self._process_stop_event.wait, self.process_stop_timeout
         )
 
         if stop_result:
             await self.loop.run_in_executor(
-                None, process.join, self.process_stop_timeout,
+                None, process.join, self.process_stop_timeout
             )
 
         if not stop_result and process.is_alive():
@@ -125,7 +123,7 @@ class ProcessService(Service):
             log.warning(
                 f"The process {process.pid} didn't stop for "
                 f"{self.process_stop_timeout} seconds "
-                "and had been killed.",
+                "and had been killed."
             )
 
 
@@ -143,18 +141,17 @@ class RespawningProcessService(ProcessService, ABC):
 
         log.info(
             "Process in service %r exited with code %r, respawning.",
-            self, self.process.exitcode,
+            self,
+            self.process.exitcode,
         )
         await super().start()
 
     async def start(self) -> None:
         await super().start()
         self._supervisor = PeriodicCallback(self.__supervise)
-        self._supervisor.start(
-            self.process_poll_timeout,
-        )
+        self._supervisor.start(self.process_poll_timeout)
 
-    async def stop(self, exception: Optional[Exception] = None) -> Any:
+    async def stop(self, exception: Exception | None = None) -> Any:
         await self._supervisor.stop(return_exceptions=True)
         await super().stop(exception)
 
