@@ -175,7 +175,6 @@ wheels = [
 
 [[package]]
 name = "aiomisc"
-version = "17.9.0"
 source = { editable = "." }
 dependencies = [
     { name = "colorlog" },
