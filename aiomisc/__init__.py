@@ -42,7 +42,7 @@ from .utils import (
     select,
     shield,
 )
-from .version import __version__, version_info
+from .version import __version__, __version_tuple__ as version_info
 from .worker_pool import WorkerPool
 
 __all__ = (
