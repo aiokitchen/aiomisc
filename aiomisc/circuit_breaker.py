@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 import threading
 from collections import Counter, Counter as CounterType, deque
@@ -381,7 +382,7 @@ def cutout(
         def wrapper(*args: Any, **kw: Any) -> Any:
             return circuit_breaker.call(func, *args, **kw)
 
-        if asyncio.iscoroutinefunction(func):
+        if inspect.iscoroutinefunction(func):
             return async_wrapper
 
         return wrapper

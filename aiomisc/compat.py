@@ -39,9 +39,10 @@ class EventLoopMixin:
         return self._loop  # type: ignore
 
 
-event_loop_policy: asyncio.AbstractEventLoopPolicy
+# Check if uvloop is available and enabled
+_uvloop_module: Any = None
 try:
-    import uvloop
+    import uvloop as _uvloop_module_import
 
     if os.getenv("AIOMISC_USE_UVLOOP", "1").lower() in (
         "yes",
@@ -51,11 +52,24 @@ try:
         "on",
         "true",
     ):
-        event_loop_policy = uvloop.EventLoopPolicy()
-    else:
-        event_loop_policy = asyncio.DefaultEventLoopPolicy()
+        _uvloop_module = _uvloop_module_import
 except ImportError:
-    event_loop_policy = asyncio.DefaultEventLoopPolicy()
+    pass
+
+
+class _DefaultEventLoopPolicy:
+    """Minimal policy-like object with new_event_loop() method."""
+
+    @staticmethod
+    def new_event_loop() -> asyncio.AbstractEventLoop:
+        return asyncio.new_event_loop()
+
+
+# Object with new_event_loop() method - uses uvloop if available
+if _uvloop_module is not None:
+    event_loop_policy = _uvloop_module
+else:
+    event_loop_policy = _DefaultEventLoopPolicy()
 
 
 if hasattr(socket, "TCP_NODELAY"):

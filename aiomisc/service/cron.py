@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from asyncio import iscoroutinefunction
+from inspect import iscoroutinefunction
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any

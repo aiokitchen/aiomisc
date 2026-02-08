@@ -372,7 +372,7 @@ class Threaded(ThreadedBase[P, T]):
             self.func_type = type(func)
             self.func = func
 
-        if asyncio.iscoroutinefunction(self.func):
+        if inspect.iscoroutinefunction(self.func):
             raise TypeError("Can not wrap coroutine")
         if inspect.isgeneratorfunction(self.func):
             raise TypeError("Can not wrap generator function")
@@ -483,7 +483,7 @@ def threaded_separate(
         # noinspection PyTypeChecker
         return partial(threaded_separate, detach=detach)
 
-    if asyncio.iscoroutinefunction(func):
+    if inspect.iscoroutinefunction(func):
         raise TypeError("Can not wrap coroutine")
 
     return ThreadedSeparate(func, detach=detach)

@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import itertools
 import logging.handlers
 import socket
@@ -163,9 +164,7 @@ def create_default_event_loop(
             "default loop in this thread is running right now."
         )
 
-    asyncio.set_event_loop_policy(policy)
-
-    loop = asyncio.new_event_loop()
+    loop = policy.new_event_loop()
     loop.set_debug(debug)
     asyncio.set_event_loop(loop)
 
@@ -413,7 +412,7 @@ def awaitable(
     """
 
     # Avoid python 3.8+ warning
-    if asyncio.iscoroutinefunction(func):
+    if inspect.iscoroutinefunction(func):
         return func
 
     async def awaiter(obj: AT) -> AT:
