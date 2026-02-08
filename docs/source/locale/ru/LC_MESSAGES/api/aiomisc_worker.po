@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-21 11:47+0100\n"
+"POT-Creation-Date: 2026-02-09 00:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Sitkin Ivan <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.13.1\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/api/aiomisc_worker.rst:2
 msgid "``aiomisc_worker`` module"
@@ -27,10 +27,6 @@ msgstr "Модуль ``aiomisc_worker.forking``"
 msgid "``aiomisc_worker.process`` module"
 msgstr "Модуль ``aiomisc_worker.process``"
 
-#: aiomisc_worker.process.Worker:1 aiomisc_worker.protocol.AsyncProtocol:1 of
-msgid "Bases: :py:class:`object`"
-msgstr ""
-
 #: ../../source/api/aiomisc_worker.rst:21
 msgid "``aiomisc_worker.process_inner`` module"
 msgstr "Модуль ``aiomisc_worker.process_inner``"
@@ -39,16 +35,16 @@ msgstr "Модуль ``aiomisc_worker.process_inner``"
 msgid "``aiomisc_worker.protocol`` module"
 msgstr "Модуль ``aiomisc_worker.protocol``"
 
-#: aiomisc_worker.protocol.FileIOProtocol:1
-#: aiomisc_worker.protocol.SocketIOProtocol:1 of
-msgid "Bases: :py:class:`~aiomisc_worker.protocol.Protocol`"
-msgstr ""
-
-#: aiomisc_worker.protocol.Protocol:1 of
-msgid "Bases: :py:class:`~abc.ABC`"
-msgstr ""
-
 #: ../../source/api/aiomisc_worker.rst:37
 msgid "``aiomisc_worker.worker`` module"
 msgstr "Модуль ``aiomisc_worker.worker``"
+
+#~ msgid "Bases: :py:class:`object`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc_worker.protocol.Protocol`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~abc.ABC`"
+#~ msgstr ""
 

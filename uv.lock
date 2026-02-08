@@ -177,6 +177,7 @@ wheels = [
 name = "aiomisc"
 source = { editable = "." }
 dependencies = [
+    { name = "aiothreads" },
     { name = "colorlog" },
     { name = "logging-journald", marker = "sys_platform == 'linux'" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
@@ -272,6 +273,7 @@ requires-dist = [
     { name = "aiohttp", marker = "extra == 'aiohttp'", specifier = ">3" },
     { name = "aiohttp", marker = "extra == 'raven'", specifier = ">3" },
     { name = "aiohttp-asgi", marker = "extra == 'asgi'", specifier = ">=0.5.2" },
+    { name = "aiothreads", specifier = ">=1.0.0" },
     { name = "asgiref", marker = "extra == 'uvicorn'", specifier = ">=3.7" },
     { name = "colorlog", specifier = ">=6.0,<7" },
     { name = "croniter", marker = "extra == 'cron'", specifier = ">=2.0,<3" },
@@ -355,6 +357,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/61/62/06741b579156360248d1ec624842ad0edf697050bbaf7c3e46394e106ad1/aiosignal-1.4.0.tar.gz", hash = "sha256:f47eecd9468083c2029cc99945502cb7708b082c232f9aca65da147157b251c7", size = 25007, upload-time = "2025-07-03T22:54:43.528Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fb/76/641ae371508676492379f16e2fa48f4e2c11741bd63c48be4b12a6b09cba/aiosignal-1.4.0-py3-none-any.whl", hash = "sha256:053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e", size = 7490, upload-time = "2025-07-03T22:54:42.156Z" },
+]
+
+[[package]]
+name = "aiothreads"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/56/98896ab8d2ad3a959298e1e3f4d4749b6a56fc99d81639817ee5129be7bc/aiothreads-1.0.0.tar.gz", hash = "sha256:f8c3513af29ceea4abe860cc72233aea8dae1d109bed633dac064da317bab145", size = 42910, upload-time = "2025-08-03T11:15:49.325Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/65/f1/0d6fe4045c07cd9ff092ff0529075453739f00e1be5b4af6902a883f9c9d/aiothreads-1.0.0-py3-none-any.whl", hash = "sha256:ccdb35fc9a04a3be12cb715fd12b3b1855c7da5bd45cf0259b69e7f82515e06e", size = 20200, upload-time = "2025-08-03T11:15:47.959Z" },
 ]
 
 [[package]]

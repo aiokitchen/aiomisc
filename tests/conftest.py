@@ -1,19 +1,12 @@
-import asyncio
 import os
 import ssl
 import time
-import warnings
 from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 
 import aiomisc
-
-try:
-    import uvloop
-except ImportError:
-    uvloop = None  # type: ignore
 
 
 @pytest.fixture
@@ -39,29 +32,6 @@ def timer():
 
 def thread_pool_executor(request):
     return aiomisc.ThreadPoolExecutor
-
-
-def _get_default_event_loop_policy() -> "asyncio.AbstractEventLoopPolicy":
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message="'asyncio.DefaultEventLoopPolicy' is deprecated",
-            category=DeprecationWarning,
-        )
-        return asyncio.DefaultEventLoopPolicy()
-
-
-policies = (_get_default_event_loop_policy(),)
-policy_ids = ("asyncio",)
-
-if uvloop:
-    policies = (uvloop.EventLoopPolicy(),) + policies  # type: ignore
-    policy_ids = ("uvloop",) + policy_ids  # type: ignore
-
-
-@pytest.fixture(params=policies, ids=policy_ids)
-def event_loop_policy(request):
-    return request.param
 
 
 @pytest.fixture()

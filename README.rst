@@ -165,48 +165,19 @@ logger is configured in a separate thread, a pool of threads is created,
 services are started, but more on that later and there are no services
 in this example.
 
-Alternatively, you can choose not to use an entrypoint, just create an
-event-loop and set this as a default event loop for current thread:
+Alternatively, you can use the standard ``asyncio.Runner``:
 
 .. code-block:: python
-    :name: test_index_get_loop
+    :name: test_index_runner
 
     import asyncio
-    import aiomisc
-
-    # * Installs uvloop event loop is it's has been installed.
-    # * Creates and set `aiomisc.thread_pool.ThreadPoolExecutor`
-    #   as a default executor
-    # * Sets just created event-loop as a current event-loop for this thread.
-    aiomisc.new_event_loop()
 
     async def main():
         await asyncio.sleep(1)
 
     if __name__ == '__main__':
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
-
-The example above is useful if your code is already using an implicitly created
-event loop, you will have to modify less code, just add
-``aiomisc.new_event_loop()`` and all calls to ``asyncio.get_event_loop()``
-will return the created instance.
-
-However, you can do with one call. Following example closes implicitly created
-asyncio event loop and install a new one:
-
-.. code-block:: python
-    :name: test_index_new_loop
-
-    import asyncio
-    import aiomisc
-
-    async def main():
-        await asyncio.sleep(3)
-
-    if __name__ == '__main__':
-        loop = aiomisc.new_event_loop()
-        loop.run_until_complete(main())
+        with asyncio.Runner() as runner:
+            runner.run(main())
 
 Services
 ++++++++

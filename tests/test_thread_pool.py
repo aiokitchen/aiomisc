@@ -638,8 +638,8 @@ async def test_threaded_iterator_class_classmethod():
     assert [x async for x in instance.foo.async_call()] == [42]
 
 
-async def test_threaded_generator_starts_in_aenter():
-    """Test that the generator starts running when entering async context."""
+async def test_threaded_generator_starts_on_iteration():
+    """Test that the generator starts running when iteration begins."""
     generator_started = threading.Event()
 
     @aiomisc.threaded_iterable(max_size=2)
@@ -651,10 +651,12 @@ async def test_threaded_generator_starts_in_aenter():
 
     async with timeout(2):
         async with gen() as iterator:
-            # The generator should have started by now
-            generator_started.wait(timeout=1)
-            assert generator_started.is_set()
+            # Generator should not have started yet (lazy start)
+            assert not generator_started.is_set()
 
-            # Verify we can still iterate
+            # Start iteration - this triggers the generator
             result = [x async for x in iterator]
+
+            # Now the generator should have started and completed
+            assert generator_started.is_set()
             assert result == [1, 2, 3]

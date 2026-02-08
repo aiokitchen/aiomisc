@@ -89,7 +89,7 @@ Also you can use it as synchronous function with :func:`aiomisc.thread_pool.Thre
 
     import asyncio
     import time
-    from aiomisc import new_event_loop, threaded
+    from aiomisc import threaded
 
 
     @threaded
@@ -104,13 +104,12 @@ Also you can use it as synchronous function with :func:`aiomisc.thread_pool.Thre
             blocking_function(),
         )
 
-
-    if __name__ == '__main__':
-        loop = new_event_loop()
-        loop.run_until_complete(main())
-
         # You can call it as synchronous function
         blocking_function.sync_call()
+
+
+    if __name__ == '__main__':
+        asyncio.run(main())
 
 In case the function is a generator function ``@threaded`` decorator will return
 ``IteratorWrapper`` (see Threaded generator decorator).
@@ -167,6 +166,12 @@ Threaded iterator decorator
 Wraps blocking generator function and run it in the current thread pool or
 on a new separate thread.
 
+.. note::
+
+    The generator uses lazy start - it begins execution only when iteration
+    starts (first ``async for`` or ``__anext__()`` call), not when entering
+    the async context manager.
+
 Following example reads itself file, chains hashes of every line with
 the hash of the previous line and sends hash and content via TCP:
 
@@ -214,32 +219,7 @@ Run ``netcat`` listener in the terminal and run this example
     78ec3bcb1c441614ede4af5e5b28f638   import hashlib
     b7df4a0a4eac401b2f835447e5fc4139
     f0a94eb3d7ad23d96846c8cb5e327454   import aiomisc
-    0c05dde8ac593bad97235e6ae410cb58
-    e4d639552b78adea6b7c928c5ebe2b67   # My first blockchain
-    5f04aef64f4cacce39170142fe45e53e
-    c0019130ba5210b15db378caf7e9f1c9   @aiomisc.threaded_iterable
-    a720db7e706d10f55431a921cdc1cd4c   def blocking_reader(fname):
-    0895d7ca2984ea23228b7d653d0b38f2       with open(fname, "r+") as fp:
-    0feca8542916af0b130b2d68ade679cf           md5_hash = hashlib.md5()
-    4a9ddfea3a0344cadd7a80a8b99ff85c           for line in fp:
-    f66fa1df3d60b7ac8991244455dff4ee               bytes_line = line.encode()
-    aaac23a5aa34e0f5c448a8d7e973f036               md5_hash.update(bytes_line)
-    2040bcaab6137b60e51ae6bd1e279546               yield bytes_line, md5_hash.hexdigest().encode()
-    7346740fdcde6f07d42ecd2d6841d483
-    14dfb2bae89fa0d7f9b6cba2b39122c4
-    d69cc5fe0779f0fa800c6ec0e2a7cbbd   async def main():
-    ead8ef1571e6b4727dcd9096a3ade4da       reader, writer = await asyncio.open_connection("127.0.0.1", 2233)
-    275eb71a6b6fb219feaa5dc2391f47b7       async with blocking_reader(__file__) as gen:
-    110375ba7e8ab3716fd38a6ae8ec8b83           async for line, digest in gen:
-    c26894b38440dbdc31f77765f014f445               writer.write(digest)
-    27659596bd880c55e2bc72b331dea948               writer.write(b'\t')
-    8bb9e27b43a9983c9621c6c5139a822e               writer.write(line)
-    2659fbe434899fc66153decf126fdb1c               await writer.drain()
-    6815f69821da8e1fad1d60ac44ef501e
-    5acc73f7a490dcc3b805e75fb2534254
-    0f29ad9505d1f5e205b0cbfef572ab0e   if __name__ == '__main__':
-    8b04db9d80d8cda79c3b9c4640c08928       loop = aiomisc.new_event_loop()
-    9cc5f29f81e15cb262a46cf96b8788ba       loop.run_until_complete(main())
+    ...
 
 
 You should use async context managers in the case when your generator works

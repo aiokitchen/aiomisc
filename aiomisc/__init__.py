@@ -1,5 +1,5 @@
 from . import io, log
-from ._context_vars import StrictContextVar
+from .context_vars import StrictContextVar
 from .aggregate import aggregate, aggregate_async
 from .backoff import Backoff, BackoffExecution, asyncbackoff, asyncretry
 from .circuit_breaker import CircuitBreaker, CircuitBroken, cutout
@@ -22,7 +22,6 @@ from .signal import Signal, receiver
 from .thread_pool import (
     IteratorWrapperSeparate,
     ThreadPoolExecutor,
-    context_partial,
     sync_await,
     sync_wait_coroutine,
     threaded,
@@ -38,7 +37,6 @@ from .utils import (
     bind_socket,
     cancel_tasks,
     chunk_list,
-    new_event_loop,
     select,
     shield,
 )
@@ -78,14 +76,12 @@ __all__ = (
     "bind_socket",
     "cancel_tasks",
     "chunk_list",
-    "context_partial",
     "cutout",
     "entrypoint",
     "get_context",
     "get_statistics",
     "io",
     "log",
-    "new_event_loop",
     "plugins",
     "receiver",
     "run",
