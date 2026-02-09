@@ -2,7 +2,6 @@ import asyncio
 import logging.handlers
 import threading
 import traceback
-import warnings
 from collections.abc import Callable, Iterable
 from contextlib import suppress
 from queue import Empty, Queue
@@ -90,20 +89,6 @@ def suppressor(
             callback()
 
     return wrapper
-
-
-def wrap_logging_handler(
-    handler: logging.Handler,
-    buffer_size: int = 1024,
-    flush_interval: float | int = 0.1,
-    loop: asyncio.AbstractEventLoop | None = None,
-) -> logging.Handler:
-    warnings.warn("wrap_logging_handler is deprecated", DeprecationWarning)
-    handler = ThreadedHandler(
-        target=handler, queue_size=buffer_size, flush_interval=flush_interval
-    )
-    handler.start()
-    return handler
 
 
 class UnhandledLoopHook(aiomisc_log.UnhandledHook):

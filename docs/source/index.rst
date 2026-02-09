@@ -25,7 +25,7 @@ aiomisc - miscellaneous utils for asyncio
 
 As a programmer, you are no stranger to the challenges that come with building
 and maintaining software applications. One area that can be particularly
-difficult is making architecture of the asynchronous I/O software.
+difficult is designing the architecture of asynchronous I/O software.
 
 This is where ``aiomisc`` comes in. It is a Python library that
 provides a collection of utility functions and classes for working with
@@ -41,6 +41,26 @@ and retry mechanisms such as :doc:`asyncbackoff </async_backoff>` and
 easier to maintain. In this documentation, we'll take a closer look at what
 ``aiomisc`` has to offer and how it can help you streamline your asyncio
 service development.
+
+Why use aiomisc?
+----------------
+
+**Problem:** Production asyncio applications require significant boilerplate
+for logging, graceful shutdown, thread pools, and error handling.
+
+**Solution:** aiomisc handles infrastructure so you can focus on business logic.
+
++---------------------------+---------------------------+
+| Plain asyncio             | With aiomisc              |
++===========================+===========================+
+| Manual signal handling    | Built into entrypoint     |
++---------------------------+---------------------------+
+| Manual logging setup      | Single parameter          |
++---------------------------+---------------------------+
+| Manual thread pool        | Automatic + @threaded     |
++---------------------------+---------------------------+
+| Try/finally cleanup       | Service stop() method     |
++---------------------------+---------------------------+
 
 Installation
 ------------
@@ -81,7 +101,7 @@ With aiohttp_:
 
     pip3 install "aiomisc[aiohttp]"
 
-Complete table of extras bellow:
+Complete table of extras below:
 
 +-----------------------------------+------------------------------------------------+
 | example                           |  description                                   |
@@ -96,7 +116,7 @@ Complete table of extras bellow:
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[raven]``    | Sending exceptions to sentry_ using raven_     |
 +-----------------------------------+------------------------------------------------+
-| ``pip install aiomisc[rich]``     | You might using rich_ for logging              |
+| ``pip install aiomisc[rich]``     | Use rich_ for logging                          |
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[uvicorn]``  | For running ASGI_ application using uvicorn_   |
 +-----------------------------------+------------------------------------------------+
@@ -154,58 +174,29 @@ Let's look at this simple example first:
             loop.run_until_complete(main())
 
 
-This code declares an asynchronous ``main()`` function that exits for
+This code declares an asynchronous ``main()`` function that exits after
 3 seconds. It would seem nothing interesting, but the whole point is in
 the ``entrypoint``.
 
-At the first glance the ``entrypoint`` did not do much, just creates an
+At first glance the ``entrypoint`` does not do much, it just creates an
 event-loop and transfers control to the user. However, under the hood, the
 logger is configured in a separate thread, a pool of threads is created,
 services are started, but more on that later as there are no services
 in this example.
 
-Alternatively, you can choose not to use an ``entrypoint``, just create an
-event-loop and set it as a default for current thread:
+Alternatively, you can use the standard ``asyncio.Runner``:
 
 .. code-block:: python
-    :name: test_index_get_loop
+    :name: test_index_runner
 
     import asyncio
-    import aiomisc
-
-    # * Installs uvloop event loop is it's has been installed.
-    # * Creates and set `aiomisc.thread_pool.ThreadPoolExecutor`
-    #   as a default executor
-    # * Sets just created event-loop as a current event-loop for this thread.
-    aiomisc.new_event_loop()
 
     async def main():
         await asyncio.sleep(1)
 
     if __name__ == '__main__':
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
-
-The example above is useful if your code is already using an implicitly created
-event loop, you will have to modify less code, just add
-``aiomisc.new_event_loop()`` and all calls to ``asyncio.get_event_loop()``
-will return the created instance.
-
-However, you can do with one call. Following example closes implicitly created
-asyncio event loop and install a new one:
-
-.. code-block:: python
-    :name: test_index_new_loop
-
-    import asyncio
-    import aiomisc
-
-    async def main():
-        await asyncio.sleep(3)
-
-    if __name__ == '__main__':
-        loop = aiomisc.new_event_loop()
-        loop.run_until_complete(main())
+        with asyncio.Runner() as runner:
+            runner.run(main())
 
 Services
 ++++++++
@@ -214,12 +205,12 @@ The main thing that an ``entrypoint`` does is start and gracefully
 stop services.
 
 The service concept within this library means a class derived from
-the ``aiosmic.Service`` class and implementing the
+the ``aiomisc.Service`` class and implementing the
 ``async def start(self) -> None:`` method and optionally the
 ``async def stop(self, exc: Optional[ Exception]) -> None`` method.
 
-The concept of stopping a service is not necessarily is pressing ``Ctrl+C``
-keys by user, it's actually just exiting the ``entrypoint`` context manager.
+The concept of stopping a service doesn't necessarily mean pressing ``Ctrl+C``
+by the user, it's actually just exiting the ``entrypoint`` context manager.
 
 The example below shows what your service might look like:
 
@@ -284,7 +275,7 @@ Such as: :ref:`AIOHTTPService <aiohttp-service>`,
 
 Unfortunately in this section it is not possible to pay more attention to this,
 please pay attention to the :doc:`/tutorial` section section, there are more
-examples and explanations, and of cource you always can find out an answer on
+examples and explanations, and of course you can always find an answer in
 the :doc:`/api/index` or in the source code. The authors have tried to make
 the source code as clear and simple as possible, so feel free to explore it.
 

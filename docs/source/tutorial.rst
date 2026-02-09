@@ -99,7 +99,7 @@ do something like this:
 
 It is a good solution because it is implemented without any 3rd-party libraries.
 When your program starts to grow, you will probably want to optimize the
-startup time in a simple way, namely to do all initialization competitively.
+startup time in a simple way, namely to do all initialization concurrently.
 At first glance it seems that this code will solve the problem:
 
 
@@ -495,7 +495,7 @@ start and stop of services and so on.
     several methods.
 
     A full list of services and usage examples can be found on the
-    on the :doc:`Services page </services>`.
+    on the :doc:`Services page </services/index>`.
 
 Executing code in thread or process-pools
 +++++++++++++++++++++++++++++++++++++++++

@@ -144,18 +144,15 @@ each will be buffered.
     import logging
     from aiomisc.log import basic_config
     from aiomisc.periodic import PeriodicCallback
-    from aiomisc.utils import new_event_loop
 
 
     # Configure logging globally
     basic_config(level=logging.INFO, buffered=False, log_format='json')
 
-    async def write_log(loop):
-        logging.info("Hello %f", loop.time())
+    async def write_log():
+        logging.info("Hello %f", asyncio.get_event_loop().time())
 
-    if __name__ == '__main__':
-        loop = new_event_loop()
-
+    async def main():
         # Configure
         basic_config(
             level=logging.INFO,
@@ -164,11 +161,15 @@ each will be buffered.
             flush_interval=0.5
         )
 
-        periodic = PeriodicCallback(write_log, loop)
+        periodic = PeriodicCallback(write_log)
         periodic.start(0.3)
 
         # Wait for flush just for example
-        loop.run_until_complete(asyncio.sleep(1))
+        await asyncio.sleep(1)
+
+    if __name__ == '__main__':
+        with asyncio.Runner() as runner:
+            runner.run(main())
 
 
 .. note::

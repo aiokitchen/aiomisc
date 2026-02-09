@@ -27,7 +27,7 @@ Miscellaneous utils for asyncio.
 
 As a programmer, you are no stranger to the challenges that come with building
 and maintaining software applications. One area that can be particularly
-difficult is making architecture of the software that using asynchronous I/O.
+difficult is designing the architecture of software that uses asynchronous I/O.
 
 This is where aiomisc comes in. aiomisc is a Python library that provides a
 collection of utility functions and classes for working with asynchronous I/O
@@ -41,6 +41,26 @@ and retry mechanisms such as ``asyncbackoff`` and ``asyncretry`` to make your
 asyncio code more robust and easier to maintain. In this documentation,
 we'll take a closer look at what ``aiomisc`` has to offer and how it can
 help you streamline your asyncio service development.
+
+Why use aiomisc?
+----------------
+
+**Problem:** Production asyncio applications require significant boilerplate
+for logging, graceful shutdown, thread pools, and error handling.
+
+**Solution:** aiomisc handles infrastructure so you can focus on business logic.
+
++---------------------------+---------------------------+
+| Plain asyncio             | With aiomisc              |
++===========================+===========================+
+| Manual signal handling    | Built into entrypoint     |
++---------------------------+---------------------------+
+| Manual logging setup      | Single parameter          |
++---------------------------+---------------------------+
+| Manual thread pool        | Automatic + @threaded     |
++---------------------------+---------------------------+
+| Try/finally cleanup       | Service stop() method     |
++---------------------------+---------------------------+
 
 Installation
 ------------
@@ -81,7 +101,7 @@ With aiohttp_:
 
     pip3 install "aiomisc[aiohttp]"
 
-Complete table of extras bellow:
+Complete table of extras below:
 
 +-----------------------------------+------------------------------------------------+
 | example                           |  description                                   |
@@ -96,7 +116,7 @@ Complete table of extras bellow:
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[raven]``    | Sending exceptions to sentry_ using raven_     |
 +-----------------------------------+------------------------------------------------+
-| ``pip install aiomisc[rich]``     | You might using rich_ for logging              |
+| ``pip install aiomisc[rich]``     | Use rich_ for logging                          |
 +-----------------------------------+------------------------------------------------+
 | ``pip install aiomisc[uvicorn]``  | For running ASGI_ application using uvicorn_   |
 +-----------------------------------+------------------------------------------------+
@@ -165,48 +185,19 @@ logger is configured in a separate thread, a pool of threads is created,
 services are started, but more on that later and there are no services
 in this example.
 
-Alternatively, you can choose not to use an entrypoint, just create an
-event-loop and set this as a default event loop for current thread:
+Alternatively, you can use the standard ``asyncio.Runner``:
 
 .. code-block:: python
-    :name: test_index_get_loop
+    :name: test_index_runner
 
     import asyncio
-    import aiomisc
-
-    # * Installs uvloop event loop is it's has been installed.
-    # * Creates and set `aiomisc.thread_pool.ThreadPoolExecutor`
-    #   as a default executor
-    # * Sets just created event-loop as a current event-loop for this thread.
-    aiomisc.new_event_loop()
 
     async def main():
         await asyncio.sleep(1)
 
     if __name__ == '__main__':
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
-
-The example above is useful if your code is already using an implicitly created
-event loop, you will have to modify less code, just add
-``aiomisc.new_event_loop()`` and all calls to ``asyncio.get_event_loop()``
-will return the created instance.
-
-However, you can do with one call. Following example closes implicitly created
-asyncio event loop and install a new one:
-
-.. code-block:: python
-    :name: test_index_new_loop
-
-    import asyncio
-    import aiomisc
-
-    async def main():
-        await asyncio.sleep(3)
-
-    if __name__ == '__main__':
-        loop = aiomisc.new_event_loop()
-        loop.run_until_complete(main())
+        with asyncio.Runner() as runner:
+            runner.run(main())
 
 Services
 ++++++++
@@ -291,21 +282,6 @@ Versioning
 ----------
 
 This software follows `Semantic Versioning`_
-
-Summary: it's given a version number MAJOR.MINOR.PATCH, increment the:
-
-* MAJOR version when you make incompatible API changes
-* MINOR version when you add functionality in a backwards compatible manner
-* PATCH version when you make backwards compatible bug fixes
-* Additional labels for pre-release and build metadata are available as
-  extensions to the MAJOR.MINOR.PATCH format.
-
-In this case, the package version is assigned automatically with poem-plugins_,
-it using on the tag in the repository as a major and minor and the counter,
-which takes the number of commits between tag to the head of branch.
-
-.. _poem-plugins: https://pypi.org/project/poem-plugins
-
 
 Summary: it's given a version number MAJOR.MINOR.PATCH, increment the:
 

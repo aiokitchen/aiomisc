@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 from collections.abc import Callable, Coroutine
 from functools import wraps
 from typing import Any, Generic, ParamSpec, TypeVar
@@ -98,7 +99,7 @@ class Backoff:
     def __call__(
         self, func: Callable[P, Coroutine[Any, Any, T]]
     ) -> Callable[P, Coroutine[Any, Any, T]]:
-        if not asyncio.iscoroutinefunction(func):
+        if not inspect.iscoroutinefunction(func):
             raise TypeError("Function must be a coroutine function")
 
         @wraps(func)

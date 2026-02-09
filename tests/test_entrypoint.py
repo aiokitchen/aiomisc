@@ -185,15 +185,16 @@ def test_tcp_server():
     service = TestService("127.0.0.1", 0)
 
     @aiomisc.threaded
-    def writer(port):
+    def send_data(port):
         with socket.create_connection(("127.0.0.1", port)) as sock:
             sock.send(b"hello server\n")
 
+    async def run_test():
+        await asyncio.wait_for(send_data(service.port), timeout=10)
+        await event.wait()
+
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(
-            asyncio.wait_for(writer(service.port), timeout=10)
-        )
-        loop.run_until_complete(event.wait())
+        loop.run_until_complete(run_test())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
@@ -453,15 +454,18 @@ def test_udp_server(aiomisc_socket_factory):
     service = TestService("127.0.0.1", sock=sock)
 
     @aiomisc.threaded
-    def writer():
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    def send_data():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        with sock:
-            sock.sendto(b"hello server\n", ("127.0.0.1", port))
+        with s:
+            s.sendto(b"hello server\n", ("127.0.0.1", port))
+
+    async def run_test():
+        await asyncio.wait_for(send_data(), timeout=10)
+        await event.wait()
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(asyncio.wait_for(writer(), timeout=10))
-        loop.run_until_complete(event.wait())
+        loop.run_until_complete(run_test())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
@@ -498,14 +502,17 @@ def test_udp_socket_server(unix_socket_udp):
     service = TestService(sock=unix_socket_udp)
 
     @aiomisc.threaded
-    def writer():
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    def send_data():
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
-        with sock:
-            sock.sendto(b"hello server\n", unix_socket_udp.getsockname())
+        with s:
+            s.sendto(b"hello server\n", unix_socket_udp.getsockname())
+
+    async def run_test():
+        await asyncio.wait_for(send_data(), timeout=10)
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(asyncio.wait_for(writer(), timeout=10))
+        loop.run_until_complete(run_test())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
@@ -513,6 +520,8 @@ def test_udp_socket_server(unix_socket_udp):
 
 @unix_only
 def test_tcp_server_unix(unix_socket_tcp):
+    data_received = asyncio.Event()
+
     class TestService(TCPServer):
         DATA = []
 
@@ -521,17 +530,22 @@ def test_tcp_server_unix(unix_socket_tcp):
         ):
             self.DATA.append(await reader.readline())
             writer.close()
+            data_received.set()
 
     service = TestService(sock=unix_socket_tcp)
 
     @aiomisc.threaded
-    def writer():
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-            sock.connect(unix_socket_tcp.getsockname())
-            sock.send(b"hello server\n")
+    def send_data():
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+            s.connect(unix_socket_tcp.getsockname())
+            s.send(b"hello server\n")
+
+    async def run_test():
+        await send_data()
+        await asyncio.wait_for(data_received.wait(), timeout=10)
 
     with aiomisc.entrypoint(service) as loop:
-        loop.run_until_complete(asyncio.wait_for(writer(), timeout=10))
+        loop.run_until_complete(run_test())
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]

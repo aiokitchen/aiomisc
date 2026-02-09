@@ -9,6 +9,40 @@ the moment when we feel the need to start it. You can always
 view the commit history if you couldn't find something
 in this document.
 
+18.0.x
+------
+
+This is a major release with breaking changes focused on removing deprecated
+code and modernizing the codebase for Python 3.11+.
+
+### Breaking Changes
+
+* **Minimum Python version is now 3.11**
+* **Removed deprecated functions:**
+  * ``context_partial`` - use ``functools.partial`` with ``contextvars.copy_context()``
+  * ``new_event_loop`` - use ``asyncio.new_event_loop()`` directly
+  * ``create_default_event_loop`` - use ``asyncio.Runner`` or entrypoint
+  * ``wrap_logging_handler`` - use ``ThreadedHandler`` directly
+  * ``event_loop_policy`` - removed, use ``loop_factory`` parameter instead
+  * ``set_current_loop`` / ``get_current_loop`` from ``aiomisc.compat``
+
+* **Entrypoint changes:**
+  * Parameter ``policy`` replaced with ``loop_factory: Callable[[], AbstractEventLoop]``
+  * Uses ``asyncio.Runner`` internally (Python 3.11+)
+  * New ``default_loop_factory()`` function in ``aiomisc.compat``
+
+* **Thread pool code moved to ``aiothreads`` package:**
+  * ``IteratorWrapper``, ``ChannelClosed``, ``FromThreadChannel``
+  * ``Threaded``, ``threaded``, ``ThreadedSeparate``, ``threaded_separate``
+  * ``ThreadedIterable``, ``threaded_iterable``, ``threaded_iterable_separate``
+  * ``wait_coroutine``, ``sync_wait_coroutine``, ``sync_await``
+  * These are still re-exported from ``aiomisc`` for backwards compatibility
+
+### Other Changes
+
+* ``_context_vars.py`` renamed to ``context_vars.py`` (now public module)
+* Added ``aiothreads>=1.0.0`` as a dependency
+
 17.0.x
 ------
 

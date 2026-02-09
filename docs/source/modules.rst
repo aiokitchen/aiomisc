@@ -5,7 +5,7 @@ Modules
    :glob:
 
    entrypoint
-   services
+   services/index
    pool
    context
    timeout

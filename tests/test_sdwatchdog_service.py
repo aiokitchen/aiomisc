@@ -25,15 +25,23 @@ def test_sdwatchdog_service(event_loop):
         sock_path = str(tmp_path / "notify.sock")
 
         packets: deque[tuple[Any, ...]] = deque()
+        watchdog_count = 0
+        enough_watchdogs = asyncio.Event()
+        required_watchdogs = 10
 
         class FakeSystemd(UDPServer):
             async def handle_datagram(
                 self, data: bytes, addr: tuple[Any, ...]
             ) -> None:
+                nonlocal watchdog_count
                 key: str
                 value: str
                 key, value = data.decode().split("=", 1)
                 packets.append(((key, value), addr))
+                if key == "WATCHDOG":
+                    watchdog_count += 1
+                    if watchdog_count >= required_watchdogs:
+                        enough_watchdogs.set()
 
         with bind_socket(
             socket.AF_UNIX,
@@ -54,7 +62,7 @@ def test_sdwatchdog_service(event_loop):
                 with aiomisc.entrypoint(
                     FakeSystemd(sock=sock), service, loop=event_loop
                 ):
-                    event_loop.run_until_complete(asyncio.sleep(1))
+                    event_loop.run_until_complete(enough_watchdogs.wait())
             finally:
                 for key in ("NOTIFY_SOCKET", "WATCHDOG_USEC"):
                     os.environ.pop(key)
@@ -69,7 +77,7 @@ def test_sdwatchdog_service(event_loop):
         messages_count[key] += 1
         messages[key].add(value)
 
-    assert 5 < messages_count["WATCHDOG"] < 25
-    assert messages_count["STATUS"] == 2
+    assert messages_count["WATCHDOG"] >= required_watchdogs
+    assert messages_count["STATUS"] == 2  # startup + shutdown
     assert messages_count["WATCHDOG_USEC"] == 1
     assert tuple(messages["WATCHDOG_USEC"])[0] == "100000"

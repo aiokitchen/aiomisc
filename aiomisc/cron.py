@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import partial
 from typing import Any, Union
 
@@ -35,7 +35,7 @@ class CronCallback(EventLoopMixin):
 
     @staticmethod
     def get_next(cron: croniter, _: RecurringCallback) -> float:
-        timestamp = datetime.now(timezone.utc).timestamp()
+        timestamp = datetime.now(UTC).timestamp()
         next_date = cron.get_next(float, timestamp)
         return next_date - timestamp
 

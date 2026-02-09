@@ -188,7 +188,7 @@ class AioHttpTransportBase(
     async def _close_coro(self, *, timeout: TimeoutType | None = None) -> None:
         try:
             await asyncio.wait_for(self._close(), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pass
         finally:
             if self.keepalive:

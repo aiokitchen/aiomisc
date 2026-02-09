@@ -1,10 +1,10 @@
+import asyncio
 import logging
 import os
 import socket
 from collections.abc import Iterable, Iterator
 from typing import Any
 
-from aiomisc.compat import get_current_loop
 from aiomisc.periodic import PeriodicCallback
 from aiomisc.service.base import Service
 from aiomisc.thread_pool import threaded
@@ -117,7 +117,7 @@ async def _pre_start(*, services: tuple[Service, ...], **__: Any) -> None:
             )
             continue
 
-        service.set_loop(get_current_loop())
+        service.set_loop(asyncio.get_running_loop())
 
         if await service.connect():
             await service.send(f"STATUS=Starting {len(services)} services")

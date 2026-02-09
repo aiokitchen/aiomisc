@@ -1,126 +1,156 @@
 Working with threads
 ====================
 
-Wraps blocking function and run it in
-the different thread or thread pool.
+Why use threads with asyncio?
+-----------------------------
 
-``contextvars`` support
-+++++++++++++++++++++++
+Asyncio is designed for non-blocking I/O operations, but many libraries and
+operations are inherently blocking:
 
-All following decorators and functions support ``contextvars`` module,
-from PyPI for python earlier 3.7 and builtin a standard library for python 3.7.
+* File I/O (reading/writing files)
+* CPU-intensive computations
+* Legacy libraries without async support
+* Database drivers without async support
+* System calls that don't have async alternatives
 
-.. code-block:: python
+Running blocking code directly in an async function blocks the entire event
+loop, preventing other coroutines from executing. The solution is to run
+blocking code in separate threads while the event loop continues processing
+other tasks.
 
-    import asyncio
-    import aiomisc
-    import contextvars
-    import random
-    import struct
+aiomisc provides convenient decorators and utilities to seamlessly integrate
+blocking code with asyncio, powered by the `aiothreads`_ library.
 
+.. _aiothreads: https://pypi.org/project/aiothreads/
 
-    user_id = contextvars.ContextVar("user_id")
+Quick reference
+---------------
 
-    record_struct = struct.Struct(">I")
-
-
-    @aiomisc.threaded
-    def write_user():
-        with open("/tmp/audit.bin", 'ab') as fp:
-            fp.write(record_struct.pack(user_id.get()))
-
-
-    @aiomisc.threaded
-    def read_log():
-        with open("/tmp/audit.bin", "rb") as fp:
-            for chunk in iter(lambda: fp.read(record_struct.size), b''):
-                yield record_struct.unpack(chunk)[0]
-
-
-    async def main():
-        futures = []
-        for _ in range(5):
-            user_id.set(random.randint(1, 65535))
-            futures.append(write_user())
-
-        await asyncio.gather(*futures)
-
-        async for data in read_log():
-            print(data)
-
-
-    if __name__ == '__main__':
-        with aiomisc.entrypoint() as loop:
-            loop.run_until_complete(main())
-
-
-Example output:
-
-.. code-block::
-
-    6621
-    33012
-    1590
-    45008
-    56844
-
-
-.. note::
-
-    ``contextvars`` has different use cases then ``Context`` class.
-    ``contextvars``are applicable for passing context variables through the
-    execution stack but created task can not change parent context variables
-    because ``contextvars``create lightweight copy. ``Context`` class
-    allows it because does not copy context variables.
++--------------------------------+------------------------------------------------+
+| Decorator/Class                | Use case                                       |
++================================+================================================+
+| ``@threaded``                  | Run blocking function in thread pool           |
++--------------------------------+------------------------------------------------+
+| ``@threaded_separate``         | Run blocking function in new thread            |
++--------------------------------+------------------------------------------------+
+| ``@threaded_iterable``         | Async iterate over blocking generator          |
++--------------------------------+------------------------------------------------+
+| ``@threaded_iterable_separate``| Same, but on separate thread                   |
++--------------------------------+------------------------------------------------+
+| ``IteratorWrapper``            | Wrap existing generator for async iteration    |
++--------------------------------+------------------------------------------------+
+| ``sync_await``                 | Call async function from thread                |
++--------------------------------+------------------------------------------------+
+| ``FromThreadChannel``          | Send data from thread to async code            |
++--------------------------------+------------------------------------------------+
 
 
 ``@aiomisc.threaded``
-+++++++++++++++++++++
+---------------------
 
-Wraps blocking function and run it in the current thread pool.
-Decorator returns a :class:`aiomisc.thread_pool.Threaded` object.
+Wraps a blocking function to run it in the current thread pool. The decorated
+function becomes awaitable.
 
-This you can call wrapped function as a coroutine using :func:`aiomisc.thread_pool.Threaded.__call__` method
-or :func:`aiomisc.thread_pool.Threaded.async_call` method, both returns a coroutine object.
-Also you can use it as synchronous function with :func:`aiomisc.thread_pool.Threaded.sync_call` method.
-
+Basic usage
++++++++++++
 
 .. code-block:: python
 
     import asyncio
     import time
-    from aiomisc import new_event_loop, threaded
+    from aiomisc import threaded
 
 
     @threaded
     def blocking_function():
         time.sleep(1)
+        return "done"
 
 
     async def main():
-        # Running in parallel
-        await asyncio.gather(
+        # Run two blocking calls in parallel
+        results = await asyncio.gather(
             blocking_function(),
             blocking_function(),
         )
+        print(results)  # ['done', 'done']
 
 
-    if __name__ == '__main__':
-        loop = new_event_loop()
-        loop.run_until_complete(main())
+    asyncio.run(main())
 
-        # You can call it as synchronous function
-        blocking_function.sync_call()
 
-In case the function is a generator function ``@threaded`` decorator will return
-``IteratorWrapper`` (see Threaded generator decorator).
+Calling modes
++++++++++++++
+
+The ``@threaded`` decorator returns a ``Threaded`` object with multiple
+calling methods:
+
+.. code-block:: python
+
+    import time
+    from aiomisc import threaded
+
+
+    @threaded
+    def blocking_function():
+        time.sleep(0.1)
+        return "result"
+
+
+    async def main():
+        # Async call (returns coroutine)
+        result = await blocking_function()
+
+        # Explicit async call
+        result = await blocking_function.async_call()
+
+        # Synchronous call (blocks current thread)
+        result = blocking_function.sync_call()
+
+
+Works with methods
+++++++++++++++++++
+
+The decorator works correctly with instance methods, class methods,
+and static methods:
+
+.. code-block:: python
+
+    from aiomisc import threaded
+
+
+    class MyClass:
+        def __init__(self, value):
+            self.value = value
+
+        @threaded
+        def instance_method(self):
+            return self.value
+
+        @threaded
+        @classmethod
+        def class_method(cls):
+            return cls.__name__
+
+        @threaded
+        @staticmethod
+        def static_method(x):
+            return x * 2
+
+
+    async def main():
+        obj = MyClass(42)
+        print(await obj.instance_method())       # 42
+        print(await MyClass.class_method())      # MyClass
+        print(await MyClass.static_method(21))   # 42
 
 
 ``@aiomisc.threaded_separate``
-++++++++++++++++++++++++++++++
+------------------------------
 
-Wraps blocking function and run it in a new separate thread.
-Highly recommended for long background tasks:
+Wraps a blocking function to run it in a new separate thread (not from pool).
+Use this for long-running background tasks that would otherwise occupy a
+thread pool slot for extended periods.
 
 .. code-block:: python
 
@@ -131,119 +161,231 @@ Highly recommended for long background tasks:
 
 
     @aiomisc.threaded
-    def blocking_function():
-        time.sleep(1)
+    def quick_task():
+        """Short task - uses thread pool"""
+        time.sleep(0.1)
+        return "quick"
 
 
     @aiomisc.threaded_separate
-    def long_blocking_function(event: threading.Event):
-        while not event.is_set():
-            print("Running")
+    def long_running_task(stop_event: threading.Event):
+        """Long task - runs in dedicated thread"""
+        while not stop_event.is_set():
+            print("Working...")
             time.sleep(1)
-        print("Exitting")
+        return "finished"
 
 
     async def main():
         stop_event = threading.Event()
 
+        # Schedule stop after 5 seconds
         loop = asyncio.get_event_loop()
-        loop.call_later(10, stop_event.set)
+        loop.call_later(5, stop_event.set)
 
-        # Running in parallel
-        await asyncio.gather(
-            blocking_function(),
-            # New thread will be spawned
-            long_blocking_function(stop_event),
+        # Both run concurrently
+        results = await asyncio.gather(
+            quick_task(),
+            long_running_task(stop_event),
         )
+        print(results)  # ['quick', 'finished']
 
 
     with aiomisc.entrypoint() as loop:
         loop.run_until_complete(main())
 
 
-Threaded iterator decorator
-+++++++++++++++++++++++++++
+Threaded iterators
+------------------
 
-Wraps blocking generator function and run it in the current thread pool or
-on a new separate thread.
+``@aiomisc.threaded_iterable``
+++++++++++++++++++++++++++++++
 
-Following example reads itself file, chains hashes of every line with
-the hash of the previous line and sends hash and content via TCP:
+Wraps a blocking generator function to make it async-iterable. The generator
+runs in a thread pool while yielding values to async code.
+
+.. note::
+
+    The generator uses lazy start - execution begins only when iteration
+    starts (first ``async for`` or ``__anext__()`` call), not when entering
+    the async context manager.
 
 .. code-block:: python
 
     import asyncio
-    import hashlib
-
     import aiomisc
 
-    # My first blockchain
 
     @aiomisc.threaded_iterable
-    def blocking_reader(fname):
-        with open(fname, "r+") as fp:
-            md5_hash = hashlib.md5()
-            for line in fp:
-                bytes_line = line.encode()
-                md5_hash.update(bytes_line)
-                yield bytes_line, md5_hash.hexdigest().encode()
+    def read_large_file(path):
+        """Read file line by line without blocking event loop"""
+        with open(path, 'r') as f:
+            for line in f:
+                yield line.strip()
 
 
     async def main():
-        reader, writer = await asyncio.open_connection("127.0.0.1", 2233)
-        async with blocking_reader(__file__) as gen:
-            async for line, digest in gen:
-                writer.write(digest)
-                writer.write(b'\t')
-                writer.write(line)
-                await writer.drain()
+        async with read_large_file('/etc/hosts') as lines:
+            async for line in lines:
+                print(line)
 
 
-    with aiomisc.entrypoint() as loop
-        loop.run_until_complete(main())
+    asyncio.run(main())
 
 
+Buffer size control
+^^^^^^^^^^^^^^^^^^^
 
-Run ``netcat`` listener in the terminal and run this example
+Use ``max_size`` parameter to control backpressure. The generator thread
+will block when the buffer is full:
 
-.. code-block::
+.. code-block:: python
 
-    $ netcat -v -l -p 2233
-    Connection from 127.0.0.1:54734
-    dc80feba2326979f8976e387fbbc8121   import asyncio
-    78ec3bcb1c441614ede4af5e5b28f638   import hashlib
-    b7df4a0a4eac401b2f835447e5fc4139
-    f0a94eb3d7ad23d96846c8cb5e327454   import aiomisc
-    0c05dde8ac593bad97235e6ae410cb58
-    e4d639552b78adea6b7c928c5ebe2b67   # My first blockchain
-    5f04aef64f4cacce39170142fe45e53e
-    c0019130ba5210b15db378caf7e9f1c9   @aiomisc.threaded_iterable
-    a720db7e706d10f55431a921cdc1cd4c   def blocking_reader(fname):
-    0895d7ca2984ea23228b7d653d0b38f2       with open(fname, "r+") as fp:
-    0feca8542916af0b130b2d68ade679cf           md5_hash = hashlib.md5()
-    4a9ddfea3a0344cadd7a80a8b99ff85c           for line in fp:
-    f66fa1df3d60b7ac8991244455dff4ee               bytes_line = line.encode()
-    aaac23a5aa34e0f5c448a8d7e973f036               md5_hash.update(bytes_line)
-    2040bcaab6137b60e51ae6bd1e279546               yield bytes_line, md5_hash.hexdigest().encode()
-    7346740fdcde6f07d42ecd2d6841d483
-    14dfb2bae89fa0d7f9b6cba2b39122c4
-    d69cc5fe0779f0fa800c6ec0e2a7cbbd   async def main():
-    ead8ef1571e6b4727dcd9096a3ade4da       reader, writer = await asyncio.open_connection("127.0.0.1", 2233)
-    275eb71a6b6fb219feaa5dc2391f47b7       async with blocking_reader(__file__) as gen:
-    110375ba7e8ab3716fd38a6ae8ec8b83           async for line, digest in gen:
-    c26894b38440dbdc31f77765f014f445               writer.write(digest)
-    27659596bd880c55e2bc72b331dea948               writer.write(b'\t')
-    8bb9e27b43a9983c9621c6c5139a822e               writer.write(line)
-    2659fbe434899fc66153decf126fdb1c               await writer.drain()
-    6815f69821da8e1fad1d60ac44ef501e
-    5acc73f7a490dcc3b805e75fb2534254
-    0f29ad9505d1f5e205b0cbfef572ab0e   if __name__ == '__main__':
-    8b04db9d80d8cda79c3b9c4640c08928       loop = aiomisc.new_event_loop()
-    9cc5f29f81e15cb262a46cf96b8788ba       loop.run_until_complete(main())
+    import aiomisc
 
 
-You should use async context managers in the case when your generator works
-infinity, or you have to await the ``.close()`` method when you avoid context managers.
+    # Buffer holds at most 2 items
+    @aiomisc.threaded_iterable(max_size=2)
+    def produce_data():
+        for i in range(1000):
+            yield i  # Blocks when 2 items buffered
+
+
+``@aiomisc.threaded_iterable_separate``
++++++++++++++++++++++++++++++++++++++++
+
+Same as ``@threaded_iterable`` but runs in a dedicated thread instead of
+the thread pool. Use for long-running generators:
+
+.. code-block:: python
+
+    import aiomisc
+
+
+    @aiomisc.threaded_iterable_separate
+    def tail_file(path):
+        """Continuously read new lines from file"""
+        with open(path, 'r') as f:
+            f.seek(0, 2)  # Go to end
+            while True:
+                line = f.readline()
+                if line:
+                    yield line.strip()
+
+
+Cleanup with context managers
++++++++++++++++++++++++++++++
+
+For infinite generators, always use async context manager or call ``.close()``:
+
+.. code-block:: python
+
+    import aiomisc
+
+
+    @aiomisc.threaded_iterable(max_size=2)
+    def infinite_generator():
+        counter = 0
+        while True:
+            yield counter
+            counter += 1
+
+
+    async def main():
+        # Option 1: Context manager (recommended)
+        async with infinite_generator() as gen:
+            async for value in gen:
+                if value >= 10:
+                    break  # Context manager handles cleanup
+
+        # Option 2: Manual cleanup
+        gen = infinite_generator()
+        async for value in gen:
+            if value >= 10:
+                break
+        await gen.close()  # Must call close!
+
+
+``aiomisc.IteratorWrapper``
+---------------------------
+
+Wraps an existing generator to make it async-iterable. Useful when you can't
+use decorators or need to specify a custom executor:
+
+.. code-block:: python
+
+    import concurrent.futures
+    import aiomisc
+
+
+    def my_generator():
+        for i in range(100):
+            yield i
+
+
+    async def main():
+        # Use default thread pool
+        wrapper = aiomisc.IteratorWrapper(
+            my_generator,
+            max_size=10
+        )
+
+        async with wrapper as gen:
+            async for item in gen:
+                print(item)
+
+        # Or use custom thread pool
+        pool = concurrent.futures.ThreadPoolExecutor(2)
+        wrapper = aiomisc.IteratorWrapper(
+            my_generator,
+            executor=pool,
+            max_size=10
+        )
+
+        async with wrapper as gen:
+            async for item in gen:
+                print(item)
+
+        pool.shutdown()
+
+
+``aiomisc.IteratorWrapperSeparate``
+-----------------------------------
+
+Same as ``IteratorWrapper`` but runs the generator in a dedicated thread:
+
+.. code-block:: python
+
+    import aiomisc
+
+
+    def blocking_generator():
+        while True:
+            yield "data"
+
+
+    async def main():
+        wrapper = aiomisc.IteratorWrapperSeparate(
+            blocking_generator,
+            max_size=5
+        )
+
+        async with wrapper as gen:
+            count = 0
+            async for item in gen:
+                count += 1
+                if count >= 100:
+                    break
+
+
+Calling async from threads
+--------------------------
+
+``aiomisc.sync_await``
+++++++++++++++++++++++
+
+Execute an async function synchronously from a thread. Automatically detects
+the running event loop:
 
 .. code-block:: python
 
@@ -251,153 +393,146 @@ infinity, or you have to await the ``.close()`` method when you avoid context ma
     import aiomisc
 
 
-    # Set 2 chunk buffer
-    @aiomisc.threaded_iterable(max_size=2)
-    def urandom_reader():
-        with open('/dev/urandom', "rb") as fp:
-            while True:
-                yield fp.read(8)
+    async def async_operation():
+        await asyncio.sleep(0.1)
+        return "async result"
 
 
-    # Infinity buffer on a separate thread
-    @aiomisc.threaded_iterable_separate
-    def blocking_reader(fname):
-        with open(fname, "r") as fp:
-            yield from fp
+    @aiomisc.threaded
+    def thread_function():
+        # Call async function from thread
+        result = aiomisc.sync_await(async_operation())
+        return f"got: {result}"
 
 
     async def main():
-        reader, writer = await asyncio.open_connection("127.0.0.1", 2233)
-        async for line in blocking_reader(__file__):
-            writer.write(line.encode())
-
-        await writer.drain()
-
-        # Feed white noise
-        gen = urandom_reader()
-        counter = 0
-        async for line in gen:
-            writer.write(line)
-            counter += 1
-
-            if counter == 10:
-                break
-
-        await writer.drain()
-
-        # Stop running generator
-        await gen.close()
-
-        # Using context manager
-        async with urandom_reader() as gen:
-            counter = 0
-            async for line in gen:
-                writer.write(line)
-                counter += 1
-
-                if counter == 10:
-                    break
-
-        await writer.drain()
+        result = await thread_function()
+        print(result)  # got: async result
 
 
     with aiomisc.entrypoint() as loop:
         loop.run_until_complete(main())
 
-``aiomisc.IteratorWrapper``
-+++++++++++++++++++++++++++
 
-Run iterables on dedicated thread pool:
+``aiomisc.sync_wait_coroutine``
++++++++++++++++++++++++++++++++
 
-.. code-block:: python
-
-    import concurrent.futures
-    import hashlib
-    import aiomisc
-
-
-    def urandom_reader():
-        with open('/dev/urandom', "rb") as fp:
-            while True:
-                yield fp.read(1024)
-
-
-    async def main():
-        # create a new thread pool
-        pool = concurrent.futures.ThreadPoolExecutor(1)
-        wrapper = aiomisc.IteratorWrapper(
-            urandom_reader,
-            executor=pool,
-            max_size=2
-        )
-
-        async with wrapper as gen:
-            md5_hash = hashlib.md5(b'')
-            counter = 0
-            async for item in gen:
-                md5_hash.update(item)
-                counter += 1
-
-                if counter >= 100:
-                    break
-
-        pool.shutdown()
-        print(md5_hash.hexdigest())
-
-
-    if __name__ == '__main__':
-        with aiomisc.entrypoint() as loop:
-            loop.run_until_complete(main())
-
-``aiomisc.IteratorWrapperSeparate``
-+++++++++++++++++++++++++++++++++++
-
-Run iterables on a separate thread:
+Lower-level function that requires explicit loop argument:
 
 .. code-block:: python
 
-    import concurrent.futures
-    import hashlib
+    import asyncio
     import aiomisc
 
 
-    def urandom_reader():
-        with open('/dev/urandom', "rb") as fp:
-            while True:
-                yield fp.read(1024)
+    async def fetch_data():
+        await asyncio.sleep(0.1)
+        return {"key": "value"}
+
+
+    @aiomisc.threaded
+    def process_in_thread(loop):
+        # Explicit loop argument
+        data = aiomisc.sync_wait_coroutine(loop, fetch_data())
+        return data["key"]
+
+
+    with aiomisc.entrypoint() as loop:
+        result = loop.run_until_complete(process_in_thread(loop))
+        print(result)  # value
+
+
+``aiomisc.FromThreadChannel``
+-----------------------------
+
+A channel for sending data from threads to async code. Unlike
+``IteratorWrapper``, you control when and what to send:
+
+.. code-block:: python
+
+    import asyncio
+    import aiomisc
+
+
+    async def consumer(channel: aiomisc.FromThreadChannel):
+        async for item in channel:
+            print(f"Received: {item}")
+
+
+    @aiomisc.threaded_separate
+    def producer(channel: aiomisc.FromThreadChannel):
+        for i in range(5):
+            channel.put(i)  # Send to async consumer
+        channel.close()  # Signal end of data
 
 
     async def main():
-        # create a new thread pool
-        wrapper = aiomisc.IteratorWrapperSeparate(
-            urandom_reader, max_size=2
+        channel = aiomisc.FromThreadChannel(max_size=2)
+
+        await asyncio.gather(
+            consumer(channel),
+            producer(channel),
         )
 
-        async with wrapper as gen:
-            md5_hash = hashlib.md5(b'')
-            counter = 0
-            async for item in gen:
-                md5_hash.update(item)
-                counter += 1
 
-                if counter >= 100:
-                    break
-
-        print(md5_hash.hexdigest())
+    asyncio.run(main())
 
 
-    if __name__ == '__main__':
-        with aiomisc.entrypoint() as loop:
-            loop.run_until_complete(main())
+``contextvars`` support
+-----------------------
 
+All decorators automatically copy context variables to the thread:
+
+.. code-block:: python
+
+    import asyncio
+    import contextvars
+    import aiomisc
+
+
+    request_id = contextvars.ContextVar("request_id")
+
+
+    @aiomisc.threaded
+    def log_with_context(message):
+        print(f"[{request_id.get()}] {message}")
+
+
+    async def handle_request(req_id):
+        request_id.set(req_id)
+        await log_with_context("Processing request")
+
+
+    async def main():
+        await asyncio.gather(
+            handle_request("req-001"),
+            handle_request("req-002"),
+            handle_request("req-003"),
+        )
+
+
+    asyncio.run(main())
+
+
+Output::
+
+    [req-001] Processing request
+    [req-002] Processing request
+    [req-003] Processing request
+
+
+.. note::
+
+    Context variables are copied to threads, so modifications in threads
+    don't affect the parent context.
 
 
 ``aiomisc.ThreadPoolExecutor``
-++++++++++++++++++++++++++++++
+------------------------------
 
-This is a fast thread pool implementation.
+A fast thread pool implementation used by aiomisc internally.
 
-Setting as a default thread pool:
+Manual setup:
 
 .. code-block:: python
 
@@ -411,36 +546,10 @@ Setting as a default thread pool:
 
 .. note::
 
-    ``entrypoint`` context manager will set it by default.
+    The ``entrypoint`` context manager sets this automatically.
+    Use the ``pool_size`` argument to control thread pool size:
 
-    ``entrypoint``'s argument ``pool_size`` limits thread pool size.
+    .. code-block:: python
 
-
-``aiomisc.sync_wait_coroutine``
-+++++++++++++++++++++++++++++++
-
-Functions running in thread can't call and wait for a result from coroutines
-by default. This function is the helper for send coroutine to the event loop
-and waits for it in the current thread.
-
-.. code-block:: python
-
-    import asyncio
-    import aiomisc
-
-
-    async def coro():
-        print("Coroutine started")
-        await asyncio.sleep(1)
-        print("Coroutine done")
-
-
-    @aiomisc.threaded
-    def in_thread(loop):
-        print("Thread started")
-        aiomisc.sync_wait_coroutine(loop, coro)
-        print("Thread finished")
-
-
-    with aiomisc.entrypoint() as loop:
-        loop.run_until_complete(in_thread(loop))
+        with aiomisc.entrypoint(pool_size=8) as loop:
+            ...

@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import itertools
 import logging.handlers
 import socket
@@ -16,13 +17,7 @@ from functools import wraps
 from random import getrandbits
 from typing import Any, TypeVar
 
-from .compat import (
-    event_loop_policy,
-    sock_set_nodelay,
-    sock_set_reuseport,
-    time_ns,
-)
-from .thread_pool import ThreadPoolExecutor
+from .compat import sock_set_nodelay, sock_set_reuseport, time_ns
 
 T = TypeVar("T", bound=Any)
 TimeoutType = int | float
@@ -134,54 +129,6 @@ def bind_socket(
         log.info("Listening %s://%s:%s", proto_name, *sock_addr)
 
     return sock
-
-
-def create_default_event_loop(
-    pool_size: int | None = None,
-    policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
-    debug: bool = False,
-) -> tuple[asyncio.AbstractEventLoop, ThreadPoolExecutor]:
-    """
-    Creates an event loop and thread pool executor
-
-    :param pool_size: thread pool maximal size
-    :param policy: event loop policy
-    :param debug: set ``loop.set_debug(True)`` if True
-    """
-
-    current_loop_is_running = False
-    try:
-        current_loop = asyncio.get_event_loop()
-        current_loop_is_running = current_loop.is_running()
-        del current_loop
-    except RuntimeError:
-        pass
-
-    if current_loop_is_running:
-        raise RuntimeError(
-            "Trying to create new event loop instance but another "
-            "default loop in this thread is running right now."
-        )
-
-    asyncio.set_event_loop_policy(policy)
-
-    loop = asyncio.new_event_loop()
-    loop.set_debug(debug)
-    asyncio.set_event_loop(loop)
-
-    pool_size = pool_size or ThreadPoolExecutor.DEFAULT_POOL_SIZE
-    thread_pool = ThreadPoolExecutor(pool_size, statistic_name="default")
-    loop.set_default_executor(thread_pool)
-
-    return loop, thread_pool
-
-
-def new_event_loop(
-    pool_size: int | None = None,
-    policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
-) -> asyncio.AbstractEventLoop:
-    loop, thread_pool = create_default_event_loop(pool_size, policy)
-    return loop
 
 
 def shield(
@@ -413,7 +360,7 @@ def awaitable(
     """
 
     # Avoid python 3.8+ warning
-    if asyncio.iscoroutinefunction(func):
+    if inspect.iscoroutinefunction(func):
         return func
 
     async def awaiter(obj: AT) -> AT:

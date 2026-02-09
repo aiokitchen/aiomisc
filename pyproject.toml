@@ -5,7 +5,7 @@ description = "aiomisc - miscellaneous utils for asyncio"
 authors = [{ name = "Dmitry Orlov", email = "me@mosquito.su" }]
 readme = "README.rst"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: AsyncIO",
@@ -22,10 +22,10 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python",
     "Topic :: Internet :: WWW/HTTP",
@@ -40,9 +40,9 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "aiothreads>=1.0.0",
     "colorlog>=6.0,<7",
     "logging-journald; platform_system == 'Linux'",
-    "typing_extensions; python_version < '3.12'",
 ]
 
 [project.urls]
@@ -72,7 +72,7 @@ dev = [
     "aiocarbon>=0.15.3",
     "aiohttp>=3.11",
     "aiohttp-asgi~=0.5.2",
-    "aiomisc-pytest>=1.0.8",
+    "aiomisc-pytest>=2.0.0",
     "asgiref>=3.7",
     "async-timeout>=4.0.2",
     "autodoc>=0.5.0",
@@ -159,7 +159,7 @@ warn_unused_ignores = false
 
 [tool.ruff]
 line-length = 80
-target-version = "py310"
+target-version = "py311"
 exclude = [
     ".git",
     ".mypy_cache",

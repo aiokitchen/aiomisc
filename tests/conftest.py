@@ -1,4 +1,3 @@
-import asyncio
 import os
 import ssl
 import time
@@ -8,11 +7,6 @@ from pathlib import Path
 import pytest
 
 import aiomisc
-
-try:
-    import uvloop
-except ImportError:
-    uvloop = None  # type: ignore
 
 
 @pytest.fixture
@@ -38,19 +32,6 @@ def timer():
 
 def thread_pool_executor(request):
     return aiomisc.ThreadPoolExecutor
-
-
-policies = (asyncio.DefaultEventLoopPolicy(),)
-policy_ids = ("asyncio",)
-
-if uvloop:
-    policies = (uvloop.EventLoopPolicy(),) + policies  # type: ignore
-    policy_ids = ("uvloop",) + policy_ids  # type: ignore
-
-
-@pytest.fixture(params=policies, ids=policy_ids)
-def event_loop_policy(request):
-    return request.param
 
 
 @pytest.fixture()

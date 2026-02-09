@@ -12,13 +12,14 @@ from weakref import WeakSet
 import aiomisc_log
 from aiomisc_log import LogLevel
 
-from ._context_vars import EVENT_LOOP, StrictContextVar
-from .compat import event_loop_policy, final
+from .context_vars import EVENT_LOOP, StrictContextVar, set_current_loop
+from .compat import LoopFactoryType, Runner, default_loop_factory, final
 from .context import Context, get_context
 from .log import LogFormat, basic_config
 from .service import Service
 from .signal import Signal
-from .utils import cancel_tasks, create_default_event_loop
+from .thread_pool import ThreadPoolExecutor
+from .utils import cancel_tasks
 
 
 ExecutorType = Executor
@@ -111,7 +112,7 @@ class Entrypoint:
             )
 
         CURRENT_ENTRYPOINT.set(self)
-        EVENT_LOOP.set(self.loop)
+        set_current_loop(self.loop)
 
         signals = (
             self.pre_start,
@@ -142,7 +143,7 @@ class Entrypoint:
         log_flush_interval: float = DEFAULT_AIOMISC_LOG_FLUSH,
         log_config: bool = DEFAULT_AIOMISC_LOG_CONFIG,
         log_handlers: Iterable[logging.Handler] = (),
-        policy: asyncio.AbstractEventLoopPolicy = event_loop_policy,
+        loop_factory: LoopFactoryType | None = None,
         debug: bool = DEFAULT_AIOMISC_DEBUG,
         catch_signals: tuple[int, ...] | None = None,
         shutdown_timeout: int | float = AIOMISC_SHUTDOWN_TIMEOUT,
@@ -162,6 +163,8 @@ class Entrypoint:
                               be received
         :param shutdown_timeout: Timeout in seconds for graceful shutdown
         """
+        if loop_factory is None:
+            loop_factory = default_loop_factory
 
         self.__passed_services: frozenset[Service] = frozenset(services)
 
@@ -169,6 +172,7 @@ class Entrypoint:
         self._debug = debug
         self._loop = loop
         self._loop_owner = False
+        self._runner: Runner | None = None
         self._tasks: MutableSet[asyncio.Task] = WeakSet()
         self._thread_pool: ExecutorType | None = None
 
@@ -193,7 +197,7 @@ class Entrypoint:
         self.log_format = log_format
         self.log_handlers = tuple(log_handlers)
         self.log_level = log_level
-        self.policy = policy
+        self.loop_factory = loop_factory
 
         # signals
         self.pool_size = pool_size
@@ -210,7 +214,7 @@ class Entrypoint:
             )
 
         if self._loop is not None:
-            EVENT_LOOP.set(self._loop)
+            set_current_loop(self._loop)
 
         CURRENT_ENTRYPOINT.set(self)
 
@@ -232,19 +236,33 @@ class Entrypoint:
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
         if self._loop is None:
-            self._loop, self._thread_pool = create_default_event_loop(
-                pool_size=self.pool_size, policy=self.policy, debug=self._debug
+            self._runner = Runner(
+                debug=self._debug, loop_factory=self.loop_factory
             )
+            self._loop = self._runner.get_loop()
             self._loop_owner = True
-            EVENT_LOOP.set(self._loop)
+
+            # Runner with custom loop_factory may not set the event loop
+            asyncio.set_event_loop(self._loop)
+
+            # Custom ThreadPoolExecutor (Runner doesn't handle this)
+            pool_size = self.pool_size or ThreadPoolExecutor.DEFAULT_POOL_SIZE
+            self._thread_pool = ThreadPoolExecutor(
+                pool_size, statistic_name="default"
+            )
+            self._loop.set_default_executor(self._thread_pool)
+
+            set_current_loop(self._loop)
         return self._loop
 
     def __del__(self) -> None:
         if self._loop and self._loop.is_closed():
             return
 
-        if self._loop_owner and self._loop is not None:
-            self._loop.close()
+        if self._runner is not None and self._loop_owner:
+            if self._loop and not self._loop.is_closed():
+                self._runner.close()
+            self._runner = None
 
     def __enter__(self) -> asyncio.AbstractEventLoop:
         self.loop.run_until_complete(self.__aenter__())
@@ -264,8 +282,12 @@ class Entrypoint:
             )
 
         loop.run_until_complete(self.__aexit__(exc_type, exc_val, exc_tb))
-        if self._loop_owner and self._loop is not None:
-            loop.close()
+
+        if self._loop_owner and self._runner is not None:
+            # Runner.close() handles shutdown_asyncgens,
+            # shutdown_default_executor, and loop.close()
+            self._runner.close()
+            self._runner = None
 
     async def __aenter__(self) -> "Entrypoint":
         if self._loop is None:

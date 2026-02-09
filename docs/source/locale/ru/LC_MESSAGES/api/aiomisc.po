@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-24 00:14+0200\n"
+"POT-Creation-Date: 2026-02-09 00:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,55 +22,6 @@ msgstr "Модуль ``aiomisc``"
 #: ../../source/api/aiomisc.rst:5
 msgid "``aiomisc.aggregate`` module"
 msgstr "Модуль ``aiomisc.aggregate``"
-
-#: aiomisc.aggregate.AggregateAsyncFunc:1 of
-msgid ""
-"Bases: :py:class:`~typing.Protocol`, :py:class:`~typing.Generic`\\ "
-"[:py:obj:`~aiomisc.aggregate.V`, :py:obj:`~aiomisc.aggregate.R`]"
-msgstr ""
-
-#: aiomisc.aggregate.AggregateFunc:1 of
-msgid ""
-"Bases: :py:class:`~typing.Protocol`, :py:class:`~typing.Generic`\\ "
-"[:py:obj:`~aiomisc.aggregate.S`, :py:obj:`~aiomisc.aggregate.T`]"
-msgstr ""
-
-#: aiomisc.aggregate.AggregateStatistic:1 aiomisc.backoff.BackoffStatistic:1
-#: aiomisc.circuit_breaker.CircuitBreakerStatistic:1
-#: aiomisc.iterator_wrapper.IteratorWrapperStatistic:1
-#: aiomisc.process_pool.ProcessPoolStatistic:1
-#: aiomisc.recurring.RecurringCallbackStatistic:1
-#: aiomisc.thread_pool.ThreadPoolStatistic:1
-#: aiomisc.worker_pool.WorkerPoolStatistic:1 of
-msgid "Bases: :py:class:`~aiomisc.counters.Statistic`"
-msgstr ""
-
-#: aiomisc.aggregate.Aggregator:1 of
-msgid ""
-"Bases: :py:class:`~aiomisc.aggregate.AggregatorAsync`\\ "
-"[:py:obj:`~aiomisc.aggregate.V`, :py:obj:`~aiomisc.aggregate.R`], "
-":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.aggregate.V`, "
-":py:obj:`~aiomisc.aggregate.R`]"
-msgstr ""
-
-#: aiomisc.aggregate.AggregatorAsync:1 of
-msgid ""
-"Bases: :py:class:`~aiomisc.compat.EventLoopMixin`, "
-":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.aggregate.V`, "
-":py:obj:`~aiomisc.aggregate.R`]"
-msgstr ""
-
-#: aiomisc.aggregate.Arg:1 of
-msgid ""
-"Bases: :py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.aggregate.V`, "
-":py:obj:`~aiomisc.aggregate.R`]"
-msgstr ""
-
-#: aiomisc.aggregate.ResultNotSetError:1
-#: aiomisc.circuit_breaker.CircuitBroken:1
-#: aiomisc.recurring.StrategyException:1 of
-msgid "Bases: :py:class:`Exception`"
-msgstr ""
 
 #: aiomisc.aggregate.aggregate:1 of
 msgid ""
@@ -96,11 +47,7 @@ msgid ""
 "``aggregate_async``."
 msgstr ""
 
-#: aiomisc.aggregate.aggregate aiomisc.backoff.asyncbackoff
-#: aiomisc.backoff.asyncretry aiomisc.circuit_breaker.CircuitBreaker
-#: aiomisc.entrypoint.Entrypoint aiomisc.utils.SelectAwaitable
-#: aiomisc.utils.bind_socket aiomisc.utils.cancel_tasks
-#: aiomisc.utils.create_default_event_loop of
+#: ../../source/api/aiomisc.rst
 msgid "Parameters"
 msgstr ""
 
@@ -116,8 +63,7 @@ msgid ""
 "``None``."
 msgstr ""
 
-#: aiomisc.aggregate.aggregate aiomisc.aggregate.aggregate_async
-#: aiomisc.utils.bind_socket of
+#: ../../source/api/aiomisc.rst
 msgid "Returns"
 msgstr ""
 
@@ -134,10 +80,6 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:13
 msgid "``aiomisc.backoff`` module"
 msgstr "Модуль ``aiomisc.backoff``"
-
-#: aiomisc.backoff.RetryStatistic:1 of
-msgid "Bases: :py:class:`~aiomisc.backoff.BackoffStatistic`"
-msgstr ""
 
 #: aiomisc.backoff.asyncbackoff:1 of
 msgid ""
@@ -168,7 +110,7 @@ msgid "is time gap between execution attempts."
 msgstr ""
 
 #: aiomisc.backoff.asyncbackoff:12 of
-msgid "retrying when this exceptions was raised."
+msgid "retrying when these exceptions were raised."
 msgstr ""
 
 #: aiomisc.backoff.asyncbackoff:13 aiomisc.backoff.asyncretry:8 of
@@ -198,11 +140,6 @@ msgstr ""
 #: ../../source/api/aiomisc.rst:21
 msgid "``aiomisc.circuit_breaker`` module"
 msgstr "Модуль ``aiomisc.circuit_breaker``"
-
-#: aiomisc.circuit_breaker.CircuitBreaker:1 aiomisc.cron.CronCallback:1
-#: aiomisc.periodic.PeriodicCallback:1 of
-msgid "Bases: :py:class:`~aiomisc.compat.EventLoopMixin`"
-msgstr ""
 
 #: aiomisc.circuit_breaker.CircuitBreaker:1 of
 msgid ""
@@ -265,31 +202,9 @@ msgstr ""
 msgid "minimum time in passing state (seconds)"
 msgstr ""
 
-#: aiomisc.circuit_breaker.CircuitBreakerStates:1
-#: aiomisc.circuit_breaker.CounterKey:1 aiomisc_log.enum.LogFormat:1
-#: aiomisc_log.enum.LogLevel:1 of
-msgid "Bases: :py:class:`~enum.IntEnum`"
-msgstr ""
-
 #: ../../source/api/aiomisc.rst:29
 msgid "``aiomisc.compat`` module"
 msgstr "Модуль ``aiomisc.compat``"
-
-#: aiomisc.compat.EntrypointProtocol:1 of
-msgid "Bases: :py:class:`~typing.Protocol`"
-msgstr ""
-
-#: aiomisc.compat.EventLoopMixin:1 aiomisc.context.Context:1
-#: aiomisc.counters.AbstractStatistic:1 aiomisc.counters.Metric:1
-#: aiomisc.counters.StatisticResult:1 aiomisc.entrypoint.Entrypoint:1
-#: aiomisc.iterator_wrapper.FromThreadChannel:1
-#: aiomisc.iterator_wrapper.QueueWrapperBase:1
-#: aiomisc.recurring.RecurringCallback:1 aiomisc.signal.Signal:1
-#: aiomisc.thread_pool.CoroutineWaiter:1 aiomisc.thread_pool.WorkItemBase:1
-#: aiomisc.utils.SelectAwaitable:1 aiomisc.worker_pool.WorkerPool:1 of
-#: typing.ParamSpec:1
-msgid "Bases: :py:class:`object`"
-msgstr ""
 
 #: of typing.ParamSpec:1
 msgid "Parameter specification variable."
@@ -376,16 +291,12 @@ msgid ""
 "scope can be pickled."
 msgstr ""
 
-#: ../../docstring aiomisc.compat.ParamSpec.args:1 of
+#: aiomisc.compat.ParamSpec.args:1 of
 msgid "Represents positional arguments."
 msgstr ""
 
-#: ../../docstring aiomisc.compat.ParamSpec.kwargs:1 of
+#: aiomisc.compat.ParamSpec.kwargs:1 of
 msgid "Represents keyword arguments."
-msgstr ""
-
-#: of typing.Protocol:1
-msgid "Bases: :py:class:`~typing.Generic`"
 msgstr ""
 
 #: of typing.Protocol:1
@@ -440,6 +351,67 @@ msgid ""
 "        ..."
 msgstr ""
 
+#: asyncio.runners.Runner:1 of
+msgid "A context manager that controls event loop life cycle."
+msgstr ""
+
+#: asyncio.runners.Runner:3 of
+msgid ""
+"The context manager always creates a new event loop, allows to run async "
+"functions inside it, and properly finalizes the loop at the context "
+"manager exit."
+msgstr ""
+
+#: asyncio.runners.Runner:7 of
+msgid ""
+"If debug is True, the event loop will be run in debug mode. If "
+"loop_factory is passed, it is used for new event loop creation."
+msgstr ""
+
+#: asyncio.runners.Runner:10 of
+msgid "asyncio.run(main(), debug=True)"
+msgstr ""
+
+#: asyncio.runners.Runner:12 of
+msgid "is a shortcut for"
+msgstr ""
+
+#: asyncio.runners.Runner:14 of
+msgid "with asyncio.Runner(debug=True) as runner:"
+msgstr ""
+
+#: asyncio.runners.Runner:15 of
+msgid "runner.run(main())"
+msgstr ""
+
+#: asyncio.runners.Runner:17 of
+msgid "The run() method can be called multiple times within the runner's context."
+msgstr ""
+
+#: asyncio.runners.Runner:19 of
+msgid ""
+"This can be useful for interactive console (e.g. IPython), unittest "
+"runners, console tools, -- everywhere when async code is called from "
+"existing sync framework and where the preferred single asyncio.run() call"
+" doesn't work."
+msgstr ""
+
+#: asyncio.runners.Runner.close:1 of
+msgid "Shutdown and close event loop."
+msgstr ""
+
+#: asyncio.runners.Runner.get_loop:1 of
+msgid "Return embedded event loop."
+msgstr ""
+
+#: asyncio.runners.Runner.run:1 of
+msgid "Run code in the embedded event loop."
+msgstr ""
+
+#: aiomisc.compat.default_loop_factory:1 of
+msgid "Default loop factory - uses uvloop if available, otherwise asyncio."
+msgstr ""
+
 #: of typing.final:1
 msgid "Decorator to indicate final methods and final classes."
 msgstr ""
@@ -485,14 +457,6 @@ msgstr "Модуль ``aiomisc.context``"
 #: ../../source/api/aiomisc.rst:45
 msgid "``aiomisc.counters`` module"
 msgstr "Модуль ``aiomisc.counters``"
-
-#: aiomisc.counters.MetaStatistic:1 of
-msgid "Bases: :py:class:`type`"
-msgstr ""
-
-#: aiomisc.counters.Statistic:1 of
-msgid "Bases: :py:class:`~aiomisc.counters.AbstractStatistic`"
-msgstr ""
 
 #: ../../source/api/aiomisc.rst:53
 msgid "``aiomisc.cron`` module"
@@ -560,72 +524,17 @@ msgstr ""
 msgid "``aiomisc.io`` module"
 msgstr "Модуль ``aiomisc.io``"
 
-#: aiomisc.io.AsyncBinaryIO:1 of
-msgid "Bases: :py:class:`~aiomisc.io.AsyncFileIO`\\ [:py:class:`bytes`]"
-msgstr ""
-
-#: aiomisc.io.AsyncBz2BinaryIO:1 aiomisc.io.AsyncGzipBinaryIO:1
-#: aiomisc.io.AsyncLzmaBinaryIO:1 of
-msgid "Bases: :py:class:`~aiomisc.io.AsyncBinaryIO`"
-msgstr ""
-
-#: aiomisc.io.AsyncBz2TextIO:1 aiomisc.io.AsyncGzipTextIO:1
-#: aiomisc.io.AsyncLzmaTextIO:1 of
-msgid "Bases: :py:class:`~aiomisc.io.AsyncTextIO`"
-msgstr ""
-
-#: aiomisc.io.AsyncFileIO:1 of
-msgid ""
-"Bases: :py:class:`~aiomisc.compat.EventLoopMixin`, "
-":py:class:`~typing.Generic`"
-msgstr ""
-
-#: aiomisc.io.AsyncTextIO:1 of
-msgid "Bases: :py:class:`~aiomisc.io.AsyncFileIO`\\ [:py:class:`str`]"
-msgstr ""
-
-#: aiomisc.io.Compression:1 of
-msgid "Bases: :py:class:`~enum.Enum`"
-msgstr ""
-
 #: ../../source/api/aiomisc.rst:77
 msgid "``aiomisc.iterator_wrapper`` module"
 msgstr "Модуль ``aiomisc.iterator_wrapper``"
 
-#: aiomisc.iterator_wrapper.ChannelClosed:1
-#: aiomisc.thread_pool.TaskChannelCloseException:1
-#: aiomisc.thread_pool.ThreadPoolException:1 of
-msgid "Bases: :py:class:`RuntimeError`"
-msgstr ""
-
-#: aiomisc.iterator_wrapper.DequeWrapper:1
-#: aiomisc.iterator_wrapper.QueueWrapper:1 of
-msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.QueueWrapperBase`"
-msgstr ""
-
-#: aiomisc.iterator_wrapper.IteratorProxy:1 of
-msgid ""
-"Bases: :py:class:`~typing.Generic`\\ "
-"[:py:obj:`~aiomisc.iterator_wrapper.T`], "
-":py:class:`~typing.AsyncIterator`"
-msgstr ""
-
-#: aiomisc.iterator_wrapper.IteratorWrapper:1 of
-msgid ""
-"Bases: :py:class:`~typing.Generic`\\ "
-"[:py:obj:`~aiomisc.iterator_wrapper.P`, "
-":py:obj:`~aiomisc.iterator_wrapper.T`], "
-":py:class:`~typing.AsyncIterator`, "
-":py:class:`~aiomisc.compat.EventLoopMixin`"
+#: aiomisc.thread_pool.IteratorWrapperSeparate:1 of
+msgid "IteratorWrapper that runs in a separate thread with statistics."
 msgstr ""
 
 #: ../../source/api/aiomisc.rst:85
 msgid "``aiomisc.log`` module"
 msgstr "Модуль ``aiomisc.log``"
-
-#: aiomisc.log.ThreadedHandler:1 of
-msgid "Bases: :py:class:`~logging.Handler`"
-msgstr ""
 
 #: aiomisc.log.ThreadedHandler:1 of
 msgid ""
@@ -680,25 +589,9 @@ msgstr "Модуль ``aiomisc.plugins``"
 msgid "``aiomisc.pool`` module"
 msgstr "Модуль ``aiomisc.pool``"
 
-#: aiomisc.pool.ContextManager:1 of
-msgid "Bases: :py:class:`~typing.AsyncContextManager`"
-msgstr ""
-
-#: aiomisc.pool.PoolBase:1 of
-msgid ""
-"Bases: :py:class:`~abc.ABC`, :py:class:`~aiomisc.compat.EventLoopMixin`, "
-":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.pool.T`]"
-msgstr ""
-
 #: ../../source/api/aiomisc.rst:117
 msgid "``aiomisc.process_pool`` module"
 msgstr "Модуль ``aiomisc.process_pool``"
-
-#: aiomisc.process_pool.ProcessPoolExecutor:1 of
-msgid ""
-"Bases: :py:class:`~concurrent.futures.process.ProcessPoolExecutor`, "
-":py:class:`~aiomisc.compat.EventLoopMixin`"
-msgstr ""
 
 #: aiomisc.process_pool.ProcessPoolExecutor:1 of
 msgid "Process pool executor with statistic"
@@ -772,10 +665,6 @@ msgstr ""
 msgid "``aiomisc.recurring`` module"
 msgstr "Модуль ``aiomisc.recurring``"
 
-#: aiomisc.recurring.StrategySkip:1 aiomisc.recurring.StrategyStop:1 of
-msgid "Bases: :py:class:`~aiomisc.recurring.StrategyException`"
-msgstr ""
-
 #: aiomisc.recurring.StrategySkip:1 of
 msgid "Strategy function might raise this exception as way to skip current call"
 msgstr ""
@@ -792,14 +681,6 @@ msgstr "Модуль ``aiomisc.signal``"
 msgid "``aiomisc.thread_pool`` module"
 msgstr "Модуль ``aiomisc.thread_pool``"
 
-#: aiomisc.thread_pool.IteratorWrapperSeparate:1 of
-msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.IteratorWrapper`"
-msgstr ""
-
-#: aiomisc.thread_pool.TaskChannel:1 of
-msgid "Bases: :py:class:`~_queue.SimpleQueue`"
-msgstr ""
-
 #: aiomisc.thread_pool.TaskChannel.get:1 of
 msgid "Remove and return an item from the queue."
 msgstr ""
@@ -815,15 +696,11 @@ msgid ""
 msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor:1 of
-msgid "Bases: :py:class:`~concurrent.futures.thread.ThreadPoolExecutor`"
-msgstr ""
-
-#: aiomisc.thread_pool.ThreadPoolExecutor:1 of
 msgid "Initializes a new ThreadPoolExecutor instance."
 msgstr ""
 
-#: aiomisc.thread_pool.ThreadPoolExecutor:9
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+#: aiomisc.thread_pool.ThreadPoolExecutor:3
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:6 of
 msgid "Args:"
 msgstr ""
 
@@ -839,7 +716,8 @@ msgstr ""
 msgid ""
 "thread_name_prefix: An optional name prefix to give our threads. "
 "initializer: A callable used to initialize worker threads. initargs: A "
-"tuple of arguments to pass to the initializer."
+"tuple of arguments to pass to the initializer. ctxkwargs: Additional "
+"arguments to cls.prepare_context()."
 msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:1 of
@@ -852,7 +730,7 @@ msgid ""
 " can be called after this one."
 msgstr ""
 
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:8 of
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:7 of
 msgid "wait: If True then shutdown will not return until all running"
 msgstr ""
 
@@ -862,40 +740,12 @@ msgid ""
 "have been reclaimed."
 msgstr ""
 
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:10 of
 msgid "cancel_futures: If True then shutdown will cancel all pending"
 msgstr ""
 
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:11 of
 msgid "futures. Futures that are completed or running will not be cancelled."
-msgstr ""
-
-#: aiomisc.thread_pool.Threaded:1 aiomisc.thread_pool.ThreadedIterable:1 of
-msgid ""
-"Bases: :py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.thread_pool.P`, "
-":py:obj:`~aiomisc.thread_pool.T`]"
-msgstr ""
-
-#: aiomisc.thread_pool.ThreadedIterableSeparate:1 of
-msgid ""
-"Bases: :py:class:`~aiomisc.thread_pool.ThreadedIterable`\\ "
-"[:py:obj:`~aiomisc.thread_pool.P`, :py:obj:`~aiomisc.thread_pool.T`]"
-msgstr ""
-
-#: aiomisc.thread_pool.ThreadedSeparate:1 of
-msgid ""
-"Bases: :py:class:`~aiomisc.thread_pool.Threaded`\\ "
-"[:py:obj:`~aiomisc.thread_pool.P`, :py:obj:`~aiomisc.thread_pool.T`]"
-msgstr ""
-
-#: aiomisc.thread_pool.ThreadedSeparate:1 of
-msgid ""
-"A decorator to run a function in a separate thread. It returns an "
-"`asyncio.Future` that can be awaited."
-msgstr ""
-
-#: aiomisc.thread_pool.WorkItem:1 of
-msgid "Bases: :py:class:`~aiomisc.thread_pool.WorkItemBase`"
 msgstr ""
 
 #: ../../source/api/aiomisc.rst:149
@@ -934,10 +784,6 @@ msgstr ""
 
 #: aiomisc.utils.SelectAwaitable:10 of
 msgid "event loop"
-msgstr ""
-
-#: aiomisc.utils.SelectResult:1 of
-msgid "Bases: :py:class:`~typing.Collection`"
 msgstr ""
 
 #: aiomisc.utils.awaitable:1 of
@@ -999,22 +845,6 @@ msgstr ""
 
 #: aiomisc.utils.chunk_list:1 of
 msgid "Split list or generator by chunks with fixed maximum size."
-msgstr ""
-
-#: aiomisc.utils.create_default_event_loop:1 of
-msgid "Creates an event loop and thread pool executor"
-msgstr ""
-
-#: aiomisc.utils.create_default_event_loop:3 of
-msgid "thread pool maximal size"
-msgstr ""
-
-#: aiomisc.utils.create_default_event_loop:4 of
-msgid "event loop policy"
-msgstr ""
-
-#: aiomisc.utils.create_default_event_loop:5 of
-msgid "set ``loop.set_debug(True)`` if True"
 msgstr ""
 
 #: aiomisc.utils.fast_uuid1:1 of
@@ -1320,5 +1150,189 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ msgid ""
 #~ "Bases: :py:class:`~typing.AsyncIterator`, "
 #~ ":py:class:`~aiomisc.compat.EventLoopMixin`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.Protocol`, "
+#~ ":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.aggregate.V`,"
+#~ " :py:obj:`~aiomisc.aggregate.R`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.Protocol`, "
+#~ ":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.aggregate.S`,"
+#~ " :py:obj:`~aiomisc.aggregate.T`]"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.counters.Statistic`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~aiomisc.aggregate.AggregatorAsync`\\ "
+#~ "[:py:obj:`~aiomisc.aggregate.V`, "
+#~ ":py:obj:`~aiomisc.aggregate.R`], :py:class:`~typing.Generic`\\"
+#~ " [:py:obj:`~aiomisc.aggregate.V`, "
+#~ ":py:obj:`~aiomisc.aggregate.R`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~aiomisc.compat.EventLoopMixin`, "
+#~ ":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.aggregate.V`,"
+#~ " :py:obj:`~aiomisc.aggregate.R`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.Generic`\\ "
+#~ "[:py:obj:`~aiomisc.aggregate.V`, :py:obj:`~aiomisc.aggregate.R`]"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`Exception`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.backoff.BackoffStatistic`"
+#~ msgstr ""
+
+#~ msgid "retrying when this exceptions was raised."
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.compat.EventLoopMixin`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~enum.IntEnum`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~typing.Protocol`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`object`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~typing.Generic`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`type`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.counters.AbstractStatistic`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.io.AsyncFileIO`\\ [:py:class:`bytes`]"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.io.AsyncBinaryIO`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.io.AsyncTextIO`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~aiomisc.compat.EventLoopMixin`, "
+#~ ":py:class:`~typing.Generic`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.io.AsyncFileIO`\\ [:py:class:`str`]"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~enum.Enum`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`RuntimeError`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.QueueWrapperBase`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.Generic`\\ "
+#~ "[:py:obj:`~aiomisc.iterator_wrapper.T`], "
+#~ ":py:class:`~typing.AsyncIterator`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.Generic`\\ "
+#~ "[:py:obj:`~aiomisc.iterator_wrapper.P`, "
+#~ ":py:obj:`~aiomisc.iterator_wrapper.T`], "
+#~ ":py:class:`~typing.AsyncIterator`, "
+#~ ":py:class:`~aiomisc.compat.EventLoopMixin`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~logging.Handler`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~typing.AsyncContextManager`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~abc.ABC`, "
+#~ ":py:class:`~aiomisc.compat.EventLoopMixin`, "
+#~ ":py:class:`~typing.Generic`\\ [:py:obj:`~aiomisc.pool.T`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: "
+#~ ":py:class:`~concurrent.futures.process.ProcessPoolExecutor`, "
+#~ ":py:class:`~aiomisc.compat.EventLoopMixin`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.recurring.StrategyException`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.iterator_wrapper.IteratorWrapper`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~_queue.SimpleQueue`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~concurrent.futures.thread.ThreadPoolExecutor`"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "thread_name_prefix: An optional name prefix"
+#~ " to give our threads. initializer: A"
+#~ " callable used to initialize worker "
+#~ "threads. initargs: A tuple of arguments"
+#~ " to pass to the initializer."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~typing.Generic`\\ "
+#~ "[:py:obj:`~aiomisc.thread_pool.P`, "
+#~ ":py:obj:`~aiomisc.thread_pool.T`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~aiomisc.thread_pool.ThreadedIterable`\\ "
+#~ "[:py:obj:`~aiomisc.thread_pool.P`, "
+#~ ":py:obj:`~aiomisc.thread_pool.T`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Bases: :py:class:`~aiomisc.thread_pool.Threaded`\\ "
+#~ "[:py:obj:`~aiomisc.thread_pool.P`, "
+#~ ":py:obj:`~aiomisc.thread_pool.T`]"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A decorator to run a function in"
+#~ " a separate thread. It returns an "
+#~ "`asyncio.Future` that can be awaited."
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~aiomisc.thread_pool.WorkItemBase`"
+#~ msgstr ""
+
+#~ msgid "Bases: :py:class:`~typing.Collection`"
+#~ msgstr ""
+
+#~ msgid "Creates an event loop and thread pool executor"
+#~ msgstr ""
+
+#~ msgid "thread pool maximal size"
+#~ msgstr ""
+
+#~ msgid "event loop policy"
+#~ msgstr ""
+
+#~ msgid "set ``loop.set_debug(True)`` if True"
 #~ msgstr ""
 

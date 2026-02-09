@@ -7,7 +7,7 @@ enhance aiomisc by mean of signals_.
 .. _signals: #signal
 
 To make your plugin discoverable by aiomisc you should add
-``aiomisc.plugins`` entry to entry to ``entry_points`` argument of ``setup``
+``aiomisc.plugins`` entry to ``entry_points`` argument of ``setup``
 call in ``setup.py`` of a plugin.
 
 .. code-block:: python

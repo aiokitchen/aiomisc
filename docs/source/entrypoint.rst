@@ -38,7 +38,6 @@ Complete example:
         log_buffer_size=1024,                          # default
         log_flush_interval=0.2,                        # default
         log_config=True,                               # default
-        policy=asyncio.DefaultEventLoopPolicy(),       # default
         debug=False,                                   # default
         catch_signals=(signal.SIGINT, signal.SIGTERM), # default
         shutdown_timeout=60,                           # default

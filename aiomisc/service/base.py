@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 from abc import ABC, ABCMeta, abstractmethod
 from collections.abc import Coroutine
 from typing import Any, TypeVar
@@ -20,7 +21,7 @@ class ServiceMeta(ABCMeta):
             setattr(instance, key, frozenset(getattr(instance, key, ())))
 
         check_instance = all(
-            asyncio.iscoroutinefunction(getattr(instance, method))
+            inspect.iscoroutinefunction(getattr(instance, method))
             for method in instance.__async_required__  # type: ignore
         )
 

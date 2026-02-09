@@ -108,7 +108,11 @@ class ProcessService(Service):
         if not process.pid:
             return
 
-        os.kill(process.pid, signal.SIGINT)
+        try:
+            os.kill(process.pid, signal.SIGINT)
+        except ProcessLookupError:
+            return
+
         stop_result: bool = await self.loop.run_in_executor(
             None, self._process_stop_event.wait, self.process_stop_timeout
         )
