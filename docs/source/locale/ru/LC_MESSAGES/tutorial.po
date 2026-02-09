@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.10\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-29 12:04+0300\n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/tutorial.rst:2
 msgid "Tutorial"
@@ -219,11 +219,11 @@ msgid ""
 "It is a good solution because it is implemented without any 3rd-party "
 "libraries. When your program starts to grow, you will probably want to "
 "optimize the startup time in a simple way, namely to do all "
-"initialization competitively. At first glance it seems that this code "
-"will solve the problem:"
+"initialization concurrently. At first glance it seems that this code will"
+" solve the problem:"
 msgstr ""
 "Это хорошее решение, потому что оно реализовано без каких-либо сторонних "
-"библиотек. Но когда ваша программа начнет расти, вы, вероятно, захотите "
+"библиотек. Когда ваша программа начнёт расти, вы, вероятно, захотите "
 "оптимизировать время запуска простым способом, а именно выполнить всю "
 "инициализацию конкурентно. На первый взгляд кажется, что этот код решит "
 "проблему:"
@@ -501,6 +501,7 @@ msgstr ""
 "расширена через наследование."
 
 #: ../../source/tutorial.rst:241
+#, python-brace-format
 msgid ""
 "from typing import Any\n"
 "import aiomisc\n"
@@ -553,6 +554,7 @@ msgstr ""
 " все переданные именованные параметры в self по умолчанию."
 
 #: ../../source/tutorial.rst:267
+#, python-brace-format
 msgid ""
 "import aiomisc\n"
 "\n"
@@ -600,6 +602,7 @@ msgstr ""
 "параметр."
 
 #: ../../source/tutorial.rst:290
+#, python-brace-format
 msgid ""
 "import aiomisc\n"
 "\n"
@@ -648,6 +651,7 @@ msgstr ""
 "объявлены асинхронными (через ``async def``)."
 
 #: ../../source/tutorial.rst:313
+#, python-brace-format
 msgid ""
 "import aiomisc\n"
 "\n"
@@ -718,6 +722,7 @@ msgstr ""
 "объявления класса."
 
 #: ../../source/tutorial.rst:348
+#, python-brace-format
 msgid ""
 "class BadHello(HelloService):\n"
 "    def greeting(self) -> str:\n"
@@ -966,9 +971,10 @@ msgstr ""
 "просто реализовав несколько методов."
 
 #: ../../source/tutorial.rst:497
+#, fuzzy
 msgid ""
 "A full list of services and usage examples can be found on the on the "
-":doc:`Services page </services>`."
+":doc:`Services page </services/index>`."
 msgstr ""
 "Полный список сервисов и примеры их использования можно найти на странице"
 " :doc:`Сервисы </services>`."
@@ -1244,8 +1250,9 @@ msgid ""
 " section, or in the source code. The authors have tried to make the "
 "source code as clear and simple as possible, so feel free to explore it."
 msgstr ""
-"На этом нам нужно закончить этот учебник, надеюсь тут все было понятно, и "
-"вы почерпнули для себя много полезного. Полное описание остальных "
-"сервисов представлено в разделе :doc:`/modules`, или в исходном коде. Авторы "
-"постарались сделать исходный код максимально понятным и простым, поэтому "
-"не стесняйтесь исследовать его."
+"На этом нам нужно закончить этот учебник, надеюсь тут все было понятно, и"
+" вы почерпнули для себя много полезного. Полное описание остальных "
+"сервисов представлено в разделе :doc:`/modules`, или в исходном коде. "
+"Авторы постарались сделать исходный код максимально понятным и простым, "
+"поэтому не стесняйтесь исследовать его."
+

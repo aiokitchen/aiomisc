@@ -6,18 +6,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2024-06-03 23:11+0200\n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.15.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/plugins.rst:2
 msgid "Plugins"
-msgstr ""
+msgstr "Плагины"
 
 #: ../../source/plugins.rst:4
 msgid ""
@@ -30,14 +30,15 @@ msgstr ""
 #: ../../source/plugins.rst:9
 msgid ""
 "To make your plugin discoverable by aiomisc you should add "
-"``aiomisc.plugins`` entry to entry to ``entry_points`` argument of "
-"``setup`` call in ``setup.py`` of a plugin."
+"``aiomisc.plugins`` entry to ``entry_points`` argument of ``setup`` call "
+"in ``setup.py`` of a plugin."
 msgstr ""
-"Чтобы сделать ваш плагин доступным для обнаружения с помощью aiomisc, вы "
-"должны добавить запись ``aiomisc.plugins`` к записи аргумента "
-"``entry_points`` вызова ``setup`` в ``setup.py`` вашего python пакета."
+"Чтобы сделать ваш плагин обнаруживаемым для aiomisc, вы должны добавить "
+"запись ``aiomisc.plugins`` в аргумент ``entry_points`` вызова ``setup`` "
+"в ``setup.py`` вашего плагина."
 
 #: ../../source/plugins.rst:13
+#, python-brace-format
 msgid ""
 "# setup.py\n"
 "\n"
@@ -241,6 +242,7 @@ msgstr ""
 "существуют следующие флаги:"
 
 #: ../../source/plugins.rst:120
+#, python-brace-format
 msgid ""
 "$ python3 -m aiomisc.plugins -h\n"
 "usage: python3 -m aiomisc.plugins [-h] [-q] [-n]\n"
@@ -299,3 +301,4 @@ msgstr ""
 "По умолчанию печатается человекочитаемый лог в stderr, и список плагинов "
 "в stdout, поэтому можно использовать это без параметров в конвейере, и "
 "прочитать список в stderr."
+

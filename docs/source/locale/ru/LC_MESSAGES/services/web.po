@@ -1,0 +1,234 @@
+# Russian translations for aiomisc package.
+# Copyright (C) 2026, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 17.10\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
+"PO-Revision-Date: 2026-02-09 12:00+0100\n"
+"Last-Translator: \n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/services/web.rst:2
+msgid "Web Services"
+msgstr "Веб-сервисы"
+
+#: ../../source/services/web.rst:4
+msgid ""
+"This section covers web-related services including aiohttp, ASGI, and "
+"Uvicorn."
+msgstr ""
+"В этом разделе рассматриваются веб-сервисы, включая aiohttp, ASGI и "
+"Uvicorn."
+
+#: ../../source/services/web.rst:10
+msgid "aiohttp service"
+msgstr "Сервис aiohttp"
+
+#: ../../source/services/web.rst:14
+msgid "requires installed aiohttp:"
+msgstr "требуется установленный aiohttp:"
+
+#: ../../source/services/web.rst:16
+msgid "pip install aiohttp"
+msgstr ""
+
+#: ../../source/services/web.rst:20 ../../source/services/web.rst:86
+#: ../../source/services/web.rst:149
+msgid "or using extras:"
+msgstr "или с использованием extras:"
+
+#: ../../source/services/web.rst:22
+msgid "pip install aiomisc[aiohttp]"
+msgstr ""
+
+#: ../../source/services/web.rst:27
+msgid "aiohttp application can be started as a service:"
+msgstr "Приложение aiohttp может быть запущено как сервис:"
+
+#: ../../source/services/web.rst:29
+#, python-brace-format
+msgid ""
+"import aiohttp.web\n"
+"import argparse\n"
+"from aiomisc import entrypoint\n"
+"from aiomisc.service.aiohttp import AIOHTTPService\n"
+"\n"
+"parser = argparse.ArgumentParser()\n"
+"group = parser.add_argument_group('HTTP options')\n"
+"\n"
+"group.add_argument(\"-l\", \"--address\", default=\"::\",\n"
+"                   help=\"Listen HTTP address\")\n"
+"group.add_argument(\"-p\", \"--port\", type=int, default=8080,\n"
+"                   help=\"Listen HTTP port\")\n"
+"\n"
+"\n"
+"async def handle(request):\n"
+"    name = request.match_info.get('name', \"Anonymous\")\n"
+"    text = \"Hello, \" + name\n"
+"    return aiohttp.web.Response(text=text)\n"
+"\n"
+"\n"
+"class REST(AIOHTTPService):\n"
+"    async def create_application(self):\n"
+"        app = aiohttp.web.Application()\n"
+"\n"
+"        app.add_routes([\n"
+"            aiohttp.web.get('/', handle),\n"
+"            aiohttp.web.get('/{name}', handle)\n"
+"        ])\n"
+"\n"
+"        return app\n"
+"\n"
+"arguments = parser.parse_args()\n"
+"service = REST(address=arguments.address, port=arguments.port)\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+
+#: ../../source/services/web.rst:69
+msgid ""
+"Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
+"an HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
+"class)."
+msgstr ""
+"Класс ``AIOHTTPSSLService`` аналогичен ``AIOHTTPService``, но создаёт "
+"HTTPS-сервер. Необходимо передать параметры SSL (см. класс ``TLSServer``)."
+
+#: ../../source/services/web.rst:76
+msgid "asgi service"
+msgstr "Сервис ASGI"
+
+#: ../../source/services/web.rst:80
+msgid "requires installed aiohttp-asgi:"
+msgstr "требуется установленный aiohttp-asgi:"
+
+#: ../../source/services/web.rst:82
+msgid "pip install aiohttp-asgi"
+msgstr ""
+
+#: ../../source/services/web.rst:88
+msgid "pip install aiomisc[asgi]"
+msgstr ""
+
+#: ../../source/services/web.rst:93
+msgid "Any ASGI-like application can be started as a service:"
+msgstr "Любое ASGI-приложение может быть запущено как сервис:"
+
+#: ../../source/services/web.rst:95
+#, python-brace-format
+msgid ""
+"import argparse\n"
+"\n"
+"from fastapi import FastAPI\n"
+"\n"
+"from aiomisc import entrypoint\n"
+"from aiomisc.service.asgi import ASGIHTTPService, ASGIApplicationType\n"
+"\n"
+"parser = argparse.ArgumentParser()\n"
+"group = parser.add_argument_group('HTTP options')\n"
+"\n"
+"group.add_argument(\"-l\", \"--address\", default=\"::\",\n"
+"                   help=\"Listen HTTP address\")\n"
+"group.add_argument(\"-p\", \"--port\", type=int, default=8080,\n"
+"                   help=\"Listen HTTP port\")\n"
+"\n"
+"\n"
+"app = FastAPI()\n"
+"\n"
+"\n"
+"@app.get(\"/\")\n"
+"async def root():\n"
+"    return {\"message\": \"Hello World\"}\n"
+"\n"
+"\n"
+"class REST(ASGIHTTPService):\n"
+"    async def create_asgi_app(self) -> ASGIApplicationType:\n"
+"        return app\n"
+"\n"
+"\n"
+"arguments = parser.parse_args()\n"
+"service = REST(address=arguments.address, port=arguments.port)\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+
+#: ../../source/services/web.rst:133
+msgid ""
+"Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
+"creates HTTPS server. You must pass SSL-required options (see "
+"``TLSServer`` class)."
+msgstr ""
+"Класс ``ASGIHTTPSSLService`` аналогичен ``ASGIHTTPService``, но создаёт "
+"HTTPS-сервер. Необходимо передать параметры SSL (см. класс ``TLSServer``)."
+
+#: ../../source/services/web.rst:139
+msgid "uvicorn service"
+msgstr "Сервис uvicorn"
+
+#: ../../source/services/web.rst:143
+msgid "requires installed uvicorn:"
+msgstr "требуется установленный uvicorn:"
+
+#: ../../source/services/web.rst:145
+msgid "pip install uvicorn"
+msgstr ""
+
+#: ../../source/services/web.rst:151
+msgid "pip install aiomisc[uvicorn]"
+msgstr ""
+
+#: ../../source/services/web.rst:156
+msgid "Any ASGI-like application can be started via uvicorn as a service:"
+msgstr "Любое ASGI-приложение может быть запущено через uvicorn как сервис:"
+
+#: ../../source/services/web.rst:158
+#, python-brace-format
+msgid ""
+"import argparse\n"
+"\n"
+"from fastapi import FastAPI\n"
+"\n"
+"from aiomisc import entrypoint\n"
+"from aiomisc.service.uvicorn import UvicornApplication, UvicornService\n"
+"\n"
+"parser = argparse.ArgumentParser()\n"
+"group = parser.add_argument_group('HTTP options')\n"
+"\n"
+"group.add_argument(\"-l\", \"--host\", default=\"::\",\n"
+"                   help=\"Listen HTTP host\")\n"
+"group.add_argument(\"-p\", \"--port\", type=int, default=8080,\n"
+"                   help=\"Listen HTTP port\")\n"
+"\n"
+"\n"
+"app = FastAPI()\n"
+"\n"
+"\n"
+"@app.get(\"/\")\n"
+"async def root():\n"
+"    return {\"message\": \"Hello World\"}\n"
+"\n"
+"\n"
+"class REST(UvicornService):\n"
+"    async def create_application(self) -> UvicornApplication:\n"
+"        return app\n"
+"\n"
+"\n"
+"arguments = parser.parse_args()\n"
+"service = REST(host=arguments.host, port=arguments.port)\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+

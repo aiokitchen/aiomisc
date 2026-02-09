@@ -159,7 +159,7 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                     event.wait(),
                     timeout=first_call_at + self._leeway - self.loop.time(),
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 log.debug(
                     "Aggregation timeout of %s for batch started at %.4f "
                     "with %d calls after %.2f ms",

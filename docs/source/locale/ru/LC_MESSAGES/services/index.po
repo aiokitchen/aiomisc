@@ -1,0 +1,106 @@
+# Russian translations for aiomisc package.
+# Copyright (C) 2026, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 17.10\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
+"PO-Revision-Date: 2026-02-09 12:00+0100\n"
+"Last-Translator: \n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/services/index.rst:2
+msgid "Services"
+msgstr "Сервисы"
+
+#: ../../source/services/index.rst:4
+msgid ""
+"``Services`` is an abstraction to help organize lots of different tasks "
+"in one process. Each service must implement ``start()`` method and can "
+"implement ``stop()`` method."
+msgstr ""
+"``Services`` — это абстракция, помогающая организовать множество "
+"различных задач в одном процессе. Каждый сервис должен реализовать "
+"метод ``start()`` и может реализовать метод ``stop()``."
+
+#: ../../source/services/index.rst:8
+msgid ""
+"Service instance should be passed to the ``entrypoint``, and will be "
+"started after the event loop has been created."
+msgstr ""
+"Экземпляр сервиса должен быть передан в ``entrypoint`` и будет "
+"запущен после создания цикла событий."
+
+#: ../../source/services/index.rst:13
+msgid ""
+"Current event-loop will be set before ``start()`` method called. The "
+"event loop will be set as current for this thread."
+msgstr ""
+"Текущий цикл событий будет установлен перед вызовом метода ``start()``. "
+"Цикл событий будет установлен как текущий для данного потока."
+
+#: ../../source/services/index.rst:16
+msgid ""
+"Please avoid using ``asyncio.get_event_loop()`` explicitly inside "
+"``start()`` method. Use ``self.loop`` instead:"
+msgstr ""
+"Избегайте явного использования ``asyncio.get_event_loop()`` внутри "
+"метода ``start()``. Используйте вместо этого ``self.loop``:"
+
+#: ../../source/services/index.rst:19
+msgid ""
+"import asyncio\n"
+"from threading import Event\n"
+"from aiomisc import entrypoint, Service\n"
+"\n"
+"event = Event()\n"
+"\n"
+"class MyService(Service):\n"
+"  async def start(self):\n"
+"      # Send signal to entrypoint for continue running\n"
+"      self.start_event.set()\n"
+"\n"
+"      event.set()\n"
+"      # Start service task\n"
+"      await asyncio.sleep(3600)\n"
+"\n"
+"\n"
+"with entrypoint(MyService()) as loop:\n"
+"    assert event.is_set()"
+msgstr ""
+
+#: ../../source/services/index.rst:42
+msgid ""
+"Method ``start()`` creates as a separate task that can run forever. But "
+"in this case ``self.start_event.set()`` should be called for notifying "
+"``entrypoint``."
+msgstr ""
+"Метод ``start()`` создаётся как отдельная задача, которая может "
+"выполняться бесконечно. Но в этом случае необходимо вызвать "
+"``self.start_event.set()`` для уведомления ``entrypoint``."
+
+#: ../../source/services/index.rst:46
+msgid ""
+"During graceful shutdown method ``stop()`` will be called first, and "
+"after that, all running tasks will be canceled (including ``start()``)."
+msgstr ""
+"При корректном завершении работы сначала будет вызван метод ``stop()``, "
+"а затем все выполняющиеся задачи будут отменены (включая ``start()``)."
+
+#: ../../source/services/index.rst:50
+msgid ""
+"This package contains some useful base classes for simple services "
+"writing."
+msgstr ""
+"Этот пакет содержит несколько полезных базовых классов для простого "
+"написания сервисов."
+

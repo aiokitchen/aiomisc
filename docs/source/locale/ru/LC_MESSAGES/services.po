@@ -1,23 +1,28 @@
-# Translations template for aiomisc.
-# Copyright (C) 2021
-# This file is distributed under the same license as the aiomisc project.
-# Dmitry Orlov <me@mosquito.su>, 2022.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version:  14\n"
-"Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2024-06-03 23:29+0200\n"
+"Project-Id-Version: aiomisc 17.10\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-09 00:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Sitkin Ivan <alvinera@yandex.ru>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.15.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/services.rst:2
 msgid "Services"
-msgstr "Сервисы"
+msgstr ""
 
 #: ../../source/services.rst:4
 msgid ""
@@ -25,34 +30,24 @@ msgid ""
 "in one process. Each service must implement ``start()`` method and can "
 "implement ``stop()`` method."
 msgstr ""
-"``Сервисы`` - это абстракция, помогающая организовать множество различных"
-" задач в одном процессе. Каждый сервис должен реализовывать обязательный "
-"метод ``start()`` и опционально метод stop ()."
 
 #: ../../source/services.rst:8
 msgid ""
 "Service instance should be passed to the ``entrypoint``, and will be "
 "started after the event loop has been created."
 msgstr ""
-"Экземпляр сервиса должен быть передан в «точку входа» (entrypoint) и "
-"будет запущен после создания event loop."
 
 #: ../../source/services.rst:13
 msgid ""
 "Current event-loop will be set before ``start()`` method called. The "
 "event loop will be set as current for this thread."
 msgstr ""
-"Текущий event-loop будет установлен до вызова метода `start()`. Event "
-"loop будет установлен для этого потока."
 
 #: ../../source/services.rst:16
 msgid ""
 "Please avoid using ``asyncio.get_event_loop()`` explicitly inside "
 "``start()`` method. Use ``self.loop`` instead:"
 msgstr ""
-"Пожалуйста, избегайте использования ``asyncio.get_event_loop()`` явно "
-"внутри метода ``start()``. Вместо этого используйте атрибут сервиса "
-"``self.loop``:"
 
 #: ../../source/services.rst:19
 msgid ""
@@ -75,24 +70,6 @@ msgid ""
 "with entrypoint(MyService()) as loop:\n"
 "    assert event.is_set()"
 msgstr ""
-"import asyncio\n"
-"from threading import Event\n"
-"from aiomisc import entrypoint, Service\n"
-"\n"
-"event = Event()\n"
-"\n"
-"class MyService(Service):\n"
-"  async def start(self):\n"
-"      # Отправляем сигнал в entrypoint что можно продолжать\n"
-"      self.start_event.set()\n"
-"\n"
-"      event.set()\n"
-"      # Запуск чего-то полезного\n"
-"      await asyncio.sleep(3600)\n"
-"\n"
-"\n"
-"with entrypoint(MyService()) as loop:\n"
-"    assert event.is_set()"
 
 #: ../../source/services.rst:42
 msgid ""
@@ -100,39 +77,28 @@ msgid ""
 "in this case ``self.start_event.set()`` should be called for notifying "
 "``entrypoint``."
 msgstr ""
-"Метод ``start()`` создается как отдельная задача, которая может "
-"выполняться бесконечно. Но в этом случае необходимо утановить событие "
-"вызовом ``self.start_event.set()`` для уведомления entrypoint об "
-"окончании запуска."
 
 #: ../../source/services.rst:46
 msgid ""
 "During graceful shutdown method ``stop()`` will be called first, and "
 "after that, all running tasks will be canceled (including ``start()``)."
 msgstr ""
-"Во время завершения работы сначала будет вызван метод ``stop()``, а после"
-" этого все запущенные задачи будут отменены (включая ``start()``)."
 
 #: ../../source/services.rst:50
 msgid ""
 "This package contains some useful base classes for simple services "
 "writing."
 msgstr ""
-"Этот пакет содержит несколько полезных базовых классов для написания "
-"простых сервисов."
 
 #: ../../source/services.rst:56
 msgid "``TCPServer``"
-msgstr "Класс ``TCPServer``"
+msgstr ""
 
 #: ../../source/services.rst:58
 msgid ""
 "``TCPServer`` - it's a base class for writing TCP servers. Just implement"
 " ``handle_client(reader, writer)`` to use it."
 msgstr ""
-"``TCPServer`` - это базовый класс для реализации TCP сервера. Просто "
-"реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
-"соединения."
 
 #: ../../source/services.rst:61
 msgid ""
@@ -174,16 +140,13 @@ msgstr ""
 
 #: ../../source/services.rst:103
 msgid "``UDPServer``"
-msgstr "Класс ``UDPServer``"
+msgstr ""
 
 #: ../../source/services.rst:105
 msgid ""
 "``UDPServer`` - it's a base class for writing UDP servers. Just implement"
 " ``handle_datagram(data, addr)`` to use it."
 msgstr ""
-"``UDPServer`` - это базовый класс для реализации UDP сервера. Просто "
-"реализуйте ``handle_datagram(data, addr)``, чтобы принимать UDP "
-"соединения."
 
 #: ../../source/services.rst:108
 msgid ""
@@ -198,15 +161,13 @@ msgstr ""
 
 #: ../../source/services.rst:120
 msgid "``TLSServer``"
-msgstr "Класс ``TLSServer``"
+msgstr ""
 
 #: ../../source/services.rst:122
 msgid ""
 "``TLSServer`` - it's a base class for writing TCP servers with TLS. Just "
 "implement ``handle_client(reader, writer)`` to use it."
 msgstr ""
-"TLSServer - это базовый класс для написания TCP-серверов с использованием"
-" TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
 #: ../../source/services.rst:125
 msgid ""
@@ -238,9 +199,6 @@ msgid ""
 "``TCPClient`` - it's a base class for writing TCP clients. Just implement"
 " ``handle_connection(reader, writer)`` to use it."
 msgstr ""
-"``TCPServer`` - это базовый класс для реализации TCP сервера. Просто "
-"реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
-"соединения."
 
 #: ../../source/services.rst:154
 msgid ""
@@ -292,9 +250,6 @@ msgid ""
 "``TLSClient`` - it's a base class for writing TLS clients. Just implement"
 " ``handle_connection(reader, writer)`` to use it."
 msgstr ""
-"``TCPServer`` - это базовый класс для реализации TCP сервера. Просто "
-"реализуйте ``handle_client(reader, writer)``, чтобы принимать TCP "
-"соединения."
 
 #: ../../source/services.rst:202
 msgid ""
@@ -357,8 +312,6 @@ msgid ""
 "auto-reconnection when connection lost. Just implement "
 "``handle_connection(reader, writer)`` to use it."
 msgstr ""
-"TLSServer - это базовый класс для написания TCP-серверов с использованием"
-" TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
 #: ../../source/services.rst:260
 msgid ""
@@ -411,8 +364,6 @@ msgid ""
 "auto-reconnection when connection lost. Just implement "
 "``handle_connection(reader, writer)`` to use it."
 msgstr ""
-"TLSServer - это базовый класс для написания TCP-серверов с использованием"
-" TLS. Просто реализуйте ``handle_client(reader, writer)``."
 
 #: ../../source/services.rst:309
 msgid ""
@@ -467,7 +418,7 @@ msgstr ""
 
 #: ../../source/services.rst:363
 msgid "``PeriodicService``"
-msgstr "Класс ``PeriodicService``"
+msgstr ""
 
 #: ../../source/services.rst:365
 msgid ""
@@ -476,10 +427,6 @@ msgid ""
 "``PeriodicService`` as a base class and override ``callback`` async "
 "coroutine method."
 msgstr ""
-"PeriodicService запускает PeriodicCallback как сервис и ожидает "
-"завершения обратного вызова при остановке. Вам необходимо использовать "
-"PeriodicService в качестве базового класса и переопределить асинхронный "
-"метод callback."
 
 #: ../../source/services.rst:369
 msgid ""
@@ -487,9 +434,6 @@ msgid ""
 "in seconds and optional ``delay`` argument - periodic execution delay in "
 "seconds (0 by default)."
 msgstr ""
-"Сервисный класс принимает обязательный аргумент ``interval`` - интервал "
-"запуска в секундах и необязательный аргумент ``delay`` - задержку первого"
-" выполнения в секундах (по умолчанию 0)."
 
 #: ../../source/services.rst:373
 msgid ""
@@ -507,23 +451,10 @@ msgid ""
 "with entrypoint(service) as loop:\n"
 "    loop.run_forever()"
 msgstr ""
-"import aiomisc\n"
-"from aiomisc.service.periodic import PeriodicService\n"
-"\n"
-"\n"
-"class MyPeriodicService(PeriodicService):\n"
-"    async def callback(self):\n"
-"        log.info('Running periodic callback')\n"
-"        # ...\n"
-"\n"
-"service = MyPeriodicService(interval=3600, delay=0)  # раз в час\n"
-"\n"
-"with entrypoint(service) as loop:\n"
-"    loop.run_forever()"
 
 #: ../../source/services.rst:393
 msgid "DNS Server"
-msgstr "DNS сервис"
+msgstr ""
 
 #: ../../source/services.rst:395
 msgid ""
@@ -532,56 +463,42 @@ msgid ""
 "library for handling DNS records and packets. This setup is ideal for "
 "high-performance, non-blocking DNS query handling."
 msgstr ""
-"Описанный здесь DNS-сервер использует библиотеку «aiomisc», которая "
-"предоставляет утилиты для асинхронных операций ввода-вывода, и библиотеку"
-" «dnslib» для обработки DNS-записей и пакетов. Эта настройка идеально "
-"подходит для высокопроизводительной неблокирующей обработки DNS-запросов."
 
 #: ../../source/services.rst:401
 msgid "Key Features"
-msgstr "Ключевые Характеристики"
+msgstr ""
 
 #: ../../source/services.rst:403
 msgid ""
 "**Asynchronous I/O**: Utilizes asynchronous operations to handle multiple"
 " DNS queries concurrently, ensuring high performance and scalability."
 msgstr ""
-"**Асинхронный ввод-вывод**: использует асинхронные операции для "
-"одновременной обработки нескольких DNS-запросов, обеспечивая высокую "
-"производительность и масштабируемость."
 
 #: ../../source/services.rst:405
 msgid ""
 "**UDP and TCP Support**: Supports DNS queries over both UDP and TCP "
 "protocols, making it versatile for various network configurations."
 msgstr ""
-"**Поддержка UDP и TCP**: сервер поддерживает DNS-запросы по протоколам "
-"UDP и TCP, что делает его универсальным для различных сетевых "
-"конфигураций."
 
 #: ../../source/services.rst:407
 msgid ""
 "**``EDNS0`` Support**: Implements Extension Mechanisms for DNS "
 "(``EDNS0``) to handle larger DNS messages and extended functionalities."
 msgstr ""
-"**Поддержка ``EDNS0``**: реализует механизмы расширения DNS (``EDNS0``) "
-"для обработки более крупных сообщений DNS и расширенных функций."
 
 #: ../../source/services.rst:409
 msgid ""
 "**Customizable DNS Records**: Allows easy configuration of DNS zones and "
 "records, enabling you to define and manage your DNS entries efficiently."
 msgstr ""
-"**Настраиваемые записи DNS**: позволяет легко настраивать зоны и записи "
-"DNS, позволяя эффективно разрешать записи DNS и управлять ими."
 
 #: ../../source/services.rst:414
 msgid "Prerequisites"
-msgstr "Пререквизиты"
+msgstr ""
 
 #: ../../source/services.rst:416
 msgid "Install the required libraries using pip:"
-msgstr "Установите необходимые библиотеки с помощью pip:"
+msgstr ""
 
 #: ../../source/services.rst:418
 msgid "pip install aiomisc[dns]"
@@ -589,7 +506,7 @@ msgstr ""
 
 #: ../../source/services.rst:424
 msgid "Setting Up the Server"
-msgstr "Настройка сервера"
+msgstr ""
 
 #: ../../source/services.rst:426
 msgid ""
@@ -620,16 +537,13 @@ msgstr ""
 
 #: ../../source/services.rst:454
 msgid "Testing the Server"
-msgstr "Тестирование сервера"
+msgstr ""
 
 #: ../../source/services.rst:456
 msgid ""
 "You can test the DNS server using tools like ``dig``. For example, to "
 "query the A and AAAA records for ``test.``, use the following commands:"
 msgstr ""
-"Вы можете протестировать DNS-сервер, используя такие инструменты, как "
-"«dig». Например, чтобы запросить записи A и AAAA для ``test.``, "
-"используйте следующие команды:"
 
 #: ../../source/services.rst:460
 msgid ""
@@ -645,12 +559,10 @@ msgid ""
 "``fd10::10`` respectively, confirming that the DNS server is working "
 "correctly."
 msgstr ""
-"Эти команды должны вернуть IP-адреса ``10.10.10.10`` и ``fd10::10`` "
-"соответственно, значит DNS-сервер работает правильно."
 
 #: ../../source/services.rst:474
 msgid "Dynamic Store Management"
-msgstr "Динамическое управление хранилищем записей"
+msgstr ""
 
 #: ../../source/services.rst:476
 msgid ""
@@ -658,10 +570,6 @@ msgid ""
 "dynamically manage the DNS store. This allows you to add or remove zones "
 "and records at runtime, without needing to restart the server."
 msgstr ""
-"Одной из мощных функций этой реализации DNS-сервера является возможность "
-"динамического управления хранилищем записей DNS. Это позволяет добавлять "
-"или удалять зоны и записи во время выполнения без необходимости "
-"перезапуска сервера."
 
 #: ../../source/services.rst:481
 msgid ""
@@ -670,22 +578,16 @@ msgid ""
 "records using the ``DNSStore`` and ``DNSZone`` classes, providing "
 "practical examples for each operation."
 msgstr ""
-"Динамическое управление DNS-зонами и записями необходимо для гибкой "
-"настройки DNS-сервера. В этом руководстве основное внимание уделяется "
-"управлению зонами и записями DNS с помощью классов DNSStore и DNSZone, а "
-"также приведены практические примеры для каждой операции."
 
 #: ../../source/services.rst:488
 msgid "Adding a Zone"
-msgstr "Добавление зоны"
+msgstr ""
 
 #: ../../source/services.rst:490
 msgid ""
 "You can add a new zone to the ``DNSStore`` to manage its records. This "
 "operation ensures that the zone is available for DNS queries."
 msgstr ""
-"Вы можете добавить новую зону в DNSStore для управления ее записями. Эта "
-"операция гарантирует, что зона доступна для DNS-запросов."
 
 #: ../../source/services.rst:493
 msgid ""
@@ -706,15 +608,13 @@ msgstr ""
 
 #: ../../source/services.rst:511
 msgid "Removing a Zone"
-msgstr "Удаление зоны"
+msgstr ""
 
 #: ../../source/services.rst:513
 msgid ""
 "Removing a zone from the ``DNSStore`` ensures it is no longer available "
 "for DNS queries."
 msgstr ""
-"Удаление зоны из DNSStore гарантирует, что она больше не будет доступна "
-"для запросов DNS."
 
 #: ../../source/services.rst:515
 msgid ""
@@ -730,16 +630,13 @@ msgstr ""
 
 #: ../../source/services.rst:528
 msgid "Adding a Record to a Zone"
-msgstr "Добавление записей в зону"
+msgstr ""
 
 #: ../../source/services.rst:530
 msgid ""
 "To manage DNS entries, you can add records to a specific zone. This "
 "operation makes the record available for DNS resolution within that zone."
 msgstr ""
-"Для управления записями DNS вы можете добавлять записи в определенную "
-"зону. Эта операция делает запись доступной для разрешения DNS в этой "
-"зоне."
 
 #: ../../source/services.rst:533
 msgid ""
@@ -766,7 +663,7 @@ msgstr ""
 
 #: ../../source/services.rst:557
 msgid "Querying Records"
-msgstr "Запрос DNS записей"
+msgstr ""
 
 #: ../../source/services.rst:559
 msgid ""
@@ -774,9 +671,6 @@ msgid ""
 "name. This is useful to verify if a record exists or to handle DNS "
 "queries."
 msgstr ""
-"Вы можете запросить DNSStore для получения записей для определенного "
-"доменного имени. Это полезно для проверки существования записи или для "
-"обработки DNS-запросов."
 
 #: ../../source/services.rst:562
 msgid ""
@@ -789,17 +683,16 @@ msgstr ""
 
 #: ../../source/services.rst:572
 msgid "Handling Duplicate Zones"
-msgstr "Обработка дубликатов зон"
+msgstr ""
 
 #: ../../source/services.rst:574
 msgid ""
 "Attempting to add a zone that already exists should raise an error, "
 "ensuring that each zone is unique within the ``DNSStore``."
 msgstr ""
-"Попытка добавить уже существующую зону должна вызвать ошибку, гарантируя "
-"уникальность каждой зоны в DNSStore."
 
 #: ../../source/services.rst:577
+#, python-brace-format
 msgid ""
 "# Add the zone to the store\n"
 "dns_store.add_zone(zone)\n"
@@ -813,17 +706,16 @@ msgstr ""
 
 #: ../../source/services.rst:590
 msgid "Removing a Nonexistent Zone"
-msgstr "Удаление несуществующей зоны"
+msgstr ""
 
 #: ../../source/services.rst:592
 msgid ""
 "Removing a zone that does not exist should raise an error, indicating "
 "that the operation is invalid."
 msgstr ""
-"Удаление несуществующей зоны должно вызвать ошибку, "
-"указывающую на недопустимость операции."
 
 #: ../../source/services.rst:595
+#, python-brace-format
 msgid ""
 "# Attempt to remove a nonexistent zone\n"
 "try:\n"
@@ -834,17 +726,15 @@ msgstr ""
 
 #: ../../source/services.rst:605
 msgid "Querying Subdomains"
-msgstr "Запросы поддоменов"
+msgstr ""
 
 #: ../../source/services.rst:607
 msgid ""
 "The ``DNSStore`` supports querying subdomains, allowing you to resolve "
 "records within subdomains of an existing zone."
 msgstr ""
-"``DNSStore`` поддерживает запросы к субдоменам, что позволяет вам разрешать "
-"записи внутри субдоменов существующей зоны."
 
-#: ../../source/services.rst:612
+#: ../../source/services.rst:610
 msgid ""
 "# Create a DNSZone instance\n"
 "zone = DNSZone(\"example.com.\")\n"
@@ -865,18 +755,17 @@ msgid ""
 "assert record in records"
 msgstr ""
 
-#: ../../source/services.rst:634
+#: ../../source/services.rst:632
 msgid "Retrieving a Zone"
-msgstr "Получение зоны"
+msgstr ""
 
-#: ../../source/services.rst:636
+#: ../../source/services.rst:634
 msgid ""
 "You can retrieve a zone from the ``DNSStore`` to inspect or manipulate it"
 " further."
 msgstr ""
-"Вы можете получить зону из ``DNSStore``, чтобы проверить ее или управлять ею."
 
-#: ../../source/services.rst:639
+#: ../../source/services.rst:637
 msgid ""
 "# Add the zone to the store\n"
 "dns_store.add_zone(zone)\n"
@@ -888,15 +777,15 @@ msgid ""
 "assert retrieved_zone is zone"
 msgstr ""
 
-#: ../../source/services.rst:652
+#: ../../source/services.rst:650
 msgid "Handling Nonexistent Zones"
-msgstr "Обработка несуществующих зон"
+msgstr ""
+
+#: ../../source/services.rst:652
+msgid "Retrieving a zone that does not exist should return ``None``."
+msgstr ""
 
 #: ../../source/services.rst:654
-msgid "Retrieving a zone that does not exist should return ``None``."
-msgstr "При получении несуществующей зоны должно возвращаться значение ``None``."
-
-#: ../../source/services.rst:656
 msgid ""
 "# Attempt to retrieve a nonexistent zone\n"
 "nonexistent_zone = dns_store.get_zone(\"nonexistent.com.\")\n"
@@ -905,20 +794,18 @@ msgid ""
 "assert nonexistent_zone is None"
 msgstr ""
 
-#: ../../source/services.rst:666
+#: ../../source/services.rst:664
 msgid "Removing a Record from a Zone"
-msgstr "Удаление записи из зоны"
+msgstr ""
 
-#: ../../source/services.rst:668
+#: ../../source/services.rst:666
 msgid ""
 "To remove a DNS record from a zone, you can use the ``remove_record`` "
 "method. This operation ensures the record is no longer available for DNS "
 "resolution."
 msgstr ""
-"Чтобы удалить запись DNS из зоны, вы можете использовать метод ``remove_record``"
-". Эта операция гарантирует, что запись больше не будет доступна для разрешения DNS."
 
-#: ../../source/services.rst:673
+#: ../../source/services.rst:671
 msgid ""
 "# Create a DNSZone instance\n"
 "zone = DNSZone(\"example.com.\")\n"
@@ -942,19 +829,17 @@ msgid ""
 "assert len(records) == 0"
 msgstr ""
 
-#: ../../source/services.rst:698
+#: ../../source/services.rst:696
 msgid "Finding Zone by Prefix"
-msgstr "Поиск зоны по префиксу"
+msgstr ""
 
-#: ../../source/services.rst:700
+#: ../../source/services.rst:698
 msgid ""
 "The ``DNSStore`` can find the appropriate zone for a given domain name, "
 "which is useful for handling queries with subdomains."
 msgstr ""
-"``DNSStore`` может найти подходящую зону для данного доменного имени, "
-"что полезно для обработки запросов с поддоменами."
 
-#: ../../source/services.rst:704
+#: ../../source/services.rst:702
 msgid ""
 "# Create a DNSZone instance\n"
 "zone = DNSZone(\"example.com.\")\n"
@@ -969,44 +854,40 @@ msgid ""
 "assert zone_prefix == (\"com\", \"example\")"
 msgstr ""
 
-#: ../../source/services.rst:721
+#: ../../source/services.rst:719
 msgid "``CronService``"
-msgstr "Класс ``CronService``"
+msgstr ""
 
-#: ../../source/services.rst:723
+#: ../../source/services.rst:721
 msgid ""
 "``CronService`` runs ``CronCallback's`` as a service and waits for "
 "running callbacks to complete on the stop method."
 msgstr ""
-"``CronService`` запускает ``CronCallback`` в качестве сервиса и ожидает "
-"завершения выполнения обратных вызовов при остановке."
 
-#: ../../source/services.rst:726
+#: ../../source/services.rst:724
 msgid ""
 "It's based on croniter_. You can register async coroutine method with "
 "``spec`` argument - cron like format:"
 msgstr ""
-"Основан на croniter_. Вы можете зарегистрировать асинхронный метод с "
-"аргументом ``spec`` - формат, подобный cron:"
+
+#: ../../source/services.rst:730
+msgid "requires installed croniter_:"
+msgstr ""
 
 #: ../../source/services.rst:732
-msgid "requires installed croniter_:"
-msgstr "необходимо установить библиотеку croniter_:"
-
-#: ../../source/services.rst:734
 msgid "pip install croniter"
 msgstr ""
 
-#: ../../source/services.rst:738 ../../source/services.rst:880
-#: ../../source/services.rst:946 ../../source/services.rst:1009
+#: ../../source/services.rst:736 ../../source/services.rst:878
+#: ../../source/services.rst:944 ../../source/services.rst:1007
 msgid "or using extras:"
-msgstr "или как дополнительную зависимость"
+msgstr ""
 
-#: ../../source/services.rst:740
+#: ../../source/services.rst:738
 msgid "pip install aiomisc[cron]"
 msgstr ""
 
-#: ../../source/services.rst:745
+#: ../../source/services.rst:743
 msgid ""
 "import aiomisc\n"
 "from aiomisc.service.cron import CronService\n"
@@ -1023,30 +904,14 @@ msgid ""
 "with entrypoint(service) as loop:\n"
 "    loop.run_forever()"
 msgstr ""
-"import aiomisc\n"
-"from aiomisc.service.cron import CronService\n"
-"\n"
-"\n"
-"async def callback():\n"
-"    log.info('Running cron callback')\n"
-"    # ...\n"
-"\n"
-"service = CronService()\n"
-"service.register(callback, spec=\"0 * * * *\") # каждый час в 0 минут "
-"minutes\n"
-"\n"
-"with entrypoint(service) as loop:\n"
-"    loop.run_forever()"
 
-#: ../../source/services.rst:762
+#: ../../source/services.rst:760
 msgid ""
 "You can also inherit from ``CronService``, but remember that callback "
 "registration should be proceeded before start"
 msgstr ""
-"Вы также можете наследовать от ``CronService``, но помните, что "
-"регистрация обратного вызова должна выполняться до запуска"
 
-#: ../../source/services.rst:765
+#: ../../source/services.rst:763
 msgid ""
 "import aiomisc\n"
 "from aiomisc.service.cron import CronService\n"
@@ -1067,22 +932,18 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:787
+#: ../../source/services.rst:785
 msgid "Multiple services"
-msgstr "Несколько сервисов"
+msgstr ""
 
-#: ../../source/services.rst:789
+#: ../../source/services.rst:787
 msgid ""
 "Pass several service instances to the ``entrypoint`` to run all of them. "
 "After exiting the entrypoint service instances will be gracefully shut "
 "down."
 msgstr ""
-"Передайте несколько экземпляров сервиса в ``entrypoint``, чтобы запустить"
-" их все сразу. После выхода экземпляры сервиса точки входа будут "
-"корректно закрыты вызовом метода ``stop()`` или через отмену метода "
-"``start()``."
 
-#: ../../source/services.rst:792
+#: ../../source/services.rst:790
 msgid ""
 "import asyncio\n"
 "from aiomisc import entrypoint\n"
@@ -1117,19 +978,18 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:828
+#: ../../source/services.rst:826
 msgid "Configuration"
-msgstr "Конфигурация"
+msgstr ""
 
-#: ../../source/services.rst:830
+#: ../../source/services.rst:828
 msgid ""
 "``Service`` metaclass accepts all kwargs and will set it to ``self`` as "
 "attributes."
 msgstr ""
-"Метакласс ``Service`` принимает все именованные аргументы в ``__init__`` "
-"и устанавливает из как атрибуты в ``self``."
 
-#: ../../source/services.rst:833
+#: ../../source/services.rst:831
+#, python-brace-format
 msgid ""
 "import asyncio\n"
 "from aiomisc import entrypoint\n"
@@ -1162,58 +1022,29 @@ msgid ""
 "with entrypoint(*services) as loop:\n"
 "    loop.run_forever()"
 msgstr ""
-"import asyncio\n"
-"from aiomisc import entrypoint\n"
-"from aiomisc.service import Service, TCPServer, UDPServer\n"
-"\n"
-"\n"
-"class LoggingService(Service):\n"
-"    # обязательные именованные аргументы \n"
-"    __required__ = frozenset({'name'})\n"
-"\n"
-"    # default value\n"
-"    delay: int = 1\n"
-"\n"
-"    async def start(self):\n"
-"        self.start_event.set()\n"
-"        while True:\n"
-"            # аттрибут ``name`` из именованных аргументов\n"
-"            # должен быть передан при создании экземпляра\n"
-"            print('Hello from service', self.name)\n"
-"\n"
-"            # аттрибут ``delay`` из именованных аргументов\n"
-"            await asyncio.sleep(self.delay)\n"
-"\n"
-"services = (\n"
-"    LoggingService(name='#1'),\n"
-"    LoggingService(name='#2', delay=3),\n"
-")\n"
-"\n"
-"\n"
-"with entrypoint(*services) as loop:\n"
-"    loop.run_forever()"
 
-#: ../../source/services.rst:870
+#: ../../source/services.rst:868
 msgid "aiohttp service"
-msgstr "aiohttp сервис"
+msgstr ""
+
+#: ../../source/services.rst:872
+msgid "requires installed aiohttp:"
+msgstr ""
 
 #: ../../source/services.rst:874
-msgid "requires installed aiohttp:"
-msgstr "требуется установленная библиотека aiohttp"
-
-#: ../../source/services.rst:876
 msgid "pip install aiohttp"
 msgstr ""
 
-#: ../../source/services.rst:882
+#: ../../source/services.rst:880
 msgid "pip install aiomisc[aiohttp]"
 msgstr ""
 
-#: ../../source/services.rst:887
+#: ../../source/services.rst:885
 msgid "aiohttp application can be started as a service:"
-msgstr "Приложение aiohttp может быть запущено как сервис:"
+msgstr ""
 
-#: ../../source/services.rst:889
+#: ../../source/services.rst:887
+#, python-brace-format
 msgid ""
 "import aiohttp.web\n"
 "import argparse\n"
@@ -1253,37 +1084,35 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:929
+#: ../../source/services.rst:927
 msgid ""
 "Class ``AIOHTTPSSLService`` is similar to ``AIOHTTPService`` but creates "
 "an HTTPS server. You must pass SSL-required options (see ``TLSServer`` "
 "class)."
 msgstr ""
-"Класс ``AIOHTTPSSLService`` похож на ``AIOHTTPService``, но создает HTTPS"
-" сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
-"TLSServer)."
 
-#: ../../source/services.rst:936
+#: ../../source/services.rst:934
 msgid "asgi service"
-msgstr "asgi сервис"
+msgstr ""
+
+#: ../../source/services.rst:938
+msgid "requires installed aiohttp-asgi:"
+msgstr ""
 
 #: ../../source/services.rst:940
-msgid "requires installed aiohttp-asgi:"
-msgstr "требуется установленная библиотека aiohttp-asgi:"
-
-#: ../../source/services.rst:942
 msgid "pip install aiohttp-asgi"
 msgstr ""
 
-#: ../../source/services.rst:948
+#: ../../source/services.rst:946
 msgid "pip install aiomisc[asgi]"
 msgstr ""
 
-#: ../../source/services.rst:953
+#: ../../source/services.rst:951
 msgid "Any ASGI-like application can be started as a service:"
-msgstr "Любое ASGI совместимое приложение может быть запущено как сервис:"
+msgstr ""
 
-#: ../../source/services.rst:955
+#: ../../source/services.rst:953
+#, python-brace-format
 msgid ""
 "import argparse\n"
 "\n"
@@ -1321,39 +1150,35 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:993
+#: ../../source/services.rst:991
 msgid ""
 "Class ``ASGIHTTPSSLService`` is similar to ``ASGIHTTPService`` but "
 "creates HTTPS server. You must pass SSL-required options (see "
 "``TLSServer`` class)."
 msgstr ""
-"Класс ``ASGIHTTPSSLService`` похож на ``ASGIHTTPService``, но создает "
-"HTTPS сервер. Вы должны передать требуемые для SSL параметры (см. Класс "
-"``TLSServer``)."
 
-#: ../../source/services.rst:999
+#: ../../source/services.rst:997
 msgid "uvicorn service"
-msgstr "uvicorn сервис"
+msgstr ""
+
+#: ../../source/services.rst:1001
+msgid "requires installed uvicorn:"
+msgstr ""
 
 #: ../../source/services.rst:1003
-msgid "requires installed uvicorn:"
-msgstr "необходимо установить библиотеку uvicorn_:"
-
-#: ../../source/services.rst:1005
 msgid "pip install uvicorn"
 msgstr ""
 
-#: ../../source/services.rst:1011
+#: ../../source/services.rst:1009
 msgid "pip install aiomisc[uvicorn]"
 msgstr ""
 
-#: ../../source/services.rst:1016
+#: ../../source/services.rst:1014
 msgid "Any ASGI-like application can be started via uvicorn as a service:"
 msgstr ""
-"Любое ASGI совместимое приложение может быть запущено через uvicorn как "
-"сервис:"
 
-#: ../../source/services.rst:1018
+#: ../../source/services.rst:1016
+#, python-brace-format
 msgid ""
 "import argparse\n"
 "\n"
@@ -1391,25 +1216,22 @@ msgid ""
 "    loop.run_forever()"
 msgstr ""
 
-#: ../../source/services.rst:1061
+#: ../../source/services.rst:1059
 msgid "GRPC service"
-msgstr "GRPC сервис"
+msgstr ""
 
-#: ../../source/services.rst:1063
+#: ../../source/services.rst:1061
 msgid ""
 "This is an example of a GRPC service which is defined in a file and loads"
 " a `hello.proto` file without code generation, this example is one of the"
 " examples from `grpcio`, the other examples will work as expected."
 msgstr ""
-"Это пример GRPC-сервиса, который определяется в файле и загружает файл "
-"`hello.proto` без кодогенерации, этот пример является одним из примеров "
-"из `grpcio`, остальные примеры будут работать как ожидается."
+
+#: ../../source/services.rst:1065
+msgid "Proto definition:"
+msgstr ""
 
 #: ../../source/services.rst:1067
-msgid "Proto definition:"
-msgstr "Определение proto файла"
-
-#: ../../source/services.rst:1069
 msgid ""
 "syntax = \"proto3\";\n"
 "\n"
@@ -1431,31 +1253,12 @@ msgid ""
 "  string message = 1;\n"
 "}"
 msgstr ""
-"syntax = \"proto3\";\n"
-"\n"
-"package helloworld;\n"
-"\n"
-"// Определение сервиса приветствия.\n"
-"service Greeter {\n"
-"  // Сказать привет\n"
-"  rpc SayHello (HelloRequest) returns (HelloReply) {}\n"
-"}\n"
-"\n"
-"// Сообщение запроса, содержащее имя пользователя.\n"
-"message HelloRequest {\n"
-"  string name = 1;\n"
-"}\n"
-"\n"
-"// Ответное сообщение, содержащее приветствие\n"
-"message HelloReply {\n"
-"  string message = 1;\n"
-"}"
 
-#: ../../source/services.rst:1092
+#: ../../source/services.rst:1090
 msgid "Service initialization example:"
-msgstr "Пример инициализации сервиса:"
+msgstr ""
 
-#: ../../source/services.rst:1095
+#: ../../source/services.rst:1093
 #, python-format
 msgid ""
 "import grpc\n"
@@ -1494,27 +1297,25 @@ msgid ""
 "    main()"
 msgstr ""
 
-#: ../../source/services.rst:1131
+#: ../../source/services.rst:1129
 msgid "To enable reflection for the service you use reflection flag:"
 msgstr ""
 
-#: ../../source/services.rst:1133
+#: ../../source/services.rst:1131
 msgid "GRPCService(reflection=True)"
 msgstr ""
 
-#: ../../source/services.rst:1141
+#: ../../source/services.rst:1139
 msgid "Memory Tracer"
-msgstr "Трассировщик памяти"
+msgstr ""
 
-#: ../../source/services.rst:1143
+#: ../../source/services.rst:1141
 msgid ""
 "Simple and useful service for logging large python objects allocated in "
 "memory."
 msgstr ""
-"Простой и полезный сервис для логирования больших объектов Python, "
-"размещенных в памяти."
 
-#: ../../source/services.rst:1147
+#: ../../source/services.rst:1145
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -1534,11 +1335,11 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:1167 ../../source/services.rst:1216
+#: ../../source/services.rst:1165 ../../source/services.rst:1214
 msgid "Output example:"
-msgstr "Пример вывода:"
+msgstr ""
 
-#: ../../source/services.rst:1169
+#: ../../source/services.rst:1167
 msgid ""
 "[T:[1] Thread Pool] INFO:aiomisc.service.tracer: Top memory usage:\n"
 " Objects | Obj.Diff |   Memory | Mem.Diff | Traceback\n"
@@ -1560,23 +1361,19 @@ msgid ""
 "      14 |       14 |   2.4KiB |   2.4KiB | aiomisc/periodic.py:40"
 msgstr ""
 
-#: ../../source/services.rst:1191
+#: ../../source/services.rst:1189
 msgid "Profiler"
-msgstr "``Profiler`` - профилировщик"
+msgstr ""
 
-#: ../../source/services.rst:1193
+#: ../../source/services.rst:1191
 msgid ""
 "Simple service for profiling. Optional `path` argument can be provided to"
 " dump complete profiling data, which can be later used by, for example, "
 "snakeviz. Also can change ordering with the `order` argument "
 "(\"cumulative\" by default)."
 msgstr ""
-"Простой сервис для профилирования. Необязательный аргумент `path` может "
-"быть предоставлен для выгрузки полных данных профилирования, которые "
-"позже могут быть использованы, например, snakeviz. Также можно изменить "
-"порядок с аргументом ``order`` (по умолчанию \"cumulative\")."
 
-#: ../../source/services.rst:1199
+#: ../../source/services.rst:1197
 msgid ""
 "import asyncio\n"
 "import os\n"
@@ -1593,7 +1390,8 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/services.rst:1218
+#: ../../source/services.rst:1216
+#, python-brace-format
 msgid ""
 "108 function calls in 1.117 seconds\n"
 "\n"
@@ -1611,21 +1409,21 @@ msgid ""
 "<...>/lib/python3.7/cProfile.py:50(create_stats)"
 msgstr ""
 
-#: ../../source/services.rst:1235
+#: ../../source/services.rst:1233
 msgid "Raven service"
-msgstr "Raven сервис"
+msgstr ""
 
-#: ../../source/services.rst:1237
+#: ../../source/services.rst:1235
 msgid ""
 "Simple service for sending unhandled exceptions to the `sentry`_ service "
 "instance."
-msgstr "Простой сервис для отправки необработанных исключений в сервис `sentry`_."
+msgstr ""
+
+#: ../../source/services.rst:1240
+msgid "Simple example:"
+msgstr ""
 
 #: ../../source/services.rst:1242
-msgid "Simple example:"
-msgstr "Простой пример:"
-
-#: ../../source/services.rst:1244
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1666,52 +1464,13 @@ msgid ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 msgstr ""
-"import asyncio\n"
-"import logging\n"
-"import sys\n"
-"\n"
-"from aiomisc import entrypoint\n"
-"from aiomisc.version import __version__\n"
-"from aiomisc.service.raven import RavenSender\n"
-"\n"
-"\n"
-"async def main():\n"
-"    while True:\n"
-"        await asyncio.sleep(1)\n"
-"\n"
-"        try:\n"
-"            1 / 0\n"
-"        except ZeroDivisionError:\n"
-"            logging.exception(\"Exception\")\n"
-"\n"
-"\n"
-"raven_sender = RavenSender(\n"
-"    sentry_dsn=(\n"
-"        "
-"\"https://583ca3b555054f80873e751e8139e22a@o429974.ingest.sentry.io/\"\n"
-"        \"5530251\"\n"
-"    ),\n"
-"    client_options=dict(\n"
-"        # По умолчанию возьмет значение переменной окружения SENTRY_NAME\n"
-"        name=\"example-from-aiomisc\",\n"
-"        # По умолчанию возьмет значение переменной окружения "
-"SENTRY_ENVIRONMENT\n"
-"        environment=\"simple_example\",\n"
-"        # По умолчанию возьмет значение переменной окружения "
-"SENTRY_RELEASE\n"
-"        release=__version__,\n"
-"    )\n"
-")\n"
-"\n"
-"\n"
-"with entrypoint(raven_sender) as loop:\n"
-"    loop.run_until_complete(main())"
+
+#: ../../source/services.rst:1282
+msgid "Full configuration:"
+msgstr ""
 
 #: ../../source/services.rst:1284
-msgid "Full configuration:"
-msgstr "Все опции для клиента:"
-
-#: ../../source/services.rst:1286
+#, python-brace-format
 msgid ""
 "import asyncio\n"
 "import logging\n"
@@ -1770,98 +1529,35 @@ msgid ""
 "with entrypoint(raven_sender) as loop:\n"
 "    loop.run_until_complete(main())"
 msgstr ""
-"import asyncio\n"
-"import logging\n"
-"import sys\n"
-"\n"
-"from aiomisc import entrypoint\n"
-"from aiomisc.version import __version__\n"
-"from aiomisc.service.raven import RavenSender\n"
-"\n"
-"\n"
-"async def main():\n"
-"    while True:\n"
-"        await asyncio.sleep(1)\n"
-"\n"
-"        try:\n"
-"            1 / 0\n"
-"        except ZeroDivisionError:\n"
-"            logging.exception(\"Exception\")\n"
-"\n"
-"\n"
-"raven_sender = RavenSender(\n"
-"    sentry_dsn=(\n"
-"        "
-"\"https://583ca3b555054f80873e751e8139e22a@o429974.ingest.sentry.io/\"\n"
-"        \"5530251\"\n"
-"    ),\n"
-"    client_options=dict(\n"
-"        # По умолчанию возьмет значение переменной окружения SENTRY_NAME\n"
-"        name=\"\",\n"
-"        # По умолчанию возьмет значение переменной окружения "
-"SENTRY_ENVIRONMENT\n"
-"        environment=\"full_example\",\n"
-"        # По умолчанию возьмет значение переменной окружения "
-"SENTRY_RELEASE\n"
-"        release=__version__,\n"
-"\n"
-"        # Умолчания для остальных аргументов\n"
-"        include_paths=set(),\n"
-"        exclude_paths=set(),\n"
-"        auto_log_stacks=True,\n"
-"        capture_locals=True,\n"
-"        string_max_length=400,\n"
-"        list_max_length=50,\n"
-"        site=None,\n"
-"        include_versions=True,\n"
-"        processors=(\n"
-"            'raven.processors.SanitizePasswordsProcessor',\n"
-"        ),\n"
-"        sanitize_keys=None,\n"
-"        context={'sys.argv': getattr(sys, 'argv', [])[:]},\n"
-"        tags={},\n"
-"        sample_rate=1,\n"
-"        ignore_exceptions=(),\n"
-"    )\n"
-")\n"
-"\n"
-"\n"
-"with entrypoint(raven_sender) as loop:\n"
-"    loop.run_until_complete(main())"
 
-#: ../../source/services.rst:1344
+#: ../../source/services.rst:1342
 msgid ""
 "You will find the full specification of options in the `Raven "
 "documentation`_."
-msgstr "Вы можете найти полное описание параметров в `документации Raven`_."
+msgstr ""
+
+#: ../../source/services.rst:1348
+msgid "``SDWatchdogService``"
+msgstr ""
 
 #: ../../source/services.rst:1350
-msgid "``SDWatchdogService``"
-msgstr "``SDWatchdogService``"
-
-#: ../../source/services.rst:1352
 msgid ""
 "Ready to use service just adding to your entrypoint and notifying SystemD"
 " service watchdog timer."
 msgstr ""
-"Готовый к использованию сервис, просто добавьте его в entrypoint и он "
-"будет отправлять уведомления сторожевому таймеру SystemD."
 
-#: ../../source/services.rst:1355
+#: ../../source/services.rst:1353
 msgid ""
 "This can be safely added at any time, since if the service does not "
 "detect systemd-related environment variables, then its initialization is "
 "skipped."
 msgstr ""
-"Вы можете безопасно добавлять это в любом случае, так как если сервис не "
-"найдет переменных окружения, которые устанавливает systemd, Сервис просто"
-" не запустится, однако выполнение приложения продолжится."
+
+#: ../../source/services.rst:1356
+msgid "Example of python file:"
+msgstr ""
 
 #: ../../source/services.rst:1358
-msgid "Example of python file:"
-msgstr "Пример python файла:"
-
-#: ../../source/services.rst:1360
 msgid ""
 "import logging\n"
 "from time import sleep\n"
@@ -1875,11 +1571,11 @@ msgid ""
 "        pass"
 msgstr ""
 
-#: ../../source/services.rst:1375
+#: ../../source/services.rst:1373
 msgid "Example of systemd service file:"
-msgstr "Пример systemd сервис-файла:"
+msgstr ""
 
-#: ../../source/services.rst:1377
+#: ../../source/services.rst:1375
 msgid ""
 "[Service]\n"
 "# Activating the notification mechanism\n"
@@ -1911,50 +1607,18 @@ msgid ""
 "FinalKillSignal=SIGKILL\n"
 "SendSIGKILL=yes"
 msgstr ""
-"[Service]\n"
-"# Активизируем механизм уведомлений\n"
-"Type=notify\n"
-"\n"
-"# Команда которую следует запускать\n"
-"ExecStart=/home/mosquito/.venv/aiomisc/bin/python "
-"/home/mosquito/scratch.py\n"
-"\n"
-"# Время через которое программа должны посылать нотификации сторожевого "
-"таймера\n"
-"WatchdogSec=5\n"
-"\n"
-"# Процесс будет убит если он перестал отвечать сторожевому таймеру\n"
-"WatchdogSignal=SIGKILL\n"
-"\n"
-"# Сервис будет перезапущен в случае ошибки\n"
-"Restart=on-failure\n"
-"\n"
-"# Пробуем убить сам процесс вместо всей cgroup\n"
-"KillMode=process\n"
-"\n"
-"# Пробуем остановить сервис \"помягче\"\n"
-"KillSignal=SIGINT\n"
-"\n"
-"# Пробуем остановить сервис \"помягче\" при перезапуске\n"
-"RestartKillSignal=SIGINT\n"
-"\n"
-"# Слать SIGKILL если произошел таймаут остановки\n"
-"FinalKillSignal=SIGKILL\n"
-"SendSIGKILL=yes"
+
+#: ../../source/services.rst:1410
+msgid "``ProcessService``"
+msgstr ""
 
 #: ../../source/services.rst:1412
-msgid "``ProcessService``"
-msgstr "Класс ``ProcessService``"
-
-#: ../../source/services.rst:1414
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped."
 msgstr ""
-"Базовый класс для запуска функции отдельным системным процессом и "
-"завершения при остановке родительского процесса."
 
-#: ../../source/services.rst:1417
+#: ../../source/services.rst:1415
 msgid ""
 "from typing import Dict, Any\n"
 "\n"
@@ -1993,60 +1657,20 @@ msgid ""
 "    with aiomisc.entrypoint(*services) as loop:\n"
 "        loop.run_forever()"
 msgstr ""
-"from typing import Dict, Any\n"
-"\n"
-"import aiomisc.service\n"
-"\n"
-"# Реализация вымышленного майнера\n"
-"from .my_miner import Miner\n"
-"\n"
-"\n"
-"class MiningService(aiomisc.service.ProcessService):\n"
-"    bitcoin: bool = False\n"
-"    monero: bool = False\n"
-"    dogiecoin: bool = False\n"
-"\n"
-"    def in_process(self) -> Any:\n"
-"        if self.bitcoin:\n"
-"            miner = Miner(kind=\"bitcoin\")\n"
-"        elif self.monero:\n"
-"            miner = Miner(kind=\"monero\")\n"
-"        elif self.dogiecoin:\n"
-"            miner = Miner(kind=\"dogiecoin\")\n"
-"        else:\n"
-"            # Ничего делать не нужно\n"
-"            return\n"
-"\n"
-"        miner.do_mining()\n"
-"\n"
-"\n"
-"services = [\n"
-"    MiningService(bitcoin=True),\n"
-"    MiningService(monero=True),\n"
-"    MiningService(dogiecoin=True),\n"
-"]\n"
-"\n"
-"if __name__ == '__main__':\n"
-"    with aiomisc.entrypoint(*services) as loop:\n"
-"        loop.run_forever()"
+
+#: ../../source/services.rst:1456
+msgid "``RespawningProcessService``"
+msgstr ""
 
 #: ../../source/services.rst:1458
-msgid "``RespawningProcessService``"
-msgstr "Класс ``RespawningProcessService``"
-
-#: ../../source/services.rst:1460
 msgid ""
 "A base class for launching a function by a separate system process, and "
 "by termination when the parent process is stopped, It's pretty like "
 "`ProcessService` but have one difference when the process unexpectedly "
 "exited this will be respawned."
 msgstr ""
-"Базовый класс для запуска функции отдельным системным процессом и "
-"завершения при остановке родительского процесса. Это очень похоже на "
-"`ProcessService` с одним отличием - если дочерний процесс неожиданно "
-"завершится, то он будет перезапущен."
 
-#: ../../source/services.rst:1465
+#: ../../source/services.rst:1463
 msgid ""
 "import logging\n"
 "from typing import Any\n"
@@ -2068,5 +1692,3 @@ msgid ""
 "        loop.run_forever()"
 msgstr ""
 
-#~ msgid "Overview"
-#~ msgstr "Сервисы"

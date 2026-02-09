@@ -237,7 +237,7 @@ class Entrypoint:
     def loop(self) -> asyncio.AbstractEventLoop:
         if self._loop is None:
             self._runner = Runner(
-                debug=self._debug, loop_factory=self.loop_factory,
+                debug=self._debug, loop_factory=self.loop_factory
             )
             self._loop = self._runner.get_loop()
             self._loop_owner = True
@@ -248,7 +248,7 @@ class Entrypoint:
             # Custom ThreadPoolExecutor (Runner doesn't handle this)
             pool_size = self.pool_size or ThreadPoolExecutor.DEFAULT_POOL_SIZE
             self._thread_pool = ThreadPoolExecutor(
-                pool_size, statistic_name="default",
+                pool_size, statistic_name="default"
             )
             self._loop.set_default_executor(self._thread_pool)
 

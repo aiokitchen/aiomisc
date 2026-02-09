@@ -17,11 +17,7 @@ from functools import wraps
 from random import getrandbits
 from typing import Any, TypeVar
 
-from .compat import (
-    sock_set_nodelay,
-    sock_set_reuseport,
-    time_ns,
-)
+from .compat import sock_set_nodelay, sock_set_reuseport, time_ns
 
 T = TypeVar("T", bound=Any)
 TimeoutType = int | float

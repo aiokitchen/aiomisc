@@ -5,7 +5,15 @@ import socket
 from collections.abc import Callable, Iterator
 from importlib.metadata import Distribution, EntryPoint
 from time import time_ns
-from typing import Any, Concatenate, ParamSpec, Protocol, TypeAlias, TypeVar, final
+from typing import (
+    Any,
+    Concatenate,
+    ParamSpec,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    final,
+)
 
 
 log = logging.getLogger(__name__)

@@ -1,0 +1,116 @@
+# Russian translations for aiomisc package.
+# Copyright (C) 2026, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 17.10\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
+"PO-Revision-Date: 2026-02-09 12:00+0100\n"
+"Last-Translator: \n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/services/grpc.rst:2
+msgid "gRPC Service"
+msgstr "Сервис gRPC"
+
+#: ../../source/services/grpc.rst:7
+msgid "GRPC service"
+msgstr "Сервис GRPC"
+
+#: ../../source/services/grpc.rst:9
+msgid ""
+"This is an example of a GRPC service which is defined in a file and loads"
+" a `hello.proto` file without code generation, this example is one of the"
+" examples from `grpcio`, the other examples will work as expected."
+msgstr ""
+"Это пример GRPC-сервиса, который определён в файле и загружает файл "
+"`hello.proto` без генерации кода. Этот пример является одним из примеров "
+"из `grpcio`, остальные примеры будут работать аналогично."
+
+#: ../../source/services/grpc.rst:13
+msgid "Proto definition:"
+msgstr "Определение Proto:"
+
+#: ../../source/services/grpc.rst:15
+msgid ""
+"syntax = \"proto3\";\n"
+"\n"
+"package helloworld;\n"
+"\n"
+"// The greeting service definition.\n"
+"service Greeter {\n"
+"  // Sends a greeting\n"
+"  rpc SayHello (HelloRequest) returns (HelloReply) {}\n"
+"}\n"
+"\n"
+"// The request message containing the user's name.\n"
+"message HelloRequest {\n"
+"  string name = 1;\n"
+"}\n"
+"\n"
+"// The response message containing the greetings\n"
+"message HelloReply {\n"
+"  string message = 1;\n"
+"}"
+msgstr ""
+
+#: ../../source/services/grpc.rst:38
+msgid "Service initialization example:"
+msgstr "Пример инициализации сервиса:"
+
+#: ../../source/services/grpc.rst:41
+#, python-format
+msgid ""
+"import grpc\n"
+"\n"
+"import aiomisc\n"
+"from aiomisc.service.grpc_server import GRPCService\n"
+"\n"
+"\n"
+"protos, services = grpc.protos_and_services(\"hello.proto\")\n"
+"\n"
+"\n"
+"class Greeter(services.GreeterServicer):\n"
+"    async def SayHello(self, request, context):\n"
+"        return protos.HelloReply(message='Hello, %s!' % request.name)\n"
+"\n"
+"\n"
+"def main():\n"
+"    grpc_service = GRPCService(compression=grpc.Compression.Gzip)\n"
+"    services.add_GreeterServicer_to_server(\n"
+"        Greeter(), grpc_service,\n"
+"    )\n"
+"    grpc_service.add_insecure_port('[::]:0')\n"
+"    grpc_service.add_insecure_port('[::1]:0')\n"
+"    grpc_service.add_insecure_port('127.0.0.1:0')\n"
+"    grpc_service.add_insecure_port('localhost:0')\n"
+"    grpc_service.add_secure_port('localhost:0', "
+"grpc.local_server_credentials())\n"
+"    grpc_service.add_secure_port('[::]:0', "
+"grpc.local_server_credentials())\n"
+"\n"
+"    with aiomisc.entrypoint(grpc_service) as loop:\n"
+"        loop.run_forever()\n"
+"\n"
+"\n"
+"if __name__ == '__main__':\n"
+"    main()"
+msgstr ""
+
+#: ../../source/services/grpc.rst:77
+msgid "To enable reflection for the service you use reflection flag:"
+msgstr "Для включения рефлексии сервиса используйте флаг reflection:"
+
+#: ../../source/services/grpc.rst:79
+msgid "GRPCService(reflection=True)"
+msgstr ""
+

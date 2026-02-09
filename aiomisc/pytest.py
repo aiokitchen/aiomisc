@@ -18,10 +18,7 @@ from contextlib import contextmanager, suppress
 from functools import partial, wraps
 from inspect import isasyncgenfunction, iscoroutinefunction
 from types import ModuleType
-from typing import (
-    Any,
-    NamedTuple,
-)
+from typing import Any, NamedTuple
 from unittest.mock import MagicMock
 
 import aiomisc
@@ -91,10 +88,7 @@ class Delay:
                 self.future = None
 
 
-def delayed_future(
-    timeout: int | float,
-    result: bool = True,
-) -> asyncio.Future:
+def delayed_future(timeout: int | float, result: bool = True) -> asyncio.Future:
 
     loop = asyncio.get_event_loop()
 
@@ -155,15 +149,12 @@ class TCPProxy:
         return f"<{self.__class__.__name__}[{id(self):x}]: tcp://{self.proxy_host}:{self.proxy_port} => tcp://{self.target_host}:{self.target_port}>"
 
     async def start(
-        self,
-        timeout: TimeoutType | None = None,
+        self, timeout: TimeoutType | None = None
     ) -> asyncio.AbstractServer:
         log.debug("Starting %r", self)
         server = await asyncio.wait_for(
             asyncio.start_server(
-                self._handle_client,
-                host=self.proxy_host,
-                port=self.proxy_port,
+                self._handle_client, host=self.proxy_host, port=self.proxy_port
             ),
             timeout=timeout,
         )
@@ -174,10 +165,7 @@ class TCPProxy:
 
     async def create_client(self) -> ClientType:
         log.debug("Creating client for %r", self)
-        return await asyncio.open_connection(
-            self.proxy_host,
-            self.proxy_port,
-        )
+        return await asyncio.open_connection(self.proxy_host, self.proxy_port)
 
     async def __aenter__(self) -> "TCPProxy":
         if self.server is None:
@@ -185,10 +173,7 @@ class TCPProxy:
         return self
 
     async def __aexit__(
-        self,
-        exc_type: type[Exception],
-        exc_val: Exception,
-        exc_tb: Any,
+        self, exc_type: type[Exception], exc_val: Exception, exc_tb: Any
     ) -> None:
         await self.close(timeout=self.DEFAULT_TIMEOUT)
 
@@ -205,9 +190,7 @@ class TCPProxy:
         await asyncio.wait_for(close(), timeout=timeout)
 
     def set_delay(
-        self,
-        read_delay: TimeoutType,
-        write_delay: TimeoutType = 0,
+        self, read_delay: TimeoutType, write_delay: TimeoutType = 0
     ) -> None:
         log.debug("Setting delay [R/W %f %f]", read_delay, write_delay)
 
@@ -225,9 +208,7 @@ class TCPProxy:
         self.write_delay = write_delay
 
     def set_content_processors(
-        self,
-        read: ProxyProcessorType | None,
-        write: ProxyProcessorType | None,
+        self, read: ProxyProcessorType | None, write: ProxyProcessorType | None
     ) -> None:
         log.debug(
             "Setting content processors for %r: read=%r write=%r",
@@ -251,22 +232,16 @@ class TCPProxy:
         self.write_processor = write
 
     def disconnect_all(self) -> asyncio.Future:
-        log.debug(
-            "Disconnecting %s clients of %r",
-            len(self.clients),
-            self,
-        )
+        log.debug("Disconnecting %s clients of %r", len(self.clients), self)
         return asyncio.ensure_future(
             asyncio.gather(
                 *[client.close() for client in self.clients],
                 return_exceptions=True,
-            ),
+            )
         )
 
     async def _handle_client(
-        self,
-        reader: asyncio.StreamReader,
-        writer: asyncio.StreamWriter,
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
     ) -> None:
         client = TCPProxyClient(reader, writer, buffered=self.buffered)
         self.clients.add(client)
@@ -278,15 +253,11 @@ class TCPProxy:
 
         await client.connect(self.target_host, self.target_port)
 
-        client.closing.add_done_callback(
-            lambda _: self.clients.remove(client),
-        )
+        client.closing.add_done_callback(lambda _: self.clients.remove(client))
 
     @contextmanager
     def slowdown(
-        self,
-        read_delay: TimeoutType = 0,
-        write_delay: TimeoutType = 0,
+        self, read_delay: TimeoutType = 0, write_delay: TimeoutType = 0
     ) -> Generator[None, None, None]:
         old_read_delay = self.read_delay
         old_write_delay = self.write_delay
@@ -417,15 +388,14 @@ class TCPProxyClient:
         log.debug("Establishing connection for %r", self)
 
         self.server_reader, self.server_writer = await asyncio.open_connection(
-            host=target_host,
-            port=target_port,
+            host=target_host, port=target_port
         )
 
         self.__client_repr = ":".join(
-            map(str, self.client_writer.get_extra_info("peername")[:2]),
+            map(str, self.client_writer.get_extra_info("peername")[:2])
         )
         self.__server_repr = ":".join(
-            map(str, self.server_writer.get_extra_info("peername")[:2]),
+            map(str, self.server_writer.get_extra_info("peername")[:2])
         )
 
         self.tasks = (
@@ -435,7 +405,7 @@ class TCPProxyClient:
                     self.client_writer,
                     "write",
                     self.write_delay,
-                ),
+                )
             ),
             self.loop.create_task(
                 self.pipe(
@@ -443,7 +413,7 @@ class TCPProxyClient:
                     self.server_writer,
                     "read",
                     self.read_delay,
-                ),
+                )
             ),
         )
 
@@ -525,7 +495,7 @@ def pytest_fixture_setup(fixturedef, request):  # type: ignore
                 pass
 
         loop_fixturedef.addfinalizer(
-            partial(fixturedef.finish, request=request),
+            partial(fixturedef.finish, request=request)
         )
 
         request.addfinalizer(finalizer)
@@ -536,10 +506,7 @@ def pytest_fixture_setup(fixturedef, request):  # type: ignore
 
 @pytest.fixture(scope="session")
 def localhost() -> str:
-    params = (
-        (socket.AF_INET, "127.0.0.1"),
-        (socket.AF_INET6, "::1"),
-    )
+    params = ((socket.AF_INET, "127.0.0.1"), (socket.AF_INET6, "::1"))
     for family, addr in params:
         with socket.socket(family, socket.SOCK_STREAM) as sock:
             try:
@@ -557,9 +524,7 @@ def loop_debug(pytestconfig: pytest.Config) -> bool:
 
 
 @pytest.fixture(scope="session")
-def aiomisc_test_timeout(
-    pytestconfig: pytest.Config,
-) -> int | float | None:
+def aiomisc_test_timeout(pytestconfig: pytest.Config) -> int | float | None:
     return pytestconfig.getoption("--aiomisc-test-timeout")
 
 
@@ -581,14 +546,10 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
 
     event_loop = pyfuncitem.funcargs.get("event_loop", None)
     func_wraper = pyfuncitem.funcargs.get(
-        "aiomisc_func_wrap",
-        aiomisc.awaitable,
+        "aiomisc_func_wrap", aiomisc.awaitable
     )
 
-    aiomisc_test_timeout = pyfuncitem.funcargs.get(
-        "aiomisc_test_timeout",
-        None,
-    )
+    aiomisc_test_timeout = pyfuncitem.funcargs.get("aiomisc_test_timeout", None)
 
     kwargs = {
         arg: pyfuncitem.funcargs[arg]
@@ -598,8 +559,7 @@ def pytest_pyfunc_call(pyfuncitem):  # type: ignore
     @wraps(pyfuncitem.obj)
     async def func() -> Any:
         return await asyncio.wait_for(
-            func_wraper(pyfuncitem.obj)(**kwargs),
-            timeout=aiomisc_test_timeout,
+            func_wraper(pyfuncitem.obj)(**kwargs), timeout=aiomisc_test_timeout
         )
 
     event_loop.run_until_complete(func())
@@ -652,10 +612,7 @@ def event_loop(
     loop_debug: bool,
     thread_pool_executor: Callable[..., concurrent.futures.ThreadPoolExecutor],
 ) -> Generator[Any, asyncio.AbstractEventLoop, None]:
-    basic_config(
-        log_format="plain",
-        stream=caplog.handler.stream,
-    )
+    basic_config(log_format="plain", stream=caplog.handler.stream)
 
     get_marker = request.node.get_closest_marker
     forbid_loop_getter_marker = get_marker("forbid_get_event_loop")
@@ -686,8 +643,7 @@ def event_loop(
         with mock_get_event_loop() as event_loop_getter_mock:
             if forbid_loop_getter_marker:
                 event_loop_getter_mock.side_effect = partial(
-                    pytest.fail,
-                    "get_event_loop is forbidden",
+                    pytest.fail, "get_event_loop is forbidden"
                 )
             yield loop
     finally:
@@ -705,10 +661,7 @@ def event_loop(
             )
             pytest.fail("Unhandled exceptions found. See logs.")
 
-        basic_config(
-            log_format="plain",
-            stream=sys.stderr,
-        )
+        basic_config(log_format="plain", stream=sys.stderr)
 
         if not loop.is_closed():
             with suppress(Exception):
@@ -748,8 +701,7 @@ class PortSocket(NamedTuple):
 
 @pytest.fixture
 def aiomisc_socket_factory(
-    request: pytest.FixtureRequest,
-    localhost: str,
+    request: pytest.FixtureRequest, localhost: str
 ) -> Callable[..., PortSocket]:
     """Returns a"""
 
@@ -825,8 +777,7 @@ else:
 
 @pytest.fixture
 def aiomisc_unused_port_factory(
-    request: pytest.FixtureRequest,
-    localhost: str,
+    request: pytest.FixtureRequest, localhost: str
 ) -> Callable[[], int]:
     def port_factory(*args: Any) -> int:
         wrapper = socket_wrapper(*args)

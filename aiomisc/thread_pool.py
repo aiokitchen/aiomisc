@@ -301,6 +301,7 @@ def run_in_executor(
         loop = asyncio.get_running_loop()
         return loop.run_in_executor(executor, partial(func, *args, **kwargs))
     except RuntimeError:
+
         async def lazy_wrapper() -> T:
             loop = asyncio.get_running_loop()
             return await loop.run_in_executor(

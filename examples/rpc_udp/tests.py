@@ -24,12 +24,12 @@ def server_port_sock(aiomisc_socket_factory):
 
 
 @pytest.fixture
-async def rpc_client(localhost, loop) -> RPCServer:
+async def rpc_client(localhost) -> RPCServer:
     return RPCServer(handlers=None, address=localhost, port=0)
 
 
 @pytest.fixture
-async def rpc_server(server_port_sock, loop, handlers) -> RPCServer:
+async def rpc_server(server_port_sock, handlers) -> RPCServer:
     _, sock = server_port_sock
     return RPCServer(handlers=handlers, sock=sock)
 

@@ -1,0 +1,604 @@
+# Russian translations for aiomisc package.
+# Copyright (C) 2026, Dmitry Orlov
+# This file is distributed under the same license as the aiomisc package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: aiomisc 17.10\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
+"PO-Revision-Date: 2026-02-09 12:00+0100\n"
+"Last-Translator: \n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../source/services/periodic.rst:2
+msgid "Periodic Services"
+msgstr "Периодические сервисы"
+
+#: ../../source/services/periodic.rst:4
+msgid "This section covers services for periodic and scheduled task execution."
+msgstr "В этом разделе рассматриваются сервисы для периодического и запланированного выполнения задач."
+
+#: ../../source/services/periodic.rst:10
+msgid "``PeriodicService``"
+msgstr "``PeriodicService``"
+
+#: ../../source/services/periodic.rst:12
+msgid ""
+"``PeriodicService`` runs ``PeriodicCallback`` as a service and waits for "
+"the running callback to complete on the stop method. You need to use "
+"``PeriodicService`` as a base class and override ``callback`` async "
+"coroutine method."
+msgstr ""
+"``PeriodicService`` запускает ``PeriodicCallback`` как сервис и ожидает "
+"завершения выполняющегося колбэка при вызове метода stop. Вам нужно "
+"использовать ``PeriodicService`` как базовый класс и переопределить "
+"асинхронный метод ``callback``."
+
+#: ../../source/services/periodic.rst:16
+msgid ""
+"Service class accepts required ``interval`` argument - periodic interval "
+"in seconds and optional ``delay`` argument - periodic execution delay in "
+"seconds (0 by default)."
+msgstr ""
+"Класс сервиса принимает обязательный аргумент ``interval`` — интервал "
+"периодического выполнения в секундах, и опциональный аргумент ``delay`` — "
+"задержка перед первым выполнением в секундах (по умолчанию 0)."
+
+#: ../../source/services/periodic.rst:20
+msgid ""
+"import aiomisc\n"
+"from aiomisc.service.periodic import PeriodicService\n"
+"\n"
+"\n"
+"class MyPeriodicService(PeriodicService):\n"
+"    async def callback(self):\n"
+"        log.info('Running periodic callback')\n"
+"        # ...\n"
+"\n"
+"service = MyPeriodicService(interval=3600, delay=0)  # once per hour\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+
+#: ../../source/services/periodic.rst:40
+msgid "DNS Server"
+msgstr "DNS-сервер"
+
+#: ../../source/services/periodic.rst:42
+msgid ""
+"The DNS server described here uses the ``aiomisc`` library, which "
+"provides utilities for asynchronous I/O operations, and the ``dnslib`` "
+"library for handling DNS records and packets. This setup is ideal for "
+"high-performance, non-blocking DNS query handling."
+msgstr ""
+"Описанный здесь DNS-сервер использует библиотеку ``aiomisc``, которая "
+"предоставляет утилиты для асинхронных операций ввода-вывода, и библиотеку "
+"``dnslib`` для обработки DNS-записей и пакетов. Такая конфигурация идеальна "
+"для высокопроизводительной неблокирующей обработки DNS-запросов."
+
+#: ../../source/services/periodic.rst:48
+msgid "Key Features"
+msgstr "Ключевые возможности"
+
+#: ../../source/services/periodic.rst:50
+msgid ""
+"**Asynchronous I/O**: Utilizes asynchronous operations to handle multiple"
+" DNS queries concurrently, ensuring high performance and scalability."
+msgstr ""
+"**Асинхронный ввод-вывод**: Использует асинхронные операции для "
+"параллельной обработки множества DNS-запросов, обеспечивая высокую "
+"производительность и масштабируемость."
+
+#: ../../source/services/periodic.rst:52
+msgid ""
+"**UDP and TCP Support**: Supports DNS queries over both UDP and TCP "
+"protocols, making it versatile for various network configurations."
+msgstr ""
+"**Поддержка UDP и TCP**: Поддерживает DNS-запросы по протоколам UDP и TCP, "
+"что делает его универсальным для различных сетевых конфигураций."
+
+#: ../../source/services/periodic.rst:54
+msgid ""
+"**``EDNS0`` Support**: Implements Extension Mechanisms for DNS "
+"(``EDNS0``) to handle larger DNS messages and extended functionalities."
+msgstr ""
+"**Поддержка ``EDNS0``**: Реализует механизмы расширения DNS (``EDNS0``) "
+"для обработки более крупных DNS-сообщений и расширенной функциональности."
+
+#: ../../source/services/periodic.rst:56
+msgid ""
+"**Customizable DNS Records**: Allows easy configuration of DNS zones and "
+"records, enabling you to define and manage your DNS entries efficiently."
+msgstr ""
+"**Настраиваемые DNS-записи**: Позволяет легко настраивать DNS-зоны и "
+"записи, обеспечивая эффективное определение и управление DNS-записями."
+
+#: ../../source/services/periodic.rst:61
+msgid "Prerequisites"
+msgstr "Предварительные требования"
+
+#: ../../source/services/periodic.rst:63
+msgid "Install the required libraries using pip:"
+msgstr "Установите необходимые библиотеки с помощью pip:"
+
+#: ../../source/services/periodic.rst:65
+msgid "pip install aiomisc[dns]"
+msgstr ""
+
+#: ../../source/services/periodic.rst:71
+msgid "Setting Up the Server"
+msgstr "Настройка сервера"
+
+#: ../../source/services/periodic.rst:73
+msgid ""
+"from aiomisc import entrypoint\n"
+"from aiomisc.service.dns import (\n"
+"    DNSStore, DNSZone, TCPDNSServer, UDPDNSServer, records,\n"
+")\n"
+"\n"
+"zone = DNSZone(\"test.\")\n"
+"zone.add_record(records.A.create(\"test.\", \"10.10.10.10\"))\n"
+"zone.add_record(records.AAAA.create(\"test.\", \"fd10::10\"))\n"
+"\n"
+"store = DNSStore()\n"
+"store.add_zone(zone)\n"
+"services = [\n"
+"    UDPDNSServer(\n"
+"        store=store, address=\"::1\", port=5053,\n"
+"    ),\n"
+"    TCPDNSServer(\n"
+"        store=store, address=\"::1\", port=5053,\n"
+"    ),\n"
+"]\n"
+"\n"
+"if __name__ == \"__main__\":\n"
+"    with entrypoint(*services, log_level=\"debug\") as loop:\n"
+"        loop.run_forever()"
+msgstr ""
+
+#: ../../source/services/periodic.rst:101
+msgid "Testing the Server"
+msgstr "Тестирование сервера"
+
+#: ../../source/services/periodic.rst:103
+msgid ""
+"You can test the DNS server using tools like ``dig``. For example, to "
+"query the A and AAAA records for ``test.``, use the following commands:"
+msgstr ""
+"Вы можете протестировать DNS-сервер с помощью таких инструментов, как "
+"``dig``. Например, для запроса записей A и AAAA для ``test.`` используйте "
+"следующие команды:"
+
+#: ../../source/services/periodic.rst:107
+msgid ""
+"dig @::1 -p 5053 test. A\n"
+"dig @::1 -p 5053 test. AAAA\n"
+"dig @::1 -p 5053 +tcp test. A\n"
+"dig @::1 -p 5053 +tcp test. AAAA"
+msgstr ""
+
+#: ../../source/services/periodic.rst:115
+msgid ""
+"These commands should return the IP addresses ``10.10.10.10`` and "
+"``fd10::10`` respectively, confirming that the DNS server is working "
+"correctly."
+msgstr ""
+"Эти команды должны вернуть IP-адреса ``10.10.10.10`` и ``fd10::10`` "
+"соответственно, подтверждая корректную работу DNS-сервера."
+
+#: ../../source/services/periodic.rst:121
+msgid "Dynamic Store Management"
+msgstr "Динамическое управление хранилищем"
+
+#: ../../source/services/periodic.rst:123
+msgid ""
+"One of the powerful features of this DNS server setup is the ability to "
+"dynamically manage the DNS store. This allows you to add or remove zones "
+"and records at runtime, without needing to restart the server."
+msgstr ""
+"Одной из мощных возможностей этой конфигурации DNS-сервера является "
+"возможность динамического управления DNS-хранилищем. Это позволяет "
+"добавлять или удалять зоны и записи во время работы, без необходимости "
+"перезапуска сервера."
+
+#: ../../source/services/periodic.rst:128
+msgid ""
+"Managing DNS zones and records dynamically is essential for a flexible "
+"DNS server setup. This guide focuses on how to manipulate DNS zones and "
+"records using the ``DNSStore`` and ``DNSZone`` classes, providing "
+"practical examples for each operation."
+msgstr ""
+"Динамическое управление DNS-зонами и записями необходимо для гибкой "
+"настройки DNS-сервера. Это руководство посвящено работе с DNS-зонами и "
+"записями с использованием классов ``DNSStore`` и ``DNSZone``, с "
+"практическими примерами для каждой операции."
+
+#: ../../source/services/periodic.rst:135
+msgid "Adding a Zone"
+msgstr "Добавление зоны"
+
+#: ../../source/services/periodic.rst:137
+msgid ""
+"You can add a new zone to the ``DNSStore`` to manage its records. This "
+"operation ensures that the zone is available for DNS queries."
+msgstr ""
+"Вы можете добавить новую зону в ``DNSStore`` для управления её записями. "
+"Эта операция обеспечивает доступность зоны для DNS-запросов."
+
+#: ../../source/services/periodic.rst:140
+msgid ""
+"from aiomisc.service.dns import DNSStore, DNSZone\n"
+"\n"
+"# Create a DNSStore instance\n"
+"dns_store = DNSStore()\n"
+"\n"
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Verify the zone is added\n"
+"assert dns_store.get_zone(\"example.com.\") is zone"
+msgstr ""
+
+#: ../../source/services/periodic.rst:158
+msgid "Removing a Zone"
+msgstr "Удаление зоны"
+
+#: ../../source/services/periodic.rst:160
+msgid ""
+"Removing a zone from the ``DNSStore`` ensures it is no longer available "
+"for DNS queries."
+msgstr ""
+"Удаление зоны из ``DNSStore`` гарантирует, что она больше не будет "
+"доступна для DNS-запросов."
+
+#: ../../source/services/periodic.rst:162
+msgid ""
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Remove the zone from the store\n"
+"dns_store.remove_zone(\"example.com.\")\n"
+"\n"
+"# Verify the zone is removed\n"
+"assert dns_store.get_zone(\"example.com.\") is None"
+msgstr ""
+
+#: ../../source/services/periodic.rst:175
+msgid "Adding a Record to a Zone"
+msgstr "Добавление записи в зону"
+
+#: ../../source/services/periodic.rst:177
+msgid ""
+"To manage DNS entries, you can add records to a specific zone. This "
+"operation makes the record available for DNS resolution within that zone."
+msgstr ""
+"Для управления DNS-записями вы можете добавлять записи в определённую зону. "
+"Эта операция делает запись доступной для DNS-разрешения в этой зоне."
+
+#: ../../source/services/periodic.rst:180
+msgid ""
+"from aiomisc.service.dns.records import A, RecordType\n"
+"\n"
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Create an A record\n"
+"record = A.create(name=\"www.example.com.\", ip=\"192.0.2.1\")\n"
+"\n"
+"# Add the record to the zone\n"
+"zone.add_record(record)\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Query the store for the record\n"
+"records = dns_store.query(\"www.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify the record is added\n"
+"assert record in records"
+msgstr ""
+
+#: ../../source/services/periodic.rst:204
+msgid "Querying Records"
+msgstr "Запрос записей"
+
+#: ../../source/services/periodic.rst:206
+msgid ""
+"You can query the ``DNSStore`` to retrieve records for a specific domain "
+"name. This is useful to verify if a record exists or to handle DNS "
+"queries."
+msgstr ""
+"Вы можете запрашивать ``DNSStore`` для получения записей для определённого "
+"доменного имени. Это полезно для проверки существования записи или "
+"обработки DNS-запросов."
+
+#: ../../source/services/periodic.rst:209
+msgid ""
+"# Query the store for a nonexistent record\n"
+"records = dns_store.query(\"nonexistent.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify no records are found\n"
+"assert len(records) == 0"
+msgstr ""
+
+#: ../../source/services/periodic.rst:219
+msgid "Handling Duplicate Zones"
+msgstr "Обработка дублирующихся зон"
+
+#: ../../source/services/periodic.rst:221
+msgid ""
+"Attempting to add a zone that already exists should raise an error, "
+"ensuring that each zone is unique within the ``DNSStore``."
+msgstr ""
+"Попытка добавить уже существующую зону должна вызвать ошибку, "
+"гарантируя уникальность каждой зоны в ``DNSStore``."
+
+#: ../../source/services/periodic.rst:224
+#, python-brace-format
+msgid ""
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Attempt to add the same zone again\n"
+"try:\n"
+"    dns_store.add_zone(zone)\n"
+"except ValueError as e:\n"
+"    print(f\"Error: {e}\")"
+msgstr ""
+
+#: ../../source/services/periodic.rst:237
+msgid "Removing a Nonexistent Zone"
+msgstr "Удаление несуществующей зоны"
+
+#: ../../source/services/periodic.rst:239
+msgid ""
+"Removing a zone that does not exist should raise an error, indicating "
+"that the operation is invalid."
+msgstr ""
+"Удаление несуществующей зоны должно вызвать ошибку, указывающую на "
+"недопустимость операции."
+
+#: ../../source/services/periodic.rst:242
+#, python-brace-format
+msgid ""
+"# Attempt to remove a nonexistent zone\n"
+"try:\n"
+"    dns_store.remove_zone(\"nonexistent.com.\")\n"
+"except ValueError as e:\n"
+"    print(f\"Error: {e}\")"
+msgstr ""
+
+#: ../../source/services/periodic.rst:252
+msgid "Querying Subdomains"
+msgstr "Запрос поддоменов"
+
+#: ../../source/services/periodic.rst:254
+msgid ""
+"The ``DNSStore`` supports querying subdomains, allowing you to resolve "
+"records within subdomains of an existing zone."
+msgstr ""
+"``DNSStore`` поддерживает запрос поддоменов, позволяя разрешать записи "
+"в поддоменах существующей зоны."
+
+#: ../../source/services/periodic.rst:257
+msgid ""
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Create an A record for a subdomain\n"
+"record = A.create(name=\"sub.example.com.\", ip=\"192.0.2.2\")\n"
+"\n"
+"# Add the record to the zone\n"
+"zone.add_record(record)\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Query the store for the subdomain record\n"
+"records = dns_store.query(\"sub.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify the subdomain record is found\n"
+"assert record in records"
+msgstr ""
+
+#: ../../source/services/periodic.rst:279
+msgid "Retrieving a Zone"
+msgstr "Получение зоны"
+
+#: ../../source/services/periodic.rst:281
+msgid ""
+"You can retrieve a zone from the ``DNSStore`` to inspect or manipulate it"
+" further."
+msgstr ""
+"Вы можете получить зону из ``DNSStore`` для дальнейшего просмотра или "
+"изменения."
+
+#: ../../source/services/periodic.rst:284
+msgid ""
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Retrieve the zone from the store\n"
+"retrieved_zone = dns_store.get_zone(\"example.com.\")\n"
+"\n"
+"# Verify the zone is retrieved\n"
+"assert retrieved_zone is zone"
+msgstr ""
+
+#: ../../source/services/periodic.rst:297
+msgid "Handling Nonexistent Zones"
+msgstr "Обработка несуществующих зон"
+
+#: ../../source/services/periodic.rst:299
+msgid "Retrieving a zone that does not exist should return ``None``."
+msgstr "Получение несуществующей зоны должно вернуть ``None``."
+
+#: ../../source/services/periodic.rst:301
+msgid ""
+"# Attempt to retrieve a nonexistent zone\n"
+"nonexistent_zone = dns_store.get_zone(\"nonexistent.com.\")\n"
+"\n"
+"# Verify no zone is retrieved\n"
+"assert nonexistent_zone is None"
+msgstr ""
+
+#: ../../source/services/periodic.rst:311
+msgid "Removing a Record from a Zone"
+msgstr "Удаление записи из зоны"
+
+#: ../../source/services/periodic.rst:313
+msgid ""
+"To remove a DNS record from a zone, you can use the ``remove_record`` "
+"method. This operation ensures the record is no longer available for DNS "
+"resolution."
+msgstr ""
+"Для удаления DNS-записи из зоны можно использовать метод ``remove_record``. "
+"Эта операция гарантирует, что запись больше не будет доступна для "
+"DNS-разрешения."
+
+#: ../../source/services/periodic.rst:318
+msgid ""
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Create an A record\n"
+"record = A.create(name=\"www.example.com.\", ip=\"192.0.2.1\")\n"
+"\n"
+"# Add the record to the zone\n"
+"zone.add_record(record)\n"
+"\n"
+"# Remove the record from the zone\n"
+"zone.remove_record(record)\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Query the store for the record\n"
+"records = dns_store.query(\"www.example.com.\", RecordType.A)\n"
+"\n"
+"# Verify the record is removed\n"
+"assert len(records) == 0"
+msgstr ""
+
+#: ../../source/services/periodic.rst:343
+msgid "Finding Zone by Prefix"
+msgstr "Поиск зоны по префиксу"
+
+#: ../../source/services/periodic.rst:345
+msgid ""
+"The ``DNSStore`` can find the appropriate zone for a given domain name, "
+"which is useful for handling queries with subdomains."
+msgstr ""
+"``DNSStore`` может найти подходящую зону для заданного доменного имени, "
+"что полезно для обработки запросов с поддоменами."
+
+#: ../../source/services/periodic.rst:349
+msgid ""
+"# Create a DNSZone instance\n"
+"zone = DNSZone(\"example.com.\")\n"
+"\n"
+"# Add the zone to the store\n"
+"dns_store.add_zone(zone)\n"
+"\n"
+"# Find the zone for a subdomain\n"
+"zone_prefix = dns_store.get_zone_for_name(\"sub.example.com.\")\n"
+"\n"
+"# Verify the correct zone is found\n"
+"assert zone_prefix == (\"com\", \"example\")"
+msgstr ""
+
+#: ../../source/services/periodic.rst:366
+msgid "``CronService``"
+msgstr "``CronService``"
+
+#: ../../source/services/periodic.rst:368
+msgid ""
+"``CronService`` runs ``CronCallback's`` as a service and waits for "
+"running callbacks to complete on the stop method."
+msgstr ""
+"``CronService`` запускает ``CronCallback`` как сервис и ожидает "
+"завершения выполняющихся колбэков при вызове метода stop."
+
+#: ../../source/services/periodic.rst:371
+msgid ""
+"It's based on croniter_. You can register async coroutine method with "
+"``spec`` argument - cron like format:"
+msgstr ""
+"Основан на croniter_. Вы можете зарегистрировать асинхронный метод с "
+"аргументом ``spec`` в cron-подобном формате:"
+
+#: ../../source/services/periodic.rst:377
+msgid "requires installed croniter_:"
+msgstr "требуется установленный croniter_:"
+
+#: ../../source/services/periodic.rst:379
+msgid "pip install croniter"
+msgstr ""
+
+#: ../../source/services/periodic.rst:383
+msgid "or using extras:"
+msgstr "или с использованием extras:"
+
+#: ../../source/services/periodic.rst:385
+msgid "pip install aiomisc[cron]"
+msgstr ""
+
+#: ../../source/services/periodic.rst:390
+msgid ""
+"import aiomisc\n"
+"from aiomisc.service.cron import CronService\n"
+"\n"
+"\n"
+"async def callback():\n"
+"    log.info('Running cron callback')\n"
+"    # ...\n"
+"\n"
+"service = CronService()\n"
+"service.register(callback, spec=\"0 * * * *\") # every hour at zero "
+"minutes\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+
+#: ../../source/services/periodic.rst:407
+msgid ""
+"You can also inherit from ``CronService``, but remember that callback "
+"registration should be performed before start"
+msgstr ""
+"Вы также можете наследоваться от ``CronService``, но помните, что "
+"регистрация колбэков должна выполняться перед запуском"
+
+#: ../../source/services/periodic.rst:410
+msgid ""
+"import aiomisc\n"
+"from aiomisc.service.cron import CronService\n"
+"\n"
+"\n"
+"class MyCronService(CronService):\n"
+"    async def callback(self):\n"
+"        log.info('Running cron callback')\n"
+"        # ...\n"
+"\n"
+"    async def start(self):\n"
+"        self.register(self.callback, spec=\"0 * * * *\")\n"
+"        await super().start()\n"
+"\n"
+"service = MyCronService()\n"
+"\n"
+"with entrypoint(service) as loop:\n"
+"    loop.run_forever()"
+msgstr ""
+

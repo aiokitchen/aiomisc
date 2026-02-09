@@ -6,24 +6,24 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2022-12-29 11:36+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2026-02-09 00:31+0100\n"
+"PO-Revision-Date: 2026-02-09 12:00+0100\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../source/timeout.rst:2
 msgid "``@aiomisc.timeout``"
-msgstr ""
+msgstr "``@aiomisc.timeout``"
 
 #: ../../source/timeout.rst:4
 msgid ""
 "Decorator that ensures the execution time limit for the decorated "
 "function is met."
-msgstr "Декоратор который ограничивает время выполнения оборачиваемой сопрограммы."
+msgstr "Декоратор, который ограничивает время выполнения оборачиваемой сопрограммы."
 
 #: ../../source/timeout.rst:7
 msgid ""
@@ -34,5 +34,159 @@ msgid ""
 "    await asyncio.sleep(2)"
 msgstr ""
 
-#~ msgid "timeout decorator"
-#~ msgstr "декоратор timeout"
+#: ../../source/timeout.rst:17
+msgid "What happens on timeout"
+msgstr "Что происходит при превышении таймаута"
+
+#: ../../source/timeout.rst:19
+msgid ""
+"When the decorated function exceeds the specified time limit, an "
+"``asyncio.TimeoutError`` exception is raised. The underlying coroutine is"
+" cancelled automatically."
+msgstr ""
+"Когда декорированная функция превышает указанный лимит времени, "
+"возбуждается исключение ``asyncio.TimeoutError``. Исходная сопрограмма "
+"отменяется автоматически."
+
+#: ../../source/timeout.rst:23
+msgid ""
+"import asyncio\n"
+"from aiomisc import timeout\n"
+"\n"
+"@timeout(1)\n"
+"async def slow_operation():\n"
+"    await asyncio.sleep(10)\n"
+"    return \"completed\"\n"
+"\n"
+"async def main():\n"
+"    try:\n"
+"        result = await slow_operation()\n"
+"    except asyncio.TimeoutError:\n"
+"        print(\"Operation timed out!\")\n"
+"\n"
+"asyncio.run(main())"
+msgstr ""
+
+#: ../../source/timeout.rst:43
+msgid "Handling TimeoutError"
+msgstr "Обработка TimeoutError"
+
+#: ../../source/timeout.rst:45
+msgid ""
+"You should always handle ``asyncio.TimeoutError`` when calling functions "
+"decorated with ``@timeout``, especially in production code:"
+msgstr ""
+"Всегда следует обрабатывать ``asyncio.TimeoutError`` при вызове функций, "
+"декорированных с помощью ``@timeout``, особенно в продакшн-коде:"
+
+#: ../../source/timeout.rst:48
+#, python-brace-format
+msgid ""
+"import asyncio\n"
+"from aiomisc import timeout\n"
+"\n"
+"@timeout(5)\n"
+"async def fetch_data():\n"
+"    # Simulate network request\n"
+"    await asyncio.sleep(10)\n"
+"    return {\"data\": \"value\"}\n"
+"\n"
+"async def main():\n"
+"    try:\n"
+"        data = await fetch_data()\n"
+"        print(f\"Got data: {data}\")\n"
+"    except asyncio.TimeoutError:\n"
+"        print(\"Request timed out, using default value\")\n"
+"        data = {\"data\": \"default\"}\n"
+"\n"
+"asyncio.run(main())"
+msgstr ""
+
+#: ../../source/timeout.rst:71
+msgid "Comparison with asyncio.wait_for"
+msgstr "Сравнение с asyncio.wait_for"
+
+#: ../../source/timeout.rst:73
+msgid ""
+"The ``@timeout`` decorator provides similar functionality to "
+"``asyncio.wait_for``, but with a cleaner decorator-based syntax:"
+msgstr ""
+"Декоратор ``@timeout`` предоставляет функциональность, аналогичную "
+"``asyncio.wait_for``, но с более чистым синтаксисом на основе декоратора:"
+
+#: ../../source/timeout.rst:77
+msgid "asyncio.wait_for"
+msgstr "asyncio.wait_for"
+
+#: ../../source/timeout.rst:77
+msgid "@aiomisc.timeout"
+msgstr "@aiomisc.timeout"
+
+#: ../../source/timeout.rst:79
+msgid ""
+"async def fetch():\n"
+"    await asyncio.sleep(10)\n"
+"\n"
+"# At call site:\n"
+"await asyncio.wait_for(\n"
+"    fetch(), timeout=5\n"
+")"
+msgstr ""
+
+#: ../../source/timeout.rst:79
+msgid ""
+"@timeout(5)\n"
+"async def fetch():\n"
+"    await asyncio.sleep(10)\n"
+"\n"
+"# At call site:\n"
+"await fetch()"
+msgstr ""
+
+#: ../../source/timeout.rst:90
+msgid "The decorator approach is useful when:"
+msgstr "Подход с декоратором полезен, когда:"
+
+#: ../../source/timeout.rst:92
+msgid "You want to enforce a timeout for all calls to a function"
+msgstr "Вы хотите применить таймаут ко всем вызовам функции"
+
+#: ../../source/timeout.rst:93
+msgid "The timeout is a property of the function itself, not the caller"
+msgstr "Таймаут является свойством самой функции, а не вызывающего кода"
+
+#: ../../source/timeout.rst:94
+msgid "You want cleaner call-site code"
+msgstr "Вы хотите более чистый код в месте вызова"
+
+#: ../../source/timeout.rst:98
+msgid "Examples with different values"
+msgstr "Примеры с различными значениями"
+
+#: ../../source/timeout.rst:100
+msgid "The timeout value is specified in seconds and can be an integer or float:"
+msgstr "Значение таймаута указывается в секундах и может быть целым числом или числом с плавающей точкой:"
+
+#: ../../source/timeout.rst:102
+msgid ""
+"from aiomisc import timeout\n"
+"\n"
+"# 100 milliseconds timeout\n"
+"@timeout(0.1)\n"
+"async def quick_check():\n"
+"    await asyncio.sleep(0.05)\n"
+"    return True\n"
+"\n"
+"# 30 seconds timeout for long operations\n"
+"@timeout(30)\n"
+"async def long_operation():\n"
+"    await asyncio.sleep(25)\n"
+"    return \"done\"\n"
+"\n"
+"# 2.5 seconds timeout\n"
+"@timeout(2.5)\n"
+"async def medium_operation():\n"
+"    await asyncio.sleep(2)\n"
+"    return \"completed\""
+msgstr ""
+
