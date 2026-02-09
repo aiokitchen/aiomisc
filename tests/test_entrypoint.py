@@ -520,6 +520,8 @@ def test_udp_socket_server(unix_socket_udp):
 
 @unix_only
 def test_tcp_server_unix(unix_socket_tcp):
+    data_received = asyncio.Event()
+
     class TestService(TCPServer):
         DATA = []
 
@@ -528,6 +530,7 @@ def test_tcp_server_unix(unix_socket_tcp):
         ):
             self.DATA.append(await reader.readline())
             writer.close()
+            data_received.set()
 
     service = TestService(sock=unix_socket_tcp)
 
@@ -538,7 +541,8 @@ def test_tcp_server_unix(unix_socket_tcp):
             s.send(b"hello server\n")
 
     async def run_test():
-        await asyncio.wait_for(send_data(), timeout=10)
+        await send_data()
+        await asyncio.wait_for(data_received.wait(), timeout=10)
 
     with aiomisc.entrypoint(service) as loop:
         loop.run_until_complete(run_test())
