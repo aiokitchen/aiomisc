@@ -1,8 +1,5 @@
 all: clean build
 
-NAME:=$(shell uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['name'])")
-VERSION:=$(shell uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-
 clean:
 	rm -vrf *.egg-info dist build
 

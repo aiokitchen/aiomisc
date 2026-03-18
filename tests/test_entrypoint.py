@@ -200,7 +200,7 @@ def test_tcp_server():
     assert TestService.DATA == [b"hello server\n"]
 
 
-def test_tcp_client(aiomisc_socket_factory, localhost):
+async def test_tcp_client(aiomisc_socket_factory, localhost):
     event = asyncio.Event()
 
     class TestService(TCPServer):
@@ -220,18 +220,13 @@ def test_tcp_client(aiomisc_socket_factory, localhost):
             await writer.drain()
 
     port, sock = aiomisc_socket_factory()
-    event = asyncio.Event()
     services = [
         TestService(sock=sock),
         TestClient(address=localhost, port=port),
     ]
 
-    async def go():
-        await event.wait()
-
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_until_complete(asyncio.wait_for(go(), timeout=10))
-        loop.run_until_complete(event.wait())
+    async with aiomisc.entrypoint(*services):
+        await asyncio.wait_for(event.wait(), timeout=10)
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
