@@ -38,7 +38,7 @@ class TestLogFormat:
     def test_default_non_tty(self):
         # Mock non-tty stderr and no journal stream
         mock_stderr = StringIO()
-        mock_stderr.fileno = lambda: 999
+        mock_stderr.fileno = lambda: 999  # type: ignore[method-assign]
 
         with (
             patch("aiomisc_log.enum.check_journal_stream", return_value=False),
@@ -50,7 +50,7 @@ class TestLogFormat:
 
     def test_default_tty_with_rich(self):
         mock_stderr = StringIO()
-        mock_stderr.fileno = lambda: 999
+        mock_stderr.fileno = lambda: 999  # type: ignore[method-assign]
 
         with (
             patch("aiomisc_log.enum.check_journal_stream", return_value=False),
@@ -63,7 +63,7 @@ class TestLogFormat:
 
     def test_default_tty_without_rich(self):
         mock_stderr = StringIO()
-        mock_stderr.fileno = lambda: 999
+        mock_stderr.fileno = lambda: 999  # type: ignore[method-assign]
 
         with (
             patch("aiomisc_log.enum.check_journal_stream", return_value=False),

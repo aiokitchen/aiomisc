@@ -31,11 +31,13 @@ class TestCreateLoggingHandler:
             LogFormat.stream, date_format="%Y-%m-%d"
         )
         assert isinstance(handler, logging.StreamHandler)
+        assert handler.formatter is not None
         assert handler.formatter.datefmt == "%Y-%m-%d"
 
     def test_plain_format(self):
         handler = create_logging_handler(LogFormat.plain)
         assert isinstance(handler, logging.StreamHandler)
+        assert handler.formatter is not None
         assert handler.formatter._fmt == "%(message)s"
 
     def test_json_format(self):

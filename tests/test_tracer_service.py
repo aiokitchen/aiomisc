@@ -63,7 +63,7 @@ class TestMemoryTracer:
         tracemalloc.start()
         try:
             tracer = MemoryTracer()
-            tracer.logger = MagicMock()
+            tracer.logger = MagicMock()  # type: ignore[method-assign]
 
             snap1 = MemoryTracer.take_snapshot()
             _ = [i for i in range(10000)]
@@ -92,7 +92,7 @@ class TestMemoryTracer:
 
     async def test_show_stats(self, event_loop):
         tracer = MemoryTracer()
-        tracer.logger = MagicMock()
+        tracer.logger = MagicMock()  # type: ignore[method-assign]
 
         await tracer.start()
 
@@ -106,7 +106,7 @@ class TestMemoryTracer:
     async def test_custom_group_by(self, event_loop):
         tracer = MemoryTracer()
         tracer.group_by = GroupBy.filename
-        tracer.logger = MagicMock()
+        tracer.logger = MagicMock()  # type: ignore[method-assign]
 
         await tracer.start()
         await tracer.show_stats()
@@ -117,7 +117,7 @@ class TestMemoryTracer:
     async def test_custom_top_results(self, event_loop):
         tracer = MemoryTracer()
         tracer.top_results = 5
-        tracer.logger = MagicMock()
+        tracer.logger = MagicMock()  # type: ignore[method-assign]
 
         await tracer.start()
         await tracer.show_stats()

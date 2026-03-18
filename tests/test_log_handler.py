@@ -147,7 +147,7 @@ class TestUnhandledLoopHook:
         assert hook.logger is not None
 
     def test_fill_transport_extra_none(self):
-        extra = {}
+        extra: dict[str, object] = {}
         UnhandledLoopHook._fill_transport_extra(None, extra)
         assert extra == {}
 
@@ -158,7 +158,7 @@ class TestUnhandledLoopHook:
             "sockname": ("0.0.0.0", 9000),
         }.get(key)
 
-        extra = {}
+        extra: dict[str, object] = {}
         UnhandledLoopHook._fill_transport_extra(transport, extra)
 
         assert "transport" in extra

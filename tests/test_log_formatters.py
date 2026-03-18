@@ -205,10 +205,12 @@ class TestJsonHandler:
     def test_json_handler_with_stream(self):
         stream = StringIO()
         handler = json_handler(stream=stream)
+        assert isinstance(handler, logging.StreamHandler)
         assert handler.stream is stream
 
     def test_json_handler_with_date_format(self):
         handler = json_handler(date_format="%Y-%m-%d")
+        assert handler.formatter is not None
         assert handler.formatter.datefmt == "%Y-%m-%d"
 
 

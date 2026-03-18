@@ -90,9 +90,7 @@ class TestSockSetNodelay:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             # Should not raise - function handles the socket correctly
-            result = sock_set_nodelay(sock)
-            # Result is None for both cases
-            assert result is None
+            sock_set_nodelay(sock)
         finally:
             sock.close()
 
@@ -100,8 +98,7 @@ class TestSockSetNodelay:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             # Should not raise and should do nothing for UDP
-            result = sock_set_nodelay(sock)
-            assert result is None
+            sock_set_nodelay(sock)
         finally:
             sock.close()
 

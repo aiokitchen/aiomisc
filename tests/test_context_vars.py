@@ -9,7 +9,7 @@ from aiomisc.context_vars import EVENT_LOOP, StrictContextVar, set_current_loop
 class TestStrictContextVar:
     def test_init(self):
         exc = RuntimeError("test error")
-        var = StrictContextVar("test_var", exc)
+        var: StrictContextVar[object] = StrictContextVar("test_var", exc)
         assert var.exc is exc
         assert var.context_var.name == "test_var"
 
