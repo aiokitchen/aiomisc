@@ -2,6 +2,7 @@ import asyncio
 import logging
 import socket
 from abc import ABC, abstractmethod
+from contextlib import suppress
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -68,7 +69,12 @@ class TCPServer(SimpleServer):
         await super().stop(exc)
 
         if self.server:
-            await self.server.wait_closed()
+            # In Python 3.12 wait_closed() actually waits for all
+            # connections to drop (was a no-op in <=3.11), which can
+            # block indefinitely when clients are shut down concurrently.
+            # See: https://github.com/python/cpython/issues/79033
+            with suppress(TimeoutError):
+                await asyncio.wait_for(self.server.wait_closed(), timeout=5)
 
     @property
     def __sockname(self) -> tuple | None:

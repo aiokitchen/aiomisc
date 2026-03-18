@@ -1,8 +1,5 @@
 all: clean build
 
-NAME:=$(shell uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['name'])")
-VERSION:=$(shell uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-
 clean:
 	rm -vrf *.egg-info dist build
 
@@ -20,9 +17,6 @@ uml:
 		java -jar /usr/local/share/java/plantuml.jar \
 		-tsvg -o docs/source/_static 'resources/uml/*/**.puml'
 
-test:
-	uv run pytest -vv
-
 lint:
 	uv run ruff check .
 	uv run ruff format --check .
@@ -37,6 +31,9 @@ develop: clean
 
 mypy:
 	uv run mypy
+
+test: format lint mypy
+	uv run pytest -vv
 
 translate:
 	make -C docs/ gettext
