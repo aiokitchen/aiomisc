@@ -207,14 +207,14 @@ async def test_tcp_client(event_loop, aiomisc_socket_factory, localhost):
         DATA = []
 
         async def handle_client(
-            self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+            self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
         ):
             self.DATA.append(await reader.readline())
             event.set()
 
     class TestClient(TCPClient):
         async def handle_connection(
-            self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+            self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
         ) -> None:
             writer.write(b"hello server\n")
             await writer.drain()
@@ -225,8 +225,11 @@ async def test_tcp_client(event_loop, aiomisc_socket_factory, localhost):
         TestClient(address=localhost, port=port),
     ]
 
-    async with aiomisc.entrypoint(*services):
-        await asyncio.wait_for(event.wait(), timeout=10)
+    async def run():
+        async with aiomisc.entrypoint(*services):
+            await event.wait()
+
+    await asyncio.wait_for(run(), timeout=30)
 
     assert TestService.DATA
     assert TestService.DATA == [b"hello server\n"]
