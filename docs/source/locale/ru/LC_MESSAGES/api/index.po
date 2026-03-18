@@ -19,4 +19,3 @@ msgstr ""
 #: ../../source/api/index.rst:2
 msgid "API Reference"
 msgstr "Описание API"
-

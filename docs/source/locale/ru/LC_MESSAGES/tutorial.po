@@ -736,7 +736,7 @@ msgstr ""
 
 #: ../../source/tutorial.rst:360
 msgid "dependency injection"
-msgstr ""
+msgstr "Внедрение зависимостей"
 
 #: ../../source/tutorial.rst:364
 msgid ""
@@ -768,7 +768,7 @@ msgstr ""
 
 #: ../../source/tutorial.rst:375
 msgid "``entrypoint``"
-msgstr ""
+msgstr "``entrypoint``"
 
 #: ../../source/tutorial.rst:377
 msgid ""

@@ -17,7 +17,7 @@ msgstr ""
 
 #: ../../source/signal.rst:2
 msgid "``Signal``"
-msgstr ""
+msgstr "``Signal``"
 
 #: ../../source/signal.rst:4
 msgid ""
@@ -53,7 +53,7 @@ msgstr ""
 
 #: ../../source/signal.rst:24
 msgid "``post_start``"
-msgstr ""
+msgstr "``post_start``"
 
 #: ../../source/signal.rst:26
 msgid ""
@@ -77,7 +77,7 @@ msgstr ""
 
 #: ../../source/signal.rst:42
 msgid "``pre_stop``"
-msgstr ""
+msgstr "``pre_stop``"
 
 #: ../../source/signal.rst:44
 msgid ""
@@ -101,7 +101,7 @@ msgstr ""
 
 #: ../../source/signal.rst:60
 msgid "``post_stop``"
-msgstr ""
+msgstr "``post_stop``"
 
 #: ../../source/signal.rst:62
 msgid ""

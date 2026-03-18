@@ -21,11 +21,11 @@ msgstr "aiomisc - это библиотека с различными утили
 
 #: ../../source/index.rst:4
 msgid "Coveralls"
-msgstr ""
+msgstr "Покрытие кода"
 
 #: ../../source/index.rst:8
 msgid "Actions"
-msgstr ""
+msgstr "Статус сборки"
 
 #: ../../source/index.rst:12
 msgid "Latest Version"
@@ -678,4 +678,3 @@ msgstr ""
 #~ "    loop = aiomisc.new_event_loop()\n"
 #~ "    loop.run_until_complete(main())"
 #~ msgstr ""
-

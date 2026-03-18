@@ -17,7 +17,7 @@ msgstr ""
 
 #: ../../source/aggregate.rst:2
 msgid "``@aiomisc.aggregate``"
-msgstr ""
+msgstr "``@aiomisc.aggregate``"
 
 #: ../../source/aggregate.rst:4
 msgid ""

@@ -17,7 +17,7 @@ msgstr ""
 
 #: ../../source/async_backoff.rst:2
 msgid "``@aiomisc.asyncbackoff``"
-msgstr ""
+msgstr "``@aiomisc.asyncbackoff``"
 
 #: ../../source/async_backoff.rst:4
 msgid ""
@@ -279,7 +279,7 @@ msgstr ""
 
 #: ../../source/async_backoff.rst:124
 msgid "``asyncretry``"
-msgstr ""
+msgstr "``asyncretry``"
 
 #: ../../source/async_backoff.rst:126
 msgid ""
@@ -315,4 +315,3 @@ msgid ""
 "async def get_cluster_lock():\n"
 "    ..."
 msgstr ""
-

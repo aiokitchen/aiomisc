@@ -189,7 +189,7 @@ msgstr ""
 
 #: ../../source/logging.rst:111
 msgid "Disabled"
-msgstr ""
+msgstr "Отключение"
 
 #: ../../source/logging.rst:113
 msgid ""
@@ -307,4 +307,3 @@ msgid ""
 msgstr ""
 "Список всех поддерживаемых форматов журналов доступен через "
 "``aiomisc.log.LogFormat.choices()``"
-

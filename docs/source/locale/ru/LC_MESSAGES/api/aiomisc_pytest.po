@@ -21,4 +21,4 @@ msgstr ""
 
 #: ../../source/api/aiomisc_pytest.rst:2
 msgid "``aiomisc_pytest`` module"
-msgstr ""
+msgstr "Модуль ``aiomisc_pytest``"
