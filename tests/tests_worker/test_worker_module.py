@@ -53,6 +53,7 @@ class TestConstants:
 
     def test_hasher(self):
         import hashlib
+
         assert HASHER is hashlib.sha256
 
     def test_inet_af(self):
@@ -121,10 +122,7 @@ class TestFileIOProtocol:
         test_file = tmp_path / "test.bin"
 
         data = {
-            "nested": {
-                "list": [1, 2, {"deep": "value"}],
-                "tuple": (1, 2, 3),
-            },
+            "nested": {"list": [1, 2, {"deep": "value"}], "tuple": (1, 2, 3)},
             "bytes": b"\x00\x01\x02",
         }
 
@@ -256,6 +254,7 @@ class TestAsyncProtocol:
 class TestAddressFamily:
     def test_address_family_unix(self):
         import platform
+
         if platform.system() == "Windows":
             assert ADDRESS_FAMILY == socket.AF_INET6
         else:

@@ -36,10 +36,7 @@ class TestThreadedHandler:
     def test_init_custom_params(self):
         target = logging.StreamHandler()
         handler = ThreadedHandler(
-            target,
-            flush_interval=0.5,
-            buffered=False,
-            queue_size=100,
+            target, flush_interval=0.5, buffered=False, queue_size=100
         )
         assert handler._buffered is False
         assert handler._flush_interval == 0.5
@@ -172,10 +169,7 @@ class TestUnhandledLoopHook:
         hook = UnhandledLoopHook(logger_name="test.unhandled")
 
         loop = MagicMock()
-        context = {
-            "message": "Test error",
-            "exception": ValueError("test"),
-        }
+        context = {"message": "Test error", "exception": ValueError("test")}
 
         with patch.object(hook.logger, "exception") as mock_exc:
             hook(loop, context)
@@ -188,10 +182,7 @@ class TestUnhandledLoopHook:
         future = MagicMock()
         future.exception.return_value = RuntimeError("future error")
 
-        context = {
-            "message": "Future error",
-            "future": future,
-        }
+        context = {"message": "Future error", "future": future}
 
         with patch.object(hook.logger, "exception") as mock_exc:
             hook(loop, context)
@@ -205,10 +196,7 @@ class TestUnhandledLoopHook:
         task.done.return_value = True
         task.exception.return_value = RuntimeError("task error")
 
-        context = {
-            "message": "Task error",
-            "task": task,
-        }
+        context = {"message": "Task error", "task": task}
 
         with patch.object(hook.logger, "exception") as mock_exc:
             hook(loop, context)
@@ -240,9 +228,7 @@ class TestUnhandledLoopHook:
         loop = MagicMock()
         import traceback
 
-        source_tb = [
-            traceback.FrameSummary("test.py", 10, "test_func"),
-        ]
+        source_tb = [traceback.FrameSummary("test.py", 10, "test_func")]
 
         context = {
             "message": "Error with traceback",

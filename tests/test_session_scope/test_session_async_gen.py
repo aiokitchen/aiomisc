@@ -5,6 +5,7 @@ Function-scoped entrypoint fixture must not call shutdown_asyncgens
 on a session-scoped event loop, because that destroys session-scoped
 async generator fixtures that are still alive.
 """
+
 import pytest
 
 

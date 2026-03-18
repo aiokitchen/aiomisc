@@ -156,9 +156,7 @@ class TestBasicConfig:
     def test_basic_config_with_additional_handlers(self):
         extra_handler = logging.StreamHandler()
         basic_config(
-            level="info",
-            log_format=LogFormat.plain,
-            handlers=[extra_handler],
+            level="info", log_format=LogFormat.plain, handlers=[extra_handler]
         )
         # The extra handler should be wrapped and added
         root_logger = logging.getLogger()

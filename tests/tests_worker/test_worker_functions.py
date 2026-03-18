@@ -39,6 +39,7 @@ class TestOnException:
                 raise ValueError("test error")
             except ValueError:
                 import sys
+
                 exc_info = sys.exc_info()
                 on_exception(*exc_info)
 
@@ -114,6 +115,7 @@ class TestBadInitializer:
         try:
             if ADDRESS_FAMILY == socket.AF_UNIX:
                 import tempfile
+
                 sock_path = tempfile.mktemp(suffix=".sock")
                 server_sock.bind(sock_path)
             else:
@@ -168,6 +170,7 @@ class TestSignalConstants:
     @unix_only
     def test_signal_is_sigusr2_on_unix(self):
         import platform
+
         if platform.system() != "Windows":
             assert SIGNAL == signal.SIGUSR2
 

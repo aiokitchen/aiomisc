@@ -144,7 +144,9 @@ class TestJSONLogFormatter:
             )
             result = formatter.format(record)
             data = json.loads(result)
-            assert data["level"] == expected, f"Level {level} should be {expected}"
+            assert data["level"] == expected, (
+                f"Level {level} should be {expected}"
+            )
 
     def test_format_with_extra_fields(self):
         formatter = JSONLogFormatter()

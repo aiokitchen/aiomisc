@@ -84,8 +84,7 @@ class TestRunner:
 
 class TestSockSetNodelay:
     @pytest.mark.skipif(
-        not hasattr(socket, "TCP_NODELAY"),
-        reason="TCP_NODELAY not available",
+        not hasattr(socket, "TCP_NODELAY"), reason="TCP_NODELAY not available"
     )
     def test_sock_set_nodelay_tcp(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -109,8 +108,7 @@ class TestSockSetNodelay:
 
 class TestSockSetReuseport:
     @pytest.mark.skipif(
-        not hasattr(socket, "SO_REUSEPORT"),
-        reason="SO_REUSEPORT not available",
+        not hasattr(socket, "SO_REUSEPORT"), reason="SO_REUSEPORT not available"
     )
     def test_sock_set_reuseport_enabled(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,8 +120,7 @@ class TestSockSetReuseport:
             sock.close()
 
     @pytest.mark.skipif(
-        not hasattr(socket, "SO_REUSEPORT"),
-        reason="SO_REUSEPORT not available",
+        not hasattr(socket, "SO_REUSEPORT"), reason="SO_REUSEPORT not available"
     )
     def test_sock_set_reuseport_disabled(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
