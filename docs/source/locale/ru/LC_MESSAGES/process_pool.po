@@ -17,7 +17,7 @@ msgstr ""
 
 #: ../../source/process_pool.rst:2
 msgid "``ProcessPoolExecutor``"
-msgstr ""
+msgstr "``ProcessPoolExecutor``"
 
 #: ../../source/process_pool.rst:4
 msgid "This is a simple process pool executor implementation."

@@ -38,13 +38,3 @@ msgstr "Модуль ``aiomisc_worker.protocol``"
 #: ../../source/api/aiomisc_worker.rst:37
 msgid "``aiomisc_worker.worker`` module"
 msgstr "Модуль ``aiomisc_worker.worker``"
-
-#~ msgid "Bases: :py:class:`object`"
-#~ msgstr ""
-
-#~ msgid "Bases: :py:class:`~aiomisc_worker.protocol.Protocol`"
-#~ msgstr ""
-
-#~ msgid "Bases: :py:class:`~abc.ABC`"
-#~ msgstr ""
-

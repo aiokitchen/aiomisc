@@ -18,7 +18,7 @@ msgstr ""
 # "Project-Id-Version: latest\n"
 #: ../../source/worker_pool.rst:2
 msgid "``WorkerPool``"
-msgstr ""
+msgstr "``WorkerPool``"
 
 #: ../../source/worker_pool.rst:4
 msgid ""

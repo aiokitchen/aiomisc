@@ -212,19 +212,19 @@ msgstr "Поддерживаемые алгоритмы сжатия:"
 
 #: ../../source/io.rst:115
 msgid ":class:`aiomisc.io.Compression.NONE`"
-msgstr ""
+msgstr ":class:`aiomisc.io.Compression.NONE`"
 
 #: ../../source/io.rst:116
 msgid ":class:`aiomisc.io.Compression.GZIP`"
-msgstr ""
+msgstr ":class:`aiomisc.io.Compression.GZIP`"
 
 #: ../../source/io.rst:117
 msgid ":class:`aiomisc.io.Compression.BZ2`"
-msgstr ""
+msgstr ":class:`aiomisc.io.Compression.BZ2`"
 
 #: ../../source/io.rst:118
 msgid ":class:`aiomisc.io.Compression.LZMA`"
-msgstr ""
+msgstr ":class:`aiomisc.io.Compression.LZMA`"
 
 #: ../../source/io.rst:120
 msgid "An example of usage:"

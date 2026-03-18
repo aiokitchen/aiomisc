@@ -21,7 +21,7 @@ msgstr "Утилиты"
 
 #: ../../source/utils.rst:5
 msgid "``select``"
-msgstr ""
+msgstr "``select``"
 
 #: ../../source/utils.rst:7
 msgid ""
@@ -79,7 +79,7 @@ msgstr ""
 
 #: ../../source/utils.rst:50
 msgid "``cancel_tasks``"
-msgstr ""
+msgstr "``cancel_tasks``"
 
 #: ../../source/utils.rst:52
 msgid "All passed tasks will be canceled and the task will be returned:"
@@ -108,7 +108,7 @@ msgstr ""
 
 #: ../../source/utils.rst:74
 msgid "``awaitable``"
-msgstr ""
+msgstr "``awaitable``"
 
 #: ../../source/utils.rst:76
 msgid ""
@@ -147,7 +147,7 @@ msgstr ""
 
 #: ../../source/utils.rst:100
 msgid "``bind_socket``"
-msgstr ""
+msgstr "``bind_socket``"
 
 #: ../../source/utils.rst:102
 msgid ""
@@ -171,7 +171,7 @@ msgstr ""
 
 #: ../../source/utils.rst:117
 msgid "``RecurringCallback``"
-msgstr ""
+msgstr "``RecurringCallback``"
 
 #: ../../source/utils.rst:119
 msgid "Runs coroutine function periodically with user-defined strategy."
@@ -301,7 +301,7 @@ msgstr ""
 
 #: ../../source/utils.rst:183
 msgid "``PeriodicCallback``"
-msgstr ""
+msgstr "``PeriodicCallback``"
 
 #: ../../source/utils.rst:185
 msgid ""
@@ -354,7 +354,7 @@ msgstr ""
 
 #: ../../source/utils.rst:211
 msgid "``CronCallback``"
-msgstr ""
+msgstr "``CronCallback``"
 
 #: ../../source/utils.rst:215
 msgid "You have to install ``croniter`` package for use this feature:"

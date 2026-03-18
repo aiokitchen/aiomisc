@@ -226,11 +226,11 @@ msgstr "``AIOMISC_LOG_CONFIG`` - следует ли настраивать ло
 
 #: ../../source/entrypoint.rst:129
 msgid "``AIOMISC_LOG_FLUSH`` - interval between logs flushing from buffer"
-msgstr "``AIOMISC_LOG_FLUSH`` - интервал сброса буфера логов logs"
+msgstr "``AIOMISC_LOG_FLUSH`` - интервал сброса буфера логов"
 
 #: ../../source/entrypoint.rst:130
 msgid "``AIOMISC_LOG_BUFFERING`` - should logging be buffered"
-msgstr "``AIOMISC_LOG_BUFFERING`` - следует ли включать буфферизацию логирования"
+msgstr "``AIOMISC_LOG_BUFFERING`` - следует ли включать буферизацию логирования"
 
 #: ../../source/entrypoint.rst:131
 msgid "``AIOMISC_LOG_BUFFER_SIZE`` - maximum log buffer size"
@@ -353,7 +353,7 @@ msgid ""
 " eventloop."
 msgstr ""
 "``entrypoint`` вызовет ``aiomisc.log.basic_config`` неявно используя "
-"пеараметры ``log_*=``. В качестве альтернативы, вы можете вызвать "
+"параметры ``log_*=``. В качестве альтернативы, вы можете вызвать "
 "``aiomisc.log.basic_config`` вручную передав ей экземпляр ``eventloop``."
 
 #: ../../source/entrypoint.rst:184
@@ -549,4 +549,3 @@ msgstr ""
 "        )\n"
 "    )\n"
 "    loop.run_until_complete(main())"
-

@@ -72,7 +72,7 @@ class TestMemoryTracer:
             diff = tracer.compare_snapshot(snap1, snap2)
             tracer.log_diff(diff)
 
-            tracer.logger.assert_called_once()
+            tracer.logger.assert_called_once()  # type: ignore[union-attr]
         finally:
             tracemalloc.stop()
 
@@ -99,7 +99,7 @@ class TestMemoryTracer:
         # Call show_stats directly
         await tracer.show_stats()
 
-        tracer.logger.assert_called()
+        tracer.logger.assert_called()  # type: ignore[union-attr]
 
         await tracer.stop()
 
@@ -112,7 +112,7 @@ class TestMemoryTracer:
         await tracer.show_stats()
         await tracer.stop()
 
-        tracer.logger.assert_called()
+        tracer.logger.assert_called()  # type: ignore[union-attr]
 
     async def test_custom_top_results(self, event_loop):
         tracer = MemoryTracer()
@@ -123,7 +123,7 @@ class TestMemoryTracer:
         await tracer.show_stats()
         await tracer.stop()
 
-        tracer.logger.assert_called()
+        tracer.logger.assert_called()  # type: ignore[union-attr]
 
     def test_stat_format(self):
         expected_keys = [

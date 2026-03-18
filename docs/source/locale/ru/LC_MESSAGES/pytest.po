@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  14\n"
 "Report-Msgid-Bugs-To: me@mosquito.su\n"
-"POT-Creation-Date: 2023-02-15 22:23+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2026-03-18 16:34+0100\n"
+"PO-Revision-Date: 2026-03-18 17:00+0100\n"
 "Last-Translator: Dmitry Orlov <me@mosquito.su>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: ../../source/pytest.rst:2
 msgid "Pytest plugin"
@@ -21,10 +21,890 @@ msgstr "Плагин для Pytest"
 
 #: ../../source/pytest.rst:6
 msgid ""
-"Starting with version 17, pytest integration is distributed as a separate"
-" package aiomisc-pytest_. See the documentation for the aiomisc-pytest_ "
-"module for further instructions."
+"All pytest plugin code lives in the ``aiomisc`` package itself. The "
+"aiomisc-pytest_ package is required only for plugin registration (it "
+"contains the pytest entry point). Install both:"
 msgstr ""
-"Начиная с версии 17, интеграция с pytest распространяется в виде отдельного "
-"пакета aiomisc-pytest_. Дополнительные инструкции см. в документации "
-"модуля aiomisc-pytest_."
+"Весь код плагина pytest находится в пакете ``aiomisc``. "
+"Пакет aiomisc-pytest_ нужен только для регистрации плагина "
+"(содержит точку входа pytest). Установите оба пакета:"
+
+#: ../../source/pytest.rst:10
+msgid "pip install aiomisc aiomisc-pytest"
+msgstr "pip install aiomisc aiomisc-pytest"
+
+#: ../../source/pytest.rst:15
+msgid "Basic usage"
+msgstr "Базовое использование"
+
+#: ../../source/pytest.rst:17
+msgid ""
+"The plugin automatically provides an event loop and an entrypoint for "
+"every async test. Simply write ``async def test_...`` functions:"
+msgstr ""
+"Плагин автоматически предоставляет цикл событий и entrypoint для каждого "
+"асинхронного теста. Просто пишите функции ``async def test_...``:"
+
+#: ../../source/pytest.rst:20
+msgid ""
+"async def test_sample(event_loop):\n"
+"    f = event_loop.create_future()\n"
+"    event_loop.call_soon(f.set_result, True)\n"
+"    assert await f"
+msgstr ""
+
+#: ../../source/pytest.rst:27
+msgid "Async fixtures work the same way:"
+msgstr "Асинхронные фикстуры работают аналогично:"
+
+#: ../../source/pytest.rst:29
+msgid ""
+"import asyncio\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture\n"
+"async def my_fixture():\n"
+"    await asyncio.sleep(0)\n"
+"    yield \"value\"\n"
+"\n"
+"\n"
+"async def test_with_fixture(my_fixture):\n"
+"    assert my_fixture == \"value\""
+msgstr ""
+
+#: ../../source/pytest.rst:45
+msgid "Fixtures"
+msgstr "Фикстуры"
+
+#: ../../source/pytest.rst:47
+msgid "The plugin provides the following fixtures:"
+msgstr "Плагин предоставляет следующие фикстуры:"
+
+#: ../../source/pytest.rst:50
+msgid "Core fixtures"
+msgstr "Основные фикстуры"
+
+#: ../../source/pytest.rst:52
+msgid "``entrypoint``"
+msgstr "``entrypoint``"
+
+#: ../../source/pytest.rst:53
+msgid "**Scope:** function, autouse"
+msgstr "**Область:** function, autouse"
+
+#: ../../source/pytest.rst:55
+msgid ""
+"Creates an ``aiomisc.Entrypoint`` instance using the current "
+"``event_loop``. Starts all services from the ``services`` fixture and "
+"populates the context from ``default_context``."
+msgstr ""
+"Создаёт экземпляр ``aiomisc.Entrypoint``, используя текущий "
+"``event_loop``. Запускает все сервисы из фикстуры ``services`` и "
+"заполняет контекст из ``default_context``."
+
+#: ../../source/pytest.rst:59
+msgid "``localhost``"
+msgstr "``localhost``"
+
+#: ../../source/pytest.rst:60 ../../source/pytest.rst:66
+#: ../../source/pytest.rst:71 ../../source/pytest.rst:76
+#: ../../source/pytest.rst:81
+msgid "**Scope:** session"
+msgstr "**Область:** session"
+
+#: ../../source/pytest.rst:62
+msgid ""
+"Returns the localhost address (``\"127.0.0.1\"`` or ``\"::1\"`` depending"
+" on what is available on the system)."
+msgstr ""
+"Возвращает адрес localhost (``\"127.0.0.1\"`` или ``\"::1\"`` в "
+"зависимости от того, что доступно в системе)."
+
+#: ../../source/pytest.rst:65
+msgid "``loop_debug``"
+msgstr "``loop_debug``"
+
+#: ../../source/pytest.rst:68
+msgid "Returns the value of ``--aiomisc-debug`` command-line option."
+msgstr "Возвращает значение параметра командной строки ``--aiomisc-debug``."
+
+#: ../../source/pytest.rst:70
+msgid "``aiomisc_test_timeout``"
+msgstr "``aiomisc_test_timeout``"
+
+#: ../../source/pytest.rst:73
+msgid "Returns the value of ``--aiomisc-test-timeout`` command-line option."
+msgstr "Возвращает значение параметра командной строки ``--aiomisc-test-timeout``."
+
+#: ../../source/pytest.rst:75
+msgid "``thread_pool_size``"
+msgstr "``thread_pool_size``"
+
+#: ../../source/pytest.rst:78
+msgid "Returns the value of ``--aiomisc-pool-size`` command-line option."
+msgstr "Возвращает значение параметра командной строки ``--aiomisc-pool-size``."
+
+#: ../../source/pytest.rst:80
+msgid "``tcp_proxy``"
+msgstr "``tcp_proxy``"
+
+#: ../../source/pytest.rst:83
+msgid ""
+"Returns the ``TCPProxy`` class for emulating network problems. See "
+"`TCPProxy`_ section below."
+msgstr ""
+"Возвращает класс ``TCPProxy`` для эмуляции сетевых проблем. "
+"См. раздел `TCPProxy`_ ниже."
+
+#: ../../source/pytest.rst:87
+msgid "Overridable fixtures"
+msgstr "Переопределяемые фикстуры"
+
+#: ../../source/pytest.rst:89
+msgid ""
+"These fixtures have sensible defaults but can be overridden in your "
+"``conftest.py`` or test module to change behavior or scope."
+msgstr ""
+"Эти фикстуры имеют разумные значения по умолчанию, но могут быть "
+"переопределены в ``conftest.py`` или тестовом модуле для изменения "
+"поведения или области видимости."
+
+#: ../../source/pytest.rst:92
+msgid "``event_loop``"
+msgstr "``event_loop``"
+
+#: ../../source/pytest.rst:93
+msgid ""
+"**Scope:** function, autouse, **Default:** creates a new event loop per "
+"test"
+msgstr ""
+"**Область:** function, autouse, **По умолчанию:** создаёт новый цикл "
+"событий для каждого теста"
+
+#: ../../source/pytest.rst:95
+msgid ""
+"Creates and manages an asyncio event loop. Configures thread pool, debug "
+"mode, and exception handling. Closes the loop on teardown."
+msgstr ""
+"Создаёт и управляет циклом событий asyncio. Настраивает пул потоков, "
+"режим отладки и обработку исключений. Закрывает цикл при завершении."
+
+#: ../../source/pytest.rst:98
+msgid ""
+"Override this fixture to change its scope (module or session) when you "
+"need async fixtures that outlive a single test. See `Scoped event loops "
+"and fixtures`_ for details."
+msgstr ""
+"Переопределите эту фикстуру для изменения области видимости (module или "
+"session), когда вам нужны асинхронные фикстуры, живущие дольше одного "
+"теста. Подробнее см. `Scoped event loops and fixtures`_."
+
+#: ../../source/pytest.rst:102
+msgid "``services``"
+msgstr "``services``"
+
+#: ../../source/pytest.rst:103
+msgid "**Scope:** function, **Default:** empty list"
+msgstr "**Область:** function, **По умолчанию:** пустой список"
+
+#: ../../source/pytest.rst:105
+msgid ""
+"Return a list of ``aiomisc.Service`` instances to start inside the "
+"entrypoint."
+msgstr ""
+"Возвращает список экземпляров ``aiomisc.Service`` для запуска "
+"внутри entrypoint."
+
+#: ../../source/pytest.rst:108
+msgid ""
+"import aiomisc\n"
+"import pytest\n"
+"\n"
+"\n"
+"class MyService(aiomisc.Service):\n"
+"    async def start(self) -> None:\n"
+"        self.start_event.set()\n"
+"        await asyncio.sleep(3600)\n"
+"\n"
+"\n"
+"@pytest.fixture\n"
+"def services():\n"
+"    return [MyService()]"
+msgstr ""
+
+#: ../../source/pytest.rst:124
+msgid "``default_context``"
+msgstr "``default_context``"
+
+#: ../../source/pytest.rst:125
+msgid "**Scope:** function, **Default:** empty dict"
+msgstr "**Область:** function, **По умолчанию:** пустой словарь"
+
+#: ../../source/pytest.rst:127
+msgid "Return a mapping of values to populate in the entrypoint context."
+msgstr "Возвращает словарь значений для заполнения контекста entrypoint."
+
+#: ../../source/pytest.rst:129
+#, python-brace-format
+msgid ""
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture\n"
+"def default_context():\n"
+"    return {\n"
+"        \"foo\": \"bar\",\n"
+"        \"bar\": \"foo\",\n"
+"    }"
+msgstr ""
+
+#: ../../source/pytest.rst:141
+msgid "``entrypoint_kwargs``"
+msgstr "``entrypoint_kwargs``"
+
+#: ../../source/pytest.rst:142
+#, python-brace-format
+msgid "**Scope:** function, **Default:** ``{\"log_config\": False}``"
+msgstr "**Область:** function, **По умолчанию:** ``{\"log_config\": False}``"
+
+#: ../../source/pytest.rst:144
+msgid "Return extra keyword arguments for the ``entrypoint()`` constructor."
+msgstr "Возвращает дополнительные аргументы для конструктора ``entrypoint()``."
+
+#: ../../source/pytest.rst:146
+msgid ""
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture\n"
+"def entrypoint_kwargs() -> dict:\n"
+"    return dict(log_config=False)"
+msgstr ""
+
+#: ../../source/pytest.rst:155
+msgid "``thread_pool_executor``"
+msgstr "``thread_pool_executor``"
+
+#: ../../source/pytest.rst:156
+msgid "**Scope:** function, **Default:** ``aiomisc.ThreadPoolExecutor``"
+msgstr "**Область:** function, **По умолчанию:** ``aiomisc.ThreadPoolExecutor``"
+
+#: ../../source/pytest.rst:158
+msgid "Return the thread pool executor class to use."
+msgstr "Возвращает класс исполнителя пула потоков для использования."
+
+#: ../../source/pytest.rst:160
+msgid ""
+"import concurrent.futures\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture\n"
+"def thread_pool_executor():\n"
+"    return concurrent.futures.ThreadPoolExecutor"
+msgstr ""
+
+#: ../../source/pytest.rst:171
+msgid "Port and socket fixtures"
+msgstr "Фикстуры портов и сокетов"
+
+#: ../../source/pytest.rst:173
+msgid "``aiomisc_unused_port_factory``"
+msgstr "``aiomisc_unused_port_factory``"
+
+#: ../../source/pytest.rst:174 ../../source/pytest.rst:180
+#: ../../source/pytest.rst:186
+msgid "**Scope:** function"
+msgstr "**Область:** function"
+
+#: ../../source/pytest.rst:176
+msgid ""
+"A callable factory that returns an unused port on each call. Sockets are "
+"cleaned up after test teardown."
+msgstr ""
+"Вызываемая фабрика, возвращающая свободный порт при каждом вызове. "
+"Сокеты освобождаются после завершения теста."
+
+#: ../../source/pytest.rst:179
+msgid "``aiomisc_unused_port``"
+msgstr "``aiomisc_unused_port``"
+
+#: ../../source/pytest.rst:182
+msgid ""
+"A single unused port number (uses ``aiomisc_unused_port_factory`` "
+"internally)."
+msgstr ""
+"Один свободный номер порта (использует ``aiomisc_unused_port_factory`` "
+"внутри)."
+
+#: ../../source/pytest.rst:185
+msgid "``aiomisc_socket_factory``"
+msgstr "``aiomisc_socket_factory``"
+
+#: ../../source/pytest.rst:188
+msgid ""
+"A callable factory that returns a ``PortSocket(port, socket)`` named "
+"tuple with a bound socket."
+msgstr ""
+"Вызываемая фабрика, возвращающая именованный кортеж "
+"``PortSocket(port, socket)`` с привязанным сокетом."
+
+#: ../../source/pytest.rst:192
+msgid "Markers"
+msgstr "Маркеры"
+
+#: ../../source/pytest.rst:194
+msgid "``@pytest.mark.catch_loop_exceptions``"
+msgstr "``@pytest.mark.catch_loop_exceptions``"
+
+#: ../../source/pytest.rst:195
+msgid "Uncaught event loop exceptions will fail the test."
+msgstr "Необработанные исключения цикла событий приведут к провалу теста."
+
+#: ../../source/pytest.rst:197
+msgid ""
+"import asyncio\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.mark.catch_loop_exceptions\n"
+"async def test_with_errors(event_loop):\n"
+"    async def fail():\n"
+"        await asyncio.sleep(0)\n"
+"        raise Exception()\n"
+"\n"
+"    event_loop.create_task(fail())\n"
+"    await asyncio.sleep(0.1)"
+msgstr ""
+
+#: ../../source/pytest.rst:212
+msgid "``@pytest.mark.forbid_get_event_loop``"
+msgstr "``@pytest.mark.forbid_get_event_loop``"
+
+#: ../../source/pytest.rst:213
+msgid "Forbids calling ``asyncio.get_event_loop()`` during the test."
+msgstr "Запрещает вызов ``asyncio.get_event_loop()`` во время теста."
+
+#: ../../source/pytest.rst:215
+msgid ""
+"import asyncio\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.mark.forbid_get_event_loop\n"
+"async def test_no_get_loop():\n"
+"    def bad():\n"
+"        asyncio.get_event_loop()\n"
+"\n"
+"    with pytest.raises(Exception):\n"
+"        bad()"
+msgstr ""
+
+#: ../../source/pytest.rst:230
+msgid "Command-line options"
+msgstr "Параметры командной строки"
+
+#: ../../source/pytest.rst:232
+msgid "``--aiomisc-debug``"
+msgstr "``--aiomisc-debug``"
+
+#: ../../source/pytest.rst:233
+msgid "Enable event loop debug mode. Default: ``False``."
+msgstr "Включает режим отладки цикла событий. По умолчанию: ``False``."
+
+#: ../../source/pytest.rst:235
+msgid "``--aiomisc-pool-size``"
+msgstr "``--aiomisc-pool-size``"
+
+#: ../../source/pytest.rst:236
+msgid "Thread pool size. Default: ``4``."
+msgstr "Размер пула потоков. По умолчанию: ``4``."
+
+#: ../../source/pytest.rst:238
+msgid "``--aiomisc-test-timeout``"
+msgstr "``--aiomisc-test-timeout``"
+
+#: ../../source/pytest.rst:239
+msgid "Per-test timeout in seconds. Default: ``None`` (no timeout)."
+msgstr "Таймаут на тест в секундах. По умолчанию: ``None`` (без ограничения)."
+
+#: ../../source/pytest.rst:242
+msgid "Environment variables"
+msgstr "Переменные окружения"
+
+#: ../../source/pytest.rst:244
+msgid "``AIOMISC_USE_UVLOOP``"
+msgstr "``AIOMISC_USE_UVLOOP``"
+
+#: ../../source/pytest.rst:245
+msgid ""
+"Set to ``\"0\"``, ``\"no\"``, or ``\"false\"`` to disable uvloop. "
+"Default: ``\"1\"`` (enabled if uvloop is installed)."
+msgstr ""
+"Установите ``\"0\"``, ``\"no\"`` или ``\"false\"`` для отключения uvloop. "
+"По умолчанию: ``\"1\"`` (включён, если uvloop установлен)."
+
+#: ../../source/pytest.rst:248
+msgid "``AIOMISC_LOOP_AUTOUSE``"
+msgstr "``AIOMISC_LOOP_AUTOUSE``"
+
+#: ../../source/pytest.rst:249
+msgid ""
+"Set to ``\"0\"`` to disable autouse on ``event_loop`` and ``entrypoint`` "
+"fixtures. Default: ``\"1\"``."
+msgstr ""
+"Установите ``\"0\"`` для отключения autouse у фикстур ``event_loop`` и "
+"``entrypoint``. По умолчанию: ``\"1\"``."
+
+#: ../../source/pytest.rst:253
+msgid "Scoped event loops and fixtures"
+msgstr "Области видимости цикла событий и фикстур"
+
+#: ../../source/pytest.rst:256
+msgid "Why change the scope?"
+msgstr "Зачем менять область видимости?"
+
+#: ../../source/pytest.rst:258
+msgid ""
+"By default, ``event_loop`` and ``entrypoint`` are **function-scoped**: a "
+"fresh event loop is created for every test and closed on teardown. This "
+"is the safest default because each test gets a clean state."
+msgstr ""
+"По умолчанию ``event_loop`` и ``entrypoint`` имеют область видимости "
+"**function**: новый цикл событий создаётся для каждого теста и "
+"закрывается после его завершения. Это наиболее безопасное поведение, "
+"так как каждый тест получает чистое состояние."
+
+#: ../../source/pytest.rst:262
+msgid ""
+"However, some async resources are expensive to create and should be "
+"shared across tests: database connection pools, HTTP client sessions, "
+"preloaded caches, and so on. In pytest, you express this by giving the "
+"fixture a wider scope (``\"module\"`` or ``\"session\"``)."
+msgstr ""
+"Однако некоторые асинхронные ресурсы дорого создавать, и их следует "
+"разделять между тестами: пулы подключений к базе данных, HTTP-клиентские "
+"сессии, предзагруженные кэши и т.д. В pytest это выражается через "
+"расширение области видимости фикстуры (``\"module\"`` или ``\"session\"``)."
+
+#: ../../source/pytest.rst:267
+msgid ""
+"The problem is that a wider-scoped async fixture **must run on an event "
+"loop that lives at least as long as the fixture itself**. If the fixture "
+"is session-scoped but the event loop is function-scoped, the loop will be"
+" closed after the first test, and the fixture's teardown (and every "
+"subsequent test that uses it) will fail."
+msgstr ""
+"Проблема в том, что асинхронная фикстура с широкой областью видимости "
+"**должна работать на цикле событий, который живёт не менее долго, чем "
+"сама фикстура**. Если фикстура имеет область session, а цикл событий — "
+"function, цикл будет закрыт после первого теста, и завершение фикстуры "
+"(а также все последующие тесты, использующие её) завершится с ошибкой."
+
+#: ../../source/pytest.rst:273
+msgid ""
+"The solution: override ``event_loop`` with the same scope as your widest "
+"async fixture."
+msgstr ""
+"Решение: переопределите ``event_loop`` с той же областью видимости, что и "
+"у вашей самой широкой асинхронной фикстуры."
+
+#: ../../source/pytest.rst:277
+msgid "The key rule"
+msgstr "Ключевое правило"
+
+#: ../../source/pytest.rst:281
+msgid ""
+"The ``event_loop`` fixture scope must be **greater than or equal to** the"
+" scope of every async fixture that depends on it."
+msgstr ""
+"Область видимости фикстуры ``event_loop`` должна быть **больше или равна** "
+"области видимости каждой асинхронной фикстуры, которая от неё зависит."
+
+#: ../../source/pytest.rst:284
+msgid "``session >= module >= class >= function``"
+msgstr "``session >= module >= class >= function``"
+
+#: ../../source/pytest.rst:286
+msgid ""
+"For example, if you have a ``scope=\"module\"`` async fixture, you need "
+"at least a ``scope=\"module\"`` event loop."
+msgstr ""
+"Например, если у вас есть асинхронная фикстура с ``scope=\"module\"``, "
+"вам нужен цикл событий как минимум с ``scope=\"module\"``."
+
+#: ../../source/pytest.rst:290
+msgid "Module-scoped loop"
+msgstr "Цикл событий с областью module"
+
+#: ../../source/pytest.rst:292
+msgid ""
+"Override ``event_loop`` in your test module or in a ``conftest.py`` that "
+"applies to the relevant directory:"
+msgstr ""
+"Переопределите ``event_loop`` в тестовом модуле или в ``conftest.py``, "
+"действующем для нужной директории:"
+
+#: ../../source/pytest.rst:295
+msgid ""
+"import asyncio\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture(scope=\"module\")\n"
+"def event_loop():\n"
+"    loop = asyncio.new_event_loop()\n"
+"    asyncio.set_event_loop(loop)\n"
+"    try:\n"
+"        yield loop\n"
+"    finally:\n"
+"        loop.close()\n"
+"        asyncio.set_event_loop(None)\n"
+"\n"
+"\n"
+"@pytest.fixture(scope=\"module\")\n"
+"async def shared_resource():\n"
+"    resource = await create_expensive_resource()\n"
+"    yield resource\n"
+"    await resource.close()\n"
+"\n"
+"\n"
+"async def test_first(shared_resource):\n"
+"    assert shared_resource is not None\n"
+"\n"
+"\n"
+"async def test_second(shared_resource):\n"
+"    assert shared_resource is not None"
+msgstr ""
+
+#: ../../source/pytest.rst:326
+msgid ""
+"All tests in the module share the same event loop and the same "
+"``shared_resource`` instance. The resource is created once before the "
+"first test in the module and torn down after the last one."
+msgstr ""
+"Все тесты в модуле разделяют один и тот же цикл событий и один и тот же "
+"экземпляр ``shared_resource``. Ресурс создаётся один раз перед первым "
+"тестом в модуле и уничтожается после последнего."
+
+#: ../../source/pytest.rst:331
+msgid "Session-scoped loop"
+msgstr "Цикл событий с областью session"
+
+#: ../../source/pytest.rst:333
+msgid ""
+"For fixtures that must survive the entire test session, place a session-"
+"scoped ``event_loop`` override in a ``conftest.py``. Because this affects"
+" every test that inherits it, it is recommended to put it in a "
+"subdirectory ``conftest.py`` rather than the root one, so that only the "
+"tests that need it are affected."
+msgstr ""
+"Для фикстур, которые должны жить на протяжении всей тестовой сессии, "
+"поместите переопределение ``event_loop`` с областью session в "
+"``conftest.py``. Поскольку это влияет на все тесты, наследующие его, "
+"рекомендуется размещать его в ``conftest.py`` поддиректории, а не "
+"корневой, чтобы затронуть только нужные тесты."
+
+#: ../../source/pytest.rst:339
+msgid ""
+"tests/\n"
+"    conftest.py               # root conftest (default fixtures)\n"
+"    test_unit.py              # uses default function-scoped loop\n"
+"    integration/\n"
+"        conftest.py           # session-scoped event_loop override\n"
+"        test_database.py      # shares the session loop\n"
+"        test_api.py           # shares the session loop"
+msgstr ""
+"tests/\n"
+"    conftest.py               # корневой conftest (фикстуры по умолчанию)\n"
+"    test_unit.py              # использует function-scoped цикл\n"
+"    integration/\n"
+"        conftest.py           # переопределение event_loop с session scope\n"
+"        test_database.py      # использует общий session-цикл\n"
+"        test_api.py           # использует общий session-цикл"
+
+#: ../../source/pytest.rst:349
+msgid ""
+"# tests/integration/conftest.py\n"
+"import asyncio\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture(scope=\"session\")\n"
+"def event_loop():\n"
+"    loop = asyncio.new_event_loop()\n"
+"    asyncio.set_event_loop(loop)\n"
+"    try:\n"
+"        yield loop\n"
+"    finally:\n"
+"        loop.close()\n"
+"        asyncio.set_event_loop(None)"
+msgstr ""
+
+#: ../../source/pytest.rst:366
+msgid "Then use session-scoped async fixtures as usual:"
+msgstr "Затем используйте session-фикстуры как обычно:"
+
+#: ../../source/pytest.rst:368
+msgid ""
+"# tests/integration/conftest.py (continued)\n"
+"import pytest\n"
+"\n"
+"\n"
+"@pytest.fixture(scope=\"session\")\n"
+"async def db_pool():\n"
+"    pool = await create_pool(dsn=\"postgresql://localhost/test\")\n"
+"    yield pool\n"
+"    await pool.close()"
+msgstr ""
+
+#: ../../source/pytest.rst:380
+msgid ""
+"# tests/integration/test_database.py\n"
+"async def test_insert(db_pool):\n"
+"    async with db_pool.acquire() as conn:\n"
+"        await conn.execute(\"INSERT INTO t VALUES (1)\")\n"
+"\n"
+"\n"
+"async def test_select(db_pool):\n"
+"    async with db_pool.acquire() as conn:\n"
+"        row = await conn.fetchrow(\"SELECT 1 AS n\")\n"
+"        assert row[\"n\"] == 1"
+msgstr ""
+
+#: ../../source/pytest.rst:394
+msgid "Session-scoped async generator fixtures"
+msgstr "Session-фикстуры на основе асинхронных генераторов"
+
+#: ../../source/pytest.rst:396
+msgid ""
+"Async generator fixtures (those that use ``yield``) require extra care. "
+"When the scope is wider than the ``entrypoint`` fixture, the entrypoint "
+"must not destroy the generator during its own teardown."
+msgstr ""
+"Фикстуры на основе асинхронных генераторов (использующие ``yield``) "
+"требуют особого внимания. Когда область видимости шире, чем у фикстуры "
+"``entrypoint``, entrypoint не должен уничтожать генератор при своём "
+"завершении."
+
+#: ../../source/pytest.rst:400
+msgid ""
+"This works correctly: the ``entrypoint`` is function-scoped and does not "
+"own the session-scoped event loop, so it will not call "
+"``shutdown_asyncgens`` and the generator survives between tests."
+msgstr ""
+"Это работает корректно: ``entrypoint`` имеет область function и не владеет "
+"session-циклом событий, поэтому он не вызывает ``shutdown_asyncgens``, "
+"и генератор переживает переход между тестами."
+
+#: ../../source/pytest.rst:404
+msgid ""
+"import pytest\n"
+"\n"
+"\n"
+"async def some_agen():\n"
+"    for i in range(100):\n"
+"        yield i + 1\n"
+"\n"
+"\n"
+"@pytest.fixture(scope=\"session\")\n"
+"async def async_gen_fixture():\n"
+"    agen = some_agen()\n"
+"    val = await agen.__anext__()\n"
+"    assert val == 1\n"
+"    val = await agen.__anext__()\n"
+"    assert val == 2\n"
+"    yield val\n"
+"    # teardown: runs when the session-scoped loop is closing\n"
+"    new_val = await agen.__anext__()\n"
+"    assert new_val == 3\n"
+"    await agen.aclose()\n"
+"\n"
+"\n"
+"async def test_first(async_gen_fixture):\n"
+"    assert async_gen_fixture == 2\n"
+"\n"
+"\n"
+"async def test_second(async_gen_fixture):\n"
+"    assert async_gen_fixture == 2"
+msgstr ""
+
+#: ../../source/pytest.rst:436
+msgid "How it works under the hood"
+msgstr "Как это работает внутри"
+
+#: ../../source/pytest.rst:438
+msgid ""
+"Understanding the interaction between ``event_loop`` and ``entrypoint`` "
+"helps explain why this is safe:"
+msgstr ""
+"Понимание взаимодействия между ``event_loop`` и ``entrypoint`` "
+"помогает объяснить, почему это безопасно:"
+
+#: ../../source/pytest.rst:441
+msgid ""
+"When ``event_loop`` is overridden with a wider scope, the loop is **not**"
+" created by the ``entrypoint`` — it is passed in via the ``loop=`` "
+"parameter."
+msgstr ""
+"Когда ``event_loop`` переопределён с более широкой областью видимости, "
+"цикл **не** создаётся ``entrypoint`` — он передаётся через параметр "
+"``loop=``."
+
+#: ../../source/pytest.rst:445
+msgid ""
+"The ``Entrypoint`` tracks whether it created the loop with an internal "
+"``_loop_owner`` flag. When the loop is passed from outside, "
+"``_loop_owner`` is ``False``."
+msgstr ""
+"``Entrypoint`` отслеживает, создал ли он цикл, с помощью внутреннего "
+"флага ``_loop_owner``. Когда цикл передан извне, ``_loop_owner`` "
+"равен ``False``."
+
+#: ../../source/pytest.rst:449
+msgid ""
+"On teardown, ``Entrypoint.graceful_shutdown()`` only calls "
+"``loop.shutdown_asyncgens()`` when ``_loop_owner`` is ``True``. This "
+"means the function-scoped entrypoint teardown will **not** destroy async "
+"generators that belong to the wider-scoped loop."
+msgstr ""
+"При завершении ``Entrypoint.graceful_shutdown()`` вызывает "
+"``loop.shutdown_asyncgens()`` только когда ``_loop_owner`` равен ``True``. "
+"Это означает, что завершение function-scoped entrypoint **не** уничтожит "
+"асинхронные генераторы, принадлежащие циклу с более широкой областью."
+
+#: ../../source/pytest.rst:454
+msgid ""
+"``loop.shutdown_asyncgens()`` is eventually called by the ``event_loop`` "
+"fixture itself during its own teardown — at the correct time, after all "
+"fixtures with that scope have been finalized."
+msgstr ""
+"``loop.shutdown_asyncgens()`` в итоге вызывается самой фикстурой "
+"``event_loop`` при её завершении — в правильный момент, после "
+"финализации всех фикстур с данной областью видимости."
+
+#: ../../source/pytest.rst:459
+msgid "Mixing scopes"
+msgstr "Смешивание областей видимости"
+
+#: ../../source/pytest.rst:461
+msgid ""
+"You can have a session-scoped loop with both session-scoped and function-"
+"scoped fixtures. Function-scoped async fixtures will run on the session "
+"loop and be created/destroyed per test as usual:"
+msgstr ""
+"Можно использовать session-цикл событий одновременно с session- и "
+"function-фикстурами. Function-фикстуры будут работать на session-цикле "
+"и создаваться/уничтожаться для каждого теста как обычно:"
+
+#: ../../source/pytest.rst:465
+msgid ""
+"@pytest.fixture(scope=\"session\")\n"
+"async def db_pool():\n"
+"    \"\"\"Created once, shared across all tests.\"\"\"\n"
+"    pool = await create_pool()\n"
+"    yield pool\n"
+"    await pool.close()\n"
+"\n"
+"\n"
+"@pytest.fixture\n"
+"async def db_connection(db_pool):\n"
+"    \"\"\"Created fresh for each test, returned to pool after.\"\"\"\n"
+"    async with db_pool.acquire() as conn:\n"
+"        yield conn\n"
+"\n"
+"\n"
+"async def test_query(db_connection):\n"
+"    await db_connection.execute(\"SELECT 1\")"
+msgstr ""
+
+#: ../../source/pytest.rst:486
+msgid "TCPProxy"
+msgstr "TCPProxy"
+
+#: ../../source/pytest.rst:488
+msgid ""
+"``TCPProxy`` is a helper for simulating network problems in tests. It "
+"sits between the client and the server, allowing you to add latency, "
+"disconnect clients, or modify traffic on the fly."
+msgstr ""
+"``TCPProxy`` — вспомогательный класс для эмуляции сетевых проблем в тестах. "
+"Он располагается между клиентом и сервером, позволяя добавлять задержки, "
+"отключать клиентов или модифицировать трафик на лету."
+
+#: ../../source/pytest.rst:492
+msgid ""
+"import asyncio\n"
+"import pytest\n"
+"import aiomisc\n"
+"\n"
+"\n"
+"class EchoServer(aiomisc.service.TCPServer):\n"
+"    async def handle_client(\n"
+"        self,\n"
+"        reader: asyncio.StreamReader,\n"
+"        writer: asyncio.StreamWriter,\n"
+"    ):\n"
+"        chunk = await reader.read(65534)\n"
+"        while chunk:\n"
+"            writer.write(chunk)\n"
+"            chunk = await reader.read(65534)\n"
+"        writer.close()\n"
+"        await writer.wait_closed()\n"
+"\n"
+"\n"
+"@pytest.fixture()\n"
+"def server_port(aiomisc_unused_port_factory) -> int:\n"
+"    return aiomisc_unused_port_factory()\n"
+"\n"
+"\n"
+"@pytest.fixture()\n"
+"def services(server_port, localhost):\n"
+"    return [EchoServer(port=server_port, address=localhost)]\n"
+"\n"
+"\n"
+"@pytest.fixture()\n"
+"async def proxy(tcp_proxy, localhost, server_port):\n"
+"    async with tcp_proxy(localhost, server_port) as proxy:\n"
+"        yield proxy\n"
+"\n"
+"\n"
+"async def test_echo(proxy):\n"
+"    reader, writer = await proxy.create_client()\n"
+"    writer.write(b\"Hello world\")\n"
+"    response = await asyncio.wait_for(reader.read(1024), timeout=1)\n"
+"    assert response == b\"Hello world\"\n"
+"\n"
+"\n"
+"async def test_disconnect(proxy):\n"
+"    reader, writer = await proxy.create_client()\n"
+"    writer.write(b\"Hello world\")\n"
+"    await asyncio.wait_for(reader.read(1024), timeout=1)\n"
+"\n"
+"    await proxy.disconnect_all()\n"
+"    assert await asyncio.wait_for(reader.read(), timeout=1) == b\"\"\n"
+"\n"
+"\n"
+"async def test_slowdown(proxy):\n"
+"    with proxy.slowdown(read_delay=0.1, write_delay=0.2):\n"
+"        reader, writer = await proxy.create_client()\n"
+"        writer.write(b\"Hello world\")\n"
+"        response = await asyncio.wait_for(\n"
+"            reader.read(1024), timeout=2,\n"
+"        )\n"
+"        assert response == b\"Hello world\"\n"
+"\n"
+"\n"
+"async def test_content_processor(proxy):\n"
+"    proxy.set_content_processors(\n"
+"        lambda _: b\"replaced\",       # client -> server\n"
+"        lambda chunk: chunk[::-1],   # server -> client\n"
+"    )\n"
+"\n"
+"    reader, writer = await proxy.create_client()\n"
+"    writer.write(b\"original\")\n"
+"\n"
+"    response = await reader.read(16)\n"
+"    assert response == b\"replaced\"[::-1]"
+msgstr ""
