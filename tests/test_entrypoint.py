@@ -200,7 +200,7 @@ def test_tcp_server():
     assert TestService.DATA == [b"hello server\n"]
 
 
-async def test_tcp_client(aiomisc_socket_factory, localhost):
+async def test_tcp_client(event_loop, aiomisc_socket_factory, localhost):
     event = asyncio.Event()
 
     class TestService(TCPServer):
