@@ -180,6 +180,5 @@ class RobustTCPClient(TCPClient, ABC):
                     self.reconnect_timeout,
                 )
             finally:
-                if not self.connected.is_set():
-                    return
-                await asyncio.sleep(self.reconnect_timeout)
+                if self.connected.is_set():
+                    await asyncio.sleep(self.reconnect_timeout)
