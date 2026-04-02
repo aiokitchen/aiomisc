@@ -1,11 +1,12 @@
-import asyncio
 import functools
 import inspect
 import logging
+import weakref
 from asyncio import CancelledError, Event, Future, Lock, wait_for
 from collections.abc import Callable, Coroutine, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from inspect import Parameter
+from threading import RLock
 from typing import Any, Generic, Protocol, TypeVar
 
 from .compat import EventLoopMixin
@@ -24,6 +25,14 @@ class Arg(Generic[V, R]):
     future: "Future[R]"
 
 
+@dataclass(slots=True)
+class Bucket(Generic[V, R]):
+    items: list[Arg[V, R]] = field(default_factory=list)
+    event: Event = field(default_factory=Event)
+    lock: Lock = field(default_factory=Lock)
+    first_call_at: float | None = None
+
+
 class ResultNotSetError(Exception):
     pass
 
@@ -40,6 +49,7 @@ class AggregateStatistic(Statistic):
     success: int
     error: int
     done: int
+    batch_size: int
 
 
 def _has_variadic_positional(func: Callable[..., Any]) -> bool:
@@ -53,11 +63,7 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
     _func: AggregateAsyncFunc[V, R]
     _max_count: int | None
     _leeway: float
-    _first_call_at: float | None
-    _args: list
-    _futures: "list[Future[R]]"
-    _event: Event
-    _lock: Lock
+    _buckets: dict[frozenset, Bucket[V, R]]
 
     def __init__(
         self,
@@ -81,17 +87,21 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
         self._func = func
         self._max_count = max_count
         self._leeway = leeway_ms / 1000
-        self._clear()
-        self._statistic = AggregateStatistic(statistic_name)
+        self._buckets = {}
+        self._statistic = AggregateStatistic(statistic_name or func.__name__)
         self._statistic.leeway_ms = self.leeway_ms
         self._statistic.max_count = max_count or 0
+        self._buckets_mutex = RLock()
 
-    def _clear(self) -> None:
-        self._first_call_at = None
-        self._args = []
-        self._futures = []
-        self._event = Event()
-        self._lock = Lock()
+    def _get_bucket(self, kwargs_key: frozenset) -> Bucket[V, R]:
+        with self._buckets_mutex:
+            if kwargs_key not in self._buckets:
+                self._buckets[kwargs_key] = Bucket()
+            return self._buckets[kwargs_key]
+
+    def _detach_bucket(self, kwargs_key: frozenset) -> Bucket[V, R] | None:
+        with self._buckets_mutex:
+            return self._buckets.pop(kwargs_key, None)
 
     @property
     def max_count(self) -> int | None:
@@ -103,61 +113,65 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
 
     @property
     def count(self) -> int:
-        return len(self._args)
+        return sum(len(b.items) for b in self._buckets.values())
 
     async def _execute(
-        self, *, args: list[V], futures: "list[Future[R]]"
+        self, *, items: list[Arg[V, R]], kwargs: dict[str, Any] | None = None
     ) -> None:
-        args_ = [
-            Arg(value=arg, future=future) for arg, future in zip(args, futures)
-        ]
+        self._statistic.batch_size += len(items)
         try:
-            await self._func(*args_)
+            await self._func(*items, **(kwargs or {}))
             self._statistic.success += 1
         except CancelledError:
-            # Other waiting tasks can try to finish the job instead.
             raise
         except Exception as e:
-            self._set_exception(e, futures)
+            for item in items:
+                if not item.future.done():
+                    item.future.set_exception(e)
             self._statistic.error += 1
             return
         finally:
             self._statistic.done += 1
 
-        # Validate that all results/exceptions are set by the func
-        for future in futures:
-            if not future.done():
-                future.set_exception(ResultNotSetError)
+        for item in items:
+            if not item.future.done():
+                item.future.set_exception(ResultNotSetError)
 
-    def _set_exception(
-        self, exc: Exception, futures: list["Future[R]"]
-    ) -> None:
-        for future in futures:
-            if not future.done():
-                future.set_exception(exc)
+    @staticmethod
+    def _make_kwargs_key(kwargs: dict[str, Any]) -> frozenset:
+        if not kwargs:
+            return frozenset()
+        try:
+            return frozenset(kwargs.items())
+        except TypeError as exc:
+            raise TypeError(
+                "All keyword argument values passed to an aggregated "
+                "function must be hashable"
+            ) from exc
 
-    async def aggregate(self, arg: V) -> R:
-        if self._first_call_at is None:
-            self._first_call_at = self.loop.time()
-        first_call_at = self._first_call_at
+    async def aggregate(self, arg: V, **kwargs: Any) -> R:
+        kwargs_key = self._make_kwargs_key(kwargs)
+        bucket = self._get_bucket(kwargs_key)
 
-        args: list = self._args
-        futures: list[Future[R]] = self._futures
-        event: Event = self._event
-        lock: Lock = self._lock
-        args.append(arg)
+        if bucket.first_call_at is None:
+            bucket.first_call_at = self.loop.time()
+        first_call_at = bucket.first_call_at
+
+        items = bucket.items
+        event = bucket.event
+        lock = bucket.lock
+
         future: Future[R] = Future()
-        futures.append(future)
+        items.append(Arg(value=arg, future=future))
 
-        if self.count == self.max_count:
+        if len(items) == self.max_count:
             event.set()
-            self._clear()
+            self._detach_bucket(kwargs_key)
         else:
-            # Waiting for max_count requests or a timeout
             try:
                 await wait_for(
                     event.wait(),
-                    timeout=first_call_at + self._leeway - self.loop.time(),
+                    timeout=(first_call_at + self._leeway - self.loop.time()),
                 )
             except TimeoutError:
                 log.debug(
@@ -165,27 +179,27 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                     "with %d calls after %.2f ms",
                     self._func.__name__,
                     first_call_at,
-                    len(futures),
+                    len(items),
                     (self.loop.time() - first_call_at) * 1000,
                 )
 
-        # Clear only if not cleared already
-        if args is self._args:
-            self._clear()
+        if kwargs_key in self._buckets and self._buckets[kwargs_key] is bucket:
+            self._detach_bucket(kwargs_key)
 
-        # Trying to acquire the lock to execute the aggregated function
         async with lock:
             if not future.done():
-                await self._execute(args=args, futures=futures)
-        await future
-        return future.result()
+                await self._execute(
+                    items=items, kwargs=kwargs if kwargs else None
+                )
+
+        return await future
 
 
 S = TypeVar("S", contravariant=True)
 T = TypeVar("T", covariant=True)
 
 
-class AggregateFunc(Protocol, Generic[S, T]):
+class AggregateFunc(Protocol[S, T]):
     __name__: str
 
     async def __call__(self, *args: S) -> Iterable[T]: ...
@@ -200,9 +214,9 @@ def _to_async_aggregate(func: AggregateFunc[V, R]) -> AggregateAsyncFunc[V, R]:
             if item != "__annotations__"
         ),
     )
-    async def wrapper(*args: Arg[V, R]) -> None:
+    async def wrapper(*args: Arg[V, R], **kwargs: Any) -> None:
         args_ = [item.value for item in args]
-        results = await func(*args_)
+        results = await func(*args_, **kwargs)
         for res, arg in zip(results, args):
             if not arg.future.done():
                 arg.future.set_result(res)
@@ -232,9 +246,70 @@ class Aggregator(AggregatorAsync[V, R], Generic[V, R]):
         )
 
 
+class AggregateDescriptor(Generic[V, R]):
+    def __init__(
+        self,
+        func: Callable[..., Any],
+        *,
+        leeway_ms: float,
+        max_count: int | None,
+        aggregator_class: type[AggregatorAsync[V, R]],
+        statistic_name: str | None = None,
+    ):
+        functools.update_wrapper(self, func)
+        self.func = func
+        self.leeway_ms = leeway_ms
+        self.max_count = max_count
+        self.aggregator_class = aggregator_class
+        self.statistic_name = statistic_name
+        self.plain_aggregator: AggregatorAsync[V, R] | None = None
+        self.instance_cache: weakref.WeakKeyDictionary[
+            Any, AggregatorAsync[V, R]
+        ] = weakref.WeakKeyDictionary()
+
+    def __call__(self, arg: V, **kwargs: Any) -> Coroutine[Any, Any, R]:
+        if self.plain_aggregator is None:
+            name = self.statistic_name or self.func.__name__
+            self.plain_aggregator = self.aggregator_class(
+                self.func,
+                leeway_ms=self.leeway_ms,
+                max_count=self.max_count,
+                statistic_name=name,
+            )
+        return self.plain_aggregator.aggregate(arg, **kwargs)
+
+    def __get__(
+        self, obj: Any, objtype: type | None = None
+    ) -> Callable[..., Coroutine[Any, Any, R]]:
+        if obj is None:
+            return self
+        try:
+            cached = obj in self.instance_cache
+        except TypeError as exc:
+            raise TypeError(
+                f"{type(obj).__name__} instances must be hashable "
+                f"and weak-referenceable to use @aggregate on methods"
+            ) from exc
+        if not cached:
+            bound = functools.partial(self.func, obj)
+            functools.update_wrapper(bound, self.func)
+            name = self.statistic_name or (
+                f"{type(obj).__name__}.{self.func.__name__}"
+            )
+            self.instance_cache[obj] = self.aggregator_class(
+                bound,  # type: ignore[arg-type]
+                leeway_ms=self.leeway_ms,
+                max_count=self.max_count,
+                statistic_name=name,
+            )
+        return self.instance_cache[obj].aggregate
+
+
 def aggregate(
-    leeway_ms: float, max_count: int | None = None
-) -> Callable[[AggregateFunc[V, R]], Callable[[V], Coroutine[Any, Any, R]]]:
+    leeway_ms: float,
+    max_count: int | None = None,
+    statistic_name: str | None = None,
+) -> Callable[..., "AggregateDescriptor[Any, Any]"]:
     """
     Parametric decorator that aggregates multiple
     (but no more than ``max_count`` defaulting to ``None``) single-argument
@@ -244,6 +319,13 @@ def aggregate(
     execution with multiple positional arguments
     (``res1, res2, ... = await func(arg1, arg2, ...)``) collected within a time
     window ``leeway_ms``.
+
+    Keyword arguments passed by callers are forwarded to the decorated
+    function. Calls with different keyword arguments are batched
+    separately.
+
+    Supports the descriptor protocol: when applied to a method, each
+    class instance gets its own independent aggregator.
 
     .. note::
 
@@ -264,20 +346,31 @@ def aggregate(
     :return:
     """
 
-    def decorator(
-        func: AggregateFunc[V, R],
-    ) -> Callable[[V], Coroutine[Any, Any, R]]:
-        aggregator = Aggregator(func, max_count=max_count, leeway_ms=leeway_ms)
-        return aggregator.aggregate
+    def decorator(func: Callable[..., Any]) -> AggregateDescriptor[Any, Any]:
+        if not _has_variadic_positional(func):
+            raise ValueError(
+                "Function must accept variadic positional arguments"
+            )
+        if max_count is not None and max_count <= 0:
+            raise ValueError("max_count must be positive int or None")
+        if leeway_ms <= 0:
+            raise ValueError("leeway_ms must be positive float")
+        return AggregateDescriptor(
+            func,
+            leeway_ms=leeway_ms,
+            max_count=max_count,
+            aggregator_class=Aggregator,
+            statistic_name=statistic_name,
+        )
 
     return decorator
 
 
 def aggregate_async(
-    leeway_ms: float, max_count: int | None = None
-) -> Callable[
-    [AggregateAsyncFunc[V, R]], Callable[[V], Coroutine[Any, Any, R]]
-]:
+    leeway_ms: float,
+    max_count: int | None = None,
+    statistic_name: str | None = None,
+) -> Callable[..., "AggregateDescriptor[Any, Any]"]:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
     containing ``value`` and ``future`` attributes instead. In this setting
@@ -286,15 +379,31 @@ def aggregate_async(
     automatically). If ``func`` mistakenly does not set a result of some
     future, then, ``ResultNotSetError`` exception is set.
 
+    Keyword arguments passed by callers are forwarded to the decorated
+    function. Calls with different keyword arguments are batched
+    separately.
+
+    Supports the descriptor protocol: when applied to a method, each
+    class instance gets its own independent aggregator.
+
     :return:
     """
 
-    def decorator(
-        func: AggregateAsyncFunc[V, R],
-    ) -> Callable[[V], Coroutine[Any, Any, R]]:
-        aggregator = AggregatorAsync(
-            func, max_count=max_count, leeway_ms=leeway_ms
+    def decorator(func: Callable[..., Any]) -> AggregateDescriptor[Any, Any]:
+        if not _has_variadic_positional(func):
+            raise ValueError(
+                "Function must accept variadic positional arguments"
+            )
+        if max_count is not None and max_count <= 0:
+            raise ValueError("max_count must be positive int or None")
+        if leeway_ms <= 0:
+            raise ValueError("leeway_ms must be positive float")
+        return AggregateDescriptor(
+            func,
+            leeway_ms=leeway_ms,
+            max_count=max_count,
+            aggregator_class=AggregatorAsync,
+            statistic_name=statistic_name,
         )
-        return aggregator.aggregate
 
     return decorator
