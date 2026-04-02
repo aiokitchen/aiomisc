@@ -65,3 +65,70 @@ of execution for all the futures (instead of returning values).
 
     with entrypoint() as loop:
         loop.run_until_complete(main())
+
+
+Keyword arguments
+-----------------
+
+Keyword arguments passed to the decorated function are forwarded to the
+underlying aggregated call. Calls with different keyword arguments are
+batched separately.
+
+.. code-block:: python
+    :name: test_aggregate_kwargs
+
+    import asyncio
+    import math
+    from aiomisc import aggregate, entrypoint
+
+    @aggregate(leeway_ms=10, max_count=5)
+    async def pow(*nums: float, power: float = 2.0):
+        return [math.pow(num, power) for num in nums]
+
+    async def main():
+        # All calls share the same kwargs (power=3), so they are
+        # batched together into a single execution.
+        results = await asyncio.gather(
+            pow(1.0, power=3),
+            pow(2.0, power=3),
+            pow(3.0, power=3),
+        )
+        assert results == [1.0, 8.0, 27.0]
+
+    with entrypoint() as loop:
+        loop.run_until_complete(main())
+
+
+Method decoration
+-----------------
+
+Both ``@aggregate`` and ``@aggregate_async`` support the descriptor protocol
+and can be used to decorate class methods. Each instance gets its own
+independent aggregator, so calls on different instances are never mixed.
+
+.. code-block:: python
+    :name: test_aggregate_method
+
+    import asyncio
+    import math
+    from aiomisc import aggregate, entrypoint
+
+    class Calculator:
+        def __init__(self, power: float):
+            self.power = power
+
+        @aggregate(leeway_ms=10, max_count=5)
+        async def pow(self, *nums: float) -> list[float]:
+            return [math.pow(num, self.power) for num in nums]
+
+    async def main():
+        calc = Calculator(power=3)
+        results = await asyncio.gather(
+            calc.pow(1.0),
+            calc.pow(2.0),
+            calc.pow(3.0),
+        )
+        assert results == [1.0, 8.0, 27.0]
+
+    with entrypoint() as loop:
+        loop.run_until_complete(main())

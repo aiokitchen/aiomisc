@@ -436,3 +436,126 @@ async def test_low_level_error(event_loop, leeway):
     assert task1.result()
     assert task2.done()
     assert isinstance(task2.exception(), ValueError)
+
+
+async def test_aggregate_with_kwargs(event_loop):
+    max_count = 5
+
+    @aggregate(100_000, max_count)
+    async def pow(*args: float, power: float = 2) -> list[float]:
+        return [math.pow(num, power) for num in args]
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(pow(float(i), power=3)))
+
+    await wait(tasks)
+    for i, task in enumerate(tasks):
+        assert task.result() == math.pow(i, 3)
+
+
+async def test_aggregate_async_with_kwargs(event_loop):
+    max_count = 5
+
+    @aggregate_async(100_000, max_count=max_count)
+    async def pow(*args: Arg, power: float = 2):
+        for arg in args:
+            arg.future.set_result(math.pow(arg.value, power))
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(pow(float(i), power=3)))
+
+    await wait(tasks)
+    for i, task in enumerate(tasks):
+        assert task.result() == math.pow(i, 3)
+
+
+async def test_aggregate_method(event_loop):
+    max_count = 5
+
+    class Calculator:
+        def __init__(self, power: float):
+            self.power = power
+
+        @aggregate(100_000, max_count)
+        async def pow(self, *args: float) -> list[float]:
+            return [math.pow(num, self.power) for num in args]
+
+    calc = Calculator(power=3)
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(calc.pow(float(i))))
+
+    await wait(tasks)
+    for i, task in enumerate(tasks):
+        assert task.result() == math.pow(i, 3)
+
+
+async def test_aggregate_method_different_instances(event_loop):
+    max_count = 5
+
+    class Calculator:
+        def __init__(self, power: float):
+            self.power = power
+
+        @aggregate(100_000, max_count)
+        async def pow(self, *args: float) -> list[float]:
+            return [math.pow(num, self.power) for num in args]
+
+    calc2 = Calculator(power=2)
+    calc3 = Calculator(power=3)
+
+    tasks2 = []
+    tasks3 = []
+    for i in range(max_count):
+        tasks2.append(event_loop.create_task(calc2.pow(float(i))))
+        tasks3.append(event_loop.create_task(calc3.pow(float(i))))
+
+    await wait(tasks2 + tasks3)
+
+    for i, task in enumerate(tasks2):
+        assert task.result() == math.pow(i, 2)
+
+    for i, task in enumerate(tasks3):
+        assert task.result() == math.pow(i, 3)
+
+
+async def test_aggregate_async_method(event_loop):
+    max_count = 5
+
+    class Calculator:
+        def __init__(self, power: float):
+            self.power = power
+
+        @aggregate_async(100_000, max_count=max_count)
+        async def pow(self, *args: Arg):
+            for arg in args:
+                arg.future.set_result(math.pow(arg.value, self.power))
+
+    calc = Calculator(power=3)
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(calc.pow(float(i))))
+
+    await wait(tasks)
+    for i, task in enumerate(tasks):
+        assert task.result() == math.pow(i, 3)
+
+
+async def test_aggregate_call_order(event_loop):
+    max_count = 10
+
+    @aggregate(100_000, max_count)
+    async def identity(*args: float) -> list[float]:
+        return list(args)
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(identity(float(i))))
+
+    await wait(tasks)
+    for i, task in enumerate(tasks):
+        assert task.result() == float(i), (
+            f"Call order violated: task {i} got {task.result()}"
+        )
