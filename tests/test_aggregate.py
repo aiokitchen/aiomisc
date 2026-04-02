@@ -478,7 +478,7 @@ async def test_aggregate_method(event_loop):
         def __init__(self, power: float):
             self.power = power
 
-        @aggregate(100_000, max_count)
+        @aggregate(100_000, max_count)  # type: ignore[arg-type]
         async def pow(self, *args: float) -> list[float]:
             return [math.pow(num, self.power) for num in args]
 
@@ -499,7 +499,7 @@ async def test_aggregate_method_different_instances(event_loop):
         def __init__(self, power: float):
             self.power = power
 
-        @aggregate(100_000, max_count)
+        @aggregate(100_000, max_count)  # type: ignore[arg-type]
         async def pow(self, *args: float) -> list[float]:
             return [math.pow(num, self.power) for num in args]
 
@@ -528,7 +528,7 @@ async def test_aggregate_async_method(event_loop):
         def __init__(self, power: float):
             self.power = power
 
-        @aggregate_async(100_000, max_count=max_count)
+        @aggregate_async(100_000, max_count=max_count)  # type: ignore[arg-type]
         async def pow(self, *args: Arg):
             for arg in args:
                 arg.future.set_result(math.pow(arg.value, self.power))
@@ -573,6 +573,7 @@ async def test_no_leaked_buckets_max_count(event_loop):
         tasks.append(event_loop.create_task(func(float(i))))
 
     await wait(tasks)
+    assert func.plain_aggregator is not None
     assert not func.plain_aggregator._buckets
 
 
@@ -586,6 +587,7 @@ async def test_no_leaked_buckets_leeway(event_loop, leeway):
         tasks.append(event_loop.create_task(func(float(i))))
 
     await wait(tasks)
+    assert func.plain_aggregator is not None
     assert not func.plain_aggregator._buckets
 
 
@@ -601,6 +603,7 @@ async def test_no_leaked_buckets_error(event_loop):
         tasks.append(event_loop.create_task(func(float(i))))
 
     await wait(tasks)
+    assert func.plain_aggregator is not None
     assert not func.plain_aggregator._buckets
 
 
@@ -625,6 +628,7 @@ async def test_no_leaked_buckets_multiple_batches(event_loop):
         tasks.append(event_loop.create_task(func(float(i))))
 
     await wait(tasks)
+    assert func.plain_aggregator is not None
     assert not func.plain_aggregator._buckets
 
 
@@ -641,4 +645,5 @@ async def test_no_leaked_buckets_different_kwargs(event_loop):
         tasks.append(event_loop.create_task(func(float(i), power=3)))
 
     await wait(tasks)
+    assert func.plain_aggregator is not None
     assert not func.plain_aggregator._buckets

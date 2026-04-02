@@ -40,7 +40,7 @@ class ResultNotSetError(Exception):
 class AggregateAsyncFunc(Protocol, Generic[V, R]):
     __name__: str
 
-    async def __call__(self, *args: Arg[V, R], **kwargs: Any) -> None: ...
+    async def __call__(self, *args: Arg[V, R]) -> None: ...
 
 
 class AggregateStatistic(Statistic):
@@ -187,10 +187,10 @@ S = TypeVar("S", contravariant=True)
 T = TypeVar("T", covariant=True)
 
 
-class AggregateFunc(Protocol, Generic[S, T]):
+class AggregateFunc(Protocol[S, T]):
     __name__: str
 
-    async def __call__(self, *args: S, **kwargs: Any) -> Iterable[T]: ...
+    async def __call__(self, *args: S) -> Iterable[T]: ...
 
 
 def _to_async_aggregate(func: AggregateFunc[V, R]) -> AggregateAsyncFunc[V, R]:
