@@ -72,7 +72,13 @@ Keyword arguments
 
 Keyword arguments passed to the decorated function are forwarded to the
 underlying aggregated call. Calls with different keyword arguments are
-batched separately.
+batched separately based on the full set of keyword arguments supplied.
+
+.. note::
+
+    Keyword argument values must be hashable (numbers, strings, tuples, etc.).
+    Using unhashable values such as lists or dictionaries will raise
+    ``TypeError``.
 
 .. code-block:: python
     :name: test_aggregate_kwargs

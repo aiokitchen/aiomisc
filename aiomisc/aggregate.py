@@ -63,7 +63,7 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
     _func: AggregateAsyncFunc[V, R]
     _max_count: int | None
     _leeway: float
-    _buckets: dict[tuple, Bucket[V, R]]
+    _buckets: dict[frozenset, Bucket[V, R]]
 
     def __init__(
         self,
@@ -93,13 +93,13 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
         self._statistic.max_count = max_count or 0
         self._buckets_mutex = RLock()
 
-    def _get_bucket(self, kwargs_key: tuple) -> Bucket[V, R]:
+    def _get_bucket(self, kwargs_key: frozenset) -> Bucket[V, R]:
         with self._buckets_mutex:
             if kwargs_key not in self._buckets:
                 self._buckets[kwargs_key] = Bucket()
             return self._buckets[kwargs_key]
 
-    def _detach_bucket(self, kwargs_key: tuple) -> Bucket[V, R] | None:
+    def _detach_bucket(self, kwargs_key: frozenset) -> Bucket[V, R] | None:
         with self._buckets_mutex:
             return self._buckets.pop(kwargs_key, None)
 
@@ -137,8 +137,20 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
             if not item.future.done():
                 item.future.set_exception(ResultNotSetError)
 
+    @staticmethod
+    def _make_kwargs_key(kwargs: dict[str, Any]) -> frozenset:
+        if not kwargs:
+            return frozenset()
+        try:
+            return frozenset(kwargs.items())
+        except TypeError as exc:
+            raise TypeError(
+                "All keyword argument values passed to an aggregated "
+                "function must be hashable"
+            ) from exc
+
     async def aggregate(self, arg: V, **kwargs: Any) -> R:
-        kwargs_key = tuple(sorted(kwargs.items()))
+        kwargs_key = self._make_kwargs_key(kwargs)
         bucket = self._get_bucket(kwargs_key)
 
         if bucket.first_call_at is None:
@@ -271,7 +283,14 @@ class AggregateDescriptor(Generic[V, R]):
     ) -> Callable[..., Coroutine[Any, Any, R]]:
         if obj is None:
             return self
-        if obj not in self.instance_cache:
+        try:
+            cached = obj in self.instance_cache
+        except TypeError as exc:
+            raise TypeError(
+                f"{type(obj).__name__} instances must be hashable "
+                f"and weak-referenceable to use @aggregate on methods"
+            ) from exc
+        if not cached:
             bound = functools.partial(self.func, obj)
             functools.update_wrapper(bound, self.func)
             name = self.statistic_name or (
@@ -290,7 +309,7 @@ def aggregate(
     leeway_ms: float,
     max_count: int | None = None,
     statistic_name: str | None = None,
-) -> Callable[[AggregateFunc[V, R]], AggregateDescriptor[V, R]]:
+) -> Callable[..., "AggregateDescriptor[Any, Any]"]:
     """
     Parametric decorator that aggregates multiple
     (but no more than ``max_count`` defaulting to ``None``) single-argument
@@ -327,7 +346,7 @@ def aggregate(
     :return:
     """
 
-    def decorator(func: AggregateFunc[V, R]) -> AggregateDescriptor[V, R]:
+    def decorator(func: Callable[..., Any]) -> AggregateDescriptor[Any, Any]:
         if not _has_variadic_positional(func):
             raise ValueError(
                 "Function must accept variadic positional arguments"
@@ -351,7 +370,7 @@ def aggregate_async(
     leeway_ms: float,
     max_count: int | None = None,
     statistic_name: str | None = None,
-) -> Callable[[AggregateAsyncFunc[V, R]], AggregateDescriptor[V, R]]:
+) -> Callable[..., "AggregateDescriptor[Any, Any]"]:
     """
     Same as ``aggregate``, but with ``func`` arguments of type ``Arg``
     containing ``value`` and ``future`` attributes instead. In this setting
@@ -370,7 +389,7 @@ def aggregate_async(
     :return:
     """
 
-    def decorator(func: AggregateAsyncFunc[V, R]) -> AggregateDescriptor[V, R]:
+    def decorator(func: Callable[..., Any]) -> AggregateDescriptor[Any, Any]:
         if not _has_variadic_positional(func):
             raise ValueError(
                 "Function must accept variadic positional arguments"

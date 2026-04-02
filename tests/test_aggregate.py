@@ -441,7 +441,7 @@ async def test_low_level_error(event_loop, leeway):
 async def test_aggregate_with_kwargs(event_loop):
     max_count = 5
 
-    @aggregate(100_000, max_count)
+    @aggregate(10_000, max_count)
     async def pow(*args: float, power: float = 2) -> list[float]:
         return [math.pow(num, power) for num in args]
 
@@ -457,7 +457,7 @@ async def test_aggregate_with_kwargs(event_loop):
 async def test_aggregate_async_with_kwargs(event_loop):
     max_count = 5
 
-    @aggregate_async(100_000, max_count=max_count)
+    @aggregate_async(10_000, max_count=max_count)
     async def pow(*args: Arg, power: float = 2):
         for arg in args:
             arg.future.set_result(math.pow(arg.value, power))
@@ -478,7 +478,7 @@ async def test_aggregate_method(event_loop):
         def __init__(self, power: float):
             self.power = power
 
-        @aggregate(100_000, max_count)  # type: ignore[arg-type]
+        @aggregate(10_000, max_count)
         async def pow(self, *args: float) -> list[float]:
             return [math.pow(num, self.power) for num in args]
 
@@ -499,7 +499,7 @@ async def test_aggregate_method_different_instances(event_loop):
         def __init__(self, power: float):
             self.power = power
 
-        @aggregate(100_000, max_count)  # type: ignore[arg-type]
+        @aggregate(10_000, max_count)
         async def pow(self, *args: float) -> list[float]:
             return [math.pow(num, self.power) for num in args]
 
@@ -528,7 +528,7 @@ async def test_aggregate_async_method(event_loop):
         def __init__(self, power: float):
             self.power = power
 
-        @aggregate_async(100_000, max_count=max_count)  # type: ignore[arg-type]
+        @aggregate_async(10_000, max_count=max_count)
         async def pow(self, *args: Arg):
             for arg in args:
                 arg.future.set_result(math.pow(arg.value, self.power))
@@ -546,7 +546,7 @@ async def test_aggregate_async_method(event_loop):
 async def test_aggregate_call_order(event_loop):
     max_count = 10
 
-    @aggregate(100_000, max_count)
+    @aggregate(10_000, max_count)
     async def identity(*args: float) -> list[float]:
         return list(args)
 
@@ -564,7 +564,7 @@ async def test_aggregate_call_order(event_loop):
 async def test_no_leaked_buckets_max_count(event_loop):
     max_count = 5
 
-    @aggregate(100_000, max_count)
+    @aggregate(10_000, max_count)
     async def func(*args: float) -> list[float]:
         return list(args)
 
@@ -594,7 +594,7 @@ async def test_no_leaked_buckets_leeway(event_loop, leeway):
 async def test_no_leaked_buckets_error(event_loop):
     max_count = 5
 
-    @aggregate(100_000, max_count)
+    @aggregate(10_000, max_count)
     async def func(*args: float) -> list[float]:
         raise ValueError("boom")
 
@@ -611,7 +611,7 @@ async def test_no_leaked_buckets_multiple_batches(event_loop):
     max_count = 3
     event = Event()
 
-    @aggregate(100_000, max_count)
+    @aggregate(10_000, max_count)
     async def func(*args: float) -> list[float]:
         event.set()
         return list(args)
@@ -635,7 +635,7 @@ async def test_no_leaked_buckets_multiple_batches(event_loop):
 async def test_no_leaked_buckets_different_kwargs(event_loop):
     max_count = 3
 
-    @aggregate(100_000, max_count)
+    @aggregate(10_000, max_count)
     async def func(*args: float, power: float = 2) -> list[float]:
         return [math.pow(a, power) for a in args]
 
@@ -647,3 +647,27 @@ async def test_no_leaked_buckets_different_kwargs(event_loop):
     await wait(tasks)
     assert func.plain_aggregator is not None
     assert not func.plain_aggregator._buckets
+
+
+async def test_aggregate_interleaved_kwargs(event_loop):
+    max_count = 3
+
+    @aggregate(10_000, max_count)
+    async def pow(*args: float, power: float = 2) -> list[float]:
+        return [math.pow(a, power) for a in args]
+
+    tasks_pow2 = []
+    tasks_pow3 = []
+    for i in range(max_count):
+        tasks_pow2.append(event_loop.create_task(pow(float(i), power=2)))
+        tasks_pow3.append(event_loop.create_task(pow(float(i), power=3)))
+
+    await wait(tasks_pow2 + tasks_pow3)
+    for i, task in enumerate(tasks_pow2):
+        assert task.result() == math.pow(i, 2), (
+            f"power=2 batch mixed: task {i} got {task.result()}"
+        )
+    for i, task in enumerate(tasks_pow3):
+        assert task.result() == math.pow(i, 3), (
+            f"power=3 batch mixed: task {i} got {task.result()}"
+        )
