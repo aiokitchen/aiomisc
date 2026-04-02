@@ -559,3 +559,86 @@ async def test_aggregate_call_order(event_loop):
         assert task.result() == float(i), (
             f"Call order violated: task {i} got {task.result()}"
         )
+
+
+async def test_no_leaked_buckets_max_count(event_loop):
+    max_count = 5
+
+    @aggregate(100_000, max_count)
+    async def func(*args: float) -> list[float]:
+        return list(args)
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(func(float(i))))
+
+    await wait(tasks)
+    assert not func.plain_aggregator._buckets
+
+
+async def test_no_leaked_buckets_leeway(event_loop, leeway):
+    @aggregate(leeway * 1000)
+    async def func(*args: float) -> list[float]:
+        return list(args)
+
+    tasks = []
+    for i in range(5):
+        tasks.append(event_loop.create_task(func(float(i))))
+
+    await wait(tasks)
+    assert not func.plain_aggregator._buckets
+
+
+async def test_no_leaked_buckets_error(event_loop):
+    max_count = 5
+
+    @aggregate(100_000, max_count)
+    async def func(*args: float) -> list[float]:
+        raise ValueError("boom")
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(func(float(i))))
+
+    await wait(tasks)
+    assert not func.plain_aggregator._buckets
+
+
+async def test_no_leaked_buckets_multiple_batches(event_loop):
+    max_count = 3
+    event = Event()
+
+    @aggregate(100_000, max_count)
+    async def func(*args: float) -> list[float]:
+        event.set()
+        return list(args)
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(func(float(i))))
+
+    await event.wait()
+    event.clear()
+    await wait(tasks)
+
+    for i in range(max_count, max_count * 2):
+        tasks.append(event_loop.create_task(func(float(i))))
+
+    await wait(tasks)
+    assert not func.plain_aggregator._buckets
+
+
+async def test_no_leaked_buckets_different_kwargs(event_loop):
+    max_count = 3
+
+    @aggregate(100_000, max_count)
+    async def func(*args: float, power: float = 2) -> list[float]:
+        return [math.pow(a, power) for a in args]
+
+    tasks = []
+    for i in range(max_count):
+        tasks.append(event_loop.create_task(func(float(i), power=2)))
+        tasks.append(event_loop.create_task(func(float(i), power=3)))
+
+    await wait(tasks)
+    assert not func.plain_aggregator._buckets
