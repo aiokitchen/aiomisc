@@ -125,17 +125,28 @@ msgstr ""
 msgid "Keyword arguments"
 msgstr "Именованные аргументы"
 
-#: ../../source/aggregate.rst:72
+#: ../../source/aggregate.rst:73
 msgid ""
 "Keyword arguments passed to the decorated function are forwarded to the "
 "underlying aggregated call. Calls with different keyword arguments are "
-"batched separately."
+"batched separately based on the full set of keyword arguments supplied."
 msgstr ""
 "Именованные аргументы, переданные декорированной функции, "
 "пробрасываются в агрегированный вызов. Вызовы с разными именованными "
-"аргументами группируются в отдельные батчи."
+"аргументами группируются в отдельные батчи на основе полного набора "
+"переданных именованных аргументов."
 
-#: ../../source/aggregate.rst:76
+#: ../../source/aggregate.rst:79
+msgid ""
+"Keyword argument values must be hashable (numbers, strings, tuples, etc.)."
+" Using unhashable values such as lists or dictionaries will raise "
+"``TypeError``."
+msgstr ""
+"Значения именованных аргументов должны быть хешируемыми (числа, строки, "
+"кортежи и т.д.). Использование нехешируемых значений, таких как списки "
+"или словари, приведёт к ``TypeError``."
+
+#: ../../source/aggregate.rst:83
 msgid ""
 "import asyncio\n"
 "import math\n"
@@ -159,11 +170,11 @@ msgid ""
 "    loop.run_until_complete(main())"
 msgstr ""
 
-#: ../../source/aggregate.rst:100
+#: ../../source/aggregate.rst:108
 msgid "Method decoration"
 msgstr "Декорирование методов"
 
-#: ../../source/aggregate.rst:102
+#: ../../source/aggregate.rst:110
 msgid ""
 "Both ``@aggregate`` and ``@aggregate_async`` support the descriptor "
 "protocol and can be used to decorate class methods. Each instance gets "
@@ -175,7 +186,7 @@ msgstr ""
 "классов. Каждый экземпляр получает собственный независимый агрегатор, "
 "поэтому вызовы на разных экземплярах никогда не смешиваются."
 
-#: ../../source/aggregate.rst:107
+#: ../../source/aggregate.rst:115
 msgid ""
 "import asyncio\n"
 "import math\n"
