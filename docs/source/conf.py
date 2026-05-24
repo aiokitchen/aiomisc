@@ -22,7 +22,7 @@ from datetime import datetime
 from importlib.machinery import SourceFileLoader
 from typing import Any
 
-sys.path.insert(0, os.path.abspath(os.path.dirname("__file__")))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 
 module = SourceFileLoader(
@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.viewcode",
     "sphinxcontrib.googleanalytics",
+    "llmstxt",
 ]
 
 googleanalytics_id = "G-LKL5Q0MGWZ"
@@ -148,6 +149,7 @@ html_theme_options = {
     ],
 }
 
+html_baseurl = "https://docs.aiomisc.com/"
 html_title = "miscellaneous utils for asyncio"
 
 
