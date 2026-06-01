@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 16:34+0100\n"
+"POT-Creation-Date: 2026-06-01 10:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,12 +34,12 @@ msgid ""
 " ...)``) collected within a time window ``leeway_ms``."
 msgstr ""
 "Параметрический декоратор, который агрегирует множественные (но не более "
-"``max_count``, по умолчанию ``None``) одноаргументные вызовы (``res1 "
-"= await func(arg1)``, ``res2 = await func(arg2)``, ...) асинхронной "
-"функции с переменным числом позиционных аргументов (``async def "
-"func(*args, pho=1, bo=2) -> Iterable``) в один вызов с несколькими "
-"позиционными аргументами (``res1, res2, ... = await func(arg1, arg2,"
-" ...)``) собранными в пределах временного окна ``leeway_ms``."
+"``max_count``, по умолчанию ``None``) одноаргументные вызовы (``res1 = "
+"await func(arg1)``, ``res2 = await func(arg2)``, ...) асинхронной функции"
+" с переменным числом позиционных аргументов (``async def func(*args, "
+"pho=1, bo=2) -> Iterable``) в один вызов с несколькими позиционными "
+"аргументами (``res1, res2, ... = await func(arg1, arg2, ...)``) "
+"собранными в пределах временного окна ``leeway_ms``."
 
 #: aiomisc.aggregate.aggregate:12 of
 msgid ""
@@ -55,9 +55,9 @@ msgid ""
 "to set an individual error for each aggregated call refer to "
 "``aggregate_async``."
 msgstr ""
-"если возникает непредвиденная ошибка, исключение передаётся каждому future; "
-"для установки индивидуальной ошибки для каждого агрегированного вызова "
-"используйте ``aggregate_async``."
+"если возникает непредвиденная ошибка, исключение передаётся каждому "
+"future; для установки индивидуальной ошибки для каждого агрегированного "
+"вызова используйте ``aggregate_async``."
 
 #: ../../source/api/aiomisc.rst
 msgid "Parameters"
@@ -68,16 +68,16 @@ msgid ""
 "The maximum approximate delay between the first collected argument and "
 "the aggregated execution."
 msgstr ""
-"Максимальная приблизительная задержка между первым собранным аргументом и "
-"агрегированным выполнением."
+"Максимальная приблизительная задержка между первым собранным аргументом и"
+" агрегированным выполнением."
 
 #: aiomisc.aggregate.aggregate:23 of
 msgid ""
 "The maximum number of arguments to call decorated function with. Default "
 "``None``."
 msgstr ""
-"Максимальное количество аргументов для вызова декорированной функции. "
-"По умолчанию ``None``."
+"Максимальное количество аргументов для вызова декорированной функции. По "
+"умолчанию ``None``."
 
 #: ../../source/api/aiomisc.rst
 msgid "Returns"
@@ -96,8 +96,8 @@ msgstr ""
 "содержащий атрибуты ``value`` и ``future``. В этом случае ``func`` "
 "отвечает за установку индивидуальных результатов/исключений для всех "
 "future или выбрасывание исключения (оно автоматически передаётся во все "
-"future). Если ``func`` по ошибке не устанавливает результат для какого-либо "
-"future, будет установлено исключение ``ResultNotSetError``."
+"future). Если ``func`` по ошибке не устанавливает результат для "
+"какого-либо future, будет установлено исключение ``ResultNotSetError``."
 
 #: ../../source/api/aiomisc.rst:13
 msgid "``aiomisc.backoff`` module"
@@ -109,7 +109,8 @@ msgid ""
 "``deadline`` time limits are met by decorated function."
 msgstr ""
 "Параметрический декоратор, который гарантирует соблюдение временных "
-"ограничений ``attempt_timeout`` и ``deadline`` для декорированной функции."
+"ограничений ``attempt_timeout`` и ``deadline`` для декорированной "
+"функции."
 
 #: aiomisc.backoff.asyncbackoff:4 aiomisc.backoff.asyncretry:3 of
 msgid ""
@@ -161,7 +162,9 @@ msgstr "Сокращение для ``asyncbackoff(None, None, 0, Exception)``."
 
 #: aiomisc.backoff.asyncretry:6 of
 msgid "is maximum count of execution attempts (>= 1 or ``None`` means infinity)."
-msgstr "максимальное количество попыток выполнения (>= 1 или ``None`` означает бесконечность)."
+msgstr ""
+"максимальное количество попыток выполнения (>= 1 или ``None`` означает "
+"бесконечность)."
 
 #: ../../source/api/aiomisc.rst:21
 msgid "``aiomisc.circuit_breaker`` module"
@@ -172,24 +175,24 @@ msgid ""
 "Circuit Breaker pattern implementation. The class instance collects call "
 "statistics through the ``call`` or ``call async`` methods."
 msgstr ""
-"Реализация паттерна Circuit Breaker. Экземпляр класса собирает статистику "
-"вызовов через методы ``call`` или ``call async``."
+"Реализация паттерна Circuit Breaker. Экземпляр класса собирает статистику"
+" вызовов через методы ``call`` или ``call async``."
 
 #: aiomisc.circuit_breaker.CircuitBreaker:4 of
 msgid ""
 "The state machine has three states: * ``CircuitBreakerStates.PASSING`` * "
 "``CircuitBreakerStates.BROKEN`` * ``CircuitBreakerStates.RECOVERING``"
 msgstr ""
-"Конечный автомат имеет три состояния: * ``CircuitBreakerStates.PASSING`` * "
-"``CircuitBreakerStates.BROKEN`` * ``CircuitBreakerStates.RECOVERING``"
+"Конечный автомат имеет три состояния: * ``CircuitBreakerStates.PASSING`` "
+"* ``CircuitBreakerStates.BROKEN`` * ``CircuitBreakerStates.RECOVERING``"
 
 #: aiomisc.circuit_breaker.CircuitBreaker:9 of
 msgid ""
 "In passing mode all results or exceptions will be returned as is. "
 "Statistic collects for each call."
 msgstr ""
-"В режиме пропускания все результаты или исключения возвращаются как есть. "
-"Статистика собирается для каждого вызова."
+"В режиме пропускания все результаты или исключения возвращаются как есть."
+" Статистика собирается для каждого вызова."
 
 #: aiomisc.circuit_breaker.CircuitBreaker:12 of
 msgid ""
@@ -206,10 +209,10 @@ msgid ""
 "exponentially in this case but when 20% (by default) will be failed the "
 "state returns to broken state."
 msgstr ""
-"В режиме восстановления часть вызовов является реальными вызовами функции, "
-"а остальные вызывают ``CircuitBroken``. Количество реальных вызовов "
-"экспоненциально растёт, но когда 20% (по умолчанию) завершатся неудачей, "
-"состояние возвращается в сломанный режим."
+"В режиме восстановления часть вызовов является реальными вызовами "
+"функции, а остальные вызывают ``CircuitBroken``. Количество реальных "
+"вызовов экспоненциально растёт, но когда 20% (по умолчанию) завершатся "
+"неудачей, состояние возвращается в сломанный режим."
 
 #: aiomisc.circuit_breaker.CircuitBreaker:20 of
 msgid ""
@@ -218,8 +221,8 @@ msgid ""
 "0.0 and 1.0."
 msgstr ""
 "Соотношение неудачных вызовов к успешным. Состояние может быть изменено, "
-"если соотношение достигнет заданного значения в пределах ``response time`` "
-"(в секундах). Значение от 0.0 до 1.0."
+"если соотношение достигнет заданного значения в пределах ``response "
+"time`` (в секундах). Значение от 0.0 до 1.0."
 
 #: aiomisc.circuit_breaker.CircuitBreaker:24 of
 msgid "Time window to collect statistics (seconds)"
@@ -260,8 +263,8 @@ msgid ""
 "the use of '**' creates a parameter specification::"
 msgstr ""
 "Предпочтительный способ создания спецификации параметров — через "
-"специальный синтаксис для обобщённых функций, классов и псевдонимов типов, "
-"где использование '**' создаёт спецификацию параметров::"
+"специальный синтаксис для обобщённых функций, классов и псевдонимов "
+"типов, где использование '**' создаёт спецификацию параметров::"
 
 #: of typing.ParamSpec:7
 msgid "type IntFunc[**P] = Callable[P, int]"
@@ -272,8 +275,8 @@ msgid ""
 "The following syntax creates a parameter specification that defaults to a"
 " callable accepting two positional-only arguments of types int and str:"
 msgstr ""
-"Следующий синтаксис создаёт спецификацию параметров, которая по умолчанию "
-"задаёт вызываемый объект, принимающий два только позиционных аргумента "
+"Следующий синтаксис создаёт спецификацию параметров, которая по умолчанию"
+" задаёт вызываемый объект, принимающий два только позиционных аргумента "
 "типов int и str:"
 
 #: of typing.ParamSpec:13
@@ -285,8 +288,8 @@ msgid ""
 "For compatibility with Python 3.11 and earlier, ParamSpec objects can "
 "also be created as follows::"
 msgstr ""
-"Для совместимости с Python 3.11 и более ранними версиями объекты ParamSpec "
-"также можно создать следующим образом::"
+"Для совместимости с Python 3.11 и более ранними версиями объекты "
+"ParamSpec также можно создать следующим образом::"
 
 #: of typing.ParamSpec:18
 msgid ""
@@ -306,11 +309,12 @@ msgid ""
 msgstr ""
 "Переменные спецификации параметров существуют преимущественно для "
 "статических анализаторов типов. Они используются для передачи типов "
-"параметров одного вызываемого объекта другому, что часто встречается "
-"в функциях высшего порядка и декораторах. Они допустимы только при "
-"использовании в ``Concatenate``, в качестве первого аргумента ``Callable`` "
-"или как параметры пользовательских обобщённых типов. См. класс Generic для "
-"получения дополнительной информации об обобщённых типах."
+"параметров одного вызываемого объекта другому, что часто встречается в "
+"функциях высшего порядка и декораторах. Они допустимы только при "
+"использовании в ``Concatenate``, в качестве первого аргумента "
+"``Callable`` или как параметры пользовательских обобщённых типов. См. "
+"класс Generic для получения дополнительной информации об обобщённых "
+"типах."
 
 #: of typing.ParamSpec:29
 msgid "An example for annotating a decorator::"
@@ -379,8 +383,9 @@ msgid ""
 "Such classes are primarily used with static type checkers that recognize "
 "structural subtyping (static duck-typing)."
 msgstr ""
-"Такие классы в основном используются со статическими анализаторами типов, "
-"которые поддерживают структурное подтипирование (статическая утиная типизация)."
+"Такие классы в основном используются со статическими анализаторами типов,"
+" которые поддерживают структурное подтипирование (статическая утиная "
+"типизация)."
 
 #: of typing.Protocol:12 typing.final:6
 msgid "For example::"
@@ -429,16 +434,16 @@ msgid ""
 "manager exit."
 msgstr ""
 "Контекстный менеджер всегда создаёт новый цикл событий, позволяет "
-"запускать асинхронные функции внутри него и корректно завершает цикл "
-"при выходе из контекстного менеджера."
+"запускать асинхронные функции внутри него и корректно завершает цикл при "
+"выходе из контекстного менеджера."
 
 #: asyncio.runners.Runner:7 of
 msgid ""
 "If debug is True, the event loop will be run in debug mode. If "
 "loop_factory is passed, it is used for new event loop creation."
 msgstr ""
-"Если debug равен True, цикл событий будет запущен в режиме отладки. "
-"Если передан loop_factory, он используется для создания нового цикла событий."
+"Если debug равен True, цикл событий будет запущен в режиме отладки. Если "
+"передан loop_factory, он используется для создания нового цикла событий."
 
 #: asyncio.runners.Runner:10 of
 msgid "asyncio.run(main(), debug=True)"
@@ -458,7 +463,9 @@ msgstr ""
 
 #: asyncio.runners.Runner:17 of
 msgid "The run() method can be called multiple times within the runner's context."
-msgstr "Само метод run() может быть вызван несколько раз в контексте работы Runner."
+msgstr ""
+"Само метод run() может быть вызван несколько раз в контексте работы "
+"Runner."
 
 #: asyncio.runners.Runner:19 of
 msgid ""
@@ -466,9 +473,11 @@ msgid ""
 "runners, console tools, -- everywhere when async code is called from "
 "existing sync framework and where the preferred single asyncio.run() call"
 " doesn't work."
-msgstr "Это может быть полезно для интерактивной консоли (например, IPython), unittest"
-"-раннеров, консольных инструментов - везде, где асинхронный код вызывается из "
-"существующего синхронного фреймворка и где предпочтительный одиночный вызов asyncio.run() не работает."
+msgstr ""
+"Это может быть полезно для интерактивной консоли (например, IPython), "
+"unittest-раннеров, консольных инструментов - везде, где асинхронный код "
+"вызывается из существующего синхронного фреймворка и где предпочтительный"
+" одиночный вызов asyncio.run() не работает."
 
 #: asyncio.runners.Runner.close:1 of
 msgid "Shutdown and close event loop."
@@ -484,7 +493,9 @@ msgstr "Запустить корутину внутри встроенного 
 
 #: aiomisc.compat.default_loop_factory:1 of
 msgid "Default loop factory - uses uvloop if available, otherwise asyncio."
-msgstr "Фабрика цикла событий по умолчанию — использует uvloop, если доступен, иначе asyncio."
+msgstr ""
+"Фабрика цикла событий по умолчанию — использует uvloop, если доступен, "
+"иначе asyncio."
 
 #: of typing.final:1
 msgid "Decorator to indicate final methods and final classes."
@@ -496,8 +507,8 @@ msgid ""
 " cannot be overridden, and decorated class cannot be subclassed."
 msgstr ""
 "Используйте этот декоратор, чтобы указать анализаторам типов, что "
-"декорированный метод не может быть переопределён, а декорированный "
-"класс не может иметь наследников."
+"декорированный метод не может быть переопределён, а декорированный класс "
+"не может иметь наследников."
 
 #: of typing.final:8
 msgid ""
@@ -547,8 +558,8 @@ msgid ""
 "When the cron function executes longer then execution interval a next "
 "call will be skipping and warning will be logged."
 msgstr ""
-"Когда cron-функция выполняется дольше, чем интервал выполнения, "
-"следующий вызов будет пропущен и будет записано предупреждение в лог."
+"Когда cron-функция выполняется дольше, чем интервал выполнения, следующий"
+" вызов будет пропущен и будет записано предупреждение в лог."
 
 #: ../../source/api/aiomisc.rst:61
 msgid "``aiomisc.entrypoint`` module"
@@ -610,6 +621,60 @@ msgstr "Модуль ``aiomisc.io``"
 msgid "``aiomisc.iterator_wrapper`` module"
 msgstr "Модуль ``aiomisc.iterator_wrapper``"
 
+#: aiothreads.iterator_wrapper.FromThreadChannel:1 of
+msgid "A thread-safe channel for passing data from threads to async code."
+msgstr ""
+
+#: aiothreads.iterator_wrapper.FromThreadChannel:3 of
+msgid ""
+"Uses asyncio.Event for efficient waiting instead of polling, which: - "
+"Eliminates CPU-wasting busy loops - Provides immediate wake-up when data "
+"is available - Supports optional timeout for bounded waiting"
+msgstr ""
+
+#: aiomisc.thread_pool.ThreadPoolExecutor:3
+#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:6
+#: aiothreads.iterator_wrapper.FromThreadChannel:8
+#: aiothreads.iterator_wrapper.FromThreadChannel.get:3 of
+msgid "Args:"
+msgstr "Аргументы:"
+
+#: aiothreads.iterator_wrapper.FromThreadChannel:9 of
+msgid ""
+"maxsize: Maximum queue size (0 = unbounded) timeout: Default timeout in "
+"seconds for get operations (0 = no timeout)"
+msgstr ""
+
+#: aiothreads.iterator_wrapper.FromThreadChannel.get:1 of
+#, fuzzy
+msgid "Get an item from the channel."
+msgstr "Извлечь и вернуть элемент из очереди."
+
+#: aiothreads.iterator_wrapper.FromThreadChannel.get:4 of
+msgid "timeout: Timeout in seconds. None uses default, 0 disables timeout."
+msgstr ""
+
+#: aiothreads.iterator_wrapper.FromThreadChannel.get:6 of
+msgid "Raises:"
+msgstr ""
+
+#: aiothreads.iterator_wrapper.FromThreadChannel.get:7 of
+msgid ""
+"ChannelClosed: If the channel is closed and empty. ChannelTimeout: If "
+"timeout is exceeded."
+msgstr ""
+
+#: aiothreads.iterator_wrapper.FromThreadChannel.put:1 of
+msgid "Put an item into the channel. Thread-safe."
+msgstr ""
+
+#: aiothreads.iterator_wrapper.FromThreadChannel.put:3 of
+msgid ""
+"For bounded queues, ensure we periodically re-check whether the channel "
+"was closed while waiting for space so producer threads don't block "
+"forever when consumers are cancelled."
+msgstr ""
+
 #: aiomisc.thread_pool.IteratorWrapperSeparate:1 of
 msgid "IteratorWrapper that runs in a separate thread with statistics."
 msgstr "IteratorWrapper, работающий в отдельном потоке со сбором статистики."
@@ -623,8 +688,8 @@ msgid ""
 "Initializes the instance - basically setting the formatter to None and "
 "the filter list to empty."
 msgstr ""
-"Инициализирует экземпляр — устанавливает форматировщик в None "
-"и список фильтров в пустой."
+"Инициализирует экземпляр — устанавливает форматировщик в None и список "
+"фильтров в пустой."
 
 #: aiomisc.log.ThreadedHandler.close:1 of
 msgid "Tidy up any resources used by the handler."
@@ -636,8 +701,8 @@ msgid ""
 "_handlers, which is used for handler lookup by name. Subclasses should "
 "ensure that this gets called from overridden close() methods."
 msgstr ""
-"Эта версия удаляет обработчик из внутренней карты обработчиков _handlers, "
-"которая используется для поиска обработчика по имени. Подклассы должны "
+"Эта версия удаляет обработчик из внутренней карты обработчиков _handlers,"
+" которая используется для поиска обработчика по имени. Подклассы должны "
 "убедиться, что этот метод вызывается из переопределённых методов close()."
 
 #: aiomisc.log.ThreadedHandler.emit:1 of
@@ -723,8 +788,8 @@ msgid ""
 "processes will be created as the machine has processors."
 msgstr ""
 "``max_workers``: Максимальное количество процессов, которые могут "
-"использоваться для выполнения заданных вызовов. Если None или не указано, "
-"будет создано столько рабочих процессов, сколько процессоров на машине."
+"использоваться для выполнения заданных вызовов. Если None или не указано,"
+" будет создано столько рабочих процессов, сколько процессоров на машине."
 
 #: aiomisc.process_pool.ProcessPoolExecutor:31 of
 msgid ""
@@ -733,8 +798,9 @@ msgid ""
 "specific multiprocessing start methods."
 msgstr ""
 "``mp_context``: Контекст многопроцессной обработки для запуска рабочих "
-"процессов. Этот объект должен предоставлять SimpleQueue, Queue и Process. "
-"Полезен для использования определённых методов запуска многопроцессной обработки."
+"процессов. Этот объект должен предоставлять SimpleQueue, Queue и Process."
+" Полезен для использования определённых методов запуска многопроцессной "
+"обработки."
 
 #: aiomisc.process_pool.ProcessPoolExecutor:35 of
 msgid "``initializer``: A callable used to initialize worker processes."
@@ -754,8 +820,8 @@ msgid ""
 msgstr ""
 "``max_tasks_per_child``: Максимальное количество задач, которое рабочий "
 "процесс может выполнить перед завершением и заменой новым рабочим "
-"процессом. Значение по умолчанию None означает, что рабочий процесс "
-"будет жить столько же, сколько исполнитель. Требуется метод запуска "
+"процессом. Значение по умолчанию None означает, что рабочий процесс будет"
+" жить столько же, сколько исполнитель. Требуется метод запуска "
 "mp_context, отличный от 'fork'. Если указано, по умолчанию используется "
 "'spawn', если mp_context не задан."
 
@@ -770,11 +836,15 @@ msgstr "Модуль ``aiomisc.recurring``"
 
 #: aiomisc.recurring.StrategySkip:1 of
 msgid "Strategy function might raise this exception as way to skip current call"
-msgstr "Функция стратегии может вызвать это исключение для пропуска текущего вызова"
+msgstr ""
+"Функция стратегии может вызвать это исключение для пропуска текущего "
+"вызова"
 
 #: aiomisc.recurring.StrategyStop:1 of
 msgid "Strategy function might raise this exception as way to  stop recurring"
-msgstr "Функция стратегии может вызвать это исключение для остановки повторяющегося выполнения"
+msgstr ""
+"Функция стратегии может вызвать это исключение для остановки "
+"повторяющегося выполнения"
 
 #: ../../source/api/aiomisc.rst:133
 msgid "``aiomisc.signal`` module"
@@ -800,23 +870,20 @@ msgstr ""
 "Если необязательный аргумент 'block' равен true, а 'timeout' равен None "
 "(по умолчанию), блокировать выполнение при необходимости до появления "
 "элемента. Если 'timeout' — неотрицательное число, блокировать не более "
-"'timeout' секунд и вызвать исключение Empty, если за это время элемент "
-"не появился. В противном случае ('block' равен false) вернуть элемент, "
-"если он доступен немедленно, иначе вызвать исключение Empty ('timeout' "
-"в этом случае игнорируется)."
+"'timeout' секунд и вызвать исключение Empty, если за это время элемент не"
+" появился. В противном случае ('block' равен false) вернуть элемент, если"
+" он доступен немедленно, иначе вызвать исключение Empty ('timeout' в этом"
+" случае игнорируется)."
 
 #: aiomisc.thread_pool.ThreadPoolExecutor:1 of
 msgid "Initializes a new ThreadPoolExecutor instance."
 msgstr "Инициализирует новый экземпляр ThreadPoolExecutor."
 
-#: aiomisc.thread_pool.ThreadPoolExecutor:3
-#: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:6 of
-msgid "Args:"
-msgstr "Аргументы:"
-
 #: aiomisc.thread_pool.ThreadPoolExecutor:4 of
 msgid "max_workers: The maximum number of threads that can be used to"
-msgstr "max_workers: Максимальное количество потоков, которые могут использоваться для"
+msgstr ""
+"max_workers: Максимальное количество потоков, которые могут "
+"использоваться для"
 
 #: aiomisc.thread_pool.ThreadPoolExecutor:5 of
 msgid "execute the given calls."
@@ -853,8 +920,8 @@ msgid ""
 "futures have finished executing and the resources used by the executor "
 "have been reclaimed."
 msgstr ""
-"future не завершат выполнение и ресурсы, используемые исполнителем, "
-"не будут освобождены."
+"future не завершат выполнение и ресурсы, используемые исполнителем, не "
+"будут освобождены."
 
 #: aiomisc.thread_pool.ThreadPoolExecutor.shutdown:10 of
 msgid "cancel_futures: If True then shutdown will cancel all pending"
@@ -897,8 +964,8 @@ msgid ""
 "when False and ``cancel=True``, unfinished coroutines will be cancelled "
 "in the background."
 msgstr ""
-"когда False и ``cancel=True``, незавершённые корутины будут отменены "
-"в фоновом режиме."
+"когда False и ``cancel=True``, незавершённые корутины будут отменены в "
+"фоновом режиме."
 
 #: aiomisc.utils.SelectAwaitable:10 of
 msgid "event loop"
@@ -917,10 +984,10 @@ msgstr ""
 "Декоратор оборачивает функцию и возвращает функцию, которая возвращает "
 "ожидаемый объект. Если функция возвращает future, будет возвращён "
 "оригинальный future. Если функция возвращает корутину, будет возвращена "
-"оригинальная корутина. Если функция возвращает объект, который не является "
-"ожидаемым, он будет обёрнут в новую корутину, которая просто возвращает "
-"этот объект. Полезно, когда не нужно проверять результат функции перед "
-"использованием в выражении ``await``."
+"оригинальная корутина. Если функция возвращает объект, который не "
+"является ожидаемым, он будет обёрнут в новую корутину, которая просто "
+"возвращает этот объект. Полезно, когда не нужно проверять результат "
+"функции перед использованием в выражении ``await``."
 
 #: aiomisc.utils.bind_socket:1 of
 msgid ""
@@ -928,8 +995,8 @@ msgid ""
 "detects ``address`` format and select socket family automatically."
 msgstr ""
 "Привязать сокет и установить ``setblocking(False)`` для только что "
-"созданного сокета. Автоматически определяет формат ``address`` и "
-"выбирает семейство сокетов."
+"созданного сокета. Автоматически определяет формат ``address`` и выбирает"
+" семейство сокетов."
 
 #: aiomisc.utils.bind_socket:4 of
 msgid "which will be passed to stdlib's socket constructor (optional)"
@@ -973,7 +1040,9 @@ msgstr "задачи, которые будут отменены"
 
 #: aiomisc.utils.chunk_list:1 of
 msgid "Split list or generator by chunks with fixed maximum size."
-msgstr "Разбить список или генератор на части фиксированного максимального размера."
+msgstr ""
+"Разбить список или генератор на части фиксированного максимального "
+"размера."
 
 #: aiomisc.utils.fast_uuid1:1 of
 msgid "Fast UUID1 like identifier"
@@ -1476,3 +1545,4 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "ctxkwargs: Additional arguments to "
 #~ "cls.prepare_context()."
 #~ msgstr ""
+

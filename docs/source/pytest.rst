@@ -109,6 +109,8 @@ These fixtures have sensible defaults but can be overridden in your
 
     .. code-block:: python
 
+        from typing import Iterable
+
         import aiomisc
         import pytest
 
@@ -120,7 +122,7 @@ These fixtures have sensible defaults but can be overridden in your
 
 
         @pytest.fixture
-        def services():
+        def services() -> Iterable[aiomisc.Service]:
             return [MyService()]
 
 ``default_context``
@@ -130,11 +132,13 @@ These fixtures have sensible defaults but can be overridden in your
 
     .. code-block:: python
 
+        from typing import Any, Mapping
+
         import pytest
 
 
         @pytest.fixture
-        def default_context():
+        def default_context() -> Mapping[str, Any]:
             return {
                 "foo": "bar",
                 "bar": "foo",
@@ -166,7 +170,7 @@ These fixtures have sensible defaults but can be overridden in your
 
 
         @pytest.fixture
-        def thread_pool_executor():
+        def thread_pool_executor() -> type[concurrent.futures.ThreadPoolExecutor]:
             return concurrent.futures.ThreadPoolExecutor
 
 Port and socket fixtures
@@ -297,11 +301,12 @@ applies to the relevant directory:
 .. code-block:: python
 
     import asyncio
+    from typing import Iterator, AsyncIterator
     import pytest
 
 
     @pytest.fixture(scope="module")
-    def event_loop():
+    def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -312,7 +317,7 @@ applies to the relevant directory:
 
 
     @pytest.fixture(scope="module")
-    async def shared_resource():
+    async def shared_resource() -> AsyncIterator[Resource]:
         resource = await create_expensive_resource()
         yield resource
         await resource.close()
@@ -352,11 +357,12 @@ tests that need it are affected.
 
     # tests/integration/conftest.py
     import asyncio
+    from typing import Iterator
     import pytest
 
 
     @pytest.fixture(scope="session")
-    def event_loop():
+    def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
@@ -370,11 +376,12 @@ Then use session-scoped async fixtures as usual:
 .. code-block:: python
 
     # tests/integration/conftest.py (continued)
+    from typing import AsyncIterator
     import pytest
 
 
     @pytest.fixture(scope="session")
-    async def db_pool():
+    async def db_pool() -> AsyncIterator[Pool]:
         pool = await create_pool(dsn="postgresql://localhost/test")
         yield pool
         await pool.close()
@@ -405,16 +412,17 @@ own the session-scoped event loop, so it will not call
 
 .. code-block:: python
 
+    from typing import AsyncIterator
     import pytest
 
 
-    async def some_agen():
+    async def some_agen() -> AsyncIterator[int]:
         for i in range(100):
             yield i + 1
 
 
     @pytest.fixture(scope="session")
-    async def async_gen_fixture():
+    async def async_gen_fixture() -> AsyncIterator[int]:
         agen = some_agen()
         val = await agen.__anext__()
         assert val == 1
@@ -466,8 +474,11 @@ the session loop and be created/destroyed per test as usual:
 
 .. code-block:: python
 
+    from typing import AsyncIterator
+
+
     @pytest.fixture(scope="session")
-    async def db_pool():
+    async def db_pool() -> AsyncIterator[Pool]:
         """Created once, shared across all tests."""
         pool = await create_pool()
         yield pool
@@ -475,13 +486,13 @@ the session loop and be created/destroyed per test as usual:
 
 
     @pytest.fixture
-    async def db_connection(db_pool):
+    async def db_connection(db_pool: Pool) -> AsyncIterator[Connection]:
         """Created fresh for each test, returned to pool after."""
         async with db_pool.acquire() as conn:
             yield conn
 
 
-    async def test_query(db_connection):
+    async def test_query(db_connection: Connection) -> None:
         await db_connection.execute("SELECT 1")
 
 TCPProxy
@@ -494,6 +505,7 @@ disconnect clients, or modify traffic on the fly.
 .. code-block:: python
 
     import asyncio
+    from typing import AsyncIterator, Iterable
     import pytest
     import aiomisc
 
@@ -518,12 +530,12 @@ disconnect clients, or modify traffic on the fly.
 
 
     @pytest.fixture()
-    def services(server_port, localhost):
+    def services(server_port, localhost) -> Iterable[aiomisc.Service]:
         return [EchoServer(port=server_port, address=localhost)]
 
 
     @pytest.fixture()
-    async def proxy(tcp_proxy, localhost, server_port):
+    async def proxy(tcp_proxy, localhost, server_port) -> AsyncIterator["aiomisc.pytest.TCPProxy"]:
         async with tcp_proxy(localhost, server_port) as proxy:
             yield proxy
 
