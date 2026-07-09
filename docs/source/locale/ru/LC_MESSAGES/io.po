@@ -142,7 +142,7 @@ msgstr ""
 #: ../../source/io.rst:57
 msgid ""
 "Just try pack all blocking staff in separate functions and call it in a "
-"thread pool, see the example bellow:"
+"thread pool, see the example below:"
 msgstr ""
 "Просто попробуйте завернуть все блокирующие вызовы в отдельные функции и "
 "вызывайте их используя пул потоков (см. пример ниже):"
