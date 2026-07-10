@@ -273,7 +273,7 @@ Such as: ``AIOHTTPService``, ``ASGIService``, ``TCPServer``,
 
 Unfortunately in this section it is not possible to pay more attention to this,
 please pay attention to the Tutorial_ section section, there are more
-examples and explanations, and of cource you always can find out an answer on
+examples and explanations, and of course you always can find out an answer on
 the `/api/index` or in the source code. The authors have tried to make
 the source code as clear and simple as possible, so feel free to explore it.
 
