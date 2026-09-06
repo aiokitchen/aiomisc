@@ -79,3 +79,22 @@ def test_delay(event_loop):
 
     with aiomisc.entrypoint(svc, loop=event_loop) as loop:
         loop.run_until_complete(asyncio.wait_for(assert_counter(), timeout=10))
+
+
+def test_stop_from_callback(event_loop):
+    # Regression test for https://github.com/aiokitchen/aiomisc/issues/250
+    class SelfStopping(PeriodicService):
+        calls = 0
+
+        async def callback(self) -> None:
+            self.calls += 1
+            if self.calls == 2:
+                await self.stop()
+
+    svc = SelfStopping(interval=0.05)
+
+    with aiomisc.entrypoint(svc, loop=event_loop) as loop:
+        loop.call_later(1.0, loop.stop)
+        loop.run_forever()
+
+    assert svc.calls == 2, "no callbacks must run after the service stopped"

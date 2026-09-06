@@ -69,7 +69,10 @@ class PeriodicCallback(EventLoopMixin):
         elif not self._task.done():
             self._task.cancel()
         task, self._task = self._task, None
-        return asyncio.gather(task, return_exceptions=return_exceptions)
+        # Avoid cancelling the callback while it is stopping itself.
+        return asyncio.shield(
+            asyncio.gather(task, return_exceptions=return_exceptions)
+        )
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self._recurring_callback.name})"

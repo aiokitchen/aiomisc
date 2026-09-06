@@ -83,7 +83,7 @@ async def test_from_thread_channel_wait_before(event_loop, threaded_decorator):
             for i in range(10):
                 channel.put(i)
 
-    event_loop.call_later(0.1, in_thread)
+    producer = asyncio.ensure_future(in_thread())
 
     result = []
     with pytest.raises(ChannelClosed):
@@ -91,6 +91,7 @@ async def test_from_thread_channel_wait_before(event_loop, threaded_decorator):
             result.append(await asyncio.wait_for(channel.get(), timeout=5))
 
     assert result == list(range(10))
+    await asyncio.gather(producer, return_exceptions=True)
 
 
 async def test_from_thread_channel_close(event_loop):
@@ -187,6 +188,8 @@ async def test_future_when_pool_shutting_down(executor):
         for task in done:
             with pytest.raises(RuntimeError):
                 task.result()
+
+    await asyncio.gather(*futures, return_exceptions=True)
 
 
 async def test_failed_future_already_done(executor):
