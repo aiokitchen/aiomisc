@@ -36,10 +36,54 @@ record and the load is 1000 RPS, then, with a 10% increase of the delay
         return [math.pow(num, power) for num in nums]
 
     async def main():
-        await asyncio.gather(pow(1.0), pow(2.0))
+        result = await asyncio.gather(
+            pow(2.0, power=2.0),
+            pow(2.0, power=3.0),
+            pow(3.0, power=2.0),
+            pow(3.0, power=3.0),
+        )
+        assert result == [4.0, 8.0, 9.0, 27.0]
 
     with entrypoint() as loop:
         loop.run_until_complete(main())
+
+Calls with the same keyword arguments are batched together. Calls with
+different keyword arguments use independent batches. Keyword argument values
+must be hashable.
+
+Each distinct combination of keyword arguments creates a separate batch.
+Keep the number of combinations low: as it grows, batches become smaller and
+calls are more likely to wait for the full ``leeway_ms``, reducing the
+throughput benefit. If the backend can process mixed options, consider putting
+high-cardinality values into the positional item instead.
+
+Methods
+-------
+
+``aggregate`` and ``aggregate_async`` can decorate instance, class, and static
+methods. Each instance and class gets an independent aggregator, while a static
+method uses a single aggregator. Both decorator orders are supported for
+``classmethod`` and ``staticmethod``.
+
+.. code-block:: python
+
+    class Loader:
+        @aggregate(leeway_ms=10)
+        async def load(self, *keys):
+            ...
+
+        @classmethod
+        @aggregate(leeway_ms=10)
+        async def load_global(cls, *keys):
+            ...
+
+        @staticmethod
+        @aggregate(leeway_ms=10)
+        async def normalize(*values):
+            ...
+
+Instance methods store their aggregator on the instance, so instances without
+a writable ``__dict__`` are not supported.
 
 To employ a more low-level approach one can use `aggregate_async` instead.
 In this case, the aggregating function accepts `Arg` parameters, each containing

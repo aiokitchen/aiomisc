@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 10:52+0200\n"
+"POT-Creation-Date: 2026-09-06 16:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,7 +41,19 @@ msgstr ""
 "аргументами (``res1, res2, ... = await func(arg1, arg2, ...)``) "
 "собранными в пределах временного окна ``leeway_ms``."
 
-#: aiomisc.aggregate.aggregate:12 of
+#: aiomisc.aggregate.aggregate:10 of
+msgid ""
+"Calls with different keyword arguments are batched separately; keyword "
+"values must be hashable. The decorator also supports instance, class, and"
+" static methods. Instances used with it must have a writable "
+"``__dict__``."
+msgstr ""
+"Вызовы с разными именованными аргументами объединяются в отдельные пакеты; "
+"значения аргументов должны быть хешируемыми. Декоратор также поддерживает "
+"методы экземпляра, класса и статические методы. Экземпляры должны иметь "
+"доступный для записи ``__dict__``."
+
+#: aiomisc.aggregate.aggregate:16 of
 msgid ""
 "``func`` must return a sequence of values of length equal to the number "
 "of arguments (and in the same order)."
@@ -49,7 +61,7 @@ msgstr ""
 "``func`` должна возвращать последовательность значений длиной, равной "
 "количеству аргументов (и в том же порядке)."
 
-#: aiomisc.aggregate.aggregate:17 of
+#: aiomisc.aggregate.aggregate:21 of
 msgid ""
 "if some unexpected error occurs, exception is propagated to each future; "
 "to set an individual error for each aggregated call refer to "
@@ -63,7 +75,7 @@ msgstr ""
 msgid "Parameters"
 msgstr "Параметры"
 
-#: aiomisc.aggregate.aggregate:21 of
+#: aiomisc.aggregate.aggregate:25 of
 msgid ""
 "The maximum approximate delay between the first collected argument and "
 "the aggregated execution."
@@ -71,7 +83,7 @@ msgstr ""
 "Максимальная приблизительная задержка между первым собранным аргументом и"
 " агрегированным выполнением."
 
-#: aiomisc.aggregate.aggregate:23 of
+#: aiomisc.aggregate.aggregate:27 of
 msgid ""
 "The maximum number of arguments to call decorated function with. Default "
 "``None``."
@@ -1545,4 +1557,3 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "ctxkwargs: Additional arguments to "
 #~ "cls.prepare_context()."
 #~ msgstr ""
-

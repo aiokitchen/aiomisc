@@ -436,3 +436,169 @@ async def test_low_level_error(event_loop, leeway):
     assert task1.result()
     assert task2.done()
     assert isinstance(task2.exception(), ValueError)
+
+
+async def test_aggregate_kwargs():
+    @aggregate(10_000, max_count=2)
+    async def power(*args: int, exponent: int) -> list[int]:
+        return [value**exponent for value in args]
+
+    @aggregate_async(10_000, max_count=2)
+    async def power_async(*args: Arg, exponent: int) -> None:
+        for arg in args:
+            arg.future.set_result(arg.value**exponent)
+
+    calls: tuple[Any, ...] = (
+        power(2, exponent=2),
+        power(2, exponent=3),
+        power(3, exponent=2),
+        power(3, exponent=3),
+    )
+    async_calls: tuple[Any, ...] = (
+        power_async(2, exponent=2),
+        power_async(2, exponent=3),
+        power_async(3, exponent=2),
+        power_async(3, exponent=3),
+    )
+
+    assert await asyncio.gather(*calls) == [4, 8, 9, 27]
+    assert await asyncio.gather(*async_calls) == [4, 8, 9, 27]
+    with pytest.raises(TypeError, match="must be hashable"):
+        await power(1, exponent=[])
+
+
+async def test_aggregate_kwargs_order():
+    batches = []
+
+    @aggregate(10_000, max_count=2)
+    async def surround(*args: str, prefix: str, suffix: str) -> list[str]:
+        batches.append((args, prefix, suffix))
+        return [f"{prefix}{value}{suffix}" for value in args]
+
+    result: list[Any] = await asyncio.wait_for(
+        asyncio.gather(
+            surround("one", prefix="[", suffix="]"),
+            surround("two", suffix="]", prefix="["),
+        ),
+        timeout=2,
+    )
+
+    assert result == ["[one]", "[two]"]
+    assert batches == [(("one", "two"), "[", "]")]
+
+
+async def test_aggregate_kwargs_isolate_exceptions():
+    batches = []
+
+    @aggregate(10_000, max_count=2)
+    async def process(*args: int, fail: bool) -> list[int]:
+        batches.append((fail, args))
+        if fail:
+            raise ValueError("failed batch")
+        return list(args)
+
+    result = await asyncio.wait_for(
+        asyncio.gather(
+            process(1, fail=False),
+            process(2, fail=True),
+            process(3, fail=False),
+            process(4, fail=True),
+            return_exceptions=True,
+        ),
+        timeout=2,
+    )
+
+    assert result[:3:2] == [1, 3]
+    assert all(isinstance(result[index], ValueError) for index in (1, 3))
+    assert set(batches) == {(False, (1, 3)), (True, (2, 4))}
+
+
+async def test_aggregate_instance_methods():
+    class Calculator:
+        __hash__ = None  # type: ignore[assignment]
+
+        def __init__(self, exponent: int) -> None:
+            self.exponent = exponent
+
+        @aggregate(10_000, max_count=2)
+        async def power(self, *args: int) -> list[int]:
+            return [value**self.exponent for value in args]
+
+        @aggregate_async(10_000, max_count=2)
+        async def power_async(self, *args: Arg) -> None:
+            for arg in args:
+                arg.future.set_result(arg.value**self.exponent)
+
+    square = Calculator(2)
+    cube = Calculator(3)
+
+    assert await asyncio.gather(
+        square.power(2), cube.power(2), square.power(3), cube.power(3)
+    ) == [4, 8, 9, 27]
+    assert await asyncio.gather(
+        square.power_async(2),
+        cube.power_async(2),
+        square.power_async(3),
+        cube.power_async(3),
+    ) == [4, 8, 9, 27]
+
+
+async def test_aggregate_class_methods():
+    class Calculator:
+        exponent = 1
+
+        @aggregate(10_000, max_count=2)
+        @classmethod
+        async def aggregate_outer(cls, *args: int) -> list[int]:
+            return [value**cls.exponent for value in args]
+
+        @classmethod
+        @aggregate(10_000, max_count=2)
+        async def classmethod_outer(cls, *args: int) -> list[int]:
+            return [value**cls.exponent for value in args]
+
+    class Square(Calculator):
+        exponent = 2
+
+    class Cube(Calculator):
+        exponent = 3
+
+    for name in ("aggregate_outer", "classmethod_outer"):
+        square = getattr(Square, name)
+        cube = getattr(Cube, name)
+        assert await asyncio.gather(square(2), cube(2), square(3), cube(3)) == [
+            4,
+            8,
+            9,
+            27,
+        ]
+
+
+async def test_aggregate_static_methods():
+    class Calculator:
+        @aggregate(10_000, max_count=2)
+        @staticmethod
+        async def aggregate_outer(*args: int) -> list[int]:
+            return list(args)
+
+        @staticmethod
+        @aggregate(10_000, max_count=2)
+        async def staticmethod_outer(*args: int) -> list[int]:
+            return list(args)
+
+    for name in ("aggregate_outer", "staticmethod_outer"):
+        assert await asyncio.gather(
+            getattr(Calculator, name)(1), getattr(Calculator(), name)(2)
+        ) == [1, 2]
+
+
+async def test_aggregate_slots_without_dict():
+    class Calculator:
+        __slots__ = ()
+
+        @aggregate(1, max_count=1)
+        async def power(self, *args: int) -> list[int]:
+            return list(args)
+
+    with pytest.raises(TypeError, match="writable __dict__"):
+        Calculator().power(1)
