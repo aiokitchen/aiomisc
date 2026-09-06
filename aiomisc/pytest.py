@@ -494,9 +494,8 @@ def pytest_fixture_setup(fixturedef, request):  # type: ignore
             except StopAsyncIteration:  # NOQA
                 pass
 
-        loop_fixturedef.addfinalizer(
-            partial(fixturedef.finish, request=request)
-        )
+        # Adding this finalizer to event_loop breaks pytest 9+.
+        # The fixture's own finalizer is sufficient.
 
         request.addfinalizer(finalizer)
         return event_loop.run_until_complete(gen.__anext__())
@@ -666,8 +665,25 @@ def event_loop(
         if not loop.is_closed():
             with suppress(Exception):
                 loop.run_until_complete(loop.shutdown_asyncgens())
+            # Finish executor work before closing its loop.
+            with suppress(Exception):
+                loop.run_until_complete(loop.shutdown_default_executor())
             with suppress(Exception):
                 loop.close()
+
+        if exceptions:
+            logging.error(
+                "Unhandled exceptions found:\n\n\t%s",
+                "\n\t".join(
+                    ("Message: {m}\n\tFuture: {f}\n\tException: {e}").format(
+                        m=e["message"],
+                        f=repr(e.get("future")),
+                        e=repr(e.get("exception")),
+                    )
+                    for e in exceptions
+                ),
+            )
+            pytest.fail("Unhandled exceptions found. See logs.")
 
         asyncio.set_event_loop(None)
 

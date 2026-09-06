@@ -563,16 +563,16 @@ class AIOHTTPTestApp(AIOHTTPService):
         return aiohttp.web.Application()
 
 
-def test_aiohttp_service(aiomisc_unused_port):
+def test_aiohttp_service(aiomisc_unused_port, localhost):
     async def http_client():
         session = aiohttp.ClientSession()
-        url = f"http://localhost:{aiomisc_unused_port}"
+        url = f"http://{localhost}:{aiomisc_unused_port}"
 
         async with session:
             async with session.get(url) as response:
                 return response.status
 
-    service = AIOHTTPTestApp(address="127.0.0.1", port=aiomisc_unused_port)
+    service = AIOHTTPTestApp(address=localhost, port=aiomisc_unused_port)
 
     with aiomisc.entrypoint(service) as loop:
         response = loop.run_until_complete(
@@ -630,16 +630,16 @@ def test_aiohttp_service_without_port_or_sock(aiomisc_unused_port):
         ASGIHTTPTestApp()
 
 
-def test_asgi_service(aiomisc_unused_port):
+def test_asgi_service(aiomisc_unused_port, localhost):
     async def http_client():
         session = aiohttp.ClientSession()
-        url = f"http://localhost:{aiomisc_unused_port}"
+        url = f"http://{localhost}:{aiomisc_unused_port}"
 
         async with session:
             async with session.get(url) as response:
                 return response.status, await response.json()
 
-    service = ASGIHTTPTestApp(address="127.0.0.1", port=aiomisc_unused_port)
+    service = ASGIHTTPTestApp(address=localhost, port=aiomisc_unused_port)
 
     with aiomisc.entrypoint(service) as loop:
         response, body = loop.run_until_complete(
@@ -682,16 +682,16 @@ class UvicornTestService(UvicornService):
         return app
 
 
-def test_uvicorn_service(aiomisc_unused_port):
+def test_uvicorn_service(aiomisc_unused_port, localhost):
     async def http_client():
         session = aiohttp.ClientSession()
-        url = f"http://localhost:{aiomisc_unused_port}"
+        url = f"http://{localhost}:{aiomisc_unused_port}"
 
         async with session:
             async with session.get(url) as response:
                 return response.status, await response.json()
 
-    service = UvicornTestService(host="127.0.0.1", port=aiomisc_unused_port)
+    service = UvicornTestService(host=localhost, port=aiomisc_unused_port)
 
     with aiomisc.entrypoint(service) as loop:
         response, body = loop.run_until_complete(

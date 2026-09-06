@@ -405,6 +405,8 @@ class Entrypoint:
         if self._loop_owner:
             await self._cancel_background_tasks()
             await self.loop.shutdown_asyncgens()
+            # Finish executor work before closing its loop.
+            await self.loop.shutdown_default_executor()
 
     def _on_interrupt_callback(self, _: Any) -> None:
         loop = self.loop

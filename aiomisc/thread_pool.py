@@ -77,6 +77,9 @@ class WorkItem(WorkItemBase):
 
         if self.loop.is_closed():
             log.warning("Event loop is closed. Ignoring %r", self.func)
+            # Do not leave the future pending after its loop has closed.
+            if not self.future.done():
+                self.future.set_exception(asyncio.CancelledError())
             raise asyncio.CancelledError
 
         result, exception = None, None
@@ -100,6 +103,9 @@ class WorkItem(WorkItemBase):
                 "Event loop is closed. Forget execution result for %r",
                 self.func,
             )
+            # Do not leave the future pending after its loop has closed.
+            if not self.future.done():
+                self.future.set_exception(asyncio.CancelledError())
             raise asyncio.CancelledError
 
         self.loop.call_soon_threadsafe(
