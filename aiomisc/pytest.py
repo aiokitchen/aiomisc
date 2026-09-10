@@ -603,6 +603,16 @@ def _create_event_loop() -> asyncio.AbstractEventLoop:
     return asyncio.new_event_loop()
 
 
+def _cancel_pending_tasks(loop: asyncio.AbstractEventLoop) -> None:
+    tasks = asyncio.all_tasks(loop)
+    if not tasks:
+        return
+
+    for task in tasks:
+        task.cancel()
+    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
+
+
 @pytest.fixture(autouse=loop_autouse)
 def event_loop(
     request: pytest.FixtureRequest,
@@ -663,6 +673,8 @@ def event_loop(
         basic_config(log_format="plain", stream=sys.stderr)
 
         if not loop.is_closed():
+            with suppress(Exception):
+                _cancel_pending_tasks(loop)
             with suppress(Exception):
                 loop.run_until_complete(loop.shutdown_asyncgens())
             # Finish executor work before closing its loop.
