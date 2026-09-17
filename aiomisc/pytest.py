@@ -612,6 +612,19 @@ def _cancel_pending_tasks(loop: asyncio.AbstractEventLoop) -> None:
         task.cancel()
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
 
+    for task in tasks:
+        if task.cancelled():
+            continue
+        exception = task.exception()
+        if exception is not None:
+            loop.call_exception_handler(
+                {
+                    "message": "Unhandled exception during task cleanup",
+                    "exception": exception,
+                    "task": task,
+                }
+            )
+
 
 @pytest.fixture(autouse=loop_autouse)
 def event_loop(
@@ -656,20 +669,6 @@ def event_loop(
                 )
             yield loop
     finally:
-        if exceptions:
-            logging.error(
-                "Unhandled exceptions found:\n\n\t%s",
-                "\n\t".join(
-                    ("Message: {m}\n\tFuture: {f}\n\tException: {e}").format(
-                        m=e["message"],
-                        f=repr(e.get("future")),
-                        e=repr(e.get("exception")),
-                    )
-                    for e in exceptions
-                ),
-            )
-            pytest.fail("Unhandled exceptions found. See logs.")
-
         basic_config(log_format="plain", stream=sys.stderr)
 
         if not loop.is_closed():
@@ -683,21 +682,20 @@ def event_loop(
             with suppress(Exception):
                 loop.close()
 
+        asyncio.set_event_loop(None)
         if exceptions:
             logging.error(
                 "Unhandled exceptions found:\n\n\t%s",
                 "\n\t".join(
                     ("Message: {m}\n\tFuture: {f}\n\tException: {e}").format(
                         m=e["message"],
-                        f=repr(e.get("future")),
+                        f=repr(e.get("future", e.get("task"))),
                         e=repr(e.get("exception")),
                     )
                     for e in exceptions
                 ),
             )
             pytest.fail("Unhandled exceptions found. See logs.")
-
-        asyncio.set_event_loop(None)
 
 
 @pytest.fixture(autouse=loop_autouse)

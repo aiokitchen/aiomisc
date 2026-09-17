@@ -51,6 +51,10 @@ Calls with the same keyword arguments are batched together. Calls with
 different keyword arguments use independent batches. Keyword argument values
 must be hashable.
 
+Batch keys use Python equality and hashing, so values such as ``1``, ``True``,
+and ``1.0`` can share a batch. The backend receives the keyword values of
+one of those calls.
+
 Each distinct combination of keyword arguments creates a separate batch.
 Keep the number of combinations low: as it grows, batches become smaller and
 calls are more likely to wait for the full ``leeway_ms``, reducing the
@@ -84,6 +88,18 @@ method uses a single aggregator. Both decorator orders are supported for
 
 Instance methods store their aggregator on the instance, so instances without
 a writable ``__dict__`` are not supported.
+
+The cache is private and belongs to its owner: copied or unpickled instances
+create fresh aggregators rather than sharing pending batches. Normally the
+cache holds a weak reference to the owner. Instances that cannot be weakly
+referenced use a strong reference instead and require cyclic garbage
+collection to release the cache.
+
+Module functions and bound instance methods expose their aggregator through
+``func.__self__`` (for example, ``loader.load.__self__.count``). For class
+methods, put ``aggregate`` outside ``classmethod`` to expose the aggregator
+this way. With the reverse order, ``__self__`` may refer to the class instead,
+depending on the Python version.
 
 To employ a more low-level approach one can use `aggregate_async` instead.
 In this case, the aggregating function accepts `Arg` parameters, each containing

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 12.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-06 17:09+0200\n"
+"POT-Creation-Date: 2026-09-17 23:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Tzoiker tzoiker@gmail.com\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -105,6 +105,16 @@ msgstr ""
 
 #: ../../source/aggregate.rst:54
 msgid ""
+"Batch keys use Python equality and hashing, so values such as ``1``, "
+"``True``, and ``1.0`` can share a batch. The backend receives the keyword"
+" values of one of those calls."
+msgstr ""
+"Ключи пакетов сравниваются и хешируются по правилам Python, поэтому "
+"значения ``1``, ``True`` и ``1.0`` могут попасть в один пакет. "
+"Обработчик получает именованные аргументы одного из этих вызовов."
+
+#: ../../source/aggregate.rst:58
+msgid ""
 "Each distinct combination of keyword arguments creates a separate batch. "
 "Keep the number of combinations low: as it grows, batches become smaller "
 "and calls are more likely to wait for the full ``leeway_ms``, reducing "
@@ -113,29 +123,30 @@ msgid ""
 "instead."
 msgstr ""
 "Каждая уникальная комбинация именованных аргументов создаёт отдельный "
-"пакет. Старайтесь не использовать много комбинаций: с ростом их количества "
-"пакеты становятся меньше, а вызовы чаще ждут полный ``leeway_ms``, что "
-"снижает выигрыш в пропускной способности. Если система умеет обрабатывать "
-"разные параметры в одном пакете, передавайте значения с высокой "
-"кардинальностью в позиционном аргументе."
+"пакет. Старайтесь не использовать много комбинаций: с ростом их "
+"количества пакеты становятся меньше, а вызовы чаще ждут полный "
+"``leeway_ms``, что снижает выигрыш в пропускной способности. Если система"
+" умеет обрабатывать разные параметры в одном пакете, передавайте значения"
+" с высокой кардинальностью в позиционном аргументе."
 
-#: ../../source/aggregate.rst:61
+#: ../../source/aggregate.rst:65
 msgid "Methods"
 msgstr "Методы"
 
-#: ../../source/aggregate.rst:63
+#: ../../source/aggregate.rst:67
 msgid ""
 "``aggregate`` and ``aggregate_async`` can decorate instance, class, and "
 "static methods. Each instance and class gets an independent aggregator, "
 "while a static method uses a single aggregator. Both decorator orders are"
 " supported for ``classmethod`` and ``staticmethod``."
 msgstr ""
-"``aggregate`` и ``aggregate_async`` могут декорировать методы экземпляра, "
-"класса и статические методы. Каждый экземпляр и класс получает независимый "
-"агрегатор, а статический метод использует один общий агрегатор. Для "
-"``classmethod`` и ``staticmethod`` поддерживаются оба порядка декораторов."
+"``aggregate`` и ``aggregate_async`` могут декорировать методы экземпляра,"
+" класса и статические методы. Каждый экземпляр и класс получает "
+"независимый агрегатор, а статический метод использует один общий "
+"агрегатор. Для ``classmethod`` и ``staticmethod`` поддерживаются оба "
+"порядка декораторов."
 
-#: ../../source/aggregate.rst:68
+#: ../../source/aggregate.rst:72
 msgid ""
 "class Loader:\n"
 "    @aggregate(leeway_ms=10)\n"
@@ -153,15 +164,44 @@ msgid ""
 "        ..."
 msgstr ""
 
-#: ../../source/aggregate.rst:85
+#: ../../source/aggregate.rst:89
 msgid ""
 "Instance methods store their aggregator on the instance, so instances "
 "without a writable ``__dict__`` are not supported."
 msgstr ""
-"Методы экземпляра сохраняют агрегатор в экземпляре, поэтому экземпляры без "
-"доступного для записи ``__dict__`` не поддерживаются."
+"Методы экземпляра сохраняют агрегатор в экземпляре, поэтому экземпляры "
+"без доступного для записи ``__dict__`` не поддерживаются."
 
-#: ../../source/aggregate.rst:88
+#: ../../source/aggregate.rst:92
+msgid ""
+"The cache is private and belongs to its owner: copied or unpickled "
+"instances create fresh aggregators rather than sharing pending batches. "
+"Normally the cache holds a weak reference to the owner. Instances that "
+"cannot be weakly referenced use a strong reference instead and require "
+"cyclic garbage collection to release the cache."
+msgstr ""
+"Кэш — внутренняя деталь конкретного владельца: скопированные или "
+"восстановленные из pickle экземпляры создают новые агрегаторы, не "
+"разделяя ожидающие пакеты. Обычно кэш хранит слабую ссылку на владельца. "
+"Если экземпляр не поддерживает слабые ссылки, используется сильная "
+"ссылка, и для освобождения кэша нужен сборщик циклического мусора."
+
+#: ../../source/aggregate.rst:98
+msgid ""
+"Module functions and bound instance methods expose their aggregator "
+"through ``func.__self__`` (for example, ``loader.load.__self__.count``). "
+"For class methods, put ``aggregate`` outside ``classmethod`` to expose "
+"the aggregator this way. With the reverse order, ``__self__`` may refer "
+"to the class instead, depending on the Python version."
+msgstr ""
+"Функции уровня модуля и привязанные методы экземпляра предоставляют "
+"доступ к агрегатору через ``func.__self__`` (например, "
+"``loader.load.__self__.count``). Для методов класса поместите "
+"``aggregate`` снаружи ``classmethod``, чтобы получить такой доступ; "
+"при обратном порядке ``__self__`` может ссылаться на класс — это "
+"зависит от версии Python."
+
+#: ../../source/aggregate.rst:104
 msgid ""
 "To employ a more low-level approach one can use `aggregate_async` "
 "instead. In this case, the aggregating function accepts `Arg` parameters,"
@@ -175,7 +215,7 @@ msgstr ""
 "`value` и футуру `future`. Функция ответственна за выставление "
 "результатов работы для всех футур (вместо обычного возврата результатов)."
 
-#: ../../source/aggregate.rst:93
+#: ../../source/aggregate.rst:109
 msgid ""
 "import asyncio\n"
 "import math\n"

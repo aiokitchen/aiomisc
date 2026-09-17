@@ -1,11 +1,16 @@
 import asyncio
+import copy
+import gc
+import inspect
 import logging
 import math
 import platform
+import pickle
 import time
+import weakref
 from asyncio import Event, wait
 from contextvars import ContextVar
-from typing import Any, List
+from typing import Any, List, assert_type
 from collections.abc import Sequence
 
 import pytest
@@ -601,4 +606,218 @@ async def test_aggregate_slots_without_dict():
             return list(args)
 
     with pytest.raises(TypeError, match="writable __dict__"):
-        Calculator().power(1)
+        await Calculator().power(1)
+
+
+@pytest.mark.parametrize("low_level", (False, True))
+@pytest.mark.parametrize("remaining", (False, True))
+async def test_cancel_waiting_call(low_level, remaining):
+    batches = []
+
+    async def process(*args, key):
+        values = tuple(arg.value if low_level else arg for arg in args)
+        batches.append((key, values))
+        if low_level:
+            for arg in args:
+                arg.future.set_result(arg.value)
+        return values
+
+    decorator = aggregate_async if low_level else aggregate
+    batched = decorator(10_000, max_count=2)(process)
+    stale = asyncio.create_task(batched("stale", key="one"))
+    other = (
+        asyncio.create_task(batched("other", key="two")) if remaining else None
+    )
+    await asyncio.sleep(0)
+    aggregator = batched.__self__
+    assert aggregator.count == 1 + remaining
+    stale.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await stale
+    assert aggregator.count == remaining
+    assert len(aggregator._buckets) == remaining
+    fresh = asyncio.create_task(batched("fresh", key="one"))
+    await asyncio.sleep(0)
+    assert not fresh.done()
+    assert await batched("next", key="one") == "next"
+    assert await fresh == "fresh"
+    if other is not None:
+        assert await batched("last", key="two") == "last"
+        assert await other == "other"
+    assert all("stale" not in values for _, values in batches)
+    assert aggregator.count == 0
+    assert not aggregator._buckets
+
+
+class CopyableLoader:
+    def __init__(self, prefix="original"):
+        self.prefix = prefix
+
+    @aggregate(1, max_count=1)
+    async def load(self, *keys: str) -> list[str]:
+        """Load keys with this owner's prefix."""
+        return [self.prefix + key for key in keys]
+
+
+@pytest.mark.parametrize("clone", (copy.copy, copy.deepcopy, pickle.loads))
+async def test_cached_method_copy(clone):
+    original = CopyableLoader()
+    assert await original.load("key") == "originalkey"
+    copied = clone(
+        pickle.dumps(original) if clone is pickle.loads else original
+    )
+    copied.prefix = "copy"
+    assert await copied.load("key") == "copykey"
+    assert await original.load("key") == "originalkey"
+    assert copied.load.__self__ is not original.load.__self__
+
+
+def test_cached_method_does_not_retain_owner():
+    loader = CopyableLoader()
+    _ = loader.load
+    reference = weakref.ref(loader)
+    del _
+    gc.disable()
+    try:
+        del loader
+        assert reference() is None
+    finally:
+        gc.enable()
+
+
+async def test_unbound_method_requires_receiver():
+    with pytest.raises(TypeError, match="require an instance"):
+        await CopyableLoader.load("key")
+    assert await CopyableLoader.load(CopyableLoader(), "key") == "originalkey"
+
+
+@pytest.mark.parametrize("decorator", (aggregate, aggregate_async))
+def test_coroutine_metadata(decorator):
+    async def original(*keys: int, option: str = "default") -> list[int]:
+        """Original documentation."""
+        return list(keys)
+
+    decorated = decorator(1)(original)
+    assert inspect.iscoroutinefunction(decorated)
+    assert asyncio.iscoroutinefunction(decorated)
+    assert decorated.__doc__ == original.__doc__
+    assert inspect.signature(decorated) == inspect.signature(original)
+
+    class Loader:
+        @decorator(1)
+        async def load(self, *keys: int, option: str = "default") -> list[int]:
+            """Method documentation."""
+            return list(keys)
+
+        @decorator(1)
+        @classmethod
+        async def class_load(cls, *keys: int) -> list[int]:
+            """Class documentation."""
+            return list(keys)
+
+        @classmethod
+        @decorator(1)
+        async def outer_class_load(cls, *keys: int) -> list[int]:
+            """Outer class documentation."""
+            return list(keys)
+
+        @decorator(1)
+        @staticmethod
+        async def static_load(*keys: int) -> list[int]:
+            """Static documentation."""
+            return list(keys)
+
+        @staticmethod
+        @decorator(1)
+        async def outer_static_load(*keys: int) -> list[int]:
+            """Outer static documentation."""
+            return list(keys)
+
+    loader = Loader()
+    assert loader.load.__doc__ == "Method documentation."
+    assert (
+        str(inspect.signature(loader.load))
+        == "(*keys: int, option: str = 'default') -> list[int]"
+    )
+    for method in (
+        loader.load,
+        Loader.class_load,
+        Loader.outer_class_load,
+        Loader.static_load,
+        Loader.outer_static_load,
+    ):
+        assert inspect.iscoroutinefunction(method)
+        assert method.__doc__
+    assert loader.load.__self__.count == 0
+    assert Loader.class_load.__self__.count == 0
+
+
+async def test_aggregate_result_typing():
+    @aggregate(1, max_count=1)
+    async def load(*keys: int) -> list[str]:
+        return [str(key) for key in keys]
+
+    @aggregate_async(1, max_count=1)
+    async def load_async(*keys: Arg[int, str]) -> None:
+        for key in keys:
+            key.future.set_result(str(key.value))
+
+    assert_type(await load(1), str)
+    assert_type(await load_async(1), str)
+    assert_type(await CopyableLoader().load("key"), str)
+
+
+async def test_cancel_one_waiter_preserves_batch():
+    batches = []
+
+    @aggregate(10_000, max_count=3)
+    async def load(*keys: str) -> list[str]:
+        batches.append(keys)
+        return list(keys)
+
+    stale = asyncio.create_task(load("stale"))
+    survivor = asyncio.create_task(load("survivor"))
+    await asyncio.sleep(0)
+    stale.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await stale
+    assert load.__self__.count == 1
+    assert await asyncio.gather(load("fresh"), load("next"), survivor) == [
+        "fresh",
+        "next",
+        "survivor",
+    ]
+    assert batches == [("survivor", "fresh", "next")]
+
+
+async def test_cancel_dispatched_waiter_keeps_result_order():
+    started = asyncio.Event()
+    finish = asyncio.Event()
+
+    @aggregate(10_000, max_count=2)
+    async def load(*keys: str) -> list[str]:
+        started.set()
+        await finish.wait()
+        return list(keys)
+
+    first = asyncio.create_task(load("first"))
+    second = asyncio.create_task(load("second"))
+    await started.wait()
+    first.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await first
+    finish.set()
+    assert await second == "second"
+
+
+async def test_non_weakrefable_owner():
+    class Loader:
+        __slots__ = ("__dict__",)
+
+        @aggregate(1, max_count=1)
+        async def load(self, *keys: int) -> list[int]:
+            return list(keys)
+
+    loader = Loader()
+    assert await loader.load(1) == 1
+    assert await copy.copy(loader).load(2) == 2
