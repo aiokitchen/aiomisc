@@ -138,14 +138,19 @@ async def test_future_gc(thread_pool_executor, event_loop):
     assert event.is_set()
 
 
-async def test_threaded(threaded_decorator, timer):
-    sleep = threaded_decorator(time.sleep)
+async def test_threaded(threaded_decorator):
+    # The barrier is released only when all parties wait at the same time.
+    # This proves that the calls run in parallel without a wall-clock check.
+    parties = 5
+    barrier = threading.Barrier(parties, timeout=5)
+    wait = threaded_decorator(barrier.wait)
 
-    with timer(1):
-        await asyncio.wait_for(
-            asyncio.gather(sleep(1), sleep(1), sleep(1), sleep(1), sleep(1)),
-            timeout=5,
-        )
+    result = await asyncio.wait_for(
+        asyncio.gather(*[wait() for _ in range(parties)]),
+        timeout=5,
+    )
+
+    assert sorted(result) == list(range(parties))
 
 
 async def test_threaded_exc(threaded_decorator):
@@ -210,27 +215,29 @@ async def test_failed_future_already_done(executor):
         await asyncio.gather(*futures, return_exceptions=True)
 
 
-async def test_cancel(executor, event_loop, timer):
+async def test_cancel(executor, event_loop):
     sleep = aiomisc.threaded(time.sleep)
 
     async with timeout(2):
-        with timer(1, dispersion=2):
-            tasks = [asyncio.ensure_future(sleep(1)) for _ in range(1000)]
+        tasks = [asyncio.ensure_future(sleep(1)) for _ in range(1000)]
 
-            await asyncio.sleep(1)
+        await asyncio.sleep(1)
 
-            for task in tasks:
-                task.cancel()
+        for task in tasks:
+            task.cancel()
 
     executor.shutdown(wait=True)
 
 
-async def test_simple(threaded_decorator, event_loop, timer):
-    sleep = threaded_decorator(time.sleep)
+async def test_simple(threaded_decorator, event_loop):
+    parties = 4
+    barrier = threading.Barrier(parties, timeout=5)
+    wait = threaded_decorator(barrier.wait)
 
-    async with timeout(2):
-        with timer(1):
-            await asyncio.gather(sleep(1), sleep(1), sleep(1), sleep(1))
+    async with timeout(5):
+        result = await asyncio.gather(*[wait() for _ in range(parties)])
+
+    assert sorted(result) == list(range(parties))
 
 
 gen_decos = (aiomisc.threaded_iterable, aiomisc.threaded_iterable_separate)
@@ -241,7 +248,7 @@ def iterator_decorator(request):
     return request.param
 
 
-async def test_threaded_generator(event_loop, timer):
+async def test_threaded_generator(event_loop):
     @aiomisc.threaded
     def arange(*args):
         return (yield from range(*args))
@@ -258,7 +265,7 @@ async def test_threaded_generator(event_loop, timer):
 
 
 async def test_threaded_generator_max_size(
-    iterator_decorator, event_loop, timer
+    iterator_decorator, event_loop
 ):
     @iterator_decorator(max_size=1)
     def arange(*args):
@@ -276,7 +283,7 @@ async def test_threaded_generator_max_size(
 
 
 async def test_threaded_generator_exception(
-    iterator_decorator, event_loop, timer
+    iterator_decorator, event_loop
 ):
     @iterator_decorator
     def arange(*args):
@@ -296,7 +303,7 @@ async def test_threaded_generator_exception(
         assert result == list(range(count))
 
 
-async def test_threaded_generator_close(iterator_decorator, event_loop, timer):
+async def test_threaded_generator_close(iterator_decorator, event_loop):
     stopped = False
 
     @iterator_decorator(max_size=2)
@@ -327,7 +334,7 @@ async def test_threaded_generator_close(iterator_decorator, event_loop, timer):
 
 
 async def test_threaded_generator_close_cm(
-    iterator_decorator, event_loop, timer
+    iterator_decorator, event_loop
 ):
     stopped = threading.Event()
 
@@ -354,7 +361,7 @@ async def test_threaded_generator_close_cm(
 
 
 async def test_threaded_generator_close_break(
-    iterator_decorator, event_loop, timer
+    iterator_decorator, event_loop
 ):
     stopped = threading.Event()
 
@@ -380,7 +387,7 @@ async def test_threaded_generator_close_break(
 
 
 async def test_threaded_generator_non_generator_raises(
-    iterator_decorator, event_loop, timer
+    iterator_decorator, event_loop
 ):
     @iterator_decorator()
     def errored():
@@ -393,7 +400,7 @@ async def test_threaded_generator_non_generator_raises(
 
 
 async def test_threaded_generator_func_raises(
-    iterator_decorator, event_loop, timer
+    iterator_decorator, event_loop
 ):
     @iterator_decorator
     def errored(val):
