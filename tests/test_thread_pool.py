@@ -32,6 +32,35 @@ thread_pool_implementation = (
 thread_pool_ids = ("aiomisc pool", "default pool")
 
 
+@pytest.mark.parametrize("close_during_execution", (False, True))
+def test_workitem_closed_loop_with_callbacks(close_during_execution):
+    loop = asyncio.new_event_loop()
+    future = loop.create_future()
+    future.add_done_callback(lambda _: None)
+    executed = []
+
+    def work():
+        executed.append(True)
+        loop.close()
+
+    item = aiomisc.thread_pool.WorkItem(
+        func=work,
+        statistic=aiomisc.thread_pool.ThreadPoolStatistic(),
+        future=future,
+        loop=loop,
+    )
+    try:
+        if not close_during_execution:
+            loop.close()
+        with pytest.raises(asyncio.CancelledError):
+            item()
+        assert future.done()
+        assert isinstance(future.exception(), asyncio.CancelledError)
+        assert bool(executed) is close_during_execution
+    finally:
+        loop.close()
+
+
 @pytest.fixture(params=thread_pool_implementation, ids=thread_pool_ids)
 def thread_pool_executor(request):
     return request.param
