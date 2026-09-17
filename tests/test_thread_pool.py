@@ -146,8 +146,7 @@ async def test_threaded(threaded_decorator):
     wait = threaded_decorator(barrier.wait)
 
     result = await asyncio.wait_for(
-        asyncio.gather(*[wait() for _ in range(parties)]),
-        timeout=5,
+        asyncio.gather(*[wait() for _ in range(parties)]), timeout=5
     )
 
     assert sorted(result) == list(range(parties))
@@ -264,9 +263,7 @@ async def test_threaded_generator(event_loop):
         assert result == list(range(count))
 
 
-async def test_threaded_generator_max_size(
-    iterator_decorator, event_loop
-):
+async def test_threaded_generator_max_size(iterator_decorator, event_loop):
     @iterator_decorator(max_size=1)
     def arange(*args):
         return (yield from range(*args))
@@ -282,9 +279,7 @@ async def test_threaded_generator_max_size(
         assert result == list(range(count))
 
 
-async def test_threaded_generator_exception(
-    iterator_decorator, event_loop
-):
+async def test_threaded_generator_exception(iterator_decorator, event_loop):
     @iterator_decorator
     def arange(*args):
         yield from range(*args)
@@ -333,9 +328,7 @@ async def test_threaded_generator_close(iterator_decorator, event_loop):
         assert stopped
 
 
-async def test_threaded_generator_close_cm(
-    iterator_decorator, event_loop
-):
+async def test_threaded_generator_close_cm(iterator_decorator, event_loop):
     stopped = threading.Event()
 
     @iterator_decorator(max_size=1)
@@ -360,9 +353,7 @@ async def test_threaded_generator_close_cm(
         assert stopped.is_set()
 
 
-async def test_threaded_generator_close_break(
-    iterator_decorator, event_loop
-):
+async def test_threaded_generator_close_break(iterator_decorator, event_loop):
     stopped = threading.Event()
 
     @iterator_decorator(max_size=1)
@@ -399,9 +390,7 @@ async def test_threaded_generator_non_generator_raises(
                 pass
 
 
-async def test_threaded_generator_func_raises(
-    iterator_decorator, event_loop
-):
+async def test_threaded_generator_func_raises(iterator_decorator, event_loop):
     @iterator_decorator
     def errored(val):
         if val:
