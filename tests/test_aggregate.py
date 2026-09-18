@@ -691,6 +691,46 @@ async def test_unbound_method_requires_receiver():
     assert await CopyableLoader.load(CopyableLoader(), "key") == "originalkey"
 
 
+async def test_unbound_local_class_method_requires_receiver():
+    class Loader:
+        @aggregate(1, max_count=1)
+        async def load(self, *keys: str) -> list[str]:
+            return list(keys)
+
+    with pytest.raises(TypeError, match="require an instance"):
+        await Loader.load("key")
+    assert await Loader.load(Loader(), "key") == "key"
+
+
+async def test_extra_positional_argument_rejected():
+    class Owner:
+        pass
+
+    @aggregate(1, max_count=1)
+    async def load(*keys: str) -> list[str]:
+        return list(keys)
+
+    class Loader:
+        @aggregate(1, max_count=1)
+        @staticmethod
+        async def static_load(*keys: str) -> list[str]:
+            return list(keys)
+
+        @aggregate(1, max_count=1)
+        @classmethod
+        async def class_load(cls, *keys: str) -> list[str]:
+            return list(keys)
+
+    for func in (load, Loader.static_load, Loader().static_load):
+        with pytest.raises(TypeError, match="one argument per call"):
+            await func(Owner(), "key")  # type: ignore[call-arg, call-overload]
+    # The bound class method wrapper rejects the extra argument itself.
+    with pytest.raises(TypeError):
+        await Loader.class_load(Owner(), "key")  # type: ignore[call-arg]
+    with pytest.raises(TypeError, match="one argument per call"):
+        await load("one", "two", "three")  # type: ignore[call-overload]
+
+
 @pytest.mark.parametrize("decorator", (aggregate, aggregate_async))
 def test_coroutine_metadata(decorator):
     async def original(*keys: int, option: str = "default") -> list[int]:
