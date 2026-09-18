@@ -597,6 +597,60 @@ async def test_aggregate_static_methods():
         ) == [1, 2]
 
 
+async def test_aggregate_async_class_methods():
+    class Calculator:
+        exponent = 1
+
+        @aggregate_async(10_000, max_count=2)
+        @classmethod
+        async def aggregate_outer(cls, *args: Arg) -> None:
+            for arg in args:
+                arg.future.set_result(arg.value**cls.exponent)
+
+        @classmethod
+        @aggregate_async(10_000, max_count=2)
+        async def classmethod_outer(cls, *args: Arg) -> None:
+            for arg in args:
+                arg.future.set_result(arg.value**cls.exponent)
+
+    class Square(Calculator):
+        exponent = 2
+
+    class Cube(Calculator):
+        exponent = 3
+
+    for name in ("aggregate_outer", "classmethod_outer"):
+        square = getattr(Square, name)
+        cube = getattr(Cube, name)
+        assert await asyncio.gather(square(2), cube(2), square(3), cube(3)) == [
+            4,
+            8,
+            9,
+            27,
+        ]
+        assert square.__self__ is not cube.__self__
+
+
+async def test_aggregate_async_static_methods():
+    class Calculator:
+        @aggregate_async(10_000, max_count=2)
+        @staticmethod
+        async def aggregate_outer(*args: Arg) -> None:
+            for arg in args:
+                arg.future.set_result(arg.value)
+
+        @staticmethod
+        @aggregate_async(10_000, max_count=2)
+        async def staticmethod_outer(*args: Arg) -> None:
+            for arg in args:
+                arg.future.set_result(arg.value)
+
+    for name in ("aggregate_outer", "staticmethod_outer"):
+        assert await asyncio.gather(
+            getattr(Calculator, name)(1), getattr(Calculator(), name)(2)
+        ) == [1, 2]
+
+
 async def test_aggregate_slots_without_dict():
     class Calculator:
         __slots__ = ()
@@ -700,6 +754,20 @@ async def test_unbound_local_class_method_requires_receiver():
     with pytest.raises(TypeError, match="require an instance"):
         await Loader.load("key")
     assert await Loader.load(Loader(), "key") == "key"
+
+
+async def test_leading_positional_parameter_is_not_a_receiver():
+    @aggregate(1, max_count=2)
+    async def load(first: str, *rest: str) -> list[str]:
+        return [first, *rest]
+
+    @aggregate_async(1, max_count=2)
+    async def load_async(first: Arg, *rest: Arg) -> None:
+        for arg in (first, *rest):
+            arg.future.set_result(arg.value)
+
+    assert await asyncio.gather(load("a"), load("b")) == ["a", "b"]
+    assert await asyncio.gather(load_async("a"), load_async("b")) == ["a", "b"]
 
 
 async def test_extra_positional_argument_rejected():
