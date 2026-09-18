@@ -58,6 +58,20 @@ def _has_variadic_positional(func: Callable[..., Any]) -> bool:
     )
 
 
+def _has_receiver_parameter(func: Callable[..., Any]) -> bool:
+    # A method has one positional parameter (self or cls) before *args.
+    # A static or module-level function has none.
+    for parameter in inspect.signature(func).parameters.values():
+        if parameter.kind == Parameter.VAR_POSITIONAL:
+            return False
+        if parameter.kind in (
+            Parameter.POSITIONAL_ONLY,
+            Parameter.POSITIONAL_OR_KEYWORD,
+        ):
+            return True
+    return False
+
+
 def _validate(
     func: Callable[..., Any], leeway_ms: float, max_count: int | None
 ) -> None:
@@ -300,7 +314,11 @@ class AggregateDescriptor(Generic[V, R]):
         self._cache_name = (
             f"__aiomisc_aggregate_{func.__module__}.{func.__qualname__}"
         )
-        self._in_class = False
+        # classmethod and staticmethod do not forward __set_name__, so
+        # detect a method from its signature instead of the class body.
+        self._is_method = (
+            self._method is not staticmethod and _has_receiver_parameter(func)
+        )
         # Python 3.11 uses these attributes to recognize async callables.
         self.__code__ = self.__call__.__code__
         self.__defaults__ = None
@@ -309,7 +327,6 @@ class AggregateDescriptor(Generic[V, R]):
             inspect.markcoroutinefunction(self)
 
     def __set_name__(self, owner: type, name: str) -> None:
-        self._in_class = True
         self._cache_name = f"__aiomisc_aggregate_{owner.__module__}.{owner.__qualname__}.{name}"
 
     @property
@@ -387,12 +404,15 @@ class AggregateDescriptor(Generic[V, R]):
 
     async def __call__(self, *args: Any, **kwargs: Any) -> R:
         if len(args) == 1:
-            if self._in_class and self._method is not staticmethod:
+            if self._is_method:
                 raise TypeError(
-                    "Unbound aggregated methods require an instance and one argument"
+                    "Unbound aggregated methods require an instance "
+                    "and one argument"
                 )
             return await self._get_plain().aggregate(args[0], **kwargs)
-        if len(args) == 2:
+        # Only an unbound instance method accepts a receiver in front of
+        # the argument. Other callables must not bind a value as "self".
+        if len(args) == 2 and self._is_method and self._method is None:
             return await self._get_bound(args[0])(args[1], **kwargs)
         raise TypeError("Aggregated functions accept one argument per call")
 
