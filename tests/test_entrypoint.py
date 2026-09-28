@@ -798,6 +798,46 @@ def test_service_no_start_event():
     assert Sleeper.result
 
 
+def test_cancelled_startup_joins_service_tasks():
+    class Hanging(aiomisc.Service):
+        start_task: Optional[Task] = None
+        cleaned_up = False
+
+        async def start(self):
+            Hanging.start_task = asyncio.current_task()
+            self.entered.set()
+            try:
+                await asyncio.Event().wait()
+            finally:
+                Hanging.cleaned_up = True
+
+    loop = asyncio.new_event_loop()
+
+    async def go():
+        svc = Hanging()
+        svc.entered = asyncio.Event()
+        ep = Entrypoint(svc, loop=loop, catch_signals=(), log_config=False)
+
+        enter = asyncio.ensure_future(ep.__aenter__())
+        await svc.entered.wait()
+        enter.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await enter
+
+        await ep.__aexit__(None, None, None)
+
+        assert Hanging.start_task.done()
+        assert Hanging.cleaned_up
+        pending = asyncio.all_tasks() - {asyncio.current_task()}
+        assert not pending, pending
+
+    try:
+        loop.run_until_complete(go())
+    finally:
+        loop.close()
+
+
 def test_context_multiple_set():
     results = []
 

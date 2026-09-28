@@ -332,12 +332,22 @@ class Entrypoint:
 
         self._services.add(svc)
 
-        await asyncio.wait(
-            (start_task, ev_task), return_when=asyncio.FIRST_COMPLETED
-        )
+        try:
+            await asyncio.wait(
+                (start_task, ev_task), return_when=asyncio.FIRST_COMPLETED
+            )
 
-        self.loop.call_soon(svc.start_event.set)
-        await ev_task
+            self.loop.call_soon(svc.start_event.set)
+            await ev_task
+        except BaseException:
+            # asyncio.wait() does not cancel its tasks when the caller is
+            # cancelled, so they would be left pending.
+            start_task.cancel()
+            ev_task.cancel()
+            await asyncio.shield(
+                asyncio.gather(start_task, ev_task, return_exceptions=True)
+            )
+            raise
 
         if start_task.done():
             # raise an Exception when failed
