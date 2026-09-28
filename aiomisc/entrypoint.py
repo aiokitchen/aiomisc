@@ -330,21 +330,33 @@ class Entrypoint:
             asyncio.ensure_future, (svc.start(), svc.start_event.wait())
         )
 
-        self._services.add(svc)
+        try:
+            self._services.add(svc)
 
-        await asyncio.wait(
-            (start_task, ev_task), return_when=asyncio.FIRST_COMPLETED
-        )
+            await asyncio.wait(
+                (start_task, ev_task), return_when=asyncio.FIRST_COMPLETED
+            )
 
-        self.loop.call_soon(svc.start_event.set)
-        await ev_task
+            self.loop.call_soon(svc.start_event.set)
+            await ev_task
 
-        if start_task.done():
-            # raise an Exception when failed
-            await start_task
-            return
-        else:
-            self._tasks.add(start_task)
+            if start_task.done():
+                # raise an Exception when failed
+                await start_task
+                return
+            else:
+                self._tasks.add(start_task)
+        except BaseException:
+            start_task.cancel()
+            ev_task.cancel()
+            waiter = asyncio.gather(start_task, ev_task, return_exceptions=True)
+            # Join both owned tasks even if startup is cancelled again.
+            while not waiter.done():
+                try:
+                    await asyncio.shield(waiter)
+                except asyncio.CancelledError:
+                    continue
+            raise
 
         return None
 
