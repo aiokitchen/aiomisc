@@ -40,7 +40,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "aiothreads>=1.0.0",
+    "aiothreads>=1.1.4",
     "colorlog>=6.0,<7",
     "logging-journald; platform_system == 'Linux'",
 ]

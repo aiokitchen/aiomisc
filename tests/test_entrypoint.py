@@ -5,9 +5,9 @@ import socket
 import uuid
 from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
-from contextlib import ExitStack, suppress
+from contextlib import ExitStack, asynccontextmanager, suppress
 from tempfile import mktemp
-from types import ModuleType
+from types import CoroutineType, ModuleType
 from typing import Any, Optional, Set, Tuple
 from unittest import mock
 
@@ -796,6 +796,261 @@ def test_service_no_start_event():
         pass
 
     assert Sleeper.result
+
+
+@asynccontextmanager
+async def cleanup_startup_tasks():
+    # Retain only this test's tasks. Cleanup must run after the assertions,
+    # otherwise it would hide an Entrypoint ownership leak on an external loop.
+    tasks: list[Task[object]] = []
+    try:
+        yield tasks
+    finally:
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
+def current_start_task() -> Task[None]:
+    task = asyncio.current_task()
+    if task is None:
+        raise RuntimeError("Service.start() must run in a task")
+    return task
+
+
+def readiness_wait_task(service: aiomisc.Service) -> Task[bool]:
+    # Observe the real Event.wait task without replacing the Event or touching
+    # Entrypoint's private task registry.
+    return next(
+        task
+        for task in asyncio.all_tasks()
+        if isinstance(coro := task.get_coro(), CoroutineType)
+        and coro.cr_code is asyncio.Event.wait.__code__
+        and (frame := coro.cr_frame) is not None
+        and frame.f_locals["self"] is service.start_event
+    )
+
+
+async def test_cancelled_startup_before_ready_joins_owned_tasks(event_loop):
+    entered = Event()
+    release = Event()
+    finalized = Event()
+    stopped = []
+
+    class StartingService(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            entered.set()
+            try:
+                await release.wait()
+            finally:
+                finalized.set()
+
+        async def stop(self, exc=None):
+            stopped.append(exc)
+
+    service = StartingService()
+    ep = Entrypoint(
+        service, loop=event_loop, catch_signals=(), log_config=False
+    )
+    async with cleanup_startup_tasks() as tasks:
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.append(startup)
+        await asyncio.wait_for(entered.wait(), timeout=1)
+        waiter = readiness_wait_task(service)
+        tasks.extend((service.start_task, waiter))
+
+        startup.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(startup, timeout=1)
+        await asyncio.wait_for(ep.__aexit__(None, None, None), timeout=1)
+
+        assert (
+            service.start_task.cancelled(),
+            waiter.cancelled(),
+            finalized.is_set(),
+            service.start_event.is_set(),
+            stopped,
+            ep.services,
+            event_loop.is_closed(),
+        ) == (True, True, True, False, [None], (), False)
+
+
+@pytest.mark.parametrize("first", ("ready", "cancel"))
+async def test_readiness_racing_startup_cancellation_joins_start_task(
+    event_loop, first
+):
+    entered = Event()
+    release = Event()
+    stopped = Event()
+
+    class StartingService(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            entered.set()
+            await release.wait()
+
+        async def stop(self, exc=None):
+            stopped.set()
+
+    service = StartingService()
+    ep = Entrypoint(
+        service, loop=event_loop, catch_signals=(), log_config=False
+    )
+    async with cleanup_startup_tasks() as tasks:
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.append(startup)
+        await asyncio.wait_for(entered.wait(), timeout=1)
+        waiter = readiness_wait_task(service)
+        tasks.extend((service.start_task, waiter))
+        actions = {
+            "ready": (service.start_event.set, startup.cancel),
+            "cancel": (startup.cancel, service.start_event.set),
+        }
+
+        # Both actions happen in the same loop turn, with explicit ordering.
+        action_one, action_two = actions[first]
+        action_one()
+        action_two()
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(startup, timeout=1)
+        await asyncio.wait_for(ep.__aexit__(None, None, None), timeout=1)
+
+        assert (
+            service.start_task.cancelled(),
+            waiter.done(),
+            stopped.is_set(),
+            ep.services,
+            event_loop.is_closed(),
+        ) == (True, True, True, (), False)
+
+
+async def test_startup_exception_racing_cancellation_joins_readiness_waiter(
+    event_loop,
+):
+    entered = Event()
+    release = Event()
+    stopped = Event()
+    error = RuntimeError("startup failed")
+
+    class StartingService(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            entered.set()
+            await release.wait()
+            raise error
+
+        async def stop(self, exc=None):
+            stopped.set()
+
+    service = StartingService()
+    ep = Entrypoint(
+        service, loop=event_loop, catch_signals=(), log_config=False
+    )
+    async with cleanup_startup_tasks() as tasks:
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.append(startup)
+        await asyncio.wait_for(entered.wait(), timeout=1)
+        waiter = readiness_wait_task(service)
+        tasks.extend((service.start_task, waiter))
+
+        # Wake start() to raise before cancellation resumes _start_service.
+        release.set()
+        startup.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(startup, timeout=1)
+        await asyncio.wait_for(ep.__aexit__(None, None, None), timeout=1)
+
+        assert (
+            service.start_task.done(),
+            waiter.cancelled(),
+            stopped.is_set(),
+            ep.services,
+            event_loop.is_closed(),
+        ) == (True, True, True, (), False)
+
+
+async def test_long_lived_start_can_return_after_readiness(event_loop):
+    release = Event()
+    completed = Event()
+    stopped = Event()
+
+    class StartingService(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            self.start_event.set()
+            await release.wait()
+            completed.set()
+
+        async def stop(self, exc=None):
+            stopped.set()
+
+    service = StartingService()
+    ep = Entrypoint(
+        service, loop=event_loop, catch_signals=(), log_config=False
+    )
+    async with cleanup_startup_tasks() as tasks:
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.append(startup)
+        await asyncio.wait_for(startup, timeout=1)
+        tasks.append(service.start_task)
+        running_after_ready = not service.start_task.done()
+
+        release.set()
+        await asyncio.wait_for(service.start_task, timeout=1)
+        await asyncio.wait_for(ep.__aexit__(None, None, None), timeout=1)
+
+        assert (
+            running_after_ready,
+            completed.is_set(),
+            service.start_task.cancelled(),
+            stopped.is_set(),
+            event_loop.is_closed(),
+        ) == (True, True, False, True, False)
+
+
+async def test_startup_exception_before_readiness_propagates(event_loop):
+    entered = Event()
+    release = Event()
+    stopped = []
+    error = RuntimeError("startup failed")
+
+    class StartingService(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            entered.set()
+            await release.wait()
+            raise error
+
+        async def stop(self, exc=None):
+            stopped.append(exc)
+
+    service = StartingService()
+    ep = Entrypoint(
+        service, loop=event_loop, catch_signals=(), log_config=False
+    )
+    async with cleanup_startup_tasks() as tasks:
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.append(startup)
+        await asyncio.wait_for(entered.wait(), timeout=1)
+        waiter = readiness_wait_task(service)
+        tasks.extend((service.start_task, waiter))
+
+        release.set()
+        with pytest.raises(RuntimeError) as raised:
+            await asyncio.wait_for(startup, timeout=1)
+        await asyncio.wait_for(
+            ep.__aexit__(RuntimeError, error, None), timeout=1
+        )
+
+        assert (
+            raised.value is error,
+            service.start_task.done(),
+            waiter.done(),
+            stopped == [error],
+            ep.services,
+            event_loop.is_closed(),
+        ) == (True, True, True, True, (), False)
 
 
 def test_context_multiple_set():

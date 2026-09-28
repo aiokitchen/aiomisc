@@ -65,13 +65,17 @@ async def test_from_thread_channel(threaded_decorator):
             for i in range(10):
                 channel.put(i)
 
-    in_thread()
+    producer = in_thread()
     result = []
     with pytest.raises(ChannelClosed):
         while True:
             result.append(await asyncio.wait_for(channel.get(), timeout=5))
 
     assert result == list(range(10))
+    # Wait for the producer result. Otherwise the pool shutdown in the
+    # fixture teardown can fail the pending future before the loop
+    # delivers the result, and the exception stays unretrieved.
+    await producer
 
 
 async def test_from_thread_channel_wait_before(event_loop, threaded_decorator):
