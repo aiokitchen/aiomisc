@@ -7,7 +7,7 @@ from asyncio import Event, get_event_loop
 from asyncio.tasks import Task
 from contextlib import ExitStack, asynccontextmanager, suppress
 from tempfile import mktemp
-from types import ModuleType
+from types import CoroutineType, ModuleType
 from typing import Any, Optional, Set, Tuple
 from unittest import mock
 
@@ -802,7 +802,7 @@ def test_service_no_start_event():
 async def cleanup_startup_tasks():
     # Retain only this test's tasks. Cleanup must run after the assertions,
     # otherwise it would hide an Entrypoint ownership leak on an external loop.
-    tasks = []
+    tasks: list[Task[object]] = []
     try:
         yield tasks
     finally:
@@ -811,14 +811,23 @@ async def cleanup_startup_tasks():
         await asyncio.gather(*tasks, return_exceptions=True)
 
 
-def readiness_wait_task(service):
+def current_start_task() -> Task[None]:
+    task = asyncio.current_task()
+    if task is None:
+        raise RuntimeError("Service.start() must run in a task")
+    return task
+
+
+def readiness_wait_task(service: aiomisc.Service) -> Task[bool]:
     # Observe the real Event.wait task without replacing the Event or touching
     # Entrypoint's private task registry.
     return next(
         task
         for task in asyncio.all_tasks()
-        if task.get_coro().cr_code is asyncio.Event.wait.__code__
-        and task.get_coro().cr_frame.f_locals["self"] is service.start_event
+        if isinstance(coro := task.get_coro(), CoroutineType)
+        and coro.cr_code is asyncio.Event.wait.__code__
+        and (frame := coro.cr_frame) is not None
+        and frame.f_locals["self"] is service.start_event
     )
 
 
@@ -830,7 +839,7 @@ async def test_cancelled_startup_before_ready_joins_owned_tasks(event_loop):
 
     class StartingService(aiomisc.Service):
         async def start(self):
-            self.start_task = asyncio.current_task()
+            self.start_task = current_start_task()
             entered.set()
             try:
                 await release.wait()
@@ -877,7 +886,7 @@ async def test_readiness_racing_startup_cancellation_joins_start_task(
 
     class StartingService(aiomisc.Service):
         async def start(self):
-            self.start_task = asyncio.current_task()
+            self.start_task = current_start_task()
             entered.set()
             await release.wait()
 
@@ -926,7 +935,7 @@ async def test_startup_exception_racing_cancellation_joins_readiness_waiter(
 
     class StartingService(aiomisc.Service):
         async def start(self):
-            self.start_task = asyncio.current_task()
+            self.start_task = current_start_task()
             entered.set()
             await release.wait()
             raise error
@@ -968,7 +977,7 @@ async def test_long_lived_start_can_return_after_readiness(event_loop):
 
     class StartingService(aiomisc.Service):
         async def start(self):
-            self.start_task = asyncio.current_task()
+            self.start_task = current_start_task()
             self.start_event.set()
             await release.wait()
             completed.set()
@@ -1008,7 +1017,7 @@ async def test_startup_exception_before_readiness_propagates(event_loop):
 
     class StartingService(aiomisc.Service):
         async def start(self):
-            self.start_task = asyncio.current_task()
+            self.start_task = current_start_task()
             entered.set()
             await release.wait()
             raise error
