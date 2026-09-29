@@ -58,6 +58,46 @@ def _has_variadic_positional(func: Callable[..., Any]) -> bool:
     )
 
 
+def retrieve_exception(future: Future[Any]) -> None:
+    """
+    Retrieve the exception of a done future, if the future has one.
+
+    Use it as a done callback for a future that no caller awaits.
+    It prevents the "exception was never retrieved" log message.
+    """
+    if not future.cancelled():
+        future.exception()
+
+
+def abandon_future(future: Future[Any]) -> None:
+    """
+    Keep a batch future pending after its caller stops waiting.
+
+    The batch still contains the future, so the aggregated function can
+    set its result or exception. The exception is retrieved when it is set.
+    """
+    future.add_done_callback(retrieve_exception)
+
+
+def pop_item(args: tuple[Any, ...], kwargs: dict[str, Any]) -> Any:
+    """
+    Return the aggregated item from the call arguments.
+
+    The item is the single positional argument. Earlier versions also
+    accepted the item as the ``arg`` keyword, so without positional
+    arguments this function removes ``arg`` from ``kwargs`` and returns it.
+    When the item is positional, ``arg`` stays a keyword of the aggregated
+    function.
+
+    :raises TypeError: The call does not contain exactly one item.
+    """
+    if len(args) == 1:
+        return args[0]
+    if not args and "arg" in kwargs:
+        return kwargs.pop("arg")
+    raise TypeError("Aggregated functions accept one argument per call")
+
+
 def _validate(
     func: Callable[..., Any], leeway_ms: float, max_count: int | None
 ) -> None:
@@ -141,7 +181,14 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                 "must be hashable"
             ) from exc
 
-    async def aggregate(self, arg: V, **kwargs: Any) -> R:
+    @overload
+    async def aggregate(self, arg: V, /, **kwargs: Any) -> R: ...
+
+    @overload
+    async def aggregate(self, /, *, arg: V, **kwargs: Any) -> R: ...
+
+    async def aggregate(self, /, *args: Any, **kwargs: Any) -> R:
+        arg: V = pop_item(args, kwargs)
         key = self._kwargs_key(kwargs)
         bucket = self._buckets.get(key)
         if bucket is None:
@@ -175,11 +222,13 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                     (self.loop.time() - first_call_at) * 1000,
                 )
             except CancelledError:
-                future.cancel()
                 if self._buckets.get(key) is bucket:
                     items[:] = [entry for entry in items if entry is not item]
                     if not items:
                         self._buckets.pop(key)
+                    future.cancel()
+                else:
+                    abandon_future(future)
                 raise
 
         # Clear only if not cleared already
@@ -193,7 +242,7 @@ class AggregatorAsync(EventLoopMixin, Generic[V, R]):
                     await self._execute(items=items, kwargs=kwargs)
             await future
         except CancelledError:
-            future.cancel()
+            abandon_future(future)
             raise
         return future.result()
 
@@ -256,10 +305,10 @@ class _BoundAggregate:
 
 def _bind_call(call: Any, receiver: Any) -> Any:
     @functools.wraps(call)
-    async def bound_call(arg: Any, **kwargs: Any) -> Any:
+    async def bound_call(*args: Any, **kwargs: Any) -> Any:
         # Keep temporary owners alive until the batch finishes.
         _owner = receiver
-        return await call(arg, **kwargs)
+        return await call(*args, **kwargs)
 
     return bound_call
 
@@ -267,7 +316,13 @@ def _bind_call(call: Any, receiver: Any) -> Any:
 class _AggregateCall(Protocol[V, R]):
     __self__: AggregatorAsync[V, R]
 
-    def __call__(self, arg: V, **kwargs: Any) -> Coroutine[Any, Any, R]: ...
+    @overload
+    def __call__(self, arg: V, /, **kwargs: Any) -> Coroutine[Any, Any, R]: ...
+
+    @overload
+    def __call__(
+        self, /, *, arg: V, **kwargs: Any
+    ) -> Coroutine[Any, Any, R]: ...
 
 
 class AggregateDescriptor(Generic[V, R]):
@@ -381,8 +436,8 @@ class AggregateDescriptor(Generic[V, R]):
             aggregator = self._new(bound)
 
         @functools.wraps(self._func)
-        async def call(arg: V, **kwargs: Any) -> R:
-            return await aggregator.aggregate(arg, **kwargs)
+        async def call(*args: Any, **kwargs: Any) -> R:
+            return await aggregator.aggregate(*args, **kwargs)
 
         setattr(call, "__signature__", inspect.signature(bound))
         setattr(call, "__self__", aggregator)
@@ -396,29 +451,40 @@ class AggregateDescriptor(Generic[V, R]):
         return _bind_call(call, receiver)
 
     @overload
-    def __call__(self, arg: V, **kwargs: Any) -> Coroutine[Any, Any, R]: ...
+    def __call__(self, arg: V, /, **kwargs: Any) -> Coroutine[Any, Any, R]: ...
 
     @overload
     def __call__(
-        self, receiver: object, arg: V, **kwargs: Any
+        self, /, *, arg: V, **kwargs: Any
     ) -> Coroutine[Any, Any, R]: ...
 
-    async def __call__(self, *args: Any, **kwargs: Any) -> R:
-        is_method = self._in_class and self._method is not staticmethod
-        if len(args) == 1:
-            if is_method:
-                raise TypeError(
-                    "Unbound aggregated methods require an instance "
-                    "and one argument"
-                )
-            return await self._get_plain().aggregate(args[0], **kwargs)
+    @overload
+    def __call__(
+        self, receiver: object, arg: V, /, **kwargs: Any
+    ) -> Coroutine[Any, Any, R]: ...
+
+    async def __call__(self, /, *args: Any, **kwargs: Any) -> R:
+        # A receiver can be in front of the item. The item can also be
+        # the "arg" keyword.
+        has_receiver = len(args) == 2 or (len(args) == 1 and "arg" in kwargs)
         # Only a method defined in a class body accepts a receiver in front
-        # of the argument. Other callables must not bind a value as "self".
-        if len(args) == 2 and self._method is None:
-            if not self._in_class and self._is_classmethod_of(args[0]):
-                self._in_class = True
-            if self._in_class:
-                return await self._get_bound(args[0])(args[1], **kwargs)
+        # of the item. Other callables must not bind a value as "self".
+        if (
+            has_receiver
+            and self._method is None
+            and not self._in_class
+            and self._is_classmethod_of(args[0])
+        ):
+            self._in_class = True
+        if not self._in_class or self._method is staticmethod:
+            return await self._get_plain().aggregate(*args, **kwargs)
+        if self._method is None and has_receiver:
+            return await self._get_bound(args[0])(*args[1:], **kwargs)
+        if not has_receiver and len(args) < 2:
+            raise TypeError(
+                "Unbound aggregated methods require an instance "
+                "and one argument"
+            )
         raise TypeError("Aggregated functions accept one argument per call")
 
     @overload

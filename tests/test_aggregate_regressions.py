@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 
 import pytest
 
@@ -63,3 +64,42 @@ async def test_backend_keyword_named_arg(low_level: bool) -> None:
 
     function = load_async if low_level else load
     assert await function(42, arg="option") == (42, "option")
+
+
+@pytest.mark.parametrize("low_level", (False, True))
+async def test_method_item_and_backend_keyword(low_level: bool) -> None:
+    decorator = aggregate_async if low_level else aggregate
+
+    async def respond(values: tuple[Any, ...], arg: str) -> Any:
+        return [(value, arg) for value in values]
+
+    async def backend(*items: Any, arg: str = "default") -> Any:
+        if not low_level:
+            return await respond(items, arg)
+        results = await respond(tuple(item.value for item in items), arg)
+        for item, result in zip(items, results):
+            item.future.set_result(result)
+
+    class Loader:
+        @decorator(1, max_count=1)
+        async def load(self, *items: Any, arg: str = "default") -> Any:
+            return await backend(*items, arg=arg)
+
+        @decorator(1, max_count=1)
+        @classmethod
+        async def class_load(cls, *items: Any, arg: str = "default") -> Any:
+            return await backend(*items, arg=arg)
+
+        @classmethod
+        @decorator(1, max_count=1)
+        async def outer_load(cls, *items: Any, arg: str = "default") -> Any:
+            return await backend(*items, arg=arg)
+
+    loader = Loader()
+    for method in (loader.load, Loader.class_load, Loader.outer_load):
+        assert await method(arg=1) == (1, "default")
+        assert await method(2, arg="option") == (2, "option")
+    assert await Loader.load(loader, arg=3) == (3, "default")
+    assert await Loader.load(loader, 4, arg="option") == (4, "option")
+    with pytest.raises(TypeError, match="require an instance"):
+        await Loader.load(arg=5)  # type: ignore[call-overload]

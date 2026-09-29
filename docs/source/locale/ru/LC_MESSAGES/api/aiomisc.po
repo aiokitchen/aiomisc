@@ -23,6 +23,19 @@ msgstr "Модуль ``aiomisc``"
 msgid "``aiomisc.aggregate`` module"
 msgstr "Модуль ``aiomisc.aggregate``"
 
+#: aiomisc.aggregate.abandon_future:1 of
+msgid "Keep a batch future pending after its caller stops waiting."
+msgstr "Оставить future пакета в ожидании после отказа вызывающего от ожидания."
+
+#: aiomisc.aggregate.abandon_future:3 of
+msgid ""
+"The batch still contains the future, so the aggregated function can set "
+"its result or exception. The exception is retrieved when it is set."
+msgstr ""
+"Пакет по-прежнему содержит future, поэтому агрегируемая функция может "
+"установить его результат или исключение. Исключение извлекается при "
+"установке."
+
 #: aiomisc.aggregate.aggregate:1 of
 msgid ""
 "Parametric decorator that aggregates multiple (but no more than "
@@ -110,6 +123,43 @@ msgstr ""
 "future или выбрасывание исключения (оно автоматически передаётся во все "
 "future). Если ``func`` по ошибке не устанавливает результат для "
 "какого-либо future, будет установлено исключение ``ResultNotSetError``."
+
+#: aiomisc.aggregate.pop_item:1 of
+msgid "Return the aggregated item from the call arguments."
+msgstr "Вернуть агрегируемый элемент из аргументов вызова."
+
+#: aiomisc.aggregate.pop_item:3 of
+msgid ""
+"The item is the single positional argument. Earlier versions also "
+"accepted the item as the ``arg`` keyword, so without positional arguments"
+" this function removes ``arg`` from ``kwargs`` and returns it. When the "
+"item is positional, ``arg`` stays a keyword of the aggregated function."
+msgstr ""
+"Элемент передаётся единственным позиционным аргументом. Ранние версии "
+"также принимали элемент как именованный аргумент ``arg``, поэтому без "
+"позиционных аргументов функция удаляет ``arg`` из ``kwargs`` и "
+"возвращает его. Если элемент передан позиционно, ``arg`` остаётся "
+"именованным аргументом агрегируемой функции."
+
+#: ../../source/api/aiomisc.rst
+msgid "Raises"
+msgstr "Исключения"
+
+#: aiomisc.aggregate.pop_item:9 of
+msgid "The call does not contain exactly one item."
+msgstr "Вызов содержит не ровно один элемент."
+
+#: aiomisc.aggregate.retrieve_exception:1 of
+msgid "Retrieve the exception of a done future, if the future has one."
+msgstr "Извлечь исключение завершённого future, если оно есть."
+
+#: aiomisc.aggregate.retrieve_exception:3 of
+msgid ""
+"Use it as a done callback for a future that no caller awaits. It prevents"
+" the \"exception was never retrieved\" log message."
+msgstr ""
+"Используйте как done callback для future, который никто не ожидает. "
+"Функция предотвращает сообщение журнала «exception was never retrieved»."
 
 #: ../../source/api/aiomisc.rst:13
 msgid "``aiomisc.backoff`` module"
