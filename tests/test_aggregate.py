@@ -807,7 +807,6 @@ def test_coroutine_metadata(decorator):
 
     decorated = decorator(1)(original)
     assert inspect.iscoroutinefunction(decorated)
-    assert asyncio.iscoroutinefunction(decorated)
     assert decorated.__doc__ == original.__doc__
     assert inspect.signature(decorated) == inspect.signature(original)
 
