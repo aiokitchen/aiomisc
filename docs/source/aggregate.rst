@@ -36,10 +36,70 @@ record and the load is 1000 RPS, then, with a 10% increase of the delay
         return [math.pow(num, power) for num in nums]
 
     async def main():
-        await asyncio.gather(pow(1.0), pow(2.0))
+        result = await asyncio.gather(
+            pow(2.0, power=2.0),
+            pow(2.0, power=3.0),
+            pow(3.0, power=2.0),
+            pow(3.0, power=3.0),
+        )
+        assert result == [4.0, 8.0, 9.0, 27.0]
 
     with entrypoint() as loop:
         loop.run_until_complete(main())
+
+Calls with the same keyword arguments are batched together. Calls with
+different keyword arguments use independent batches. Keyword argument values
+must be hashable.
+
+Batch keys use Python equality and hashing, so values such as ``1``, ``True``,
+and ``1.0`` can share a batch. The backend receives the keyword values of
+one of those calls.
+
+Each distinct combination of keyword arguments creates a separate batch.
+Keep the number of combinations low: as it grows, batches become smaller and
+calls are more likely to wait for the full ``leeway_ms``, reducing the
+throughput benefit. If the backend can process mixed options, consider putting
+high-cardinality values into the positional item instead.
+
+Methods
+-------
+
+``aggregate`` and ``aggregate_async`` can decorate instance, class, and static
+methods. Each instance and class gets an independent aggregator, while a static
+method uses a single aggregator. Both decorator orders are supported for
+``classmethod`` and ``staticmethod``.
+
+.. code-block:: python
+
+    class Loader:
+        @aggregate(leeway_ms=10)
+        async def load(self, *keys):
+            ...
+
+        @classmethod
+        @aggregate(leeway_ms=10)
+        async def load_global(cls, *keys):
+            ...
+
+        @staticmethod
+        @aggregate(leeway_ms=10)
+        async def normalize(*values):
+            ...
+
+Instance methods store their aggregator on the instance, so instances without
+a writable ``__dict__`` are not supported.
+
+The cache is private and belongs to its owner: copied or unpickled instances
+create fresh aggregators rather than sharing pending batches. Normally the
+cache holds a weak reference to the owner. Instances that cannot be weakly
+referenced use a strong reference instead and require cyclic garbage
+collection to release the cache.
+
+Module functions and bound instance methods expose their aggregator through
+``func.__self__`` (for example, ``loader.load.__self__.count``). For class
+methods, put ``aggregate`` outside ``classmethod`` to expose the aggregator
+this way. With the reverse order, ``__self__`` may refer to the class instead,
+depending on the Python version.
 
 To employ a more low-level approach one can use `aggregate_async` instead.
 In this case, the aggregating function accepts `Arg` parameters, each containing

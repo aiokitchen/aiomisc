@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: aiomisc 16.1.16\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 10:52+0200\n"
+"POT-Creation-Date: 2026-09-06 16:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Ivan Sitkin <alvinera@yandex.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,19 @@ msgstr "Модуль ``aiomisc``"
 #: ../../source/api/aiomisc.rst:5
 msgid "``aiomisc.aggregate`` module"
 msgstr "Модуль ``aiomisc.aggregate``"
+
+#: aiomisc.aggregate.abandon_future:1 of
+msgid "Keep a batch future pending after its caller stops waiting."
+msgstr "Оставить future пакета в ожидании после отказа вызывающего от ожидания."
+
+#: aiomisc.aggregate.abandon_future:3 of
+msgid ""
+"The batch still contains the future, so the aggregated function can set "
+"its result or exception. The exception is retrieved when it is set."
+msgstr ""
+"Пакет по-прежнему содержит future, поэтому агрегируемая функция может "
+"установить его результат или исключение. Исключение извлекается при "
+"установке."
 
 #: aiomisc.aggregate.aggregate:1 of
 msgid ""
@@ -41,7 +54,19 @@ msgstr ""
 "аргументами (``res1, res2, ... = await func(arg1, arg2, ...)``) "
 "собранными в пределах временного окна ``leeway_ms``."
 
-#: aiomisc.aggregate.aggregate:12 of
+#: aiomisc.aggregate.aggregate:10 of
+msgid ""
+"Calls with different keyword arguments are batched separately; keyword "
+"values must be hashable. The decorator also supports instance, class, and"
+" static methods. Instances used with it must have a writable "
+"``__dict__``."
+msgstr ""
+"Вызовы с разными именованными аргументами объединяются в отдельные пакеты; "
+"значения аргументов должны быть хешируемыми. Декоратор также поддерживает "
+"методы экземпляра, класса и статические методы. Экземпляры должны иметь "
+"доступный для записи ``__dict__``."
+
+#: aiomisc.aggregate.aggregate:16 of
 msgid ""
 "``func`` must return a sequence of values of length equal to the number "
 "of arguments (and in the same order)."
@@ -49,7 +74,7 @@ msgstr ""
 "``func`` должна возвращать последовательность значений длиной, равной "
 "количеству аргументов (и в том же порядке)."
 
-#: aiomisc.aggregate.aggregate:17 of
+#: aiomisc.aggregate.aggregate:21 of
 msgid ""
 "if some unexpected error occurs, exception is propagated to each future; "
 "to set an individual error for each aggregated call refer to "
@@ -63,7 +88,7 @@ msgstr ""
 msgid "Parameters"
 msgstr "Параметры"
 
-#: aiomisc.aggregate.aggregate:21 of
+#: aiomisc.aggregate.aggregate:25 of
 msgid ""
 "The maximum approximate delay between the first collected argument and "
 "the aggregated execution."
@@ -71,7 +96,7 @@ msgstr ""
 "Максимальная приблизительная задержка между первым собранным аргументом и"
 " агрегированным выполнением."
 
-#: aiomisc.aggregate.aggregate:23 of
+#: aiomisc.aggregate.aggregate:27 of
 msgid ""
 "The maximum number of arguments to call decorated function with. Default "
 "``None``."
@@ -98,6 +123,43 @@ msgstr ""
 "future или выбрасывание исключения (оно автоматически передаётся во все "
 "future). Если ``func`` по ошибке не устанавливает результат для "
 "какого-либо future, будет установлено исключение ``ResultNotSetError``."
+
+#: aiomisc.aggregate.pop_item:1 of
+msgid "Return the aggregated item from the call arguments."
+msgstr "Вернуть агрегируемый элемент из аргументов вызова."
+
+#: aiomisc.aggregate.pop_item:3 of
+msgid ""
+"The item is the single positional argument. Earlier versions also "
+"accepted the item as the ``arg`` keyword, so without positional arguments"
+" this function removes ``arg`` from ``kwargs`` and returns it. When the "
+"item is positional, ``arg`` stays a keyword of the aggregated function."
+msgstr ""
+"Элемент передаётся единственным позиционным аргументом. Ранние версии "
+"также принимали элемент как именованный аргумент ``arg``, поэтому без "
+"позиционных аргументов функция удаляет ``arg`` из ``kwargs`` и "
+"возвращает его. Если элемент передан позиционно, ``arg`` остаётся "
+"именованным аргументом агрегируемой функции."
+
+#: ../../source/api/aiomisc.rst
+msgid "Raises"
+msgstr "Исключения"
+
+#: aiomisc.aggregate.pop_item:9 of
+msgid "The call does not contain exactly one item."
+msgstr "Вызов содержит не ровно один элемент."
+
+#: aiomisc.aggregate.retrieve_exception:1 of
+msgid "Retrieve the exception of a done future, if the future has one."
+msgstr "Извлечь исключение завершённого future, если оно есть."
+
+#: aiomisc.aggregate.retrieve_exception:3 of
+msgid ""
+"Use it as a done callback for a future that no caller awaits. It prevents"
+" the \"exception was never retrieved\" log message."
+msgstr ""
+"Используйте как done callback для future, который никто не ожидает. "
+"Функция предотвращает сообщение журнала «exception was never retrieved»."
 
 #: ../../source/api/aiomisc.rst:13
 msgid "``aiomisc.backoff`` module"
@@ -1545,4 +1607,3 @@ msgstr "Модуль ``aiomisc.worker_pool``"
 #~ "ctxkwargs: Additional arguments to "
 #~ "cls.prepare_context()."
 #~ msgstr ""
-
