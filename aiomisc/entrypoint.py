@@ -362,8 +362,22 @@ class Entrypoint:
 
     async def start_services(self, *svc: Service) -> None:
         await self.pre_start.call(entrypoint=self, services=svc)
+        tasks = [
+            self.loop.create_task(self._start_service(service))
+            for service in svc
+        ]
         try:
-            await asyncio.gather(*[self._start_service(s) for s in svc])
+            await asyncio.gather(*tasks)
+        except BaseException:
+            # gather propagates a peer's failure without cancelling the other
+            # startups. Join only this group before rollback or POST_START.
+            waiter = cancel_tasks(tasks)
+            while not waiter.done():
+                try:
+                    await asyncio.shield(waiter)
+                except asyncio.CancelledError:
+                    continue
+            raise
         finally:
             await self.post_start.call(entrypoint=self, services=svc)
 

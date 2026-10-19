@@ -43,8 +43,17 @@ Method ``start()`` creates as a separate task that can run forever. But in
 this case ``self.start_event.set()`` should be called for notifying
 ``entrypoint``.
 
-During graceful shutdown method ``stop()`` will be called first,
-and after that, all running tasks will be canceled (including ``start()``).
+If one service fails during startup, pending starts from the same group and
+their readiness waiters are cancelled and joined before the original error
+is propagated. ``POST_START`` runs after this cleanup, including on failure.
+Tasks unrelated to the entrypoint's startup group are left running.
+
+During graceful shutdown, long-lived ``start()`` tasks are cancelled before
+the services' ``stop()`` methods are called. Applications that need coordinated
+draining or other work while service loops are active should quiesce that work
+before exiting the entrypoint. When calling ``__aenter__()`` directly, call
+``__aexit__()`` after a failed startup as well, to stop already-created services
+and release their resources.
 
 
 This package contains some useful base classes for simple services writing.
