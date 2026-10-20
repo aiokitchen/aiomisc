@@ -831,6 +831,117 @@ def readiness_wait_task(service: aiomisc.Service) -> Task[bool]:
     )
 
 
+@pytest.mark.parametrize("peer_count", (1, 3))
+async def test_failed_startup_joins_peer_starts_before_post_start_and_stop(
+    event_loop, peer_count
+):
+    entered, fail, release = Event(), Event(), Event()
+    boom = RuntimeError("one service failed")
+    running, cleaned, stopped, late = set(), set(), set(), []
+    post_start = []
+
+    class StartingService(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            running.add(self)
+            if len(running) == peer_count:
+                entered.set()
+            try:
+                await release.wait()
+                late.append(self)
+            finally:
+                cleaned.add(self)
+
+        async def stop(self, exc=None):
+            assert self.start_task.done()
+            stopped.add(self)
+
+    class FailingService(aiomisc.Service):
+        async def start(self):
+            await fail.wait()
+            raise boom
+
+    peers = tuple(StartingService() for _ in range(peer_count))
+    ep = Entrypoint(
+        *peers,
+        FailingService(),
+        loop=event_loop,
+        catch_signals=(),
+        log_config=False,
+    )
+
+    async def observe(**kwargs):
+        post_start.append(cleaned == set(peers))
+
+    ep.post_start.connect(observe)
+    async with cleanup_startup_tasks() as tasks:
+        unrelated = event_loop.create_task(Event().wait())
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.extend((unrelated, startup))
+        await asyncio.wait_for(entered.wait(), timeout=1)
+        waiters = tuple(readiness_wait_task(peer) for peer in peers)
+        tasks.extend((*waiters, *(peer.start_task for peer in peers)))
+        fail.set()
+        with pytest.raises(RuntimeError) as raised:
+            await asyncio.wait_for(startup, timeout=1)
+        assert raised.value is boom
+        assert cleaned == set(peers) and post_start == [True]
+        assert all(peer.start_task.cancelled() for peer in peers)
+        assert all(waiter.cancelled() for waiter in waiters)
+        assert not unrelated.done()
+        await ep.__aexit__(None, None, None)
+        release.set()
+        await asyncio.sleep(0)
+        assert stopped == set(peers) and not late
+        assert not ep.services and not event_loop.is_closed()
+
+
+async def test_peer_failure_cleanup_survives_repeated_startup_cancellation(
+    event_loop,
+):
+    entered, fail = Event(), Event()
+    cleaning, finish_cleanup = Event(), Event()
+    boom = RuntimeError("original startup failure")
+
+    class Slow(aiomisc.Service):
+        async def start(self):
+            self.start_task = current_start_task()
+            entered.set()
+            try:
+                await Event().wait()
+            finally:
+                cleaning.set()
+                await finish_cleanup.wait()
+
+    class Failing(aiomisc.Service):
+        async def start(self):
+            await fail.wait()
+            raise boom
+
+    slow = Slow()
+    ep = Entrypoint(
+        slow, Failing(), loop=event_loop, catch_signals=(), log_config=False
+    )
+    async with cleanup_startup_tasks() as tasks:
+        startup = event_loop.create_task(ep.__aenter__())
+        tasks.append(startup)
+        await asyncio.wait_for(entered.wait(), timeout=1)
+        tasks.extend((slow.start_task, readiness_wait_task(slow)))
+        fail.set()
+        await asyncio.wait_for(cleaning.wait(), timeout=1)
+        startup.cancel()
+        await asyncio.sleep(0)
+        startup.cancel()
+        await asyncio.sleep(0)
+        assert not startup.done()
+        finish_cleanup.set()
+        with pytest.raises(RuntimeError) as raised:
+            await asyncio.wait_for(startup, timeout=1)
+        assert raised.value is boom
+        assert slow.start_task.cancelled()
+        await ep.__aexit__(None, None, None)
+
+
 async def test_cancelled_startup_before_ready_joins_owned_tasks(event_loop):
     entered = Event()
     release = Event()
