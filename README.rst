@@ -309,7 +309,7 @@ following things.
 
 Should be installed:
 
-* Python 3.7+ as ``python3``
+* Python 3.11+ as ``python3``
 * Installed Poetry_ as ``poetry``
 
 .. _Poetry: https://python-poetry.org/docs/
