@@ -5,6 +5,7 @@ import threading
 import time
 from collections.abc import Awaitable, Callable
 from concurrent.futures import ThreadPoolExecutor as ThreadPoolExecutorBase
+from contextlib import suppress
 from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import cpu_count
@@ -79,7 +80,8 @@ class WorkItem(WorkItemBase):
             log.warning("Event loop is closed. Ignoring %r", self.func)
             # Do not leave the future pending after its loop has closed.
             if not self.future.done():
-                self.future.set_exception(asyncio.CancelledError())
+                with suppress(RuntimeError):
+                    self.future.set_exception(asyncio.CancelledError())
             raise asyncio.CancelledError
 
         result, exception = None, None
@@ -105,7 +107,8 @@ class WorkItem(WorkItemBase):
             )
             # Do not leave the future pending after its loop has closed.
             if not self.future.done():
-                self.future.set_exception(asyncio.CancelledError())
+                with suppress(RuntimeError):
+                    self.future.set_exception(asyncio.CancelledError())
             raise asyncio.CancelledError
 
         self.loop.call_soon_threadsafe(

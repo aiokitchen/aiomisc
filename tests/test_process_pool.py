@@ -1,7 +1,8 @@
 import asyncio
 import os
 import signal
-from time import sleep, time
+from multiprocessing import Manager
+from time import time
 
 import pytest
 
@@ -18,20 +19,23 @@ def pool():
 
 
 @aiomisc.timeout(10)
-async def test_simple(pool, event_loop, timer):
+async def test_simple(pool, event_loop):
     current_time = await event_loop.run_in_executor(pool, time)
     assert current_time > 0
 
-    with timer(1):
-        await asyncio.wait_for(
+    with Manager() as manager:
+        barrier = manager.Barrier(POOL_SIZE, timeout=5)
+        result = await asyncio.wait_for(
             asyncio.gather(
                 *[
-                    event_loop.run_in_executor(pool, sleep, 1)
+                    event_loop.run_in_executor(pool, barrier.wait)
                     for _ in range(POOL_SIZE)
                 ]
             ),
-            timeout=2,
+            timeout=8,
         )
+
+    assert sorted(result) == list(range(POOL_SIZE))
 
 
 @aiomisc.timeout(10)

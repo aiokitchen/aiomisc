@@ -1,33 +1,10 @@
 import os
 import ssl
-import time
-from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 
 import aiomisc
-
-
-@pytest.fixture
-def timer():
-    @contextmanager
-    def timer(expected_time=0, *, dispersion=0.5):
-        expected_time = float(expected_time)
-        dispersion_value = expected_time * dispersion
-
-        now = time.time()
-
-        yield
-
-        delta = time.time() - now
-
-        lower_bound = expected_time - dispersion_value
-        upper_bound = expected_time + dispersion_value
-
-        assert lower_bound < delta < upper_bound
-
-    return timer
 
 
 def thread_pool_executor(request):
