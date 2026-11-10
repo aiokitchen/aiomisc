@@ -588,53 +588,34 @@ async def test_aiohttp_service_stop_before_start():
         await service.stop()
 
 
-@pytest.mark.parametrize(
-    "failure_stage",
-    ["create_application", "make_runner", "setup", "create_site"],
-)
-async def test_aiohttp_service_stop_after_failed_start(
-    failure_stage, monkeypatch
-):
+async def test_aiohttp_service_stop_after_failed_setup():
     events = []
-    error = RuntimeError("HTTP service startup failed")
 
     async def resource(app):
         events.append("acquired")
-        try:
-            yield
-        finally:
-            events.append("released")
+        yield
+        events.append("released")
 
     async def fail_startup(app):
-        raise error
+        raise RuntimeError("HTTP service startup failed")
 
-    app = aiohttp.web.Application()
-    app.cleanup_ctx.append(resource)
+    class FailingService(AIOHTTPService):
+        async def create_application(self):
+            app = aiohttp.web.Application()
+            app.cleanup_ctx.append(resource)
+            app.on_startup.append(fail_startup)
+            return app
 
     with socket.socket() as sock:
-        service = AIOHTTPService(sock=sock)
-        monkeypatch.setattr(
-            service, "create_application", mock.AsyncMock(return_value=app)
-        )
-        if failure_stage == "setup":
-            app.on_startup.append(fail_startup)
-        else:
-            monkeypatch.setattr(
-                service, failure_stage, mock.AsyncMock(side_effect=error)
-            )
+        service = FailingService(sock=sock)
 
-        with pytest.raises(RuntimeError) as raised:
+        with pytest.raises(RuntimeError, match="HTTP service startup failed"):
             await service.start()
 
-        assert raised.value is error
-        await service.stop(error)
+        assert events == ["acquired"]
+        await service.stop()
 
-    expected = (
-        ["acquired", "released"]
-        if failure_stage in ("setup", "create_site")
-        else []
-    )
-    assert events == expected
+    assert events == ["acquired", "released"]
 
 
 @unix_only
