@@ -582,6 +582,42 @@ def test_aiohttp_service(aiomisc_unused_port, localhost):
     assert response == 404
 
 
+async def test_aiohttp_service_stop_before_start():
+    with socket.socket() as sock:
+        service = AIOHTTPService(sock=sock)
+        await service.stop()
+
+
+async def test_aiohttp_service_stop_after_failed_setup():
+    events = []
+
+    async def resource(app):
+        events.append("acquired")
+        yield
+        events.append("released")
+
+    async def fail_startup(app):
+        raise RuntimeError("HTTP service startup failed")
+
+    class FailingService(AIOHTTPService):
+        async def create_application(self):
+            app = aiohttp.web.Application()
+            app.cleanup_ctx.append(resource)
+            app.on_startup.append(fail_startup)
+            return app
+
+    with socket.socket() as sock:
+        service = FailingService(sock=sock)
+
+        with pytest.raises(RuntimeError, match="HTTP service startup failed"):
+            await service.start()
+
+        assert events == ["acquired"]
+        await service.stop()
+
+    assert events == ["acquired", "released"]
+
+
 @unix_only
 def test_aiohttp_service_sock(unix_socket_tcp):
     async def http_client():
