@@ -24,7 +24,7 @@ RunnerKwargsType = Mapping[str, Any] | Iterable[tuple[str, Any]]
 class AIOHTTPService(Service):
     __async_required__: tuple[str, ...] = ("start", "create_application")
 
-    site: SockSite
+    site: SockSite | None = None
     runner: BaseRunner
     handler_cancellation: bool = True
 

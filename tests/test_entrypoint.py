@@ -582,6 +582,61 @@ def test_aiohttp_service(aiomisc_unused_port, localhost):
     assert response == 404
 
 
+async def test_aiohttp_service_stop_before_start():
+    with socket.socket() as sock:
+        service = AIOHTTPService(sock=sock)
+        await service.stop()
+
+
+@pytest.mark.parametrize(
+    "failure_stage",
+    ["create_application", "make_runner", "setup", "create_site"],
+)
+async def test_aiohttp_service_stop_after_failed_start(
+    failure_stage, monkeypatch
+):
+    events = []
+    error = RuntimeError("HTTP service startup failed")
+
+    async def resource(app):
+        events.append("acquired")
+        try:
+            yield
+        finally:
+            events.append("released")
+
+    async def fail_startup(app):
+        raise error
+
+    app = aiohttp.web.Application()
+    app.cleanup_ctx.append(resource)
+
+    with socket.socket() as sock:
+        service = AIOHTTPService(sock=sock)
+        monkeypatch.setattr(
+            service, "create_application", mock.AsyncMock(return_value=app)
+        )
+        if failure_stage == "setup":
+            app.on_startup.append(fail_startup)
+        else:
+            monkeypatch.setattr(
+                service, failure_stage, mock.AsyncMock(side_effect=error)
+            )
+
+        with pytest.raises(RuntimeError) as raised:
+            await service.start()
+
+        assert raised.value is error
+        await service.stop(error)
+
+    expected = (
+        ["acquired", "released"]
+        if failure_stage in ("setup", "create_site")
+        else []
+    )
+    assert events == expected
+
+
 @unix_only
 def test_aiohttp_service_sock(unix_socket_tcp):
     async def http_client():
