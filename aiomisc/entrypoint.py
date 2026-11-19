@@ -425,14 +425,14 @@ class Entrypoint:
             if self._closing.is_set():
                 return
             self._closing.set()
-        await cancel_tasks(set(self._tasks))
-        await self.stop_services(*self._services, exc=exception)
+            await cancel_tasks(set(self._tasks))
+            await self.stop_services(*self._services, exc=exception)
 
-        if self._loop_owner:
-            await self._cancel_background_tasks()
-            await self.loop.shutdown_asyncgens()
-            # Finish executor work before closing its loop.
-            await self.loop.shutdown_default_executor()
+            if self._loop_owner:
+                await self._cancel_background_tasks()
+                await self.loop.shutdown_asyncgens()
+                # Finish executor work before closing its loop.
+                await self.loop.shutdown_default_executor()
 
     def _on_interrupt_callback(self, _: Any) -> None:
         loop = self.loop
@@ -454,7 +454,8 @@ class Entrypoint:
                     self.shutdown_timeout,
                 )
             handle.cancel()
-            loop.stop()
+            if self._loop_owner:
+                loop.stop()
 
             if task.cancelled():
                 # 70 from sysexits.h means "internal software error"
