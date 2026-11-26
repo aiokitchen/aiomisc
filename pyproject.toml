@@ -56,7 +56,7 @@ Documentation = "https://docs.aiomisc.com/"
 aiohttp = ["aiohttp>3"]
 asgi = ["aiohttp-asgi>=0.5.2"]
 carbon = ["aiocarbon>=0.15"]
-cron = ["croniter>=2.0,<3"]
+cron = ["croniter>=2.0,<8"]
 dns = ["dnslib>=0.9"]
 grpc = ["grpcio>=1.56", "grpcio-tools>=1.56", "grpcio-reflection>=1.56"]
 raven = ["aiohttp>3", "raven"]
@@ -79,7 +79,7 @@ dev = [
     "certifi>=2024.6.2",
     "collective-checkdocs>=0.2",
     "coveralls>=3.3.1",
-    "croniter>=2.0,<3",
+    "croniter>=2.0,<8",
     "dnslib>=0.9",
     "fastapi>=0.110",
     "furo>=2022",
